@@ -13,6 +13,16 @@ Documentation technique complète du projet Sendbox.
 
 ### Documentation Technique
 
+- **RPC_FUNCTIONS.md** - Fonctions RPC Supabase ✅
+  - Documentation complète des fonctions RPC
+  - Exemples d'utilisation
+  - Guide de test et dépannage
+
+- **TESTING.md** - Guide des tests E2E ✅
+  - Configuration Playwright
+  - Structure des tests
+  - Exécution et CI/CD
+
 - **ARCHITECTURE.md** - Architecture complète (à créer)
   - Stack technique
   - Modèle de données

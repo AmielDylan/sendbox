@@ -53,6 +53,8 @@ npm run dev
 
 - [Guide de Démarrage](docs/SETUP.md) - Premiers pas (30 min)
 - [Architecture](docs/README.md) - Documentation technique complète
+- [Fonctions RPC](docs/RPC_FUNCTIONS.md) - Documentation des fonctions RPC Supabase
+- [Tests E2E](docs/TESTING.md) - Guide des tests End-to-End
 - [ADR](docs/ADR/) - Décisions architecturales
 
 ## 🛠️ Stack Technique
@@ -89,10 +91,15 @@ npm run lint         # Linter ESLint
 npm run format       # Formatter Prettier
 npm run format:check # Vérifier formatage sans modifier
 
-# Supabase (à venir)
+# Tests
+npm run test:e2e     # Tests E2E avec Playwright
+npm run test:e2e:ui  # Tests E2E en mode UI interactif
+npm run test:e2e:headed # Tests E2E avec navigateur visible
+
+# Supabase
 npm run db:start     # Démarre Supabase local (Docker)
-npm run db:push      # Applique migrations
-npm run db:types     # Génère types TypeScript
+supabase db push --linked  # Applique migrations en production
+npx tsx scripts/test-rpc-simple.ts  # Teste les fonctions RPC
 ```
 
 ## 📦 Supabase Setup
