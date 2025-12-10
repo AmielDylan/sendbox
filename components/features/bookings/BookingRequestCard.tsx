@@ -1,0 +1,428 @@
+/**
+ * Composant Card pour afficher une demande de réservation
+ */
+
+import { useState } from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Star, Package, Euro, Calendar, MapPin, CheckCircle2, XCircle, MessageSquare, Image as ImageIcon } from 'lucide-react'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
+import { generateInitials } from '@/lib/utils/avatar'
+import { formatPrice } from '@/lib/utils/booking-calculations'
+import { acceptBooking, refuseBooking } from '@/lib/actions/booking-requests'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+
+interface BookingRequest {
+  id: string
+  weight_kg: number
+  description: string | null
+  package_value: number | null
+  package_photos: string[] | null
+  created_at: string
+  announcements: {
+    origin_city: string
+    destination_city: string
+    origin_country: string
+    destination_country: string
+    departure_date: string
+    price_per_kg: number
+  }
+  sender: {
+    first_name: string | null
+    last_name: string | null
+    avatar_url: string | null
+  }
+}
+
+interface BookingRequestCardProps {
+  booking: BookingRequest
+  onUpdate?: () => void
+}
+
+const REFUSAL_REASONS = [
+  { value: 'non_conform', label: 'Colis non conforme' },
+  { value: 'dates_incompatible', label: 'Dates incompatibles' },
+  { value: 'capacity_insufficient', label: 'Capacité insuffisante' },
+  { value: 'other', label: 'Autre' },
+] as const
+
+export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProps) {
+  const router = useRouter()
+  const [showAcceptModal, setShowAcceptModal] = useState(false)
+  const [showRefuseModal, setShowRefuseModal] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [refusalReason, setRefusalReason] = useState('')
+  const [refusalReasonOther, setRefusalReasonOther] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
+
+  const senderName = `${booking.sender.first_name || ''} ${booking.sender.last_name || ''}`.trim() || 'Expéditeur'
+  const senderInitials = generateInitials(booking.sender.first_name, booking.sender.last_name)
+  const isNew = new Date(booking.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const announcement = booking.announcements
+
+  const handleAccept = async () => {
+    if (!acceptedTerms) {
+      toast.error('Veuillez accepter les conditions')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      const result = await acceptBooking(booking.id)
+
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      if (result.success) {
+        toast.success(result.message)
+        setShowAcceptModal(false)
+        onUpdate?.()
+      }
+    } catch (error) {
+      toast.error('Une erreur est survenue')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleRefuse = async () => {
+    const reason = refusalReason === 'other' ? refusalReasonOther : REFUSAL_REASONS.find(r => r.value === refusalReason)?.label || ''
+
+    if (!reason || reason.trim().length < 5) {
+      toast.error('Veuillez fournir une raison de refus')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      const result = await refuseBooking(booking.id, reason)
+
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      if (result.success) {
+        toast.success(result.message)
+        setShowRefuseModal(false)
+        setRefusalReason('')
+        setRefusalReasonOther('')
+        onUpdate?.()
+      }
+    } catch (error) {
+      toast.error('Une erreur est survenue')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const totalPrice = booking.weight_kg * announcement.price_per_kg
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarImage
+                  src={booking.sender.avatar_url || undefined}
+                  alt={senderName}
+                />
+                <AvatarFallback>{senderInitials}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="font-semibold">{senderName}</h3>
+                <div className="flex items-center gap-1 mt-1">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="text-sm">4.5</span>
+                </div>
+              </div>
+            </div>
+            {isNew && (
+              <Badge variant="default" className="bg-green-500">
+                Nouveau
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Trajet */}
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {announcement.origin_city} → {announcement.destination_city}
+            </span>
+          </div>
+
+          {/* Date */}
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">
+              {format(new Date(announcement.departure_date), 'd MMM yyyy', {
+                locale: fr,
+              })}
+            </span>
+          </div>
+
+          {/* Demande */}
+          <div className="p-4 bg-muted rounded-lg space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Demande</span>
+              </div>
+              <span className="font-semibold">
+                {booking.weight_kg} kg pour {formatPrice(totalPrice)}
+              </span>
+            </div>
+            {booking.description && (
+              <p className="text-sm text-muted-foreground">
+                {booking.description}
+              </p>
+            )}
+          </div>
+
+          {/* Photos */}
+          {booking.package_photos && booking.package_photos.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Photos du colis</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {booking.package_photos.slice(0, 3).map((photo, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setSelectedPhotoIndex(index)}
+                    className="relative aspect-square rounded-md overflow-hidden border hover:opacity-80 transition-opacity"
+                  >
+                    <Image
+                      src={photo}
+                      alt={`Photo ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+                {booking.package_photos.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPhotoIndex(0)}
+                    className="relative aspect-square rounded-md overflow-hidden border hover:opacity-80 transition-opacity flex items-center justify-center bg-muted"
+                  >
+                    <span className="text-sm font-medium">
+                      +{booking.package_photos.length - 3}
+                    </span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setShowAcceptModal(true)}
+              className="flex-1"
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Accepter
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowRefuseModal(true)}
+              className="flex-1"
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              Refuser
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/dashboard/messages/chat?booking=${booking.id}`)}
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modal Acceptation */}
+      <Dialog open={showAcceptModal} onOpenChange={setShowAcceptModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Accepter cette demande</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir accepter cette demande de réservation ?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Rappels importants :</p>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                <li>
+                  Vous devez récupérer le colis à {announcement.origin_city}
+                </li>
+                <li>
+                  Date de départ :{' '}
+                  {format(new Date(announcement.departure_date), 'PP', {
+                    locale: fr,
+                  })}
+                </li>
+                <li>Poids à transporter : {booking.weight_kg} kg</li>
+                <li>
+                  Vous serez payé {formatPrice(totalPrice)} à la livraison
+                </li>
+              </ul>
+            </div>
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="accept_terms_booking"
+                checked={acceptedTerms}
+                onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+              />
+              <Label htmlFor="accept_terms_booking" className="cursor-pointer text-sm">
+                J'ai lu et j'accepte les conditions de transport
+              </Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAcceptModal(false)
+                setAcceptedTerms(false)
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleAccept}
+              disabled={!acceptedTerms || isProcessing}
+            >
+              {isProcessing ? 'Traitement...' : 'Confirmer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Refus */}
+      <Dialog open={showRefuseModal} onOpenChange={setShowRefuseModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Refuser cette demande</DialogTitle>
+            <DialogDescription>
+              Veuillez indiquer la raison du refus
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="refusal_reason">Raison du refus</Label>
+              <Select
+                value={refusalReason}
+                onValueChange={setRefusalReason}
+              >
+                <SelectTrigger id="refusal_reason">
+                  <SelectValue placeholder="Sélectionnez une raison" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REFUSAL_REASONS.map((reason) => (
+                    <SelectItem key={reason.value} value={reason.value}>
+                      {reason.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {refusalReason === 'other' && (
+              <div className="space-y-2">
+                <Label htmlFor="refusal_reason_other">Précisez la raison</Label>
+                <Textarea
+                  id="refusal_reason_other"
+                  placeholder="Expliquez la raison du refus..."
+                  value={refusalReasonOther}
+                  onChange={(e) => setRefusalReasonOther(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowRefuseModal(false)
+                setRefusalReason('')
+                setRefusalReasonOther('')
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRefuse}
+              disabled={!refusalReason || (refusalReason === 'other' && !refusalReasonOther.trim()) || isProcessing}
+            >
+              {isProcessing ? 'Traitement...' : 'Confirmer le refus'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Galerie Photos */}
+      {selectedPhotoIndex !== null && booking.package_photos && (
+        <Dialog open={selectedPhotoIndex !== null} onOpenChange={() => setSelectedPhotoIndex(null)}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Photos du colis</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {booking.package_photos.map((photo, index) => (
+                <div key={index} className="relative aspect-square rounded-md overflow-hidden border">
+                  <Image
+                    src={photo}
+                    alt={`Photo ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
+  )
+}
+

@@ -4,10 +4,12 @@
 /node_modules
 /.pnp
 .pnp.js
-.yarn/install-state.gz
 
 # testing
 /coverage
+/test-results
+/playwright-report
+/playwright/.cache
 
 # next.js
 /.next/
@@ -36,12 +38,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Supabase
-supabase/.branches
-supabase/.temp
-
-# Documentation temporaire
-docs/.temp
-
-# Scripts
-scripts/*.log
+# supabase
+.supabase

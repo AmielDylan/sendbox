@@ -27,6 +27,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -187,16 +188,7 @@ function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
       {/* Notifications */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="relative"
-        aria-label="Notifications"
-      >
-        <Bell className="h-5 w-5" />
-        <span className="sr-only">Notifications</span>
-        <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
-      </Button>
+      <NotificationDropdown />
 
       {/* User Menu */}
       <UserMenu />

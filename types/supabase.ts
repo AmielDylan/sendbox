@@ -167,6 +167,27 @@ export type Database = {
             | 'cancelled'
           qr_code: string | null
           tracking_number: string | null
+          package_value: number | null
+          package_photos: string[] | null
+          insurance_opted: boolean | null
+          payment_intent_id: string | null
+          paid_at: string | null
+          total_price: number | null
+          commission_amount: number | null
+          insurance_premium: number | null
+          refused_reason: string | null
+          accepted_at: string | null
+          refused_at: string | null
+          deposited_at: string | null
+          deposit_photo_url: string | null
+          deposit_signature_url: string | null
+          delivered_at: string | null
+          delivery_photo_url: string | null
+          delivery_signature_url: string | null
+          deposit_location_lat: number | null
+          deposit_location_lng: number | null
+          delivery_location_lat: number | null
+          delivery_location_lng: number | null
           created_at: string
           updated_at: string
         }
@@ -185,6 +206,27 @@ export type Database = {
             | 'cancelled'
           qr_code?: string | null
           tracking_number?: string | null
+          package_value?: number | null
+          package_photos?: string[] | null
+          insurance_opted?: boolean | null
+          payment_intent_id?: string | null
+          paid_at?: string | null
+          total_price?: number | null
+          commission_amount?: number | null
+          insurance_premium?: number | null
+          refused_reason?: string | null
+          accepted_at?: string | null
+          refused_at?: string | null
+          deposited_at?: string | null
+          deposit_photo_url?: string | null
+          deposit_signature_url?: string | null
+          delivered_at?: string | null
+          delivery_photo_url?: string | null
+          delivery_signature_url?: string | null
+          deposit_location_lat?: number | null
+          deposit_location_lng?: number | null
+          delivery_location_lat?: number | null
+          delivery_location_lng?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -203,6 +245,27 @@ export type Database = {
             | 'cancelled'
           qr_code?: string | null
           tracking_number?: string | null
+          package_value?: number | null
+          package_photos?: string[] | null
+          insurance_opted?: boolean | null
+          payment_intent_id?: string | null
+          paid_at?: string | null
+          total_price?: number | null
+          commission_amount?: number | null
+          insurance_premium?: number | null
+          refused_reason?: string | null
+          accepted_at?: string | null
+          refused_at?: string | null
+          deposited_at?: string | null
+          deposit_photo_url?: string | null
+          deposit_signature_url?: string | null
+          delivered_at?: string | null
+          delivery_photo_url?: string | null
+          delivery_signature_url?: string | null
+          deposit_location_lat?: number | null
+          deposit_location_lng?: number | null
+          delivery_location_lat?: number | null
+          delivery_location_lng?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -237,8 +300,11 @@ export type Database = {
           sender_id: string
           receiver_id: string
           content: string
+          attachments: string[] | null
+          is_read: boolean
           read_at: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -246,8 +312,11 @@ export type Database = {
           sender_id: string
           receiver_id: string
           content: string
+          attachments?: string[] | null
+          is_read?: boolean
           read_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -255,8 +324,11 @@ export type Database = {
           sender_id?: string
           receiver_id?: string
           content?: string
+          attachments?: string[] | null
+          is_read?: boolean
           read_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
