@@ -8,6 +8,7 @@ VALUES ('contracts', 'contracts', FALSE)
 ON CONFLICT (id) DO NOTHING;
 
 -- RLS Policies pour contracts
+DROP POLICY IF EXISTS "Users can upload contracts for their bookings" ON storage.objects;
 CREATE POLICY "Users can upload contracts for their bookings"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -16,6 +17,7 @@ WITH CHECK (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
+DROP POLICY IF EXISTS "Users can view contracts for their bookings" ON storage.objects;
 CREATE POLICY "Users can view contracts for their bookings"
 ON storage.objects FOR SELECT
 TO authenticated
@@ -32,5 +34,5 @@ USING (
 );
 
 -- Commentaires
-COMMENT ON TABLE storage.buckets IS 'Bucket pour stocker les PDF de contrats et preuves légales';
+-- Note: storage.buckets est une table système, on ne peut pas ajouter de commentaire
 

@@ -37,12 +37,14 @@ CREATE INDEX IF NOT EXISTS notifications_booking_id_idx ON notifications(booking
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Les utilisateurs peuvent voir leurs propres notifications
+DROP POLICY IF EXISTS "Users can view their own notifications" ON notifications;
 CREATE POLICY "Users can view their own notifications"
 ON notifications FOR SELECT
 TO authenticated
 USING (user_id = auth.uid());
 
 -- Les utilisateurs peuvent marquer leurs notifications comme lues
+DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
 CREATE POLICY "Users can update their own notifications"
 ON notifications FOR UPDATE
 TO authenticated

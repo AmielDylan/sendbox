@@ -29,7 +29,18 @@ CREATE TABLE IF NOT EXISTS transactions (
 -- Index pour les requêtes fréquentes
 CREATE INDEX IF NOT EXISTS transactions_booking_id_idx ON transactions(booking_id);
 CREATE INDEX IF NOT EXISTS transactions_user_id_idx ON transactions(user_id);
-CREATE INDEX IF NOT EXISTS transactions_status_idx ON transactions(status);
+-- Index sur status (si la colonne existe)
+DO $$ 
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'transactions' 
+    AND column_name = 'status'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS transactions_status_idx ON transactions(status);
+  END IF;
+END $$;;
 CREATE INDEX IF NOT EXISTS transactions_stripe_payment_intent_id_idx ON transactions(stripe_payment_intent_id);
 
 -- Trigger pour updated_at
@@ -41,6 +52,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_transactions_updated_at ON transactions;
 CREATE TRIGGER update_transactions_updated_at
 BEFORE UPDATE ON transactions
 FOR EACH ROW
@@ -50,12 +62,14 @@ EXECUTE FUNCTION update_updated_at_column();
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
 -- Les utilisateurs peuvent voir leurs propres transactions
+DROP POLICY IF EXISTS "Users can view their own transactions" ON transactions;
 CREATE POLICY "Users can view their own transactions"
 ON transactions FOR SELECT
 TO authenticated
 USING (user_id = auth.uid());
 
 -- Les admins peuvent voir toutes les transactions
+DROP POLICY IF EXISTS "Admins can view all transactions" ON transactions;
 CREATE POLICY "Admins can view all transactions"
 ON transactions FOR SELECT
 TO authenticated

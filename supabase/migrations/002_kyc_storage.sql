@@ -3,17 +3,22 @@
 -- Description: Configuration du storage et des champs KYC dans profiles
 
 -- Ajouter les colonnes KYC à la table profiles (si elles n'existent pas déjà)
-ALTER TABLE profiles
-ADD COLUMN IF NOT EXISTS kyc_document_type TEXT CHECK (kyc_document_type IN ('passport', 'national_id')),
-ADD COLUMN IF NOT EXISTS kyc_document_number TEXT,
-ADD COLUMN IF NOT EXISTS kyc_document_front TEXT,
-ADD COLUMN IF NOT EXISTS kyc_document_back TEXT,
-ADD COLUMN IF NOT EXISTS kyc_birthday TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS kyc_nationality TEXT,
-ADD COLUMN IF NOT EXISTS kyc_address TEXT,
-ADD COLUMN IF NOT EXISTS kyc_submitted_at TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS kyc_reviewed_at TIMESTAMPTZ,
-ADD COLUMN IF NOT EXISTS kyc_rejection_reason TEXT;
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'profiles') THEN
+    ALTER TABLE profiles
+    ADD COLUMN IF NOT EXISTS kyc_document_type TEXT CHECK (kyc_document_type IN ('passport', 'national_id')),
+    ADD COLUMN IF NOT EXISTS kyc_document_number TEXT,
+    ADD COLUMN IF NOT EXISTS kyc_document_front TEXT,
+    ADD COLUMN IF NOT EXISTS kyc_document_back TEXT,
+    ADD COLUMN IF NOT EXISTS kyc_birthday TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS kyc_nationality TEXT,
+    ADD COLUMN IF NOT EXISTS kyc_address TEXT,
+    ADD COLUMN IF NOT EXISTS kyc_submitted_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS kyc_reviewed_at TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS kyc_rejection_reason TEXT;
+  END IF;
+END $$;
 
 -- Mettre à jour le type de kyc_status si nécessaire
 ALTER TABLE profiles
@@ -31,50 +36,89 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- RLS Policy: Les utilisateurs peuvent uploader leurs propres documents
-CREATE POLICY "Users can upload their own KYC documents"
-ON storage.objects
-FOR INSERT
-TO authenticated
-WITH CHECK (
-  bucket_id = 'kyc-documents' AND
-  (storage.foldername(name))[1] = auth.uid()::text
-);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'storage' 
+    AND tablename = 'objects' 
+    AND policyname = 'Users can upload their own KYC documents'
+  ) THEN
+    CREATE POLICY "Users can upload their own KYC documents"
+    ON storage.objects
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      bucket_id = 'kyc-documents' AND
+      (storage.foldername(name))[1] = auth.uid()::text
+    );
+  END IF;
+END $$;
 
 -- RLS Policy: Les utilisateurs peuvent lire leurs propres documents
-CREATE POLICY "Users can read their own KYC documents"
-ON storage.objects
-FOR SELECT
-TO authenticated
-USING (
-  bucket_id = 'kyc-documents' AND
-  (storage.foldername(name))[1] = auth.uid()::text
-);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'storage' 
+    AND tablename = 'objects' 
+    AND policyname = 'Users can read their own KYC documents'
+  ) THEN
+    CREATE POLICY "Users can read their own KYC documents"
+    ON storage.objects
+    FOR SELECT
+    TO authenticated
+    USING (
+      bucket_id = 'kyc-documents' AND
+      (storage.foldername(name))[1] = auth.uid()::text
+    );
+  END IF;
+END $$;
 
 -- RLS Policy: Les admins peuvent lire tous les documents KYC
--- Note: Remplacez 'admin' par votre logique de vérification de rôle
-CREATE POLICY "Admins can read all KYC documents"
-ON storage.objects
-FOR SELECT
-TO authenticated
-USING (
-  bucket_id = 'kyc-documents'
-  -- TODO: Ajouter vérification du rôle admin
-  -- AND EXISTS (
-  --   SELECT 1 FROM profiles
-  --   WHERE user_id = auth.uid() AND role = 'admin'
-  -- )
-);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'storage' 
+    AND tablename = 'objects' 
+    AND policyname = 'Admins can read all KYC documents'
+  ) THEN
+    CREATE POLICY "Admins can read all KYC documents"
+    ON storage.objects
+    FOR SELECT
+    TO authenticated
+    USING (
+      bucket_id = 'kyc-documents'
+      -- TODO: Ajouter vérification du rôle admin
+      -- AND EXISTS (
+      --   SELECT 1 FROM profiles
+      --   WHERE user_id = auth.uid() AND role = 'admin'
+      -- )
+    );
+  END IF;
+END $$;
 
 -- RLS Policy: Les utilisateurs peuvent supprimer leurs propres documents (avant review)
-CREATE POLICY "Users can delete their own KYC documents before review"
-ON storage.objects
-FOR DELETE
-TO authenticated
-USING (
-  bucket_id = 'kyc-documents' AND
-  (storage.foldername(name))[1] = auth.uid()::text
-  -- TODO: Vérifier que kyc_status n'est pas 'approved'
-);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE schemaname = 'storage' 
+    AND tablename = 'objects' 
+    AND policyname = 'Users can delete their own KYC documents before review'
+  ) THEN
+    CREATE POLICY "Users can delete their own KYC documents before review"
+    ON storage.objects
+    FOR DELETE
+    TO authenticated
+    USING (
+      bucket_id = 'kyc-documents' AND
+      (storage.foldername(name))[1] = auth.uid()::text
+      -- TODO: Vérifier que kyc_status n'est pas 'approved'
+    );
+  END IF;
+END $$;
 
 -- Index pour améliorer les performances des requêtes KYC
 CREATE INDEX IF NOT EXISTS idx_profiles_kyc_status ON profiles(kyc_status);

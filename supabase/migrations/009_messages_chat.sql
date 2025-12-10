@@ -35,6 +35,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_messages_updated_at ON messages;
 CREATE TRIGGER update_messages_updated_at
 BEFORE UPDATE ON messages
 FOR EACH ROW
@@ -44,6 +45,7 @@ EXECUTE FUNCTION update_messages_updated_at();
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
 -- Les utilisateurs peuvent voir leurs propres messages (en tant que sender ou receiver)
+DROP POLICY IF EXISTS "Users can view their own messages" ON messages;
 CREATE POLICY "Users can view their own messages"
 ON messages FOR SELECT
 TO authenticated
@@ -52,6 +54,7 @@ USING (
 );
 
 -- Les utilisateurs peuvent créer des messages où ils sont le sender
+DROP POLICY IF EXISTS "Users can send messages" ON messages;
 CREATE POLICY "Users can send messages"
 ON messages FOR INSERT
 TO authenticated
@@ -60,6 +63,7 @@ WITH CHECK (
 );
 
 -- Les utilisateurs peuvent mettre à jour leurs messages (marquer comme lu)
+DROP POLICY IF EXISTS "Users can update received messages" ON messages;
 CREATE POLICY "Users can update received messages"
 ON messages FOR UPDATE
 TO authenticated
@@ -133,6 +137,7 @@ VALUES ('message-attachments', 'message-attachments', FALSE)
 ON CONFLICT (id) DO NOTHING;
 
 -- RLS Policies pour le bucket message-attachments
+DROP POLICY IF EXISTS "Users can upload message attachments" ON storage.objects;
 CREATE POLICY "Users can upload message attachments"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -141,6 +146,7 @@ WITH CHECK (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
+DROP POLICY IF EXISTS "Users can view message attachments" ON storage.objects;
 CREATE POLICY "Users can view message attachments"
 ON storage.objects FOR SELECT
 TO authenticated

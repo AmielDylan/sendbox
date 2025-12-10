@@ -8,6 +8,7 @@ VALUES ('signatures', 'signatures', FALSE)
 ON CONFLICT (id) DO NOTHING;
 
 -- RLS Policies pour signatures
+DROP POLICY IF EXISTS "Users can upload signatures for their bookings" ON storage.objects;
 CREATE POLICY "Users can upload signatures for their bookings"
 ON storage.objects FOR INSERT
 TO authenticated
@@ -16,6 +17,7 @@ WITH CHECK (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
+DROP POLICY IF EXISTS "Users can view signatures for their bookings" ON storage.objects;
 CREATE POLICY "Users can view signatures for their bookings"
 ON storage.objects FOR SELECT
 TO authenticated
@@ -33,7 +35,8 @@ USING (
 
 -- Le bucket package-photos existe déjà (créé dans migration précédente)
 -- Ajouter RLS policies si nécessaire
-CREATE POLICY IF NOT EXISTS "Users can upload package photos for their bookings"
+DROP POLICY IF EXISTS "Users can upload package photos for their bookings" ON storage.objects;
+CREATE POLICY "Users can upload package photos for their bookings"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
@@ -41,7 +44,8 @@ WITH CHECK (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
-CREATE POLICY IF NOT EXISTS "Users can view package photos for their bookings"
+DROP POLICY IF EXISTS "Users can view package photos for their bookings" ON storage.objects;
+CREATE POLICY "Users can view package photos for their bookings"
 ON storage.objects FOR SELECT
 TO authenticated
 USING (

@@ -40,3 +40,6 @@ next-env.d.ts
 
 # supabase
 .supabase
+supabase/.temp/
+supabase/.branches/
+supabase/.db/

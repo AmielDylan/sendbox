@@ -19,6 +19,7 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- RLS Policy: Les utilisateurs peuvent uploader leurs propres avatars
+DROP POLICY IF EXISTS "Users can upload their own avatars" ON storage.objects;
 CREATE POLICY "Users can upload their own avatars"
 ON storage.objects
 FOR INSERT
@@ -29,6 +30,7 @@ WITH CHECK (
 );
 
 -- RLS Policy: Les utilisateurs peuvent mettre à jour leurs propres avatars
+DROP POLICY IF EXISTS "Users can update their own avatars" ON storage.objects;
 CREATE POLICY "Users can update their own avatars"
 ON storage.objects
 FOR UPDATE
@@ -39,6 +41,7 @@ USING (
 );
 
 -- RLS Policy: Les utilisateurs peuvent supprimer leurs propres avatars
+DROP POLICY IF EXISTS "Users can delete their own avatars" ON storage.objects;
 CREATE POLICY "Users can delete their own avatars"
 ON storage.objects
 FOR DELETE
@@ -49,6 +52,7 @@ USING (
 );
 
 -- RLS Policy: Tout le monde peut lire les avatars (bucket public)
+DROP POLICY IF EXISTS "Avatars are publicly readable" ON storage.objects;
 CREATE POLICY "Avatars are publicly readable"
 ON storage.objects
 FOR SELECT

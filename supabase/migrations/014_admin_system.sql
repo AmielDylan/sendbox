@@ -108,7 +108,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Les admins peuvent voir toutes les données
 
 -- Profiles
-CREATE POLICY IF NOT EXISTS "Admins can view all profiles"
+DROP POLICY IF EXISTS "Admins can view all profiles" ON profiles;
+CREATE POLICY "Admins can view all profiles"
 ON profiles FOR SELECT
 TO authenticated
 USING (
@@ -118,7 +119,9 @@ USING (
   )
 );
 
-CREATE POLICY IF NOT EXISTS "Admins can update profiles"
+DROP POLICY IF EXISTS "Admins can update profiles" ON profiles;
+DROP POLICY IF EXISTS "Admins can update profiles" ON profiles;
+CREATE POLICY "Admins can update profiles"
 ON profiles FOR UPDATE
 TO authenticated
 USING (
@@ -129,7 +132,8 @@ USING (
 );
 
 -- Bookings
-CREATE POLICY IF NOT EXISTS "Admins can view all bookings"
+DROP POLICY IF EXISTS "Admins can view all bookings" ON bookings;
+CREATE POLICY "Admins can view all bookings"
 ON bookings FOR SELECT
 TO authenticated
 USING (
@@ -139,7 +143,8 @@ USING (
   )
 );
 
-CREATE POLICY IF NOT EXISTS "Admins can update bookings"
+DROP POLICY IF EXISTS "Admins can update bookings" ON bookings;
+CREATE POLICY "Admins can update bookings"
 ON bookings FOR UPDATE
 TO authenticated
 USING (
@@ -150,7 +155,8 @@ USING (
 );
 
 -- Announcements
-CREATE POLICY IF NOT EXISTS "Admins can view all announcements"
+DROP POLICY IF EXISTS "Admins can view all announcements" ON announcements;
+CREATE POLICY "Admins can view all announcements"
 ON announcements FOR SELECT
 TO authenticated
 USING (
@@ -160,7 +166,8 @@ USING (
   )
 );
 
-CREATE POLICY IF NOT EXISTS "Admins can update announcements"
+DROP POLICY IF EXISTS "Admins can update announcements" ON announcements;
+CREATE POLICY "Admins can update announcements"
 ON announcements FOR UPDATE
 TO authenticated
 USING (
@@ -171,7 +178,8 @@ USING (
 );
 
 -- Transactions
-CREATE POLICY IF NOT EXISTS "Admins can view all transactions"
+DROP POLICY IF EXISTS "Admins can view all transactions" ON transactions;
+CREATE POLICY "Admins can view all transactions"
 ON transactions FOR SELECT
 TO authenticated
 USING (

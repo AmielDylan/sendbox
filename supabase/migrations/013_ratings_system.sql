@@ -48,6 +48,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger pour créer les notifications
+DROP TRIGGER IF EXISTS create_rating_requests_on_delivery ON bookings;
 CREATE TRIGGER create_rating_requests_on_delivery
 AFTER UPDATE ON bookings
 FOR EACH ROW
@@ -75,12 +76,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Trigger pour mettre à jour le rating moyen après insertion d'un rating
+DROP TRIGGER IF EXISTS update_rating_on_insert ON ratings;
 CREATE TRIGGER update_rating_on_insert
 AFTER INSERT ON ratings
 FOR EACH ROW
 EXECUTE FUNCTION update_user_rating();
 
 -- Trigger pour mettre à jour le rating moyen après modification d'un rating
+DROP TRIGGER IF EXISTS update_rating_on_update ON ratings;
 CREATE TRIGGER update_rating_on_update
 AFTER UPDATE ON ratings
 FOR EACH ROW
@@ -102,7 +105,25 @@ ADD COLUMN IF NOT EXISTS rating NUMERIC DEFAULT 0,
 ADD COLUMN IF NOT EXISTS completed_services INTEGER DEFAULT 0;
 
 -- Index pour améliorer les performances
-CREATE INDEX IF NOT EXISTS ratings_rated_user_id_idx ON ratings(rated_user_id);
+-- Note: Vérifier le nom exact de la colonne dans la table ratings (rated_id ou rated_user_id)
+DO $$ 
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'ratings' 
+    AND column_name = 'rated_user_id'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS ratings_rated_user_id_idx ON ratings(rated_user_id);
+  ELSIF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'ratings' 
+    AND column_name = 'rated_id'
+  ) THEN
+    CREATE INDEX IF NOT EXISTS ratings_rated_id_idx ON ratings(rated_id);
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS ratings_booking_id_idx ON ratings(booking_id);
 CREATE INDEX IF NOT EXISTS ratings_rater_id_idx ON ratings(rater_id);
 

@@ -58,6 +58,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS generate_qr_code_on_booking_insert ON bookings;
 CREATE TRIGGER generate_qr_code_on_booking_insert
 BEFORE INSERT ON bookings
 FOR EACH ROW
@@ -99,6 +100,7 @@ CREATE INDEX IF NOT EXISTS qr_scan_logs_created_at_idx ON qr_scan_logs(created_a
 -- RLS Policies pour scan logs
 ALTER TABLE qr_scan_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view scan logs for their bookings" ON qr_scan_logs;
 CREATE POLICY "Users can view scan logs for their bookings"
 ON qr_scan_logs FOR SELECT
 TO authenticated
@@ -110,6 +112,7 @@ USING (
   )
 );
 
+DROP POLICY IF EXISTS "Users can create scan logs for their bookings" ON qr_scan_logs;
 CREATE POLICY "Users can create scan logs for their bookings"
 ON qr_scan_logs FOR INSERT
 TO authenticated

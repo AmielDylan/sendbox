@@ -20,6 +20,7 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- RLS Policy: Les utilisateurs peuvent uploader leurs propres photos de colis
+DROP POLICY IF EXISTS "Users can upload their own package photos" ON storage.objects;
 CREATE POLICY "Users can upload their own package photos"
 ON storage.objects
 FOR INSERT
@@ -32,6 +33,7 @@ WITH CHECK (
 );
 
 -- RLS Policy: Les utilisateurs peuvent lire leurs propres photos ou celles de leurs bookings
+DROP POLICY IF EXISTS "Users can read package photos for their bookings" ON storage.objects;
 CREATE POLICY "Users can read package photos for their bookings"
 ON storage.objects
 FOR SELECT
