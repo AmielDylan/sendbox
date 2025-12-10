@@ -18,6 +18,7 @@ import {
   type ResetPasswordRequestInput,
   type ResetPasswordInput,
 } from '@/lib/validations/auth'
+import { authRateLimit } from '@/lib/security/rate-limit'
 
 // Messages d'erreur génériques pour éviter l'énumération
 const GENERIC_ERROR_MESSAGE =
@@ -117,8 +118,14 @@ export async function signIn(formData: LoginInput) {
   const supabase = await createClient()
 
   try {
-    // Rate limiting basique avec cookies (à améliorer avec Redis si nécessaire)
-    // Pour l'instant, on s'appuie sur Supabase qui a son propre rate limiting
+    // Rate limiting pour authentification
+    const rateLimitResult = await authRateLimit(validation.data.email)
+    if (!rateLimitResult.success) {
+      return {
+        error: `Trop de tentatives de connexion. Réessayez après ${rateLimitResult.reset.toLocaleTimeString('fr-FR')}`,
+        field: 'email',
+      }
+    }
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: validation.data.email,

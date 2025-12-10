@@ -18,6 +18,8 @@ import {
   generateSecureFileName,
 } from '@/lib/utils/file-upload'
 import { ACCEPTED_IMAGE_TYPES } from '@/lib/validations/kyc'
+import { validateKYCDocument } from '@/lib/security/upload-validation'
+import { uploadRateLimit } from '@/lib/security/rate-limit'
 
 /**
  * Upload et soumission du formulaire KYC
@@ -58,6 +60,14 @@ export async function submitKYC(formData: FormData) {
   }
 
   try {
+    // Rate limiting pour uploads
+    const rateLimitResult = await uploadRateLimit(user.id)
+    if (!rateLimitResult.success) {
+      return {
+        error: `Trop d'uploads. Réessayez après ${rateLimitResult.reset.toLocaleTimeString('fr-FR')}`,
+      }
+    }
+
     // Extraire les données du FormData
     const documentType = formData.get('documentType') as string
     const documentNumber = formData.get('documentNumber') as string
@@ -74,23 +84,21 @@ export async function submitKYC(formData: FormData) {
       }
     }
 
-    // Valider le type réel du fichier (magic bytes)
-    const isValidFront = await validateFileType(
-      documentFront,
-      ACCEPTED_IMAGE_TYPES
-    )
-    if (!isValidFront) {
+    // Valider avec magic bytes (nouvelle validation renforcée)
+    const frontValidation = await validateKYCDocument(documentFront)
+    if (!frontValidation.valid) {
       return {
-        error: 'Format de fichier invalide pour le document recto',
+        error: `Document recto : ${frontValidation.error}`,
+        field: 'documentFront',
       }
     }
 
-    let isValidBack = true
     if (documentBack && documentBack instanceof File && documentBack.size > 0) {
-      isValidBack = await validateFileType(documentBack, ACCEPTED_IMAGE_TYPES)
-      if (!isValidBack) {
+      const backValidation = await validateKYCDocument(documentBack)
+      if (!backValidation.valid) {
         return {
-          error: 'Format de fichier invalide pour le document verso',
+          error: `Document verso : ${backValidation.error || 'Format invalide'}`,
+          field: 'documentBack',
         }
       }
     }

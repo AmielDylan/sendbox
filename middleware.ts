@@ -57,6 +57,9 @@ export async function middleware(request: NextRequest) {
 
   // Routes protégées (dashboard)
   const isProtectedRoute = pathname.startsWith('/dashboard')
+  
+  // Routes admin
+  const isAdminRoute = pathname.startsWith('/admin')
 
   // Si l'utilisateur essaie d'accéder à une route protégée sans être authentifié
   if (isProtectedRoute && !user) {
@@ -64,6 +67,28 @@ export async function middleware(request: NextRequest) {
     url.pathname = '/auth/login'
     url.searchParams.set('redirect', pathname)
     return NextResponse.redirect(url)
+  }
+
+  // Vérifier les routes admin
+  if (isAdminRoute) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth/login'
+      url.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(url)
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+
+    if ((profile as any)?.role !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
   }
 
   // Si l'utilisateur est authentifié et essaie d'accéder aux pages auth, rediriger vers dashboard

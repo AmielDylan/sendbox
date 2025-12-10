@@ -17,6 +17,8 @@ import {
   type DeleteAccountInput,
 } from '@/lib/validations/profile'
 import { generateAvatarFileName, validateAvatarFile } from '@/lib/utils/avatar'
+import { sensitiveActionRateLimit, uploadRateLimit } from '@/lib/security/rate-limit'
+import { validateImageUpload } from '@/lib/security/upload-validation'
 import sharp from 'sharp'
 
 const AVATAR_SIZE = 200 // 200x200px
@@ -100,6 +102,24 @@ export async function updateProfile(
       formData.avatar instanceof File &&
       formData.avatar.size > 0
     ) {
+      // Rate limiting pour uploads
+      const rateLimitResult = await uploadRateLimit(user.id)
+      if (!rateLimitResult.success) {
+        return {
+          error: `Trop d'uploads. Réessayez après ${rateLimitResult.reset.toLocaleTimeString('fr-FR')}`,
+          field: 'avatar',
+        }
+      }
+
+      // Valider avec magic bytes
+      const magicBytesValidation = await validateImageUpload(formData.avatar, 2)
+      if (!magicBytesValidation.valid) {
+        return {
+          error: magicBytesValidation.error,
+          field: 'avatar',
+        }
+      }
+
       // Valider le fichier
       const validation = validateAvatarFile(formData.avatar)
       if (!validation.valid) {
@@ -194,6 +214,15 @@ export async function changePassword(formData: ChangePasswordInput) {
     }
   }
 
+  // Rate limiting pour changement de mot de passe
+  const rateLimitResult = await sensitiveActionRateLimit(user.id)
+  if (!rateLimitResult.success) {
+    return {
+      error: `Trop de tentatives. Réessayez après ${rateLimitResult.reset.toLocaleTimeString('fr-FR')}`,
+      field: 'currentPassword',
+    }
+  }
+
   // Validation
   const validation = changePasswordSchema.safeParse(formData)
   if (!validation.success) {
@@ -259,6 +288,15 @@ export async function changeEmail(formData: ChangeEmailInput) {
   if (authError || !user) {
     return {
       error: 'Vous devez être connecté',
+    }
+  }
+
+  // Rate limiting pour changement d'email
+  const rateLimitResult = await sensitiveActionRateLimit(user.id)
+  if (!rateLimitResult.success) {
+    return {
+      error: `Trop de tentatives. Réessayez après ${rateLimitResult.reset.toLocaleTimeString('fr-FR')}`,
+      field: 'password',
     }
   }
 
