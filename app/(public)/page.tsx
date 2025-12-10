@@ -1,6 +1,5 @@
 /**
- * Page d'accueil de Sendbox
- * Redirige vers la page publique
+ * Page d'accueil publique de Sendbox
  */
 
 export default function HomePage() {

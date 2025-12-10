@@ -1,36 +1,164 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Sendbox - Plateforme de Covalissage Sécurisée
 
-## Getting Started
+**Sendbox** connecte voyageurs et expéditeurs pour un transport de colis international sécurisé, traçable et assuré.
 
-First, run the development server:
+## 📊 Statut du Projet
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Version** : 0.1.0 (MVP en développement)
+- **Corridor** : France ↔ Bénin
+- **Stack** : Next.js 14 + Supabase + Stripe Connect
+- **Statut** : Sprint 1/10 (Fondations) ✅
+
+## 🏗️ Architecture
+
+```
+📁 sendbox-project/
+├── 📁 app/          # Frontend Next.js + API Routes
+├── 📁 supabase/     # Backend Supabase (SQL, functions)
+├── 📁 docs/         # Documentation technique complète
+├── 📁 components/   # Composants React réutilisables
+├── 📁 lib/          # Utilitaires et clients (Supabase, validations)
+├── 📁 types/        # Types TypeScript globaux
+└── 📁 scripts/      # Scripts d'automatisation
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Quick Start (5 minutes)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Prérequis
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js 20+
+- npm 10+
+- Compte Supabase (gratuit)
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# 1. Cloner le projet
+git clone <url>
+cd sendbox
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 2. Installer dépendances
+npm install
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 3. Configurer variables d'environnement
+cp .env.example .env.local
+# Éditer .env.local avec vos clés Supabase
 
-## Deploy on Vercel
+# 4. Démarrer en dev
+npm run dev
+# Ouvrir http://localhost:3000
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Guide de Démarrage](docs/SETUP.md) - Premiers pas (30 min)
+- [Architecture](docs/README.md) - Documentation technique complète
+- [ADR](docs/ADR/) - Décisions architecturales
+
+## 🛠️ Stack Technique
+
+### Frontend
+
+- Next.js 14 (App Router, Server Components)
+- TypeScript (mode strict)
+- Tailwind CSS + Shadcn/ui
+- React Hook Form + Zod
+
+### Backend
+
+- Supabase (PostgreSQL + Auth + Storage + Realtime)
+- Stripe Connect (paiements sécurisés)
+- Resend (emails transactionnels)
+
+### DevOps
+
+- Vercel (hosting frontend)
+- Supabase Cloud (backend)
+- GitHub Actions (CI/CD)
+
+## 🗂️ Scripts Disponibles
+
+```bash
+# Développement
+npm run dev          # Démarre le serveur dev (localhost:3000)
+npm run build        # Build production
+npm run start        # Démarre le serveur production
+
+# Qualité de code
+npm run lint         # Linter ESLint
+npm run format       # Formatter Prettier
+npm run format:check # Vérifier formatage sans modifier
+
+# Supabase (à venir)
+npm run db:start     # Démarre Supabase local (Docker)
+npm run db:push      # Applique migrations
+npm run db:types     # Génère types TypeScript
+```
+
+## 📦 Supabase Setup
+
+### Développement Local
+
+```bash
+# Installer Supabase CLI
+npm install -g supabase
+
+# Démarrer Supabase localement (nécessite Docker)
+supabase start
+
+# Appliquer le schéma initial
+supabase db push
+
+# Accéder à Supabase Studio
+# http://localhost:54323
+```
+
+### Production
+
+```bash
+# Lier projet local avec Supabase Cloud
+supabase link --project-ref tpvjycjlzxlbrtbvyfsx
+
+# Appliquer migrations en production
+supabase db push --linked
+```
+
+## 🎯 Roadmap MVP (10 Sprints)
+
+- [x] Sprint 1 : Fondations (Next.js + Supabase + Design System)
+- [ ] Sprint 2 : Authentification + KYC
+- [ ] Sprint 3 : Module Annonces
+- [ ] Sprint 4 : Module Réservations + Paiement
+- [ ] Sprint 5 : Messagerie + Notifications
+- [ ] Sprint 6 : Traçabilité QR + PDF
+- [ ] Sprint 7 : Ratings + Admin
+- [ ] Sprint 8 : Dashboard Admin Complet
+- [ ] Sprint 9 : Tests + Sécurité
+- [ ] Sprint 10 : Déploiement Production
+
+**Durée estimée** : 10 semaines (290 heures)
+
+## 🤝 Contribution
+
+Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour les guidelines de contribution.
+
+## 📄 Licence
+
+Propriétaire - © 2024 Sendbox
+
+## 🔗 Liens Utiles
+
+- [Documentation Supabase](https://supabase.com/docs)
+- [Documentation Next.js](https://nextjs.org/docs)
+- [Documentation Stripe Connect](https://stripe.com/docs/connect)
+- [Shadcn/ui](https://ui.shadcn.com)
+
+## 💬 Support
+
+- Email : support@sendbox.io
+- Discord : (à venir)
+- GitHub Issues : (actif)
+
+---
+
+**Built with ❤️ using Next.js, Supabase & Stripe**
