@@ -1,14 +1,14 @@
--- Migration: Fonction de recherche d'annonces
+-- Migration: Fix search_announcements function
 -- Created: 2024-12-10
--- Description: Fonction SQL pour rechercher et filtrer les annonces
+-- Description: Correction de la fonction search_announcements (p.user_id -> p.id, status 'active' -> 'published')
 
--- Fonction de recherche d'annonces avec matching score
+-- Recréer la fonction search_announcements avec les corrections
 CREATE OR REPLACE FUNCTION search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
   p_departure_date DATE DEFAULT NULL,
   p_min_kg INTEGER DEFAULT NULL,
-  p_sort_by TEXT DEFAULT 'date', -- 'date', 'price', 'rating'
+  p_sort_by TEXT DEFAULT 'date',
   p_limit INTEGER DEFAULT 10,
   p_offset INTEGER DEFAULT 0
 )
@@ -84,7 +84,7 @@ BEGIN
   FROM announcements a
   INNER JOIN profiles p ON p.id = a.traveler_id
   WHERE
-    a.status IN ('published', 'partially_booked')
+    a.status IN ('published', 'partially_booked', 'active')
     AND (p_departure_country IS NULL OR a.origin_country = p_departure_country)
     AND (p_arrival_country IS NULL OR a.destination_country = p_arrival_country)
     AND (
@@ -111,7 +111,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Fonction pour compter le total de résultats
+-- Recréer la fonction count_search_announcements avec les corrections
 CREATE OR REPLACE FUNCTION count_search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
@@ -125,7 +125,7 @@ BEGIN
   SELECT COUNT(*) INTO v_count
   FROM announcements a
   WHERE
-    a.status IN ('published', 'partially_booked')
+    a.status IN ('published', 'partially_booked', 'active')
     AND (p_departure_country IS NULL OR a.origin_country = p_departure_country)
     AND (p_arrival_country IS NULL OR a.destination_country = p_arrival_country)
     AND (
@@ -137,8 +137,4 @@ BEGIN
   RETURN v_count;
 END;
 $$ LANGUAGE plpgsql;
-
--- Commentaires
-COMMENT ON FUNCTION search_announcements IS 'Recherche d''annonces avec filtres et tri. Retourne les annonces actives avec score de matching.';
-COMMENT ON FUNCTION count_search_announcements IS 'Compte le nombre total d''annonces correspondant aux critères de recherche.';
 

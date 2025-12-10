@@ -1,14 +1,82 @@
--- Migration: Fonction de recherche d'annonces
+-- Migration: Diagnose and fix announcements table
 -- Created: 2024-12-10
--- Description: Fonction SQL pour rechercher et filtrer les annonces
+-- Description: Diagnostic et correction du schéma announcements
 
--- Fonction de recherche d'annonces avec matching score
+-- Étape 1: Vérifier les colonnes existantes
+DO $$ 
+DECLARE
+  v_columns TEXT;
+BEGIN
+  SELECT string_agg(column_name, ', ' ORDER BY ordinal_position)
+  INTO v_columns
+  FROM information_schema.columns
+  WHERE table_schema = 'public' 
+  AND table_name = 'announcements';
+  
+  RAISE NOTICE 'Colonnes actuelles dans announcements: %', COALESCE(v_columns, 'AUCUNE');
+END $$;
+
+-- Étape 2: Ajouter traveler_id si elle n'existe pas
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'announcements' 
+    AND column_name = 'traveler_id'
+  ) THEN
+    -- Vérifier si user_id existe et la renommer
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'announcements' 
+      AND column_name = 'user_id'
+    ) THEN
+      ALTER TABLE announcements RENAME COLUMN user_id TO traveler_id;
+      RAISE NOTICE 'Colonne user_id renommée en traveler_id';
+    ELSE
+      -- Ajouter traveler_id
+      ALTER TABLE announcements ADD COLUMN traveler_id UUID;
+      -- Si la table profiles existe, ajouter la foreign key
+      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'profiles') THEN
+        ALTER TABLE announcements ADD CONSTRAINT announcements_traveler_id_fkey 
+        FOREIGN KEY (traveler_id) REFERENCES profiles(id) ON DELETE CASCADE;
+      END IF;
+      RAISE NOTICE 'Colonne traveler_id ajoutée';
+    END IF;
+  ELSE
+    RAISE NOTICE 'Colonne traveler_id existe déjà';
+  END IF;
+END $$;
+
+-- Étape 3: Vérifier le type de status et corriger si nécessaire
+DO $$ 
+DECLARE
+  v_status_type TEXT;
+BEGIN
+  SELECT data_type INTO v_status_type
+  FROM information_schema.columns
+  WHERE table_schema = 'public' 
+  AND table_name = 'announcements' 
+  AND column_name = 'status';
+  
+  RAISE NOTICE 'Type de la colonne status: %', COALESCE(v_status_type, 'NON TROUVÉ');
+  
+  -- Si c'est un enum, vérifier les valeurs
+  IF v_status_type = 'USER-DEFINED' THEN
+    RAISE NOTICE 'Status est un type ENUM personnalisé';
+  ELSIF v_status_type = 'text' OR v_status_type = 'character varying' THEN
+    RAISE NOTICE 'Status est de type TEXT';
+  END IF;
+END $$;
+
+-- Étape 4: Recréer les fonctions avec gestion flexible du statut
 CREATE OR REPLACE FUNCTION search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
   p_departure_date DATE DEFAULT NULL,
   p_min_kg INTEGER DEFAULT NULL,
-  p_sort_by TEXT DEFAULT 'date', -- 'date', 'price', 'rating'
+  p_sort_by TEXT DEFAULT 'date',
   p_limit INTEGER DEFAULT 10,
   p_offset INTEGER DEFAULT 0
 )
@@ -46,7 +114,7 @@ BEGIN
     a.max_weight_kg,
     a.price_per_kg,
     a.description,
-    a.status,
+    a.status::TEXT,
     a.created_at,
     a.updated_at,
     p.first_name AS traveler_first_name,
@@ -84,7 +152,7 @@ BEGIN
   FROM announcements a
   INNER JOIN profiles p ON p.id = a.traveler_id
   WHERE
-    a.status IN ('published', 'partially_booked')
+    a.status::TEXT IN ('published', 'partially_booked', 'active', 'draft')
     AND (p_departure_country IS NULL OR a.origin_country = p_departure_country)
     AND (p_arrival_country IS NULL OR a.destination_country = p_arrival_country)
     AND (
@@ -111,7 +179,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Fonction pour compter le total de résultats
 CREATE OR REPLACE FUNCTION count_search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
@@ -125,7 +192,7 @@ BEGIN
   SELECT COUNT(*) INTO v_count
   FROM announcements a
   WHERE
-    a.status IN ('published', 'partially_booked')
+    a.status::TEXT IN ('published', 'partially_booked', 'active', 'draft')
     AND (p_departure_country IS NULL OR a.origin_country = p_departure_country)
     AND (p_arrival_country IS NULL OR a.destination_country = p_arrival_country)
     AND (
@@ -137,8 +204,4 @@ BEGIN
   RETURN v_count;
 END;
 $$ LANGUAGE plpgsql;
-
--- Commentaires
-COMMENT ON FUNCTION search_announcements IS 'Recherche d''annonces avec filtres et tri. Retourne les annonces actives avec score de matching.';
-COMMENT ON FUNCTION count_search_announcements IS 'Compte le nombre total d''annonces correspondant aux critères de recherche.';
 

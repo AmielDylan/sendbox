@@ -1,14 +1,94 @@
--- Migration: Fonction de recherche d'annonces
+-- Migration: Final fix for announcements table and RPC functions
 -- Created: 2024-12-10
--- Description: Fonction SQL pour rechercher et filtrer les annonces
+-- Description: Correction définitive du schéma announcements et des fonctions RPC
 
--- Fonction de recherche d'annonces avec matching score
+-- Étape 1: Ajouter toutes les colonnes manquantes
+DO $$ 
+BEGIN
+  -- Ajouter traveler_id si elle n'existe pas
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'announcements' 
+    AND column_name = 'traveler_id'
+  ) THEN
+    -- Vérifier si user_id existe
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'announcements' 
+      AND column_name = 'user_id'
+    ) THEN
+      ALTER TABLE announcements RENAME COLUMN user_id TO traveler_id;
+    ELSE
+      ALTER TABLE announcements ADD COLUMN traveler_id UUID;
+      -- Ajouter la foreign key si profiles existe
+      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'profiles') THEN
+        ALTER TABLE announcements 
+        ADD CONSTRAINT announcements_traveler_id_fkey 
+        FOREIGN KEY (traveler_id) REFERENCES profiles(id) ON DELETE CASCADE;
+      END IF;
+    END IF;
+    RAISE NOTICE 'Colonne traveler_id ajoutée/renommée';
+  END IF;
+
+  -- Ajouter destination_city si elle n'existe pas
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'announcements' 
+    AND column_name = 'destination_city'
+  ) THEN
+    ALTER TABLE announcements ADD COLUMN destination_city TEXT;
+    RAISE NOTICE 'Colonne destination_city ajoutée';
+  END IF;
+
+  -- Ajouter origin_city si elle n'existe pas
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'announcements' 
+    AND column_name = 'origin_city'
+  ) THEN
+    ALTER TABLE announcements ADD COLUMN origin_city TEXT;
+    RAISE NOTICE 'Colonne origin_city ajoutée';
+  END IF;
+END $$;
+
+-- Étape 2: Ajouter 'active' à l'enum si possible
+DO $$ 
+DECLARE
+  v_enum_exists BOOLEAN;
+BEGIN
+  -- Vérifier si l'enum existe
+  SELECT EXISTS (
+    SELECT 1 FROM pg_type WHERE typname = 'announcement_status'
+  ) INTO v_enum_exists;
+
+  IF v_enum_exists THEN
+    -- Vérifier si 'active' existe déjà
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_enum 
+      WHERE enumlabel = 'active' 
+      AND enumtypid = (SELECT oid FROM pg_type WHERE typname = 'announcement_status')
+    ) THEN
+      BEGIN
+        ALTER TYPE announcement_status ADD VALUE 'active';
+        RAISE NOTICE 'Valeur "active" ajoutée à l''enum announcement_status';
+      EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Impossible d''ajouter "active" à l''enum: %', SQLERRM;
+      END;
+    END IF;
+  END IF;
+END $$;
+
+-- Étape 3: Recréer les fonctions RPC avec les bonnes valeurs d'enum
 CREATE OR REPLACE FUNCTION search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
   p_departure_date DATE DEFAULT NULL,
   p_min_kg INTEGER DEFAULT NULL,
-  p_sort_by TEXT DEFAULT 'date', -- 'date', 'price', 'rating'
+  p_sort_by TEXT DEFAULT 'date',
   p_limit INTEGER DEFAULT 10,
   p_offset INTEGER DEFAULT 0
 )
@@ -46,7 +126,7 @@ BEGIN
     a.max_weight_kg,
     a.price_per_kg,
     a.description,
-    a.status,
+    a.status::TEXT,
     a.created_at,
     a.updated_at,
     p.first_name AS traveler_first_name,
@@ -61,7 +141,7 @@ BEGIN
     COALESCE(
       (SELECT COUNT(*)::BIGINT
        FROM bookings
-       WHERE announcement_id = a.id AND status = 'completed'),
+       WHERE announcement_id = a.id AND status::TEXT = 'completed'),
       0
     ) AS traveler_services_count,
     -- Calcul du match score
@@ -84,7 +164,8 @@ BEGIN
   FROM announcements a
   INNER JOIN profiles p ON p.id = a.traveler_id
   WHERE
-    a.status IN ('published', 'partially_booked')
+    -- Utiliser les valeurs d'enum valides (sans 'active' si elle n'existe pas)
+    a.status::TEXT IN ('published', 'partially_booked', 'draft')
     AND (p_departure_country IS NULL OR a.origin_country = p_departure_country)
     AND (p_arrival_country IS NULL OR a.destination_country = p_arrival_country)
     AND (
@@ -111,7 +192,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Fonction pour compter le total de résultats
 CREATE OR REPLACE FUNCTION count_search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
@@ -125,7 +205,8 @@ BEGIN
   SELECT COUNT(*) INTO v_count
   FROM announcements a
   WHERE
-    a.status IN ('published', 'partially_booked')
+    -- Utiliser les valeurs d'enum valides (sans 'active' si elle n'existe pas)
+    a.status::TEXT IN ('published', 'partially_booked', 'draft')
     AND (p_departure_country IS NULL OR a.origin_country = p_departure_country)
     AND (p_arrival_country IS NULL OR a.destination_country = p_arrival_country)
     AND (
@@ -139,6 +220,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Commentaires
-COMMENT ON FUNCTION search_announcements IS 'Recherche d''annonces avec filtres et tri. Retourne les annonces actives avec score de matching.';
-COMMENT ON FUNCTION count_search_announcements IS 'Compte le nombre total d''annonces correspondant aux critères de recherche.';
+COMMENT ON FUNCTION search_announcements IS 'Recherche d''annonces avec filtres. Utilise les statuts: published, partially_booked, draft';
+COMMENT ON FUNCTION count_search_announcements IS 'Compte les annonces correspondant aux critères. Utilise les statuts: published, partially_booked, draft';
 

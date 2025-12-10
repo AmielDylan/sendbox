@@ -1,14 +1,39 @@
--- Migration: Fonction de recherche d'annonces
+-- Migration: Fix RPC functions to use correct profiles column names
 -- Created: 2024-12-10
--- Description: Fonction SQL pour rechercher et filtrer les annonces
+-- Description: Correction des fonctions RPC pour utiliser les bons noms de colonnes de profiles
 
--- Fonction de recherche d'annonces avec matching score
+-- Vérifier les colonnes de profiles et corriger les fonctions
+DO $$ 
+DECLARE
+  v_has_first_name BOOLEAN;
+  v_has_firstname BOOLEAN;
+BEGIN
+  -- Vérifier si first_name existe
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'profiles' 
+    AND column_name = 'first_name'
+  ) INTO v_has_first_name;
+
+  -- Vérifier si firstname existe
+  SELECT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'profiles' 
+    AND column_name = 'firstname'
+  ) INTO v_has_firstname;
+
+  RAISE NOTICE 'first_name existe: %, firstname existe: %', v_has_first_name, v_has_firstname;
+END $$;
+
+-- Recréer les fonctions avec les bons noms de colonnes
 CREATE OR REPLACE FUNCTION search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
   p_departure_date DATE DEFAULT NULL,
   p_min_kg INTEGER DEFAULT NULL,
-  p_sort_by TEXT DEFAULT 'date', -- 'date', 'price', 'rating'
+  p_sort_by TEXT DEFAULT 'date',
   p_limit INTEGER DEFAULT 10,
   p_offset INTEGER DEFAULT 0
 )
@@ -46,12 +71,13 @@ BEGIN
     a.max_weight_kg,
     a.price_per_kg,
     a.description,
-    a.status,
+    a.status::TEXT,
     a.created_at,
     a.updated_at,
-    p.first_name AS traveler_first_name,
-    p.last_name AS traveler_last_name,
-    p.avatar_url AS traveler_avatar_url,
+    -- Utiliser firstname et lastname (sans underscore)
+    p.firstname AS traveler_first_name,
+    p.lastname AS traveler_last_name,
+    (SELECT avatar_url FROM profiles WHERE id = a.traveler_id) AS traveler_avatar_url,
     COALESCE(
       (SELECT AVG(rating)::NUMERIC
        FROM ratings
@@ -61,7 +87,7 @@ BEGIN
     COALESCE(
       (SELECT COUNT(*)::BIGINT
        FROM bookings
-       WHERE announcement_id = a.id AND status = 'completed'),
+       WHERE announcement_id = a.id AND status::TEXT = 'completed'),
       0
     ) AS traveler_services_count,
     -- Calcul du match score
@@ -69,7 +95,7 @@ BEGIN
       CASE WHEN p_departure_country IS NOT NULL AND a.origin_country = p_departure_country THEN 10 ELSE 0 END +
       CASE WHEN p_arrival_country IS NOT NULL AND a.destination_country = p_arrival_country THEN 10 ELSE 0 END +
       CASE 
-        WHEN p_departure_date IS NOT NULL THEN
+        WHEN p_departure_date IS NOT NULL AND a.departure_date IS NOT NULL THEN
           CASE 
             WHEN a.departure_date::DATE = p_departure_date::DATE THEN 20
             WHEN ABS(EXTRACT(DAY FROM (a.departure_date::DATE - p_departure_date::DATE))) <= 1 THEN 15
@@ -84,11 +110,12 @@ BEGIN
   FROM announcements a
   INNER JOIN profiles p ON p.id = a.traveler_id
   WHERE
-    a.status IN ('published', 'partially_booked')
+    a.status::TEXT IN ('published', 'partially_booked', 'active', 'draft')
     AND (p_departure_country IS NULL OR a.origin_country = p_departure_country)
     AND (p_arrival_country IS NULL OR a.destination_country = p_arrival_country)
     AND (
       p_departure_date IS NULL OR
+      a.departure_date IS NULL OR
       ABS(EXTRACT(DAY FROM (a.departure_date::DATE - p_departure_date::DATE))) <= 3
     )
     AND (p_min_kg IS NULL OR a.max_weight_kg >= p_min_kg)
@@ -111,7 +138,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Fonction pour compter le total de résultats
 CREATE OR REPLACE FUNCTION count_search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
@@ -125,11 +151,12 @@ BEGIN
   SELECT COUNT(*) INTO v_count
   FROM announcements a
   WHERE
-    a.status IN ('published', 'partially_booked')
+    a.status::TEXT IN ('published', 'partially_booked', 'active', 'draft')
     AND (p_departure_country IS NULL OR a.origin_country = p_departure_country)
     AND (p_arrival_country IS NULL OR a.destination_country = p_arrival_country)
     AND (
       p_departure_date IS NULL OR
+      a.departure_date IS NULL OR
       ABS(EXTRACT(DAY FROM (a.departure_date::DATE - p_departure_date::DATE))) <= 3
     )
     AND (p_min_kg IS NULL OR a.max_weight_kg >= p_min_kg);
@@ -137,8 +164,4 @@ BEGIN
   RETURN v_count;
 END;
 $$ LANGUAGE plpgsql;
-
--- Commentaires
-COMMENT ON FUNCTION search_announcements IS 'Recherche d''annonces avec filtres et tri. Retourne les annonces actives avec score de matching.';
-COMMENT ON FUNCTION count_search_announcements IS 'Compte le nombre total d''annonces correspondant aux critères de recherche.';
 
