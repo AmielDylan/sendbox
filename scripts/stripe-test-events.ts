@@ -26,7 +26,7 @@ function triggerEvent(eventType: string) {
     
     const stripeProcess = spawn('stripe', ['trigger', eventType], {
       stdio: 'inherit',
-      shell: true,
+      shell: false,
     })
     
     stripeProcess.on('error', (error) => {

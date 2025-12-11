@@ -6,8 +6,8 @@
 
 import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { signIn } from '@/lib/actions/auth'
@@ -27,10 +27,12 @@ import { Loader2, Package } from 'lucide-react'
 
 function LoginForm() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -56,11 +58,19 @@ function LoginForm() {
         toast.error(result.error)
         if (result.requiresVerification) {
           // Rediriger vers la page de vérification
-          window.location.href = '/auth/verify-email'
+          router.push('/verify-email')
         }
         return
       }
+
+      // Si succès, rediriger vers le dashboard
+      if (result?.success && result.redirectTo) {
+        router.push(result.redirectTo)
+      } else if (result?.success) {
+        router.push('/dashboard')
+      }
     } catch (error) {
+      console.error('Login error:', error)
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsLoading(false)
@@ -109,7 +119,7 @@ function LoginForm() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Mot de passe</Label>
                 <Link
-                  href="/auth/reset-password"
+                  href="/reset-password"
                   className="text-sm text-primary underline hover:no-underline"
                 >
                   Mot de passe oublié ?
@@ -139,7 +149,17 @@ function LoginForm() {
 
             {/* Se souvenir de moi */}
             <div className="flex items-center space-x-2">
-              <Checkbox id="rememberMe" {...register('rememberMe')} />
+              <Controller
+                name="rememberMe"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    id="rememberMe"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
               <Label
                 htmlFor="rememberMe"
                 className="text-sm font-normal cursor-pointer"
@@ -164,7 +184,7 @@ function LoginForm() {
             <p className="text-center text-sm text-muted-foreground">
               Pas encore de compte ?{' '}
               <Link
-                href="/auth/register"
+                href="/register"
                 className="text-primary underline hover:no-underline"
               >
                 Créer un compte

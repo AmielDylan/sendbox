@@ -22,22 +22,37 @@ import { Loader2, Package, CheckCircle2, XCircle } from 'lucide-react'
 function VerifyEmailForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>(
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'pending'>(
     'loading'
   )
-  const token = searchParams.get('token')
+  const token = searchParams.get('token_hash') || searchParams.get('token')
+  const type = searchParams.get('type')
 
   useEffect(() => {
+    // Si pas de token, c'est que l'utilisateur vient de s'inscrire
+    // On affiche juste le message d'attente
+    if (!token && !type) {
+      setStatus('pending')
+      return
+    }
+
+    // Si token présent, vérifier l'email
     const verify = async () => {
       try {
-        const result = await verifyEmail(token || undefined)
+        const result = await verifyEmail(token || undefined, type || undefined)
         if (result?.error) {
           setStatus('error')
           toast.error(result.error)
-        } else {
+        } else if (result?.success) {
           setStatus('success')
           toast.success('Email vérifié avec succès !')
-          // Redirection gérée par la Server Action
+          // Rediriger après un court délai
+          setTimeout(() => {
+            router.push(result.redirectTo || '/dashboard')
+          }, 1500)
+        } else {
+          setStatus('error')
+          toast.error('La vérification n\'a pas pu être complétée.')
         }
       } catch (error) {
         setStatus('error')
@@ -46,7 +61,7 @@ function VerifyEmailForm() {
     }
 
     verify()
-  }, [token])
+  }, [token, type, router])
 
   if (status === 'loading') {
     return (
@@ -63,6 +78,44 @@ function VerifyEmailForm() {
               Veuillez patienter pendant la vérification de votre email
             </CardDescription>
           </CardHeader>
+        </Card>
+      </div>
+    )
+  }
+
+  if (status === 'pending') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4">
+              <Package className="h-12 w-12 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold">
+              Vérifiez votre email
+            </CardTitle>
+            <CardDescription>
+              Nous avons envoyé un lien de vérification à votre adresse email.
+              Cliquez sur le lien pour activer votre compte.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg bg-muted p-4 space-y-2">
+              <p className="text-sm font-medium">Instructions :</p>
+              <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                <li>Vérifiez votre boîte de réception</li>
+                <li>Cliquez sur le lien de vérification</li>
+                <li>Vous serez automatiquement redirigé vers votre tableau de bord</li>
+              </ol>
+            </div>
+            <Button
+              onClick={() => router.push('/login')}
+              variant="outline"
+              className="w-full"
+            >
+              Retour à la connexion
+            </Button>
+          </CardContent>
         </Card>
       </div>
     )
@@ -114,7 +167,7 @@ function VerifyEmailForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
-            onClick={() => router.push('/auth/login')}
+            onClick={() => router.push('/login')}
             variant="outline"
             className="w-full"
           >

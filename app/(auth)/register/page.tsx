@@ -7,7 +7,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerSchema, type RegisterInput } from '@/lib/validations/auth'
 import { signUp } from '@/lib/actions/auth'
@@ -31,6 +31,7 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     watch,
   } = useForm<RegisterInput>({
@@ -54,7 +55,7 @@ export default function RegisterPage() {
 
       if (result.success) {
         toast.success(result.message)
-        router.push('/auth/verify-email')
+        router.push('/verify-email')
       }
     } catch (error) {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
@@ -226,11 +227,18 @@ export default function RegisterPage() {
 
             {/* CGU */}
             <div className="flex items-start space-x-2">
-              <Checkbox
-                id="terms"
-                {...register('terms')}
-                aria-invalid={errors.terms ? 'true' : 'false'}
-                aria-describedby={errors.terms ? 'terms-error' : undefined}
+              <Controller
+                name="terms"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    id="terms"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    aria-invalid={errors.terms ? 'true' : 'false'}
+                    aria-describedby={errors.terms ? 'terms-error' : undefined}
+                  />
+                )}
               />
               <div className="space-y-1 leading-none">
                 <Label
@@ -241,6 +249,8 @@ export default function RegisterPage() {
                   <Link
                     href="/terms"
                     className="text-primary underline hover:no-underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     conditions générales d&apos;utilisation
                   </Link>
@@ -273,7 +283,7 @@ export default function RegisterPage() {
             <p className="text-center text-sm text-muted-foreground">
               Déjà un compte ?{' '}
               <Link
-                href="/auth/login"
+                href="/login"
                 className="text-primary underline hover:no-underline"
               >
                 Se connecter

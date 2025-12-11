@@ -53,7 +53,7 @@ function startStripeListen() {
   
   const stripeProcess = spawn('stripe', ['listen', '--forward-to', WEBHOOK_URL], {
     stdio: ['inherit', 'pipe', 'pipe'],
-    shell: true,
+    shell: false,
   })
   
   let outputBuffer = ''
@@ -112,7 +112,7 @@ function startStripeListen() {
 }
 
 // Vérifier que Stripe CLI est disponible
-const checkStripeCLI = spawn('stripe', ['--version'], { stdio: 'pipe' })
+const checkStripeCLI = spawn('stripe', ['--version'], { stdio: 'pipe', shell: false })
 
 checkStripeCLI.on('error', () => {
   console.error('❌ Stripe CLI n\'est pas installé ou n\'est pas dans le PATH')

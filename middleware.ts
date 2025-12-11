@@ -44,16 +44,15 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Routes publiques qui ne nécessitent pas d'authentification
+  // Note: Les groupes de routes (auth) ne font pas partie de l'URL
   const publicRoutes = [
     '/',
-    '/auth/login',
-    '/auth/register',
-    '/auth/reset-password',
-    '/auth/verify-email',
+    '/login',
+    '/register',
+    '/reset-password',
+    '/verify-email',
   ]
-  const isPublicRoute = publicRoutes.some(
-    route => pathname === route || pathname.startsWith('/auth/')
-  )
+  const isPublicRoute = publicRoutes.some(route => pathname === route)
 
   // Routes protégées (dashboard)
   const isProtectedRoute = pathname.startsWith('/dashboard')
@@ -64,7 +63,7 @@ export async function middleware(request: NextRequest) {
   // Si l'utilisateur essaie d'accéder à une route protégée sans être authentifié
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/auth/login'
+    url.pathname = '/login'
     url.searchParams.set('redirect', pathname)
     return NextResponse.redirect(url)
   }
@@ -73,7 +72,7 @@ export async function middleware(request: NextRequest) {
   if (isAdminRoute) {
     if (!user) {
       const url = request.nextUrl.clone()
-      url.pathname = '/auth/login'
+      url.pathname = '/login'
       url.searchParams.set('redirect', pathname)
       return NextResponse.redirect(url)
     }
@@ -92,7 +91,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Si l'utilisateur est authentifié et essaie d'accéder aux pages auth, rediriger vers dashboard
-  if (user && isPublicRoute && pathname !== '/') {
+  // Exception : laisser accéder à /verify-email même si authentifié (pour la vérification)
+  if (user && isPublicRoute && pathname !== '/' && pathname !== '/verify-email') {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

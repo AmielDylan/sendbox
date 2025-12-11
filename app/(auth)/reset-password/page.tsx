@@ -186,7 +186,7 @@ function ResetPasswordForm() {
               {/* Lien connexion */}
               <p className="text-center text-sm text-muted-foreground">
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="text-primary underline hover:no-underline"
                 >
                   Retour à la connexion
@@ -216,7 +216,7 @@ function ResetPasswordForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Button
-              onClick={() => router.push('/auth/login')}
+              onClick={() => router.push('/login')}
               variant="outline"
               className="w-full"
             >
@@ -290,7 +290,7 @@ function ResetPasswordForm() {
             <p className="text-center text-sm text-muted-foreground">
               Vous vous souvenez de votre mot de passe ?{' '}
               <Link
-                href="/auth/login"
+                href="/login"
                 className="text-primary underline hover:no-underline"
               >
                 Se connecter

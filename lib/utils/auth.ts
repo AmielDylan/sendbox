@@ -65,8 +65,8 @@ export async function hasApprovedKYC() {
 export function redirectToLogin(redirectPath?: string) {
   const { redirect } = require('next/navigation')
   const path = redirectPath
-    ? `/auth/login?redirect=${encodeURIComponent(redirectPath)}`
-    : '/auth/login'
+    ? `/login?redirect=${encodeURIComponent(redirectPath)}`
+    : '/login'
   redirect(path)
 }
 

@@ -45,7 +45,7 @@ export async function signUp(formData: RegisterInput) {
       email: validation.data.email,
       password: validation.data.password,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify-email`,
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify-email`,
         data: {
           first_name: validation.data.firstname,
           last_name: validation.data.lastname,
@@ -159,7 +159,13 @@ export async function signIn(formData: LoginInput) {
     // Supabase gère cela via les cookies
 
     revalidatePath('/', 'layout')
-    redirect('/dashboard')
+    
+    // Retourner succès pour redirection côté client
+    // (redirect() ne fonctionne pas depuis Server Action appelée côté client)
+    return {
+      success: true,
+      redirectTo: '/dashboard',
+    }
   } catch (error) {
     console.error('Sign in error:', error)
     return {
@@ -200,7 +206,7 @@ export async function requestPasswordReset(
     const { error } = await supabase.auth.resetPasswordForEmail(
       validation.data.email,
       {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`,
       }
     )
 
@@ -255,7 +261,7 @@ export async function resetPassword(
     }
 
     revalidatePath('/', 'layout')
-    redirect('/auth/login?message=password-reset-success')
+    redirect('/login?message=password-reset-success')
   } catch (error) {
     console.error('Reset password error:', error)
     return {
@@ -267,10 +273,11 @@ export async function resetPassword(
 
 /**
  * Vérifier l'email avec le token
- * Note: Supabase gère généralement la vérification via l'URL de redirection
+ * Supabase gère la vérification automatiquement via l'URL de redirection
+ * Quand l'utilisateur clique sur le lien, Supabase vérifie automatiquement
  * Cette fonction vérifie simplement que l'utilisateur est maintenant vérifié
  */
-export async function verifyEmail(token?: string) {
+export async function verifyEmail(token?: string, type?: string) {
   const supabase = await createClient()
 
   try {
@@ -280,24 +287,44 @@ export async function verifyEmail(token?: string) {
       error: userError,
     } = await supabase.auth.getUser()
 
-    if (userError || !user) {
-      return {
-        error: 'Vous devez être connecté pour vérifier votre email.',
+    // Si pas d'utilisateur connecté, essayer de vérifier avec le token
+    if ((userError || !user) && token && type) {
+      // Essayer de vérifier avec le token directement
+      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: type as 'email',
+      })
+
+      if (verifyError) {
+        return {
+          error: 'Le lien de vérification est invalide ou a expiré.',
+        }
+      }
+
+      // Si la vérification réussit, récupérer l'utilisateur
+      if (verifyData.user) {
+        revalidatePath('/', 'layout')
+        return {
+          success: true,
+          redirectTo: '/dashboard?verified=true',
+        }
       }
     }
 
     // Si l'utilisateur est déjà vérifié, c'est bon
-    if (user.email_confirmed_at) {
+    if (user?.email_confirmed_at) {
       revalidatePath('/', 'layout')
-      redirect('/dashboard?verified=true')
-      return
+      return {
+        success: true,
+        redirectTo: '/dashboard?verified=true',
+      }
     }
 
-    // Si un token est fourni, essayer de vérifier avec
-    if (token) {
+    // Si un token est fourni et utilisateur connecté, essayer de vérifier
+    if (token && type && user) {
       const { error } = await supabase.auth.verifyOtp({
         token_hash: token,
-        type: 'email',
+        type: type as 'email',
       })
 
       if (error) {
@@ -305,10 +332,43 @@ export async function verifyEmail(token?: string) {
           error: 'Le lien de vérification est invalide ou a expiré.',
         }
       }
+
+      // Vérifier à nouveau que l'email est maintenant vérifié
+      const {
+        data: { user: updatedUser },
+      } = await supabase.auth.getUser()
+
+      if (updatedUser?.email_confirmed_at) {
+        revalidatePath('/', 'layout')
+        return {
+          success: true,
+          redirectTo: '/dashboard?verified=true',
+        }
+      }
     }
 
-    revalidatePath('/', 'layout')
-    redirect('/dashboard?verified=true')
+    // Si pas de token mais utilisateur connecté, vérifier l'état
+    if (user) {
+      revalidatePath('/', 'layout')
+      
+      // Attendre un peu pour que la session soit mise à jour
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      const {
+        data: { user: finalUser },
+      } = await supabase.auth.getUser()
+
+      if (finalUser?.email_confirmed_at) {
+        return {
+          success: true,
+          redirectTo: '/dashboard?verified=true',
+        }
+      }
+    }
+
+    return {
+      error: 'La vérification n\'a pas pu être complétée. Veuillez réessayer.',
+    }
   } catch (error) {
     console.error('Verify email error:', error)
     return {
