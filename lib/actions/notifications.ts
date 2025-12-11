@@ -58,14 +58,8 @@ export async function notifyUser(params: NotifyUserParams) {
     if (params.sendEmail) {
       try {
         // Récupérer l'email de l'utilisateur
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('user_id')
-          .eq('id', params.user_id)
-          .single()
-
-        if (profile) {
-          const { data: authUser } = await supabase.auth.admin.getUserById(profile.user_id)
+        // Note: params.user_id est déjà l'ID du profil (qui correspond à auth.uid())
+        const { data: authUser } = await supabase.auth.admin.getUserById(params.user_id)
 
           if (authUser?.user?.email) {
             await sendEmail({
