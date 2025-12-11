@@ -1,13 +1,15 @@
 /**
- * Middleware Next.js pour la gestion des sessions Supabase
+ * Proxy Next.js pour la gestion des sessions Supabase
  * Rafraîchit automatiquement les sessions expirées
+ * 
+ * Note: Next.js 16 utilise "proxy" au lieu de "middleware"
  */
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Database } from '@/types/database.types'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -101,15 +103,5 @@ export async function middleware(request: NextRequest) {
   return supabaseResponse
 }
 
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
-}
+// Note: Next.js 16 utilise proxy.ts au lieu de middleware.ts
+// Le matcher est maintenant géré automatiquement par Next.js
