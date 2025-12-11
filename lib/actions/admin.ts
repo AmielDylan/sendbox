@@ -25,7 +25,7 @@ export async function isAdmin(): Promise<boolean> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single()
 
   return (profile as any)?.role === 'admin'
@@ -53,7 +53,7 @@ async function createAuditLog(
   const { data: profile } = await supabase
     .from('profiles')
     .select('id')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single()
 
   if (!profile) {
