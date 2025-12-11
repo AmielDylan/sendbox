@@ -54,17 +54,17 @@ const navItems: NavItem[] = [
   },
   {
     title: 'Annonces',
-    href: '/dashboard/announcements',
+    href: '/dashboard/annonces',
     icon: Package,
   },
   {
     title: 'Colis',
-    href: '/dashboard/packages',
+    href: '/dashboard/colis',
     icon: Package,
   },
   {
     title: 'Réglages',
-    href: '/dashboard/settings',
+    href: '/dashboard/reglages',
     icon: Settings,
   },
 ]
@@ -235,7 +235,7 @@ function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/dashboard/settings" className="cursor-pointer">
+          <Link href="/dashboard/reglages" className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             <span>Paramètres</span>
           </Link>
