@@ -13,7 +13,10 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "stripe:listen": "tsx scripts/stripe-webhook-setup.ts",
+    "stripe:test": "tsx scripts/stripe-test-events.ts",
+    "stripe:check": "tsx scripts/check-stripe-workflows.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

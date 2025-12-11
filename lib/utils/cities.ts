@@ -87,3 +87,6 @@ export async function searchCities(
     return Promise.resolve(searchBeninCities(query))
   }
 }
+
+
+

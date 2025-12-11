@@ -70,3 +70,6 @@ Décrit la décision prise et la solution choisie.
 
 - [ADR GitHub](https://adr.github.io/)
 - [Architecture Decision Records - ThoughtWorks](https://www.thoughtworks.com/radar/techniques/lightweight-architecture-decision-records)
+
+
+

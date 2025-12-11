@@ -186,3 +186,6 @@ Colonnes ajoutées à `profiles` :
 - [Supabase Storage Docs](https://supabase.com/docs/guides/storage)
 - [Sharp Documentation](https://sharp.pixelplumbing.com/)
 - [Zod Validation](https://zod.dev/)
+
+
+

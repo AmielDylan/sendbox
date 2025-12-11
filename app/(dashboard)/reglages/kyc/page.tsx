@@ -418,3 +418,6 @@ export default function KYCPage() {
     </div>
   )
 }
+
+
+

@@ -294,3 +294,6 @@ export default function SearchPage() {
   )
 }
 
+
+
+

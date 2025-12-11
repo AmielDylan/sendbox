@@ -158,3 +158,6 @@ Tous les helpers sont exportés depuis `types/index.ts` :
 3. Régénérer les types : `supabase gen types typescript --linked > types/supabase.ts`
 4. Vérifier que tout compile : `npm run build`
 5. Adapter les types métier dans `types/index.ts` si nécessaire
+
+
+

@@ -86,3 +86,6 @@ echo "  2. Lire docs/README.md pour la documentation"
 echo "  3. Exécuter le Sprint 1.2 (Design System)"
 echo ""
 
+
+
+

@@ -20,3 +20,6 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 COMMENT ON COLUMN announcements.views_count IS 'Nombre de vues uniques de l''annonce';
 COMMENT ON FUNCTION increment_announcement_views IS 'Incrémente le compteur de vues d''une annonce';
 
+
+
+

@@ -130,3 +130,6 @@ Voir `.github/workflows/e2e.yml` pour la configuration complète.
 - Vérifier que les utilisateurs de test existent
 - Utiliser les helpers d'authentification fournis
 
+
+
+

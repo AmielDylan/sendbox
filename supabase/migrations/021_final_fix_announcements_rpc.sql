@@ -223,3 +223,6 @@ $$ LANGUAGE plpgsql;
 COMMENT ON FUNCTION search_announcements IS 'Recherche d''annonces avec filtres. Utilise les statuts: published, partially_booked, draft';
 COMMENT ON FUNCTION count_search_announcements IS 'Compte les annonces correspondant aux critères. Utilise les statuts: published, partially_booked, draft';
 
+
+
+

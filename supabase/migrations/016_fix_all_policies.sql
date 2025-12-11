@@ -61,3 +61,6 @@ ON ratings FOR INSERT
 TO authenticated
 WITH CHECK (rater_id = auth.uid());
 
+
+
+

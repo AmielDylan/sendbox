@@ -209,3 +209,6 @@ Colonnes dans `profiles` :
 - [Supabase Storage Docs](https://supabase.com/docs/guides/storage)
 - [Sharp Documentation](https://sharp.pixelplumbing.com/)
 - [Next.js Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
+
+
+

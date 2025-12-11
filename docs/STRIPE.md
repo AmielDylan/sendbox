@@ -141,9 +141,92 @@ Body: Stripe Event (raw)
 4. **Webhooks** : Vérification signature obligatoire
 5. **Idempotency** : Protection contre les doubles paiements
 
+## 🧪 Tests et Développement
+
+### Configuration automatique du webhook local
+
+Au lieu de copier manuellement le secret webhook, utilisez le script automatique :
+
+```bash
+npm run stripe:listen
+```
+
+Ce script :
+- Lance `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
+- Détecte automatiquement le secret webhook (`whsec_...`)
+- Met à jour `STRIPE_WEBHOOK_SECRET` dans `.env.local`
+- Affiche les événements en temps réel
+
+**Résultat attendu** :
+```
+🚀 Démarrage de stripe listen...
+📡 URL du webhook: http://localhost:3000/api/webhooks/stripe
+⏳ En attente du secret webhook...
+
+> Ready! Your webhook signing secret is whsec_xxxxxxxxxxxxxxxxxxxxx (^C to quit)
+✅ STRIPE_WEBHOOK_SECRET mis à jour dans .env.local
+✅ Configuration terminée!
+```
+
+### Tester les événements webhook
+
+Déclencher des événements de test :
+
+```bash
+# Simuler un paiement réussi
+npm run stripe:test payment_succeeded
+
+# Simuler un paiement échoué
+npm run stripe:test payment_failed
+
+# Simuler un remboursement
+npm run stripe:test refund
+
+# Déclencher tous les événements
+npm run stripe:test all
+```
+
+**Résultat attendu dans Terminal 1 (stripe listen)** :
+```
+2024-12-10 14:30:45  --> payment_intent.succeeded [evt_test_xxx]
+2024-12-10 14:30:45  <-- [200] POST http://localhost:3000/api/webhooks/stripe [evt_test_xxx]
+```
+
+**Résultat attendu dans Terminal 2 (logs Next.js)** :
+```
+✅ Webhook reçu : payment_intent.succeeded
+✅ Booking mis à jour : [id]
+```
+
+### Vérifier les workflows Stripe
+
+Analyser tous les workflows Stripe dans le projet :
+
+```bash
+npm run stripe:check
+```
+
+Ce script identifie :
+- Les événements webhook gérés
+- Les appels API Stripe
+- Les fonctions admin utilisant Stripe
+- Les TODOs liés à Stripe
+
+## 📋 Événements Webhook Gérés
+
+| Événement | Description | Actions |
+|-----------|-------------|---------|
+| `payment_intent.succeeded` | Paiement réussi | Met à jour booking (`status: 'confirmed'`, `paid_at`), crée transaction, génère contrat PDF |
+| `payment_intent.payment_failed` | Paiement échoué | Crée transaction avec status 'failed', log erreur |
+| `charge.refunded` | Remboursement effectué | Crée transaction de refund, met à jour booking (`status: 'cancelled'`) |
+
 ## 🔗 Ressources
 
 - [Stripe Connect Docs](https://stripe.com/docs/connect)
 - [Stripe Elements](https://stripe.com/docs/stripe-js/react)
 - [Stripe Webhooks](https://stripe.com/docs/webhooks)
+- [Stripe CLI](https://stripe.com/docs/stripe-cli)
+
+
+
 

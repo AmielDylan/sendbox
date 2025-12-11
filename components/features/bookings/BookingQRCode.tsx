@@ -142,3 +142,6 @@ export function BookingQRCode({ qrCode, bookingId }: BookingQRCodeProps) {
   )
 }
 
+
+
+

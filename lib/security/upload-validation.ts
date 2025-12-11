@@ -132,3 +132,6 @@ export async function validateKYCDocument(file: File, maxSizeMB: number = 5) {
   })
 }
 
+
+
+

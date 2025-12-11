@@ -243,3 +243,6 @@ $$ LANGUAGE plpgsql;
 COMMENT ON FUNCTION search_announcements IS 'Recherche d''annonces avec filtres et tri. Gère les statuts ENUM et TEXT.';
 COMMENT ON FUNCTION count_search_announcements IS 'Compte le nombre total d''annonces correspondant aux critères. Gère les statuts ENUM et TEXT.';
 
+
+
+

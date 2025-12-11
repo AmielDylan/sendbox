@@ -137,3 +137,6 @@ Migrer vers **Supabase** comme backend principal :
 - [Supabase vs Firebase](https://supabase.com/alternatives/supabase-vs-firebase)
 - [Supabase Pricing](https://supabase.com/pricing)
 - [Xano Limitations Discussion](https://www.reddit.com/r/nocode/comments/xano_vs_supabase/)
+
+
+
