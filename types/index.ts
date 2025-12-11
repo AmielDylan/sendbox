@@ -238,7 +238,7 @@ export function createNotification(
     if (typeof metadata.booking_id === 'string') {
       actionUrl = `/dashboard/bookings/${metadata.booking_id}`
     } else if (typeof metadata.announcement_id === 'string') {
-      actionUrl = `/dashboard/announcements/${metadata.announcement_id}`
+      actionUrl = `/dashboard/annonces/${metadata.announcement_id}`
     }
   }
 
