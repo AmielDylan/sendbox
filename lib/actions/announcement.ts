@@ -35,7 +35,7 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
   // Récupérer le profil pour vérifier le KYC
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('kyc_status')
+    .select('kyc_status, kyc_rejection_reason')
     .eq('id', user.id)
     .single()
 
@@ -47,9 +47,22 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
 
   // Vérifier que le KYC est approuvé
   if (profile.kyc_status !== 'approved') {
+    let errorMessage = 'Vérification d\'identité requise'
+    let errorDetails = 'Veuillez compléter votre vérification d\'identité pour créer une annonce.'
+    
+    if (profile.kyc_status === 'pending') {
+      errorMessage = 'Vérification en cours'
+      errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez créer des annonces une fois celle-ci approuvée (24-48h).'
+    } else if (profile.kyc_status === 'rejected') {
+      errorMessage = 'Vérification refusée'
+      errorDetails = profile.kyc_rejection_reason 
+        ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
+        : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
+    }
+    
     return {
-      error:
-        "Vous devez avoir un KYC approuvé pour créer une annonce. Veuillez compléter votre vérification d'identité.",
+      error: errorMessage,
+      errorDetails,
       field: 'kyc',
     }
   }

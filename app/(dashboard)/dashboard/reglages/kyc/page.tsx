@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import { toast } from 'sonner'
 import { Loader2, CheckCircle2, XCircle, Clock, Upload } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
@@ -42,6 +43,8 @@ export default function KYCPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [date, setDate] = useState<Date | undefined>(undefined)
+  const [uploadProgress, setUploadProgress] = useState({ front: 0, back: 0 })
+  const [isUploading, setIsUploading] = useState(false)
 
   const {
     register,
@@ -76,9 +79,28 @@ export default function KYCPage() {
     }
   }
 
+  const simulateProgress = (field: 'front' | 'back') => {
+    setIsUploading(true)
+    let progress = 0
+    const interval = setInterval(() => {
+      progress += 10
+      setUploadProgress(prev => ({ ...prev, [field]: Math.min(progress, 90) }))
+      if (progress >= 90) {
+        clearInterval(interval)
+      }
+    }, 200)
+    return interval
+  }
+
   const onSubmit = async (data: KYCInput) => {
     setIsSubmitting(true)
+    setUploadProgress({ front: 0, back: 0 })
+    
     try {
+      // Simuler progression upload
+      const frontInterval = simulateProgress('front')
+      const backInterval = data.documentBack ? simulateProgress('back') : null
+
       const formData = new FormData()
       formData.append('documentType', data.documentType)
       formData.append('documentNumber', data.documentNumber)
@@ -91,6 +113,11 @@ export default function KYCPage() {
       formData.append('address', data.address)
 
       const result = await submitKYC(formData)
+
+      // Compléter la progression
+      clearInterval(frontInterval)
+      if (backInterval) clearInterval(backInterval)
+      setUploadProgress({ front: 100, back: 100 })
 
       if (result.error) {
         toast.error(result.error)
@@ -105,6 +132,11 @@ export default function KYCPage() {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)
+      setIsUploading(false)
+      // Réinitialiser la progression après un délai
+      setTimeout(() => {
+        setUploadProgress({ front: 0, back: 0 })
+      }, 2000)
     }
   }
 
@@ -344,7 +376,22 @@ export default function KYCPage() {
                   aria-describedby={
                     errors.documentFront ? 'documentFront-error' : undefined
                   }
+                  disabled={isSubmitting}
                 />
+                {isUploading && uploadProgress.front > 0 && uploadProgress.front < 100 && (
+                  <div className="space-y-2">
+                    <Progress value={uploadProgress.front} className="h-2" />
+                    <p className="text-xs text-muted-foreground">
+                      Upload en cours... {uploadProgress.front}%
+                    </p>
+                  </div>
+                )}
+                {uploadProgress.front === 100 && (
+                  <div className="flex items-center gap-2 text-green-600">
+                    <CheckCircle2 className="h-4 w-4" />
+                    <p className="text-xs">Document téléchargé avec succès</p>
+                  </div>
+                )}
                 {errors.documentFront && (
                   <p
                     id="documentFront-error"
@@ -381,7 +428,22 @@ export default function KYCPage() {
                     aria-describedby={
                       errors.documentBack ? 'documentBack-error' : undefined
                     }
+                    disabled={isSubmitting}
                   />
+                  {isUploading && uploadProgress.back > 0 && uploadProgress.back < 100 && (
+                    <div className="space-y-2">
+                      <Progress value={uploadProgress.back} className="h-2" />
+                      <p className="text-xs text-muted-foreground">
+                        Upload en cours... {uploadProgress.back}%
+                      </p>
+                    </div>
+                  )}
+                  {uploadProgress.back === 100 && (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <p className="text-xs">Document téléchargé avec succès</p>
+                    </div>
+                  )}
                   {errors.documentBack && (
                     <p
                       id="documentBack-error"

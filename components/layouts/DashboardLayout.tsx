@@ -15,6 +15,10 @@ import {
   X,
   ChevronRight,
   Loader2,
+  Shield,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -203,13 +207,7 @@ function HeaderActions() {
 
 function UserMenu() {
   const router = useRouter()
-  
-  // TODO: Remplacer par les vraies données utilisateur depuis Supabase
-  const user = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    avatar: undefined,
-  }
+  const { user, profile, loading } = useAuth()
 
   const handleLogout = async () => {
     try {
@@ -224,6 +222,22 @@ function UserMenu() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    )
+  }
+
+  const displayName = profile
+    ? `${profile.firstname || ''} ${profile.lastname || ''}`.trim() || 'Utilisateur'
+    : 'Utilisateur'
+  
+  const initials = profile
+    ? `${profile.firstname?.[0] || ''}${profile.lastname?.[0] || ''}`.toUpperCase() || 'U'
+    : 'U'
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -233,27 +247,52 @@ function UserMenu() {
           aria-label="Menu utilisateur"
         >
           <Avatar className="h-9 w-9">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback>
-              {user.name
-                .split(' ')
-                .map(n => n[0])
-                .join('')
-                .toUpperCase()}
-            </AvatarFallback>
+            <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
+            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              {user?.email || 'email@example.com'}
             </p>
+            {/* Badge statut KYC */}
+            {profile?.kyc_status === 'approved' && (
+              <Badge variant="outline" className="w-fit text-green-600 border-green-600 mt-2">
+                <CheckCircle2 className="mr-1 h-3 w-3" />
+                Vérifié
+              </Badge>
+            )}
+            {profile?.kyc_status === 'pending' && (
+              <Badge variant="outline" className="w-fit text-yellow-600 border-yellow-600 mt-2">
+                <Clock className="mr-1 h-3 w-3" />
+                Vérification en cours
+              </Badge>
+            )}
+            {(!profile?.kyc_status || profile.kyc_status === 'rejected') && (
+              <Badge variant="outline" className="w-fit text-muted-foreground mt-2">
+                <AlertCircle className="mr-1 h-3 w-3" />
+                Non vérifié
+              </Badge>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {/* Lien rapide vers KYC si non approuvé */}
+        {profile?.kyc_status !== 'approved' && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Vérifier mon identité</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/dashboard/reglages" className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />

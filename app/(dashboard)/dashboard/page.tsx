@@ -3,6 +3,8 @@
  */
 
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/ui/page-header'
 import {
   Card,
@@ -12,30 +14,75 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Package, MessageSquare, TrendingUp } from 'lucide-react'
+import { Package, MessageSquare, TrendingUp, Shield, CheckCircle2, Clock } from 'lucide-react'
+import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
 
-export default function DashboardPage() {
+async function DashboardContent() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let kycStatus = null
+  let kycRejectionReason = null
+  
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('kyc_status, kyc_rejection_reason')
+      .eq('id', user.id)
+      .single()
+    
+    kycStatus = profile?.kyc_status || null
+    kycRejectionReason = profile?.kyc_rejection_reason || null
+  }
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Tableau de bord"
-        description="Vue d'ensemble de votre activité Sendbox"
-        breadcrumbs={[
-          { label: 'Accueil', href: '/' },
-          { label: 'Tableau de bord' },
-        ]}
-        actions={
-          <Button asChild>
-            <Link href="/dashboard/annonces/new">
-              <Package className="mr-2 h-4 w-4" />
-              Nouvelle annonce
-            </Link>
-          </Button>
-        }
-      />
+    <>
+      {/* Alert Banner KYC */}
+      <KYCAlertBanner kycStatus={kycStatus} rejectionReason={kycRejectionReason} />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Card KYC Status */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Vérification d'identité
+            </CardTitle>
+            <Shield className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {kycStatus === 'approved' && (
+              <div className="flex items-center gap-2 text-green-600">
+                <CheckCircle2 className="h-5 w-5" />
+                <span className="font-medium text-sm">Compte vérifié</span>
+              </div>
+            )}
+            {kycStatus === 'pending' && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-yellow-600">
+                  <Clock className="h-5 w-5" />
+                  <span className="font-medium text-sm">En cours</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  24-48h
+                </p>
+              </div>
+            )}
+            {(!kycStatus || kycStatus === 'rejected') && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Vérifiez votre identité
+                </p>
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link href="/dashboard/reglages/kyc">
+                    Commencer →
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -118,10 +165,33 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </>
   )
 }
 
+export default function DashboardPage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Tableau de bord"
+        description="Vue d'ensemble de votre activité Sendbox"
+        breadcrumbs={[
+          { label: 'Accueil', href: '/' },
+          { label: 'Tableau de bord' },
+        ]}
+        actions={
+          <Button asChild>
+            <Link href="/dashboard/annonces/new">
+              <Package className="mr-2 h-4 w-4" />
+              Nouvelle annonce
+            </Link>
+          </Button>
+        }
+      />
 
-
-
+      <Suspense fallback={<div>Chargement...</div>}>
+        <DashboardContent />
+      </Suspense>
+    </div>
+  )
+}
