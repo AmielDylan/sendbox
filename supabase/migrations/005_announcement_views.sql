@@ -23,3 +23,4 @@ COMMENT ON FUNCTION increment_announcement_views IS 'Incrémente le compteur de 
 
 
 
+

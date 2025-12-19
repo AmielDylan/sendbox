@@ -8,3 +8,4 @@ export default function SettingsPage() {
   redirect('/dashboard/reglages/compte')
 }
 
+

@@ -166,3 +166,4 @@ column reference "booking_id" is ambiguous
 3. Tester les Server Actions avec des données réelles
 4. Tester les flux complets (création d'annonce, réservation, paiement)
 
+

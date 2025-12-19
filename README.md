@@ -4,10 +4,11 @@
 
 ## 📊 Statut du Projet
 
-- **Version** : 0.1.0 (MVP en développement)
+- **Version** : 0.1.0 (MVP Opérationnel ✅)
 - **Corridor** : France ↔ Bénin
-- **Stack** : Next.js 14 + Supabase + Stripe Connect
-- **Statut** : Sprint 1/10 (Fondations) ✅
+- **Stack** : Next.js 16 + Supabase + Stripe Connect
+- **Statut** : MVP Fonctionnel - Tests 21/21 ✅
+- **Date** : 19 Décembre 2024
 
 ## 🏗️ Architecture
 
@@ -52,6 +53,8 @@ npm run dev
 ## 📚 Documentation
 
 - [Guide de Démarrage](docs/SETUP.md) - Premiers pas (30 min)
+- [Guide de Test MVP](docs/MVP_TESTING_GUIDE.md) - Tests manuels complets ⭐
+- [Résultats Tests Endpoints](docs/ENDPOINTS_TEST_RESULTS.md) - Rapport 21/21 ✅
 - [Architecture](docs/README.md) - Documentation technique complète
 - [Fonctions RPC](docs/RPC_FUNCTIONS.md) - Documentation des fonctions RPC Supabase
 - [Tests E2E](docs/TESTING.md) - Guide des tests End-to-End
@@ -92,9 +95,15 @@ npm run format       # Formatter Prettier
 npm run format:check # Vérifier formatage sans modifier
 
 # Tests
+node_modules/.bin/tsx scripts/test-all-endpoints.ts  # Teste tous les endpoints (21/21 ✅)
 npm run test:e2e     # Tests E2E avec Playwright
 npm run test:e2e:ui  # Tests E2E en mode UI interactif
 npm run test:e2e:headed # Tests E2E avec navigateur visible
+
+# Stripe
+npm run stripe:listen  # Configure webhook Stripe (auto-update .env.local)
+npm run stripe:test    # Teste les événements Stripe
+npm run stripe:check   # Analyse les workflows Stripe
 
 # Supabase
 npm run db:start     # Démarre Supabase local (Docker)
@@ -130,20 +139,48 @@ supabase link --project-ref tpvjycjlzxlbrtbvyfsx
 supabase db push --linked
 ```
 
-## 🎯 Roadmap MVP (10 Sprints)
+## 🎯 État du MVP
 
-- [x] Sprint 1 : Fondations (Next.js + Supabase + Design System)
-- [ ] Sprint 2 : Authentification + KYC
-- [ ] Sprint 3 : Module Annonces
-- [ ] Sprint 4 : Module Réservations + Paiement
-- [ ] Sprint 5 : Messagerie + Notifications
-- [ ] Sprint 6 : Traçabilité QR + PDF
-- [ ] Sprint 7 : Ratings + Admin
-- [ ] Sprint 8 : Dashboard Admin Complet
-- [ ] Sprint 9 : Tests + Sécurité
-- [ ] Sprint 10 : Déploiement Production
+### ✅ Fonctionnalités Opérationnelles
 
-**Durée estimée** : 10 semaines (290 heures)
+- ✅ **Authentification complète** : Inscription, connexion, vérification email
+- ✅ **KYC** : Upload documents, validation, approbation
+- ✅ **Annonces** : Création multi-step, recherche, autocomplete villes
+- ✅ **Réservations** : Création avec photos, acceptation/refus
+- ✅ **Paiement Stripe Connect** : Payment Intent, webhooks, commission
+- ✅ **Messagerie temps réel** : Conversations, notifications
+- ✅ **Traçabilité QR** : Scan dépôt/livraison, géolocalisation
+- ✅ **Système de notation** : Notes mutuelles, moyenne profil
+- ✅ **Génération PDF** : Contrats de transport
+- ✅ **Sécurité** : RLS, validation Zod, rate limiting, CSP
+
+### ⚠️ En Développement
+
+- ⚠️ **Emails transactionnels** : Configuration Resend
+- ⚠️ **Tests E2E Playwright** : Suite complète à finaliser
+- ⚠️ **Dashboard Admin** : Fonctionnalités avancées
+- ⚠️ **Déploiement Production** : Configuration Vercel + CI/CD
+
+### 📊 Tests Automatiques
+
+**21/21 tests réussis** ✅ (voir [docs/ENDPOINTS_TEST_RESULTS.md](docs/ENDPOINTS_TEST_RESULTS.md))
+
+```bash
+# Exécuter les tests
+node_modules/.bin/tsx scripts/test-all-endpoints.ts
+```
+
+### 🚀 Quick Start MVP
+
+1. Cloner le projet et installer les dépendances
+2. Appliquer les migrations Supabase (027, 028)
+3. Configurer `.env.local` (voir `.env.example`)
+4. Lancer `npm run dev`
+5. Accéder à http://localhost:3000
+
+**Compte de test** : amieladjovi@yahoo.fr / Amieldylan2025@
+
+Voir [docs/MVP_TESTING_GUIDE.md](docs/MVP_TESTING_GUIDE.md) pour les tests complets.
 
 ## 🤝 Contribution
 
