@@ -8,7 +8,7 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' data: https: blob:;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.stripe.com/v1${isDevelopment ? ' ws://localhost:* ws://127.0.0.1:*' : ''};
+  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.stripe.com/v1 https://api-adresse.data.gouv.fr${isDevelopment ? ' ws://localhost:* ws://127.0.0.1:*' : ''};
   frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
   object-src 'none';
   base-uri 'self';

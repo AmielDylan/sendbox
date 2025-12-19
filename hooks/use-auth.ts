@@ -36,7 +36,7 @@ export function useAuth(): UseAuthReturn {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_id', currentUser.id)
+          .eq('id', currentUser.id)
           .single()
 
         if (profileData) {
@@ -60,7 +60,7 @@ export function useAuth(): UseAuthReturn {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('id', session.user.id)
           .single()
 
         if (profileData) {

@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ChevronRight,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -30,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
+import { useAuth } from '@/hooks/use-auth'
 
 interface DashboardLayoutProps {
   children: React.ReactNode

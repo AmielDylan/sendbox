@@ -247,7 +247,7 @@ export async function getKYCStatus() {
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('kyc_status, kyc_submitted_at, kyc_document_type')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single()
 
   if (error || !profile) {

@@ -24,9 +24,11 @@ export default function DashboardPage() {
           { label: 'Tableau de bord' },
         ]}
         actions={
-          <Button>
-            <Package className="mr-2 h-4 w-4" />
-            Nouvelle annonce
+          <Button asChild>
+            <Link href="/dashboard/annonces/new">
+              <Package className="mr-2 h-4 w-4" />
+              Nouvelle annonce
+            </Link>
           </Button>
         }
       />
