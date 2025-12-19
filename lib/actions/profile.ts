@@ -159,8 +159,8 @@ export async function updateProfile(
 
     // Mettre à jour le profil
     const updateData: Record<string, unknown> = {
-      first_name: validation.data.firstname,
-      last_name: validation.data.lastname,
+      firstname: validation.data.firstname,
+      lastname: validation.data.lastname,
       phone: validation.data.phone,
       address: validation.data.address,
       bio: validation.data.bio || null,
@@ -174,7 +174,7 @@ export async function updateProfile(
     const { error: updateError } = await supabase
       .from('profiles')
       .update(updateData)
-      .eq('user_id', user.id)
+      .eq('id', user.id)
 
     if (updateError) {
       console.error('Update profile error:', updateError)
@@ -403,7 +403,7 @@ export async function deleteAccount(formData: DeleteAccountInput) {
         // is_banned: true, // À ajouter dans la migration
         updated_at: new Date().toISOString(),
       })
-      .eq('user_id', user.id)
+      .eq('id', user.id)
 
     if (updateError) {
       console.error('Delete account error:', updateError)

@@ -171,6 +171,13 @@ export default function KYCPage() {
             En attente
           </Badge>
         )
+      case 'incomplete':
+        return (
+          <Badge variant="outline">
+            <Upload className="mr-1 h-3 w-3" />
+            À compléter
+          </Badge>
+        )
       default:
         return null
     }
@@ -194,7 +201,7 @@ export default function KYCPage() {
               "Votre demande est en cours d'examen. Vous serez notifié par email."}
             {kycStatus === 'rejected' &&
               'Votre demande a été rejetée. Veuillez soumettre une nouvelle demande.'}
-            {!kycStatus &&
+            {(kycStatus === 'incomplete' || !kycStatus) &&
               'Aucune demande KYC soumise. Complétez le formulaire ci-dessous.'}
           </CardDescription>
         </CardHeader>
@@ -211,7 +218,7 @@ export default function KYCPage() {
       </Card>
 
       {/* Formulaire KYC */}
-      {(kycStatus === null || kycStatus === 'rejected') && (
+      {(kycStatus === null || kycStatus === 'rejected' || kycStatus === 'incomplete') && (
         <Card>
           <CardHeader>
             <CardTitle>Formulaire de vérification</CardTitle>

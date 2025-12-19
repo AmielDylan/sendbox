@@ -58,6 +58,9 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
       errorDetails = profile.kyc_rejection_reason 
         ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
         : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
+    } else if (profile.kyc_status === 'incomplete') {
+      errorMessage = 'Vérification d\'identité incomplète'
+      errorDetails = 'Veuillez soumettre vos documents d\'identité pour créer une annonce.'
     }
     
     return {
