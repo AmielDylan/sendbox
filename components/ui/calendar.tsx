@@ -7,6 +7,7 @@ import {
   ChevronRightIcon,
 } from 'lucide-react'
 import { DayButton, DayPicker, getDefaultClassNames } from 'react-day-picker'
+import { fr } from 'date-fns/locale'
 
 import { cn } from '@/lib/utils/index'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -27,6 +28,7 @@ function Calendar({
 
   return (
     <DayPicker
+      locale={fr}
       showOutsideDays={showOutsideDays}
       className={cn(
         'bg-background group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent',

@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 import {
   LayoutDashboard,
   MessageSquare,
@@ -198,11 +200,26 @@ function HeaderActions() {
 }
 
 function UserMenu() {
+  const router = useRouter()
+  
   // TODO: Remplacer par les vraies données utilisateur depuis Supabase
   const user = {
     name: 'John Doe',
     email: 'john@example.com',
     avatar: undefined,
+  }
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      toast.success('Déconnexion réussie')
+      router.push('/login')
+      router.refresh()
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast.error('Erreur lors de la déconnexion')
+    }
   }
 
   return (
@@ -242,7 +259,10 @@ function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+        <DropdownMenuItem 
+          onClick={handleLogout}
+          className="cursor-pointer text-destructive focus:text-destructive"
+        >
           <X className="mr-2 h-4 w-4" />
           <span>Déconnexion</span>
         </DropdownMenuItem>
