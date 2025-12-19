@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
     title: 'Messages',
     href: '/dashboard/messages',
     icon: MessageSquare,
-    badge: 3,
+    // badge dynamique géré par useUnreadCount
   },
   {
     title: 'Annonces',

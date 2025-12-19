@@ -324,9 +324,10 @@ export default function NewAnnouncementPage() {
                   )}
                 </div>
 
-                {/* Date de départ */}
-                <div className="space-y-2">
-                  <Label>Date de départ</Label>
+              {/* Date de départ */}
+              <div className="space-y-2">
+                <Label>Date de départ</Label>
+                <div className="w-full overflow-x-auto">
                   <Calendar
                     mode="single"
                     selected={departureDate}
@@ -343,8 +344,9 @@ export default function NewAnnouncementPage() {
                       }
                     }}
                     disabled={date => date < new Date()}
-                    className="rounded-md border"
+                    className="rounded-md border mx-auto"
                   />
+                </div>
                   {departureDate && (
                     <p className="text-sm text-muted-foreground">
                       {format(departureDate, 'PP', { locale: fr })}

@@ -39,8 +39,8 @@ import { fr } from 'date-fns/locale'
 
 export default function SearchPage() {
   const [filters, setFilters] = useState<SearchFilters>({
-    departureCountry: null,
-    arrivalCountry: null,
+    departureCountry: 'ALL',
+    arrivalCountry: 'ALL',
     departureDate: null,
     minKg: 1,
     sortBy: 'date',
@@ -56,13 +56,29 @@ export default function SearchPage() {
     error,
   } = useQuery({
     queryKey: ['announcements', 'search', filters],
-    queryFn: () => searchAnnouncementsClient(filters),
+    queryFn: () => {
+      // Convertir 'ALL' en null pour la recherche
+      const searchFilters = {
+        ...filters,
+        departureCountry: filters.departureCountry === 'ALL' ? null : filters.departureCountry,
+        arrivalCountry: filters.arrivalCountry === 'ALL' ? null : filters.arrivalCountry,
+      }
+      return searchAnnouncementsClient(searchFilters)
+    },
   })
 
   // Query pour compter le total
   const { data: countData } = useQuery({
     queryKey: ['announcements', 'count', filters],
-    queryFn: () => countSearchAnnouncements(filters),
+    queryFn: () => {
+      // Convertir 'ALL' en null pour le comptage
+      const searchFilters = {
+        ...filters,
+        departureCountry: filters.departureCountry === 'ALL' ? null : filters.departureCountry,
+        arrivalCountry: filters.arrivalCountry === 'ALL' ? null : filters.arrivalCountry,
+      }
+      return countSearchAnnouncements(searchFilters)
+    },
   })
 
   const announcements = announcementsData?.data || []
@@ -110,7 +126,7 @@ export default function SearchPage() {
                     <SelectValue placeholder="Tous les pays" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les pays</SelectItem>
+                    <SelectItem value="ALL">Tous les pays</SelectItem>
                     {COUNTRIES.map((country) => (
                       <SelectItem key={country} value={country}>
                         {country === 'FR' ? 'France' : 'Bénin'}
