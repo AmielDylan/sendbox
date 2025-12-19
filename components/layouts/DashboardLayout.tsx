@@ -272,7 +272,7 @@ function UserMenu() {
                 Vérification en cours
               </Badge>
             )}
-            {(!profile?.kyc_status || profile.kyc_status === 'rejected') && (
+            {(!profile?.kyc_status || profile.kyc_status === 'rejected' || profile.kyc_status === 'incomplete') && (
               <Badge variant="outline" className="w-fit text-muted-foreground mt-2">
                 <AlertCircle className="mr-1 h-3 w-3" />
                 Non vérifié

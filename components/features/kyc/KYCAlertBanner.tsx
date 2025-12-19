@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Shield, Clock, AlertCircle, XCircle } from 'lucide-react'
 
-type KYCStatus = 'pending' | 'approved' | 'rejected' | null
+type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 
 interface KYCAlertBannerProps {
   kycStatus: KYCStatus
@@ -54,7 +54,7 @@ export function KYCAlertBanner({ kycStatus, rejectionReason, className }: KYCAle
     )
   }
 
-  // Pas de KYC
+  // Pas de KYC ou incomplete
   return (
     <Alert variant="default" className={`border-blue-500 bg-blue-50 ${className}`}>
       <Shield className="h-4 w-4 text-blue-600" />

@@ -34,8 +34,8 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [profile, setProfile] = useState<{
-    first_name: string | null
-    last_name: string | null
+    firstname: string | null
+    lastname: string | null
     phone: string | null
     address: string | null
     bio: string | null
@@ -70,8 +70,8 @@ export default function ProfilePage() {
 
       if (result.profile) {
         setProfile({
-          first_name: result.profile.first_name,
-          last_name: result.profile.last_name,
+          firstname: result.profile.firstname,
+          lastname: result.profile.lastname,
           phone: result.profile.phone,
           address: result.profile.address,
           bio: result.profile.bio,
@@ -80,8 +80,8 @@ export default function ProfilePage() {
         })
         setAvatarPreview(result.profile.avatar_url)
         reset({
-          firstname: result.profile.first_name || '',
-          lastname: result.profile.last_name || '',
+          firstname: result.profile.firstname || '',
+          lastname: result.profile.lastname || '',
           phone: result.profile.phone || '',
           address: result.profile.address || '',
           bio: result.profile.bio || '',
@@ -160,14 +160,14 @@ export default function ProfilePage() {
               <AvatarImage src={avatarPreview || undefined} alt="Avatar" />
               <AvatarFallback className="text-2xl">
                 {generateInitials(
-                  profile?.first_name || null,
-                  profile?.last_name || null
+                  profile?.firstname || null,
+                  profile?.lastname || null
                 )}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-2 flex-1">
               <h2 className="text-2xl font-bold">
-                {profile?.first_name} {profile?.last_name}
+                {profile?.firstname} {profile?.lastname}
               </h2>
               <p className="text-muted-foreground">{profile?.email}</p>
               <div className="flex items-center gap-4 mt-4">
@@ -203,8 +203,8 @@ export default function ProfilePage() {
                   <AvatarImage src={avatarPreview || undefined} alt="Avatar" />
                   <AvatarFallback>
                     {generateInitials(
-                      profile?.first_name || null,
-                      profile?.last_name || null
+                      profile?.firstname || null,
+                      profile?.lastname || null
                     )}
                   </AvatarFallback>
                 </Avatar>
