@@ -23,7 +23,6 @@ import {
   FileText,
   QrCode,
   CreditCard,
-  XCircle,
   CheckCircle2,
   Star,
   ArrowLeft,
@@ -32,6 +31,9 @@ import { BookingStatusBadge } from '@/components/features/bookings/BookingStatus
 import { BookingTimeline } from '@/components/features/bookings/BookingTimeline'
 import { ParticipantCard } from '@/components/features/bookings/ParticipantCard'
 import { PackagePhotosGallery } from '@/components/features/bookings/PackagePhotosGallery'
+import { RefuseBookingDialog } from '@/components/features/bookings/RefuseBookingDialog'
+import { CancelBookingDialog } from '@/components/features/bookings/CancelBookingDialog'
+import { acceptBooking } from '@/lib/actions/booking-requests'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -91,6 +93,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   const [booking, setBooking] = useState<BookingDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isAccepting, setIsAccepting] = useState(false)
 
   useEffect(() => {
     loadBookingDetails()
@@ -175,6 +178,26 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
   const isSender = booking.sender_id === currentUserId
   const isTraveler = booking.traveler_id === currentUserId
+
+  const handleAcceptBooking = async () => {
+    setIsAccepting(true)
+    try {
+      const result = await acceptBooking(booking.id)
+      
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+      
+      toast.success('Réservation acceptée')
+      router.refresh()
+    } catch (error) {
+      console.error('Error accepting booking:', error)
+      toast.error('Une erreur est survenue')
+    } finally {
+      setIsAccepting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -343,10 +366,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                     Payer maintenant
                   </Link>
                 </Button>
-                <Button variant="destructive" className="w-full">
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Annuler la réservation
-                </Button>
+                <CancelBookingDialog bookingId={booking.id} />
               </>
             )}
 
@@ -379,14 +399,24 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             {/* Actions Voyageur */}
             {isTraveler && booking.status === 'pending' && (
               <>
-                <Button className="w-full">
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Accepter
+                <Button 
+                  className="w-full" 
+                  onClick={handleAcceptBooking}
+                  disabled={isAccepting}
+                >
+                  {isAccepting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Acceptation...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Accepter
+                    </>
+                  )}
                 </Button>
-                <Button variant="destructive" className="w-full">
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Refuser
-                </Button>
+                <RefuseBookingDialog bookingId={booking.id} />
               </>
             )}
 
@@ -399,7 +429,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                   </Link>
                 </Button>
                 <Button asChild className="w-full">
-                  <Link href={`/dashboard/colis/${booking.id}/preuve-depot`}>
+                  <Link href={`/dashboard/scan/depot/${booking.id}`}>
                     <Package className="mr-2 h-4 w-4" />
                     Scanner QR dépôt
                   </Link>
@@ -409,7 +439,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
             {isTraveler && booking.status === 'in_transit' && (
               <Button asChild className="w-full">
-                <Link href={`/dashboard/colis/${booking.id}/preuve-livraison`}>
+                <Link href={`/dashboard/scan/livraison/${booking.id}`}>
                   <Package className="mr-2 h-4 w-4" />
                   Scanner QR livraison
                 </Link>

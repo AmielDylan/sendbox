@@ -1,85 +1,210 @@
 /**
- * Page scan QR code pour livraison de colis
+ * Page de scan QR pour la livraison du colis
  */
 
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { QRScanner } from '@/components/features/bookings/QRScanner'
-import { SignaturePad } from '@/components/features/bookings/SignaturePad'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { PageHeader } from '@/components/ui/page-header'
-import { handleDeliveryScan, getBookingByQRCode } from '@/lib/actions/qr-scan'
-import { toast } from 'sonner'
-import { Loader2, CheckCircle2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import Image from 'next/image'
+import { toast } from 'sonner'
+import {
+  SignatureCanvas,
+  type SignatureCanvasRef,
+} from '@/components/features/bookings/SignatureCanvas'
+import { markAsDelivered } from '@/lib/actions/booking-workflow'
+import { Loader2, MapPin, CheckCircle2 } from 'lucide-react'
+import Link from 'next/link'
 
-type ScanStep = 'scan' | 'photo' | 'signature' | 'confirm'
+interface ScanDeliveryPageProps {
+  params: { booking_id: string }
+}
 
-export default function DeliveryScanPage() {
-  const params = useParams()
+export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   const router = useRouter()
-  const bookingId = params.booking_id as string
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [booking, setBooking] = useState<any>(null)
+  const [scannedCode, setScannedCode] = useState('')
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string>('')
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const signatureRef = useRef<SignatureCanvasRef>(null)
 
-  const [step, setStep] = useState<ScanStep>('scan')
-  const [scannedQRCode, setScannedQRCode] = useState<string | null>(null)
-  const [photoDataURL, setPhotoDataURL] = useState<string | null>(null)
-  const [signatureDataURL, setSignatureDataURL] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  useEffect(() => {
+    loadBooking()
+    getCurrentLocation()
+  }, [params.booking_id])
 
-  const handleQRScan = async (qrCode: string) => {
-    // Vérifier que le QR code correspond au booking
-    const result = await getBookingByQRCode(qrCode)
+  const loadBooking = async () => {
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        toast.error('Vous devez être connecté')
+        router.push('/login')
+        return
+      }
 
-    if (result.error) {
-      toast.error(result.error)
-      return
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', params.booking_id)
+        .single()
+
+      if (error || !data) {
+        toast.error('Réservation introuvable')
+        router.push('/dashboard/colis')
+        return
+      }
+
+      if (data.traveler_id !== user.id) {
+        toast.error('Accès non autorisé')
+        router.push('/dashboard/colis')
+        return
+      }
+
+      if (data.status !== 'in_transit') {
+        toast.error('Le colis doit être en transit')
+        router.push(`/dashboard/colis/${params.booking_id}`)
+        return
+      }
+
+      setBooking(data)
+    } catch (error) {
+      console.error('Error loading booking:', error)
+      toast.error('Erreur lors du chargement')
+    } finally {
+      setIsLoading(false)
     }
-
-    if (result.booking?.id !== bookingId) {
-      toast.error('Ce QR code ne correspond pas à cette réservation')
-      return
-    }
-
-    setScannedQRCode(qrCode)
-    setStep('photo')
-    toast.success('QR code scanné avec succès')
   }
 
-  const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          })
+        },
+        (error) => {
+          console.error('Error getting location:', error)
+          toast.error('Impossible d\'obtenir la géolocalisation')
+        }
+      )
+    }
+  }
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setPhotoDataURL(reader.result as string)
-      setStep('signature')
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La photo ne doit pas dépasser 5 Mo')
+        return
+      }
+      setPhoto(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
     }
-    reader.readAsDataURL(file)
   }
 
-  const handleSignatureSave = (dataURL: string) => {
-    setSignatureDataURL(dataURL)
-    setStep('confirm')
-    toast.success('Signature enregistrée')
+  const uploadFile = async (file: File | Blob, path: string): Promise<string | null> => {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.storage
+        .from('package-proofs')
+        .upload(path, file, {
+          contentType: file instanceof File ? file.type : 'image/png',
+          upsert: false,
+        })
+
+      if (error) {
+        console.error('Upload error:', error)
+        return null
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('package-proofs')
+        .getPublicUrl(data.path)
+
+      return publicUrl
+    } catch (error) {
+      console.error('Upload error:', error)
+      return null
+    }
   }
 
-  const handleConfirm = () => {
-    if (!scannedQRCode || !photoDataURL || !signatureDataURL) {
-      toast.error('Veuillez compléter toutes les étapes')
+  const handleSubmit = async () => {
+    if (!scannedCode) {
+      toast.error('Veuillez scanner ou saisir le QR code')
       return
     }
 
-    startTransition(async () => {
-      const result = await handleDeliveryScan(
-        bookingId,
-        scannedQRCode,
-        photoDataURL,
-        signatureDataURL
+    if (scannedCode.trim().toUpperCase() !== booking.qr_code?.trim().toUpperCase()) {
+      toast.error('QR code invalide')
+      return
+    }
+
+    if (!photo) {
+      toast.error('Veuillez prendre une photo de la livraison')
+      return
+    }
+
+    if (!signatureRef.current || signatureRef.current.isEmpty()) {
+      toast.error('Veuillez faire signer le destinataire')
+      return
+    }
+
+    if (!location) {
+      toast.error('Géolocalisation requise')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      // Upload photo
+      const photoPath = `deliveries/${params.booking_id}/${Date.now()}.jpg`
+      const photoUrl = await uploadFile(photo, photoPath)
+
+      if (!photoUrl) {
+        toast.error('Erreur lors de l\'upload de la photo')
+        return
+      }
+
+      // Upload signature
+      const signatureDataUrl = signatureRef.current.getSignatureDataURL()
+      if (!signatureDataUrl) {
+        toast.error('Signature invalide')
+        return
+      }
+
+      const signatureBlob = await fetch(signatureDataUrl).then((res) => res.blob())
+      const signaturePath = `deliveries/${params.booking_id}/signature_${Date.now()}.png`
+      const signatureUrl = await uploadFile(signatureBlob, signaturePath)
+
+      if (!signatureUrl) {
+        toast.error('Erreur lors de l\'upload de la signature')
+        return
+      }
+
+      // Marquer comme livré
+      const result = await markAsDelivered(
+        params.booking_id,
+        scannedCode,
+        photoUrl,
+        signatureUrl,
+        location
       )
 
       if (result.error) {
@@ -87,151 +212,142 @@ export default function DeliveryScanPage() {
         return
       }
 
-      if (result.success) {
-        toast.success(result.message)
-        router.push(`/dashboard/colis/${bookingId}`)
-      }
-    })
+      toast.success('Colis livré avec succès !')
+      router.push(`/dashboard/colis/${params.booking_id}`)
+    } catch (error) {
+      console.error('Error submitting delivery:', error)
+      toast.error('Une erreur est survenue')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!booking) {
+    return null
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Livraison de colis"
-        description="Scannez le QR code pour confirmer la livraison"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Mes colis', href: '/dashboard/colis' },
-          { label: 'Livraison' },
-        ]}
+        title="Scan QR Livraison"
+        description="Scanner le QR code et prendre les preuves de livraison"
       />
 
-      {/* Étape 1: Scan QR */}
-      {step === 'scan' && (
-        <div className="max-w-2xl mx-auto">
-          <QRScanner
-            onScan={handleQRScan}
-            title="Scanner le QR code"
-            description="Scannez le QR code de la réservation"
-          />
-        </div>
-      )}
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* QR Code */}
+        <Card>
+          <CardHeader>
+            <CardTitle>1. Scanner le QR Code</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="qr-code">Code QR *</Label>
+              <Input
+                id="qr-code"
+                placeholder="Scannez ou saisissez le code"
+                value={scannedCode}
+                onChange={(e) => setScannedCode(e.target.value)}
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Code attendu : {booking.qr_code}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Étape 2: Photo */}
-      {step === 'photo' && (
-        <div className="max-w-2xl mx-auto space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="photo">Photo du colis reçu</Label>
-                  <Input
-                    id="photo"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handlePhotoCapture}
-                    className="mt-2"
-                  />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Prenez une photo du colis reçu
-                  </p>
-                </div>
-                {photoDataURL && (
-                  <div className="mt-4">
-                    <Image
-                      src={photoDataURL}
-                      alt="Photo du colis"
-                      width={400}
-                      height={300}
-                      className="rounded-lg border"
-                    />
-                  </div>
-                )}
+        {/* Photo */}
+        <Card>
+          <CardHeader>
+            <CardTitle>2. Photo de la Livraison</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="photo">Photographier la livraison *</Label>
+              <Input
+                id="photo"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handlePhotoChange}
+                disabled={isSubmitting}
+              />
+            </div>
+            {photoPreview && (
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
+                <img
+                  src={photoPreview}
+                  alt="Aperçu"
+                  className="object-cover w-full h-full"
+                />
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            )}
+          </CardContent>
+        </Card>
 
-      {/* Étape 3: Signature */}
-      {step === 'signature' && (
-        <div className="max-w-2xl mx-auto">
-          <SignaturePad
-            onSave={handleSignatureSave}
-            title="Signature de réception"
-            description="Signez pour confirmer la réception du colis"
-          />
-        </div>
-      )}
+        {/* Signature */}
+        <Card>
+          <CardHeader>
+            <CardTitle>3. Signature du Destinataire</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SignatureCanvas ref={signatureRef} />
+          </CardContent>
+        </Card>
 
-      {/* Étape 4: Confirmation */}
-      {step === 'confirm' && (
-        <div className="max-w-2xl mx-auto space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle2 className="h-5 w-5" />
-                  <span className="font-semibold">Toutes les étapes sont complétées</span>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-medium">QR Code scanné :</p>
-                  <p className="font-mono text-sm">{scannedQRCode}</p>
-                </div>
-
-                {photoDataURL && (
-                  <div className="space-y-2">
-                    <p className="font-medium">Photo du colis :</p>
-                    <Image
-                      src={photoDataURL}
-                      alt="Photo"
-                      width={200}
-                      height={150}
-                      className="rounded border"
-                    />
-                  </div>
-                )}
-
-                {signatureDataURL && (
-                  <div className="space-y-2">
-                    <p className="font-medium">Signature :</p>
-                    <Image
-                      src={signatureDataURL}
-                      alt="Signature"
-                      width={200}
-                      height={100}
-                      className="rounded border bg-white"
-                    />
-                  </div>
-                )}
-
-                <Button
-                  onClick={handleConfirm}
-                  disabled={isPending}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Confirmation en cours...
-                    </>
-                  ) : (
-                    'Confirmer la livraison'
-                  )}
-                </Button>
+        {/* Géolocalisation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>4. Géolocalisation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {location ? (
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <MapPin className="h-4 w-4" />
+                <span>Position enregistrée</span>
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                Récupération de la position...
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <Button variant="outline" asChild className="flex-1">
+            <Link href={`/dashboard/colis/${params.booking_id}`}>
+              Annuler
+            </Link>
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="flex-1"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Enregistrement...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Valider la livraison
+              </>
+            )}
+          </Button>
         </div>
-      )}
+      </div>
     </div>
   )
 }
-
-
-
-
-

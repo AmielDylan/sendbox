@@ -8,6 +8,7 @@ import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe/config'
 import { createClient } from '@/lib/supabase/server'
 import { fromStripeAmount } from '@/lib/utils/payment-calculations'
 import { generateTransportContract } from '@/lib/actions/pdf-generation'
+import { generateBookingQRCode } from '@/lib/utils/qr-codes'
 import Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
@@ -83,8 +84,18 @@ export async function POST(req: NextRequest) {
           .update({
             status: 'confirmed', // Passer à 'confirmed' après paiement
             paid_at: new Date().toISOString(),
+            payment_intent_id: paymentIntent.id,
           })
           .eq('id', booking_id)
+
+        // Générer le QR code pour le booking
+        try {
+          await generateBookingQRCode(booking_id)
+          console.log('QR code generated for booking:', booking_id)
+        } catch (error) {
+          console.error('Failed to generate QR code:', error)
+          // Ne pas bloquer le webhook si la génération du QR échoue
+        }
 
         // Créer la transaction
         await supabase.from('transactions').insert({
