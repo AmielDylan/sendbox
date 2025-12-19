@@ -102,6 +102,8 @@ export default function MyBookingsPage() {
 
       if (error) {
         console.error('Get bookings error:', error)
+        console.error('Error details:', JSON.stringify(error, null, 2))
+        console.error('User ID:', userId)
         return { data: null, error }
       }
 
