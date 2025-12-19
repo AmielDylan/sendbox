@@ -2,6 +2,7 @@
  * Page d'accueil du dashboard
  */
 
+import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import {
   Card,
