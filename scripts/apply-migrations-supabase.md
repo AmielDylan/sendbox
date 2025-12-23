@@ -113,3 +113,7 @@ psql $DATABASE_URL -f supabase/migrations/028_fix_profiles_rls_infinite_recursio
 
 Une fois les migrations appliquées, passer à la **Phase 2 : Configuration environnement**
 
+
+
+
+

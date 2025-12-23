@@ -383,3 +383,7 @@ EXECUTE FUNCTION update_updated_at_column();
 *Durée de la correction : ~20 minutes*  
 *Impact : Table bookings maintenant 100% fonctionnelle*
 
+
+
+
+

@@ -46,3 +46,7 @@ COMMENT ON POLICY "Users can view their own bookings" ON bookings IS 'Les utilis
 COMMENT ON POLICY "Users can create bookings" ON bookings IS 'Les utilisateurs peuvent créer des bookings en tant qu''expéditeur';
 COMMENT ON POLICY "Users can update their own bookings" ON bookings IS 'Les utilisateurs peuvent mettre à jour leurs bookings';
 
+
+
+
+

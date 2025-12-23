@@ -85,3 +85,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
 
 SignatureCanvas.displayName = 'SignatureCanvas'
 
+
+
+
+

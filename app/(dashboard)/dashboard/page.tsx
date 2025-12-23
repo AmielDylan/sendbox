@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Package, MessageSquare, TrendingUp, Shield, CheckCircle2, Clock } from 'lucide-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
+import { isFeatureEnabled } from '@/lib/config/features'
 
 async function DashboardContent() {
   const supabase = await createClient()
@@ -37,51 +38,55 @@ async function DashboardContent() {
 
   return (
     <>
-      {/* Alert Banner KYC */}
-      <KYCAlertBanner kycStatus={kycStatus} rejectionReason={kycRejectionReason} />
+      {/* Alert Banner KYC - SEULEMENT si feature activée */}
+      {isFeatureEnabled('KYC_ENABLED') && (
+        <KYCAlertBanner kycStatus={kycStatus} rejectionReason={kycRejectionReason} />
+      )}
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Card KYC Status */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Vérification d'identité
-            </CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {kycStatus === 'approved' && (
-              <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="h-5 w-5" />
-                <span className="font-medium text-sm">Compte vérifié</span>
-              </div>
-            )}
-            {kycStatus === 'pending' && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-yellow-600">
-                  <Clock className="h-5 w-5" />
-                  <span className="font-medium text-sm">En cours</span>
+        {/* Card KYC Status - SEULEMENT si feature activée */}
+        {isFeatureEnabled('KYC_ENABLED') && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Vérification d'identité
+              </CardTitle>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {kycStatus === 'approved' && (
+                <div className="flex items-center gap-2 text-green-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span className="font-medium text-sm">Compte vérifié</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  24-48h
-                </p>
-              </div>
-            )}
-            {(!kycStatus || kycStatus === 'rejected' || kycStatus === 'incomplete') && (
-              <div className="space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  Vérifiez votre identité
-                </p>
-                <Button asChild size="sm" variant="outline" className="w-full">
-                  <Link href="/dashboard/reglages/kyc">
-                    Commencer →
-                  </Link>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+              {kycStatus === 'pending' && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-yellow-600">
+                    <Clock className="h-5 w-5" />
+                    <span className="font-medium text-sm">En cours</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    24-48h
+                  </p>
+                </div>
+              )}
+              {(!kycStatus || kycStatus === 'rejected' || kycStatus === 'incomplete') && (
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Vérifiez votre identité
+                  </p>
+                  <Button asChild size="sm" variant="outline" className="w-full">
+                    <Link href="/dashboard/reglages/kyc">
+                      Commencer →
+                    </Link>
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

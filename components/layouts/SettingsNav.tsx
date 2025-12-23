@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { User, IdCard, Shield, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { isFeatureEnabled } from '@/lib/config/features'
 
 interface SettingsNavProps {
   kycStatus?: 'pending' | 'approved' | 'rejected' | null
@@ -18,7 +19,7 @@ interface SettingsNavProps {
 export function SettingsNav({ kycStatus }: SettingsNavProps) {
   const pathname = usePathname()
 
-  const navItems = [
+  const allNavItems = [
     {
       label: 'Mon compte',
       href: '/dashboard/reglages/compte',
@@ -37,8 +38,17 @@ export function SettingsNav({ kycStatus }: SettingsNavProps) {
       icon: Shield,
       description: 'KYC et documents',
       badge: kycStatus,
+      kycOnly: true, // Marqueur pour filtrage conditionnel
     },
   ]
+
+  // Filtrer les items selon les feature flags
+  const navItems = allNavItems.filter(item => {
+    if (item.kycOnly && !isFeatureEnabled('KYC_ENABLED')) {
+      return false // Masquer KYC si désactivé
+    }
+    return true
+  })
 
   const getKYCBadge = () => {
     if (kycStatus === 'approved') {
@@ -92,4 +102,8 @@ export function SettingsNav({ kycStatus }: SettingsNavProps) {
     </nav>
   )
 }
+
+
+
+
 

@@ -36,6 +36,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
+import { isFeatureEnabled } from '@/lib/config/features'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -259,20 +260,20 @@ function UserMenu() {
             <p className="text-xs leading-none text-muted-foreground">
               {user?.email || 'email@example.com'}
             </p>
-            {/* Badge statut KYC */}
-            {profile?.kyc_status === 'approved' && (
+            {/* Badge statut KYC - SEULEMENT si feature activée */}
+            {isFeatureEnabled('KYC_ENABLED') && profile?.kyc_status === 'approved' && (
               <Badge variant="outline" className="w-fit text-green-600 border-green-600 mt-2">
                 <CheckCircle2 className="mr-1 h-3 w-3" />
                 Vérifié
               </Badge>
             )}
-            {profile?.kyc_status === 'pending' && (
+            {isFeatureEnabled('KYC_ENABLED') && profile?.kyc_status === 'pending' && (
               <Badge variant="outline" className="w-fit text-yellow-600 border-yellow-600 mt-2">
                 <Clock className="mr-1 h-3 w-3" />
                 Vérification en cours
               </Badge>
             )}
-            {(!profile?.kyc_status || profile.kyc_status === 'rejected' || profile.kyc_status === 'incomplete') && (
+            {isFeatureEnabled('KYC_ENABLED') && (!profile?.kyc_status || profile.kyc_status === 'rejected' || profile.kyc_status === 'incomplete') && (
               <Badge variant="outline" className="w-fit text-muted-foreground mt-2">
                 <AlertCircle className="mr-1 h-3 w-3" />
                 Non vérifié
@@ -281,8 +282,8 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {/* Lien rapide vers KYC si non approuvé */}
-        {profile?.kyc_status !== 'approved' && (
+        {/* Lien rapide vers KYC si non approuvé - SEULEMENT si feature activée */}
+        {isFeatureEnabled('KYC_ENABLED') && profile?.kyc_status !== 'approved' && (
           <>
             <DropdownMenuItem asChild>
               <Link href="/dashboard/reglages/kyc" className="cursor-pointer">

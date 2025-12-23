@@ -85,3 +85,7 @@ WITH CHECK (id = auth.uid());
 COMMENT ON FUNCTION is_admin IS 'Vérifie si un utilisateur est admin sans créer de récursion RLS (SECURITY DEFINER)';
 
 
+
+
+
+

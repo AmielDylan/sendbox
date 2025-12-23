@@ -281,3 +281,7 @@ Toutes les routes dashboard sont maintenant accessibles."
 *Durée de la correction : ~10 minutes*  
 *Impact : MVP maintenant 100% fonctionnel*
 
+
+
+
+

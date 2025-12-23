@@ -167,3 +167,7 @@ column reference "booking_id" is ambiguous
 4. Tester les flux complets (création d'annonce, réservation, paiement)
 
 
+
+
+
+

@@ -48,3 +48,7 @@ read
 
 echo "✅ Migration 030 appliquée!"
 
+
+
+
+

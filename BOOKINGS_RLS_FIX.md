@@ -316,3 +316,7 @@ USING (user_id = auth.uid());
 *Durée de la correction : ~15 minutes*  
 *Impact : Page /dashboard/colis maintenant 100% fonctionnelle*
 
+
+
+
+

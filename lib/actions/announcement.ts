@@ -11,6 +11,7 @@ import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
 } from '@/lib/validations/announcement'
+import { isFeatureEnabled } from '@/lib/config/features'
 
 const MAX_ACTIVE_ANNOUNCEMENTS = 10
 
@@ -45,8 +46,8 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
     }
   }
 
-  // Vérifier que le KYC est approuvé
-  if (profile.kyc_status !== 'approved') {
+  // Vérifier que le KYC est approuvé SEULEMENT si feature activée
+  if (isFeatureEnabled('KYC_ENABLED') && profile.kyc_status !== 'approved') {
     let errorMessage = 'Vérification d\'identité requise'
     let errorDetails = 'Veuillez compléter votre vérification d\'identité pour créer une annonce.'
     

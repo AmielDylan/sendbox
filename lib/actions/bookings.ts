@@ -17,6 +17,7 @@ import {
 } from '@/lib/utils/package-photos'
 import { validateImageUpload } from '@/lib/security/upload-validation'
 import { uploadRateLimit } from '@/lib/security/rate-limit'
+import { isFeatureEnabled } from '@/lib/config/features'
 import sharp from 'sharp'
 
 /**
@@ -80,8 +81,8 @@ export async function createBooking(formData: CreateBookingInput & {
     }
   }
 
-  // Vérifier que le KYC est approuvé
-  if (profile.kyc_status !== 'approved') {
+  // Vérifier que le KYC est approuvé SEULEMENT si feature activée
+  if (isFeatureEnabled('KYC_ENABLED') && profile.kyc_status !== 'approved') {
     let errorMessage = 'Vérification d\'identité requise'
     let errorDetails = 'Veuillez compléter votre vérification d\'identité pour créer une réservation.'
     

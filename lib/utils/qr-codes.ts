@@ -56,3 +56,7 @@ export function extractBookingIdFromQR(qrCode: string): string | null {
   return null
 }
 
+
+
+
+
