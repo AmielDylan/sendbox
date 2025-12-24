@@ -5,11 +5,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { notifyUser } from './notifications'
-import { generateDepositProof, generateDeliveryProof } from './pdf-generation'
-import { validateImageUpload } from '@/lib/security/upload-validation'
-import { uploadRateLimit } from '@/lib/security/rate-limit'
+import { createClient } from "@/lib/shared/db/server"
+import { notifyUser } from '@/lib/core/notifications/actions'
+import { generateDepositProof, generateDeliveryProof } from '@/lib/shared/services/pdf/generation'
+import { validateImageUpload } from "@/lib/shared/security/upload-validation"
+import { uploadRateLimit } from "@/lib/shared/security/rate-limit"
 
 /**
  * Gère le scan QR code pour le dépôt du colis

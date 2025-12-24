@@ -7,8 +7,8 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { kycSchema, type KYCInput, DOCUMENT_TYPES } from '@/lib/validations/kyc'
-import { submitKYC, getKYCStatus } from '@/lib/actions/kyc'
+import { kycSchema, type KYCInput, DOCUMENT_TYPES } from "@/lib/core/kyc/validations"
+import { submitKYC, getKYCStatus } from "@/lib/core/kyc/actions"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

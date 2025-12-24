@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -33,7 +33,7 @@ import { ParticipantCard } from '@/components/features/bookings/ParticipantCard'
 import { PackagePhotosGallery } from '@/components/features/bookings/PackagePhotosGallery'
 import { RefuseBookingDialog } from '@/components/features/bookings/RefuseBookingDialog'
 import { CancelBookingDialog } from '@/components/features/bookings/CancelBookingDialog'
-import { acceptBooking } from '@/lib/actions/booking-requests'
+import { acceptBooking } from "@/lib/core/bookings/requests"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 

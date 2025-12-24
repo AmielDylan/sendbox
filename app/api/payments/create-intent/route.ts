@@ -3,9 +3,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { stripe } from '@/lib/stripe/config'
-import { calculateBookingAmounts, toStripeAmount } from '@/lib/utils/payment-calculations'
+import { createClient } from "@/lib/shared/db/server"
+import { stripe } from "@/lib/shared/services/stripe/config"
+import { calculateBookingAmounts, toStripeAmount } from "@/lib/core/payments/calculations"
 
 export async function POST(req: NextRequest) {
   try {

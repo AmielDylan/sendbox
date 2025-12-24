@@ -4,8 +4,8 @@
 
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { getContractUrl, generateDepositProof } from '@/lib/actions/pdf-generation'
+import { createClient } from "@/lib/shared/db/server"
+import { getContractUrl, generateDepositProof } from "@/lib/shared/services/pdf/generation"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'

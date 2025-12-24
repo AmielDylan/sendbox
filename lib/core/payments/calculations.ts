@@ -6,7 +6,7 @@ import {
   COMMISSION_RATE,
   INSURANCE_RATE,
   INSURANCE_BASE_FEE,
-} from '@/lib/validations/booking'
+} from "@/lib/core/bookings/validations"
 
 /**
  * Calcule les montants pour un booking

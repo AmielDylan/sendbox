@@ -7,7 +7,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import {
   registerSchema,
   loginSchema,
@@ -17,8 +17,8 @@ import {
   type LoginInput,
   type ResetPasswordRequestInput,
   type ResetPasswordInput,
-} from '@/lib/validations/auth'
-import { authRateLimit } from '@/lib/security/rate-limit'
+} from "@/lib/core/auth/validations"
+import { authRateLimit } from "@/lib/shared/security/rate-limit"
 
 // Messages d'erreur génériques pour éviter l'énumération
 const GENERIC_ERROR_MESSAGE =

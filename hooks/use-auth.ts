@@ -5,7 +5,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/types'
 

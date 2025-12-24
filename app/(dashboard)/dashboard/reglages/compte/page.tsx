@@ -14,12 +14,12 @@ import {
   type ChangePasswordInput,
   type ChangeEmailInput,
   type DeleteAccountInput,
-} from '@/lib/validations/profile'
+} from "@/lib/core/profile/validations"
 import {
   changePassword,
   changeEmail,
   deleteAccount,
-} from '@/lib/actions/profile'
+} from "@/lib/core/profile/actions"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

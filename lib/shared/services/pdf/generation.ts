@@ -4,11 +4,11 @@
 
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import { pdf } from '@react-pdf/renderer'
-import { TransportContract } from '@/lib/pdf/transport-contract'
-import { DepositProof } from '@/lib/pdf/deposit-proof'
-import { DeliveryProof } from '@/lib/pdf/delivery-proof'
+import { TransportContract } from '@/lib/shared/services/pdf/transport-contract'
+import { DepositProof } from '@/lib/shared/services/pdf/deposit-proof'
+import { DeliveryProof } from '@/lib/shared/services/pdf/delivery-proof'
 import QRCode from 'qrcode'
 import React from 'react'
 

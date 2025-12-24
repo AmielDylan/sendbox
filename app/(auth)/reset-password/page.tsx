@@ -14,8 +14,8 @@ import {
   resetPasswordSchema,
   type ResetPasswordRequestInput,
   type ResetPasswordInput,
-} from '@/lib/validations/auth'
-import { requestPasswordReset, resetPassword } from '@/lib/actions/auth'
+} from "@/lib/core/auth/validations"
+import { requestPasswordReset, resetPassword } from "@/lib/core/auth/actions"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

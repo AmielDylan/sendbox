@@ -10,8 +10,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   updateProfileSchema,
   type UpdateProfileInput,
-} from '@/lib/validations/profile'
-import { updateProfile, getCurrentProfile } from '@/lib/actions/profile'
+} from "@/lib/core/profile/validations"
+import { updateProfile, getCurrentProfile } from "@/lib/core/profile/actions"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,7 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Loader2, Upload, User, Star, Package } from 'lucide-react'
-import { generateInitials } from '@/lib/utils/avatar'
+import { generateInitials } from "@/lib/core/profile/utils"
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)

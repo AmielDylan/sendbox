@@ -3,10 +3,10 @@
  */
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { Notification } from '@/lib/supabase/queries/notifications'
+import { Notification } from "@/lib/shared/db/queries/notifications"
 
 export function useNotifications(limit: number = 20) {
   const [notifications, setNotifications] = useState<Notification[]>([])

@@ -4,7 +4,7 @@
 
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import { PageHeader } from '@/components/ui/page-header'
 import {
   Card,
@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Package, MessageSquare, TrendingUp, Shield, CheckCircle2, Clock } from 'lucide-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
-import { isFeatureEnabled } from '@/lib/config/features'
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 
 async function DashboardContent() {
   const supabase = await createClient()

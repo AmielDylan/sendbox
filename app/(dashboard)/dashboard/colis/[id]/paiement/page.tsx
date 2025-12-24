@@ -7,8 +7,8 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Elements } from '@stripe/react-stripe-js'
-import { getStripeClient } from '@/lib/stripe/config'
-import { createClient } from '@/lib/supabase/client'
+import { getStripeClient } from "@/lib/shared/services/stripe/config"
+import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Loader2, Lock, Shield, FileText, CheckCircle2 } from 'lucide-react'
-import { formatPrice } from '@/lib/utils/booking-calculations'
+import { formatPrice } from "@/lib/core/bookings/calculations"
 import { PaymentForm } from '@/components/features/payments/PaymentForm'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import Link from 'next/link'

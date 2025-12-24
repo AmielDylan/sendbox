@@ -11,15 +11,15 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import {
   createBookingSchema,
   type CreateBookingInput,
-} from '@/lib/validations/booking'
+} from "@/lib/core/bookings/validations"
 import {
   createBooking,
   getAnnouncementForBooking,
-} from '@/lib/actions/bookings'
+} from "@/lib/core/bookings/actions"
 import {
   calculateBookingPrice,
   formatPrice,
-} from '@/lib/utils/booking-calculations'
+} from "@/lib/core/bookings/calculations"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,8 +49,8 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials } from '@/lib/utils/avatar'
-import { MAX_PHOTOS, MAX_FILE_SIZE, validatePackagePhoto } from '@/lib/utils/package-photos'
+import { generateInitials } from "@/lib/core/profile/utils"
+import { MAX_PHOTOS, MAX_FILE_SIZE, validatePackagePhoto } from "@/lib/core/bookings/photos"
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 function NewBookingPageContent() {

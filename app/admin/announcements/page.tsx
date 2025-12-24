@@ -6,8 +6,8 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/client'
-import { rejectAnnouncement } from '@/lib/actions/admin'
+import { createClient } from "@/lib/shared/db/client"
+import { rejectAnnouncement } from "@/lib/core/admin/actions"
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'

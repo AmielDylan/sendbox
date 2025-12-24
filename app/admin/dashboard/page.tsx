@@ -3,8 +3,8 @@
  */
 
 import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { isAdmin, getAdminStats } from '@/lib/actions/admin'
+import { createClient } from "@/lib/shared/db/server"
+import { isAdmin, getAdminStats } from "@/lib/core/admin/actions"
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, FileCheck, Package, Euro, AlertTriangle } from 'lucide-react'

@@ -6,11 +6,11 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getUserAnnouncements } from '@/lib/supabase/queries/announcements'
+import { getUserAnnouncements } from "@/lib/shared/db/queries/announcements"
 import {
   deleteAnnouncement,
   markAnnouncementAsCompleted,
-} from '@/lib/actions/announcement-management'
+} from "@/lib/core/announcements/management"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -42,7 +42,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 
 type AnnouncementStatus = 'active' | 'draft' | 'completed' | 'cancelled'
 

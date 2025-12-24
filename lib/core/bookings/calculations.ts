@@ -7,7 +7,7 @@ import {
   INSURANCE_RATE,
   INSURANCE_BASE_FEE,
   MAX_INSURANCE_COVERAGE,
-} from '@/lib/validations/booking'
+} from "@/lib/core/bookings/validations"
 
 export interface BookingCalculation {
   transportPrice: number

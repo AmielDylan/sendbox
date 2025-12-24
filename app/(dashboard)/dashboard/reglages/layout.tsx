@@ -3,7 +3,7 @@
  */
 
 import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import { SettingsNav } from '@/components/layouts/SettingsNav'
 import { Skeleton } from '@/components/ui/skeleton'
 

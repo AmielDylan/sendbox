@@ -9,8 +9,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { User, IdCard, Shield, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { isFeatureEnabled } from '@/lib/config/features'
+import { cn } from "@/lib/utils"
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 
 interface SettingsNavProps {
   kycStatus?: 'pending' | 'approved' | 'rejected' | null

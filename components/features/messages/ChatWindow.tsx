@@ -11,16 +11,16 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { useMessages } from '@/hooks/use-messages'
-import { sendMessage, markMessagesAsRead } from '@/lib/actions/messages'
-import { generateInitials } from '@/lib/utils/avatar'
+import { sendMessage, markMessagesAsRead } from "@/lib/core/messages/actions"
+import { generateInitials } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Send, Loader2, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 import Image from 'next/image'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils"
 
 interface ChatWindowProps {
   bookingId: string | null

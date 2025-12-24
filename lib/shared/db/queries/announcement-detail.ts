@@ -2,7 +2,7 @@
  * Queries pour récupérer les détails d'une annonce
  */
 
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 
 export interface AnnouncementDetail {
   id: string

@@ -5,8 +5,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Euro, Shield, Package } from 'lucide-react'
-import type { BookingCalculation } from '@/lib/utils/booking-calculations'
-import { formatPrice } from '@/lib/utils/booking-calculations'
+import type { BookingCalculation } from "@/lib/core/bookings/calculations"
+import { formatPrice } from "@/lib/core/bookings/calculations"
 
 interface PriceCalculationProps {
   calculation: BookingCalculation

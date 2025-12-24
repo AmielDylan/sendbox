@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 import { toast } from 'sonner'
 import {
   LayoutDashboard,
@@ -20,7 +20,7 @@ import {
   Clock,
   AlertCircle,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils"
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import {
@@ -36,7 +36,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
-import { isFeatureEnabled } from '@/lib/config/features'
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 
 interface DashboardLayoutProps {
   children: React.ReactNode

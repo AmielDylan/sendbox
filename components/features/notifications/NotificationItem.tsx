@@ -4,10 +4,10 @@
 
 'use client'
 
-import { Notification } from '@/lib/supabase/queries/notifications'
+import { Notification } from "@/lib/shared/db/queries/notifications"
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils"
 import {
   CheckCircle2,
   XCircle,
@@ -21,7 +21,7 @@ import {
   Shield,
 } from 'lucide-react'
 import Link from 'next/link'
-import { markNotificationAsRead } from '@/lib/actions/booking-requests'
+import { markNotificationAsRead } from "@/lib/core/bookings/requests"
 
 interface NotificationItemProps {
   notification: Notification

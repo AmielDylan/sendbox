@@ -6,18 +6,18 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getUserConversations } from '@/lib/actions/messages'
-import { getUserNotifications, getUnreadNotificationsCount } from '@/lib/supabase/queries/notifications'
+import { getUserConversations } from "@/lib/core/messages/actions"
+import { getUserNotifications, getUnreadNotificationsCount } from "@/lib/shared/db/queries/notifications"
 import { PageHeader } from '@/components/ui/page-header'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ConversationList } from '@/components/features/messages/ConversationList'
 import { ChatWindow } from '@/components/features/messages/ChatWindow'
 import { BookingRequestCard } from '@/components/features/bookings/BookingRequestCard'
-import { getPendingBookingRequests } from '@/lib/actions/booking-requests'
+import { getPendingBookingRequests } from "@/lib/core/bookings/requests"
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader2, Bell, Inbox, MessageSquare } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 import { Separator } from '@/components/ui/separator'
 
 function MessagesPageContent() {

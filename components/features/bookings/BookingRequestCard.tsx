@@ -28,9 +28,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Star, Package, Euro, Calendar, MapPin, CheckCircle2, XCircle, MessageSquare, Image as ImageIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials } from '@/lib/utils/avatar'
-import { formatPrice } from '@/lib/utils/booking-calculations'
-import { acceptBooking, refuseBooking } from '@/lib/actions/booking-requests'
+import { generateInitials } from "@/lib/core/profile/utils"
+import { formatPrice } from "@/lib/core/bookings/calculations"
+import { acceptBooking, refuseBooking } from "@/lib/core/bookings/requests"
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'

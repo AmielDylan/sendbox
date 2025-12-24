@@ -5,7 +5,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import { headers } from 'next/headers'
 
 /**

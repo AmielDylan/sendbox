@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 
 export interface Message {
   id: string

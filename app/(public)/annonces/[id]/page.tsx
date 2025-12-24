@@ -6,9 +6,9 @@ import { notFound } from 'next/navigation'
 import {
   getAnnouncementDetail,
   getTravelerReviews,
-} from '@/lib/supabase/queries/announcement-detail'
-import { incrementAnnouncementViews } from '@/lib/actions/announcement-views'
-import { createClient } from '@/lib/supabase/server'
+} from "@/lib/shared/db/queries/announcement-detail"
+import { incrementAnnouncementViews } from "@/lib/core/announcements/views"
+import { createClient } from "@/lib/shared/db/server"
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,7 @@ import Link from 'next/link'
 import {
   deleteAnnouncement,
   markAnnouncementAsCompleted,
-} from '@/lib/actions/announcement-management'
+} from "@/lib/core/announcements/management"
 
 interface PageProps {
   params: Promise<{ id: string }>

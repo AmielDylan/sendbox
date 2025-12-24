@@ -11,9 +11,9 @@ import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
   COUNTRIES,
-} from '@/lib/validations/announcement'
-import { updateAnnouncement } from '@/lib/actions/announcement-management'
-import { searchCities } from '@/lib/utils/cities'
+} from "@/lib/core/announcements/validations"
+import { updateAnnouncement } from "@/lib/core/announcements/management"
+import { searchCities } from "@/lib/shared/utils/cities"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,7 +47,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { useDebounce } from '@/hooks/use-debounce'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 
 export default function EditAnnouncementPage({
   params,

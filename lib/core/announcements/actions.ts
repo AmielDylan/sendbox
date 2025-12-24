@@ -6,12 +6,12 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
-} from '@/lib/validations/announcement'
-import { isFeatureEnabled } from '@/lib/config/features'
+} from "@/lib/core/announcements/validations"
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 
 const MAX_ACTIVE_ANNOUNCEMENTS = 10
 

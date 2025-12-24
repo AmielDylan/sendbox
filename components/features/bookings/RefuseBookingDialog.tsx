@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { refuseBooking } from '@/lib/actions/booking-requests'
+import { refuseBooking } from "@/lib/core/bookings/requests"
 import { Loader2, XCircle } from 'lucide-react'
 
 interface RefuseBookingDialogProps {

@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { NotificationItem } from '@/components/features/notifications/NotificationItem'
-import { markAllNotificationsAsRead, getNotifications } from '@/lib/actions/notifications'
+import { markAllNotificationsAsRead, getNotifications } from "@/lib/core/notifications/actions"
 import { Loader2, CheckCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/use-notifications'

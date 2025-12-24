@@ -7,7 +7,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { verifyEmail } from '@/lib/actions/auth'
+import { verifyEmail } from "@/lib/core/auth/actions"
 import { Button } from '@/components/ui/button'
 import {
   Card,

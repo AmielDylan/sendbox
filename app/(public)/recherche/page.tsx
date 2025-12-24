@@ -10,7 +10,7 @@ import {
   searchAnnouncementsClient,
   countSearchAnnouncements,
   type SearchFilters,
-} from '@/lib/supabase/queries/announcements'
+} from "@/lib/shared/db/queries/announcements"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,7 +33,7 @@ import { Slider } from '@/components/ui/slider'
 import { Calendar } from '@/components/ui/calendar'
 import { AnnouncementCard } from '@/components/features/announcements/AnnouncementCard'
 import { Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
-import { COUNTRIES } from '@/lib/validations/announcement'
+import { COUNTRIES } from "@/lib/core/announcements/validations"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 

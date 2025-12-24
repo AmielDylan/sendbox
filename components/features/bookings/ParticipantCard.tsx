@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Star, MessageSquare, User } from 'lucide-react'
-import { generateInitials } from '@/lib/utils/avatar'
+import { generateInitials } from "@/lib/core/profile/utils"
 
 interface ParticipantCardProps {
   role: 'sender' | 'traveler'

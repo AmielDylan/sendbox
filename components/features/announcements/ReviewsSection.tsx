@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Star } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials } from '@/lib/utils/avatar'
+import { generateInitials } from "@/lib/core/profile/utils"
 
 interface Review {
   id: string

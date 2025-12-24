@@ -9,8 +9,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { registerSchema, type RegisterInput } from '@/lib/validations/auth'
-import { signUp } from '@/lib/actions/auth'
+import { registerSchema, type RegisterInput } from "@/lib/core/auth/validations"
+import { signUp } from "@/lib/core/auth/actions"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'

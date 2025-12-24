@@ -6,7 +6,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,7 +17,7 @@ import {
   SignatureCanvas,
   type SignatureCanvasRef,
 } from '@/components/features/bookings/SignatureCanvas'
-import { markAsDelivered } from '@/lib/actions/booking-workflow'
+import { markAsDelivered } from "@/lib/core/bookings/workflow"
 import { Loader2, MapPin, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 

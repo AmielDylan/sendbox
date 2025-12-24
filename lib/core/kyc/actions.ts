@@ -5,21 +5,21 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import {
   kycSchema,
   kycReviewSchema,
   type KYCInput,
   type KYCReviewInput,
-} from '@/lib/validations/kyc'
+} from "@/lib/core/kyc/validations"
 import {
   validateFileType,
   processImage,
   generateSecureFileName,
-} from '@/lib/utils/file-upload'
-import { ACCEPTED_IMAGE_TYPES } from '@/lib/validations/kyc'
-import { validateKYCDocument } from '@/lib/security/upload-validation'
-import { uploadRateLimit } from '@/lib/security/rate-limit'
+} from "@/lib/shared/utils/files"
+import { ACCEPTED_IMAGE_TYPES } from "@/lib/core/kyc/validations"
+import { validateKYCDocument } from "@/lib/shared/security/upload-validation"
+import { uploadRateLimit } from "@/lib/shared/security/rate-limit"
 
 /**
  * Upload et soumission du formulaire KYC

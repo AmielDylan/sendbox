@@ -9,12 +9,12 @@ import { useQuery } from '@tanstack/react-query'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { getUserConversations } from '@/lib/actions/messages'
-import { generateInitials } from '@/lib/utils/avatar'
+import { getUserConversations } from "@/lib/core/messages/actions"
+import { generateInitials } from "@/lib/core/profile/utils"
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils"
 
 interface Conversation {
   booking_id: string

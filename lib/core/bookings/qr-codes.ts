@@ -2,7 +2,7 @@
  * Utilitaires pour la génération et validation des QR codes
  */
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import { createHash, randomBytes } from 'crypto'
 
 /**

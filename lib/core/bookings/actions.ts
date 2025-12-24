@@ -6,18 +6,18 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 import {
   createBookingSchema,
   type CreateBookingInput,
-} from '@/lib/validations/booking'
+} from "@/lib/core/bookings/validations"
 import {
   generatePackagePhotoFileName,
   validatePackagePhoto,
-} from '@/lib/utils/package-photos'
-import { validateImageUpload } from '@/lib/security/upload-validation'
-import { uploadRateLimit } from '@/lib/security/rate-limit'
-import { isFeatureEnabled } from '@/lib/config/features'
+} from "@/lib/core/bookings/photos"
+import { validateImageUpload } from "@/lib/shared/security/upload-validation"
+import { uploadRateLimit } from "@/lib/shared/security/rate-limit"
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 import sharp from 'sharp'
 
 /**

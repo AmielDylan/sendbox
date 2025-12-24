@@ -5,8 +5,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { sendEmail } from '@/lib/utils/email'
+import { createClient } from "@/lib/shared/db/server"
+import { sendEmail } from "@/lib/shared/services/email/client"
 
 export type NotificationType =
   | 'booking_request'

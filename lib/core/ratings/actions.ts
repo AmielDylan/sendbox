@@ -5,9 +5,9 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
-import { ratingSchema, type RatingInput } from '@/lib/validations/rating'
-import { notifyUser } from './notifications'
+import { createClient } from "@/lib/shared/db/server"
+import { ratingSchema, type RatingInput } from "@/lib/core/ratings/validations"
+import { notifyUser } from '@/lib/core/notifications/actions'
 
 /**
  * Soumet un rating pour un service terminé

@@ -16,9 +16,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/ui/page-header'
 import { StarRating } from '@/components/features/ratings/StarRating'
-import { ratingSchema, RATING_SUGGESTIONS, type RatingInput } from '@/lib/validations/rating'
-import { submitRating, canRateBooking } from '@/lib/actions/rating'
-import { cn } from '@/lib/utils'
+import { ratingSchema, RATING_SUGGESTIONS, type RatingInput } from "@/lib/core/ratings/validations"
+import { submitRating, canRateBooking } from "@/lib/core/ratings/actions"
+import { cn } from "@/lib/utils"
 
 function RatingPageContent() {
   const params = useParams()

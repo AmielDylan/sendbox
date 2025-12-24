@@ -7,8 +7,8 @@
 export * from './config/features'
 
 // Database
-export * from './db/client'
-export * from './db/server'
+export { createClient as createBrowserClient } from './db/client'
+export { createClient as createServerClient } from './db/server'
 
 // Security
 export * from './security/rate-limit'

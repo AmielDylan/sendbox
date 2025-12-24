@@ -11,9 +11,9 @@ import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
   COUNTRIES,
-} from '@/lib/validations/announcement'
-import { createAnnouncement } from '@/lib/actions/announcement'
-import { searchCities } from '@/lib/utils/cities'
+} from "@/lib/core/announcements/validations"
+import { createAnnouncement } from "@/lib/core/announcements/actions"
+import { searchCities } from "@/lib/shared/utils/cities"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

@@ -4,11 +4,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe/config'
-import { createClient } from '@/lib/supabase/server'
-import { fromStripeAmount } from '@/lib/utils/payment-calculations'
-import { generateTransportContract } from '@/lib/actions/pdf-generation'
-import { generateBookingQRCode } from '@/lib/utils/qr-codes'
+import { stripe, STRIPE_WEBHOOK_SECRET } from "@/lib/shared/services/stripe/config"
+import { createClient } from "@/lib/shared/db/server"
+import { fromStripeAmount } from "@/lib/core/payments/calculations"
+import { generateTransportContract } from "@/lib/shared/services/pdf/generation"
+import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
 import Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {

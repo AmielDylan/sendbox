@@ -5,7 +5,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from "@/lib/shared/db/server"
 
 const VIEW_COOKIE_PREFIX = 'announcement_view_'
 const COOKIE_MAX_AGE = 60 * 60 * 24 // 24 heures

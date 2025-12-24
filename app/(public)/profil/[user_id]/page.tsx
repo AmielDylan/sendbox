@@ -4,8 +4,8 @@
 
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { getUserRatings, getUserRatingStats } from '@/lib/actions/rating'
+import { createClient } from "@/lib/shared/db/server"
+import { getUserRatings, getUserRatingStats } from "@/lib/core/ratings/actions"
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -16,7 +16,7 @@ import { RatingDistribution } from '@/components/features/ratings/RatingDistribu
 import { Star, CheckCircle2, Briefcase, Award, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials } from '@/lib/utils/avatar'
+import { generateInitials } from "@/lib/core/profile/utils"
 import Link from 'next/link'
 
 interface ProfilePageProps {

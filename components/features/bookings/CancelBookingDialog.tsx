@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { cancelBooking } from '@/lib/actions/booking-workflow'
+import { cancelBooking } from "@/lib/core/bookings/workflow"
 import { Loader2, XCircle } from 'lucide-react'
 
 interface CancelBookingDialogProps {
