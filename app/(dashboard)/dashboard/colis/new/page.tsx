@@ -46,7 +46,7 @@ import {
   Package,
   Euro,
   Shield,
-} from 'lucide-react'
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { generateInitials } from "@/lib/core/profile/utils"

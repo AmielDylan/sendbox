@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cancelBooking } from "@/lib/core/bookings/workflow"
-import { Loader2, XCircle } from 'lucide-react'
+import { IconLoader2, IconCircleX } from '@tabler/icons-react'
 
 interface CancelBookingDialogProps {
   bookingId: string
@@ -59,7 +59,7 @@ export function CancelBookingDialog({ bookingId, trigger }: CancelBookingDialogP
       <AlertDialogTrigger asChild>
         {trigger || (
           <Button variant="destructive" className="w-full">
-            <XCircle className="mr-2 h-4 w-4" />
+            <IconCircleX className="mr-2 h-4 w-4" />
             Annuler la réservation
           </Button>
         )}
@@ -85,7 +85,7 @@ export function CancelBookingDialog({ bookingId, trigger }: CancelBookingDialogP
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                 Annulation...
               </>
             ) : (
@@ -97,6 +97,7 @@ export function CancelBookingDialog({ bookingId, trigger }: CancelBookingDialogP
     </AlertDialog>
   )
 }
+
 
 
 

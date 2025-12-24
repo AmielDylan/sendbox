@@ -31,16 +31,21 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { AnnouncementCard } from '@/components/features/announcements/AnnouncementCard'
-import { Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { IconLoader2, IconSearch, IconChevronLeft, IconChevronRight, IconCalendar } from '@tabler/icons-react'
 import { COUNTRIES } from "@/lib/core/announcements/validations"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default function SearchPage() {
   const [filters, setFilters] = useState<SearchFilters>({
-    departureCountry: 'ALL',
-    arrivalCountry: 'ALL',
+    departureCountry: null,
+    arrivalCountry: null,
     departureDate: null,
     minKg: 1,
     sortBy: 'date',
@@ -56,29 +61,13 @@ export default function SearchPage() {
     error,
   } = useQuery({
     queryKey: ['announcements', 'search', filters],
-    queryFn: () => {
-      // Convertir 'ALL' en null pour la recherche
-      const searchFilters = {
-        ...filters,
-        departureCountry: filters.departureCountry === 'ALL' ? null : filters.departureCountry,
-        arrivalCountry: filters.arrivalCountry === 'ALL' ? null : filters.arrivalCountry,
-      }
-      return searchAnnouncementsClient(searchFilters)
-    },
+    queryFn: () => searchAnnouncementsClient(filters),
   })
 
   // Query pour compter le total
   const { data: countData } = useQuery({
     queryKey: ['announcements', 'count', filters],
-    queryFn: () => {
-      // Convertir 'ALL' en null pour le comptage
-      const searchFilters = {
-        ...filters,
-        departureCountry: filters.departureCountry === 'ALL' ? null : filters.departureCountry,
-        arrivalCountry: filters.arrivalCountry === 'ALL' ? null : filters.arrivalCountry,
-      }
-      return countSearchAnnouncements(searchFilters)
-    },
+    queryFn: () => countSearchAnnouncements(filters),
   })
 
   const announcements = announcementsData?.data || []
@@ -109,16 +98,16 @@ export default function SearchPage() {
               <CardTitle>Filtres</CardTitle>
               <CardDescription>Affinez votre recherche</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               {/* Pays de départ */}
               <div className="space-y-2">
                 <Label htmlFor="departure_country">Pays de départ</Label>
                 <Select
-                  value={filters.departureCountry || ''}
+                  value={filters.departureCountry || undefined}
                   onValueChange={(value) =>
                     setFilters((prev) => ({
                       ...prev,
-                      departureCountry: value || null,
+                      departureCountry: value as 'FR' | 'BJ' | null,
                     }))
                   }
                 >
@@ -126,12 +115,8 @@ export default function SearchPage() {
                     <SelectValue placeholder="Tous les pays" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">Tous les pays</SelectItem>
-                    {COUNTRIES.map((country) => (
-                      <SelectItem key={country} value={country}>
-                        {country === 'FR' ? 'France' : 'Bénin'}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="FR">France</SelectItem>
+                    <SelectItem value="BJ">Bénin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -140,11 +125,11 @@ export default function SearchPage() {
               <div className="space-y-2">
                 <Label htmlFor="arrival_country">Pays d'arrivée</Label>
                 <Select
-                  value={filters.arrivalCountry || ''}
+                  value={filters.arrivalCountry || undefined}
                   onValueChange={(value) =>
                     setFilters((prev) => ({
                       ...prev,
-                      arrivalCountry: value || null,
+                      arrivalCountry: value as 'FR' | 'BJ' | null,
                     }))
                   }
                 >
@@ -152,12 +137,8 @@ export default function SearchPage() {
                     <SelectValue placeholder="Tous les pays" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tous les pays</SelectItem>
-                    {COUNTRIES.map((country) => (
-                      <SelectItem key={country} value={country}>
-                        {country === 'FR' ? 'France' : 'Bénin'}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="FR">France</SelectItem>
+                    <SelectItem value="BJ">Bénin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -165,24 +146,31 @@ export default function SearchPage() {
               {/* Date de départ */}
               <div className="space-y-2">
                 <Label>Date de départ (±3 jours)</Label>
-                <Calendar
-                  mode="single"
-                  selected={departureDate}
-                  onSelect={(date) => {
-                    setDepartureDate(date)
-                    setFilters((prev) => ({
-                      ...prev,
-                      departureDate: date || null,
-                    }))
-                  }}
-                  disabled={(date) => date < new Date()}
-                  className="rounded-md border"
-                />
-                {departureDate && (
-                  <p className="text-xs text-muted-foreground">
-                    {format(departureDate, 'PP', { locale: fr })}
-                  </p>
-                )}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <IconCalendar className="mr-2 h-4 w-4" />
+                      {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" side="right" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={departureDate}
+                      onSelect={(date) => {
+                        setDepartureDate(date)
+                        setFilters((prev) => ({
+                          ...prev,
+                          departureDate: date || null,
+                        }))
+                      }}
+                      disabled={(date) => date < new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Poids minimum */}
@@ -224,7 +212,7 @@ export default function SearchPage() {
               </div>
 
               <Button onClick={handleSearch} className="w-full">
-                <Search className="mr-2 h-4 w-4" />
+                <IconSearch className="mr-2 h-4 w-4" />
                 Rechercher
               </Button>
             </CardContent>
@@ -235,7 +223,7 @@ export default function SearchPage() {
         <div className="lg:col-span-3">
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[400px]">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : error ? (
             <Card>
@@ -287,7 +275,7 @@ export default function SearchPage() {
                     onClick={() => handlePageChange(filters.page! - 1)}
                     disabled={filters.page === 1}
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <IconChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="text-sm text-muted-foreground">
                     Page {filters.page} sur {totalPages}
@@ -298,7 +286,7 @@ export default function SearchPage() {
                     onClick={() => handlePageChange(filters.page! + 1)}
                     disabled={filters.page === totalPages}
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    <IconChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               )}

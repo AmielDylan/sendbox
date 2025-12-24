@@ -15,7 +15,7 @@ import { sendMessage, markMessagesAsRead } from "@/lib/core/messages/actions"
 import { generateInitials } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Send, Loader2, Image as ImageIcon } from 'lucide-react'
+import { Send, IconLoader2, Image as ImageIcon } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { createClient } from "@/lib/shared/db/client"
 import Image from 'next/image'

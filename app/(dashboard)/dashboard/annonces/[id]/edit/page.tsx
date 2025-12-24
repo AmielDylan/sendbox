@@ -37,12 +37,12 @@ import { Slider } from '@/components/ui/slider'
 import { Calendar } from '@/components/ui/calendar'
 import { toast } from 'sonner'
 import {
-  Loader2,
-  MapPin,
-  Package,
-  Euro,
-  Calendar as CalendarIcon,
-} from 'lucide-react'
+  IconLoader2,
+  IconMapPin,
+  IconPackage,
+  IconCurrencyEuro,
+  IconCalendar,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
@@ -171,7 +171,7 @@ export default function EditAnnouncementPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -193,7 +193,7 @@ export default function EditAnnouncementPage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
+              <IconMapPin className="h-5 w-5" />
               Trajet
             </CardTitle>
             <CardDescription>
@@ -322,7 +322,7 @@ export default function EditAnnouncementPage({
             {/* Date */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4" />
+                <IconCalendar className="h-4 w-4" />
                 Date de départ
               </Label>
               <div className="w-full overflow-x-auto mx-auto">
@@ -347,7 +347,7 @@ export default function EditAnnouncementPage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
+              <IconPackage className="h-5 w-5" />
               Capacité et Prix
             </CardTitle>
             <CardDescription>
@@ -383,7 +383,7 @@ export default function EditAnnouncementPage({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="price_per_kg" className="flex items-center gap-2">
-                  <Euro className="h-4 w-4" />
+                  <IconCurrencyEuro className="h-4 w-4" />
                   Prix par kilogramme
                 </Label>
                 <span className="text-2xl font-bold">{pricePerKg} €/kg</span>
@@ -455,7 +455,7 @@ export default function EditAnnouncementPage({
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                 Mise à jour...
               </>
             ) : (

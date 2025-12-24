@@ -23,7 +23,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Loader2, Package } from 'lucide-react'
+import { IconLoader2, IconPackage } from '@tabler/icons-react'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -69,7 +69,7 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <Package className="h-12 w-12 text-primary" />
+            <IconPackage className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">Créer un compte</CardTitle>
           <CardDescription>
@@ -271,7 +271,7 @@ export default function RegisterPage() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Inscription en cours...
                 </>
               ) : (

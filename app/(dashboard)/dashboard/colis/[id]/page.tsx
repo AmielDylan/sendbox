@@ -14,19 +14,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import {
-  Loader2,
-  Package,
-  Euro,
-  Calendar,
-  Weight,
-  Shield,
-  FileText,
-  QrCode,
-  CreditCard,
-  CheckCircle2,
-  Star,
-  ArrowLeft,
-} from 'lucide-react'
+  IconLoader2,
+  IconPackage,
+  IconCurrencyEuro,
+  IconCalendar,
+  IconWeight,
+  IconShield,
+  IconFileText,
+  IconQrcode,
+  IconCreditCard,
+  IconCircleCheck,
+  IconStar,
+  IconArrowLeft,
+} from '@tabler/icons-react'
 import { BookingStatusBadge } from '@/components/features/bookings/BookingStatusBadge'
 import { BookingTimeline } from '@/components/features/bookings/BookingTimeline'
 import { ParticipantCard } from '@/components/features/bookings/ParticipantCard'
@@ -167,7 +167,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -207,7 +207,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         actions={
           <Button variant="outline" asChild>
             <Link href="/dashboard/colis">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <IconArrowLeft className="mr-2 h-4 w-4" />
               Retour
             </Link>
           </Button>
@@ -234,7 +234,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex items-center gap-2">
-              <Weight className="h-4 w-4 text-muted-foreground" />
+              <IconWeight className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Poids</p>
                 <p className="font-medium">{booking.weight_kg} kg</p>
@@ -242,7 +242,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              <Euro className="h-4 w-4 text-muted-foreground" />
+              <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Prix total</p>
                 <p className="font-medium">
@@ -253,7 +253,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
             {booking.insurance_opted && (
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-muted-foreground" />
+                <IconShield className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Assurance</p>
                   <p className="font-medium">
@@ -264,7 +264,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             )}
 
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <IconCalendar className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Créée le</p>
                 <p className="font-medium">
@@ -362,7 +362,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
               <>
                 <Button asChild className="w-full">
                   <Link href={`/dashboard/colis/${booking.id}/paiement`}>
-                    <CreditCard className="mr-2 h-4 w-4" />
+                    <IconCreditCard className="mr-2 h-4 w-4" />
                     Payer maintenant
                   </Link>
                 </Button>
@@ -374,13 +374,13 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
               <>
                 <Button variant="outline" asChild className="w-full">
                   <Link href={`/dashboard/colis/${booking.id}/contrat`}>
-                    <FileText className="mr-2 h-4 w-4" />
+                    <IconFileText className="mr-2 h-4 w-4" />
                     Voir le contrat
                   </Link>
                 </Button>
                 <Button variant="outline" asChild className="w-full">
                   <Link href={`/dashboard/colis/${booking.id}/qr`}>
-                    <QrCode className="mr-2 h-4 w-4" />
+                    <IconQrcode className="mr-2 h-4 w-4" />
                     QR Code
                   </Link>
                 </Button>
@@ -390,7 +390,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             {isSender && booking.status === 'delivered' && (
               <Button asChild className="w-full">
                 <Link href={`/dashboard/colis/${booking.id}/noter`}>
-                  <Star className="mr-2 h-4 w-4" />
+                  <IconStar className="mr-2 h-4 w-4" />
                   Noter le voyageur
                 </Link>
               </Button>
@@ -406,12 +406,12 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                 >
                   {isAccepting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                       Acceptation...
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      <IconCircleCheck className="mr-2 h-4 w-4" />
                       Accepter
                     </>
                   )}
@@ -424,13 +424,13 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
               <>
                 <Button variant="outline" asChild className="w-full">
                   <Link href={`/dashboard/colis/${booking.id}/contrat`}>
-                    <FileText className="mr-2 h-4 w-4" />
+                    <IconFileText className="mr-2 h-4 w-4" />
                     Voir le contrat
                   </Link>
                 </Button>
                 <Button asChild className="w-full">
                   <Link href={`/dashboard/scan/depot/${booking.id}`}>
-                    <Package className="mr-2 h-4 w-4" />
+                    <IconPackage className="mr-2 h-4 w-4" />
                     Scanner QR dépôt
                   </Link>
                 </Button>
@@ -440,7 +440,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             {isTraveler && booking.status === 'in_transit' && (
               <Button asChild className="w-full">
                 <Link href={`/dashboard/scan/livraison/${booking.id}`}>
-                  <Package className="mr-2 h-4 w-4" />
+                  <IconPackage className="mr-2 h-4 w-4" />
                   Scanner QR livraison
                 </Link>
               </Button>

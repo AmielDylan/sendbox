@@ -13,7 +13,7 @@ import { getUserConversations } from "@/lib/core/messages/actions"
 import { generateInitials } from "@/lib/core/profile/utils"
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 
 interface Conversation {
@@ -166,6 +166,7 @@ export function ConversationList({
     </ScrollArea>
   )
 }
+
 
 
 

@@ -3,7 +3,7 @@
  */
 
 import { Progress } from '@/components/ui/progress'
-import { Package, Euro } from 'lucide-react'
+import { IconPackage, IconCurrencyEuro } from '@tabler/icons-react'
 
 interface CapacityProgressProps {
   maxWeight: number
@@ -64,6 +64,7 @@ export function CapacityProgress({
     </div>
   )
 }
+
 
 
 

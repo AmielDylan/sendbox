@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { StarRating } from '@/components/features/ratings/StarRating'
 import { RatingDistribution } from '@/components/features/ratings/RatingDistribution'
-import { Star, CheckCircle2, Briefcase, Award, Loader2 } from 'lucide-react'
+import { IconStar, IconCircleCheck, IconBriefcase, IconAward, IconLoader2 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { generateInitials } from "@/lib/core/profile/utils"

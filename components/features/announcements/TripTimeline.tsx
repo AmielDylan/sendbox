@@ -2,7 +2,7 @@
  * Composant Timeline pour afficher le trajet
  */
 
-import { MapPin } from 'lucide-react'
+import { MapPin } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -84,6 +84,7 @@ export function TripTimeline({
     </div>
   )
 }
+
 
 
 

@@ -8,7 +8,7 @@ import { useRef, forwardRef, useImperativeHandle } from 'react'
 import SignatureCanvasLib from 'react-signature-canvas'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { RotateCcw } from 'lucide-react'
+import { IconRotate } from '@tabler/icons-react'
 
 interface SignatureCanvasProps {
   onSignatureChange?: (isEmpty: boolean) => void
@@ -72,7 +72,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
                 size="sm"
                 onClick={handleClear}
               >
-                <RotateCcw className="mr-2 h-4 w-4" />
+                <IconRotate className="mr-2 h-4 w-4" />
                 Effacer
               </Button>
             </div>
@@ -84,6 +84,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
 )
 
 SignatureCanvas.displayName = 'SignatureCanvas'
+
 
 
 

@@ -4,7 +4,7 @@
 
 'use client'
 
-import { Star } from 'lucide-react'
+import { Star } from '@tabler/icons-react'
 
 interface RatingDistributionProps {
   distribution: Record<number, number>
@@ -47,6 +47,7 @@ export function RatingDistribution({
     </div>
   )
 }
+
 
 
 

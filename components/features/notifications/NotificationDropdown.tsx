@@ -5,7 +5,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Bell } from 'lucide-react'
+import { IconBell, IconLoader2 } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -21,7 +21,6 @@ import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import Link from 'next/link'
 import { NotificationItem } from './NotificationItem'
-import { Loader2 } from 'lucide-react'
 
 export function NotificationDropdown() {
   const [open, setOpen] = useState(false)
@@ -33,7 +32,7 @@ export function NotificationDropdown() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <IconBell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
@@ -55,7 +54,7 @@ export function NotificationDropdown() {
         <ScrollArea className="h-[400px]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <IconLoader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           ) : recentNotifications.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">

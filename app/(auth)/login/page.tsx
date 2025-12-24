@@ -23,7 +23,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Loader2, Package } from 'lucide-react'
+import { IconLoader2, IconPackage } from '@tabler/icons-react'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -82,7 +82,7 @@ function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <Package className="h-12 w-12 text-primary" />
+            <IconPackage className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">Connexion</CardTitle>
           <CardDescription>
@@ -172,7 +172,7 @@ function LoginForm() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Connexion en cours...
                 </>
               ) : (
@@ -205,7 +205,7 @@ export default function LoginPage() {
           <Card className="w-full max-w-md">
             <CardHeader className="space-y-1 text-center">
               <div className="flex justify-center mb-4">
-                <Package className="h-12 w-12 text-primary animate-pulse" />
+                <IconPackage className="h-12 w-12 text-primary animate-pulse" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 Chargement...

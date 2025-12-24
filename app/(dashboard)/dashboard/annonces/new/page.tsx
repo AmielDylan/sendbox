@@ -35,25 +35,31 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
-  Loader2,
-  ArrowLeft,
-  ArrowRight,
-  MapPin,
-  Package,
-  CheckCircle2,
-} from 'lucide-react'
+  IconLoader2,
+  IconArrowLeft,
+  IconArrowRight,
+  IconMapPin,
+  IconPackage,
+  IconCheck,
+  IconCalendar,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { useDebounce } from '@/hooks/use-debounce'
 
 const STEPS = [
-  { id: 1, title: 'Trajet', icon: MapPin },
-  { id: 2, title: 'Capacité', icon: Package },
-  { id: 3, title: 'Publication', icon: CheckCircle2 },
+  { id: 1, title: 'Trajet', icon: IconMapPin },
+  { id: 2, title: 'Capacité', icon: IconPackage },
+  { id: 3, title: 'Publication', icon: IconCheck },
 ] as const
 
 export default function NewAnnouncementPage() {
@@ -256,203 +262,233 @@ export default function NewAnnouncementPage() {
           <CardContent className="space-y-6">
             {/* Étape 1 : Trajet */}
             {currentStep === 1 && (
-              <div className="space-y-6">
-                {/* Pays de départ */}
-                <div className="space-y-2">
-                  <Label htmlFor="departure_country">Pays de départ</Label>
-                  <Select
-                    onValueChange={value =>
-                      setValue('departure_country', value as 'FR' | 'BJ')
-                    }
-                  >
-                    <SelectTrigger id="departure_country">
-                      <SelectValue placeholder="Sélectionnez un pays" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRIES.map(country => (
-                        <SelectItem key={country} value={country}>
-                          {country === 'FR' ? 'France' : 'Bénin'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.departure_country && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.departure_country.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Ville de départ */}
-                <div className="space-y-2">
-                  <Label htmlFor="departure_city">Ville de départ</Label>
-                  <div className="relative">
-                    <Input
-                      id="departure_city"
-                      placeholder="Paris, Lyon, Cotonou..."
-                      {...register('departure_city')}
-                      onFocus={() => setShowDepartureSuggestions(true)}
-                      aria-invalid={errors.departure_city ? 'true' : 'false'}
-                    />
-                    {showDepartureSuggestions &&
-                      departureCitySuggestions.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg">
-                          {departureCitySuggestions.map(city => (
-                            <button
-                              key={city}
-                              type="button"
-                              className="w-full text-left px-4 py-2 hover:bg-accent"
-                              onClick={() =>
-                                selectCity(
-                                  city,
-                                  'departure',
-                                  setDepartureCitySuggestions,
-                                  setShowDepartureSuggestions
-                                )
-                              }
-                            >
-                              {city}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                  </div>
-                  {errors.departure_city && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.departure_city.message}
-                    </p>
-                  )}
-                </div>
-
-              {/* Date de départ */}
-              <div className="space-y-2">
-                <Label>Date de départ</Label>
-                <div className="w-full overflow-x-auto">
-                  <Calendar
-                    mode="single"
-                    selected={departureDate}
-                    onSelect={date => {
-                      setValue('departure_date', date || new Date())
-                      if (date) {
-                        // Ajuster la date d'arrivée si nécessaire
-                        const currentArrival = watch('arrival_date')
-                        if (!currentArrival || currentArrival <= date) {
-                          const nextDay = new Date(date)
-                          nextDay.setDate(nextDay.getDate() + 1)
-                          setValue('arrival_date', nextDay)
-                        }
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Colonne DÉPART */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
+                    <IconMapPin className="h-5 w-5" />
+                    Départ
+                  </h3>
+                  
+                  {/* Pays de départ */}
+                  <div className="space-y-2">
+                    <Label htmlFor="departure_country">Pays de départ</Label>
+                    <Select
+                      value={departureCountry || ''}
+                      onValueChange={value =>
+                        setValue('departure_country', value as 'FR' | 'BJ')
                       }
-                    }}
-                    disabled={date => date < new Date()}
-                    className="rounded-md border mx-auto"
-                  />
-                </div>
-                  {departureDate && (
-                    <p className="text-sm text-muted-foreground">
-                      {format(departureDate, 'PP', { locale: fr })}
-                    </p>
-                  )}
-                  {errors.departure_date && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.departure_date.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Pays d'arrivée */}
-                <div className="space-y-2">
-                  <Label htmlFor="arrival_country">Pays d'arrivée</Label>
-                  <Select
-                    onValueChange={value =>
-                      setValue('arrival_country', value as 'FR' | 'BJ')
-                    }
-                  >
-                    <SelectTrigger id="arrival_country">
-                      <SelectValue placeholder="Sélectionnez un pays" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRIES.map(country => (
-                        <SelectItem key={country} value={country}>
-                          {country === 'FR' ? 'France' : 'Bénin'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.arrival_country && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.arrival_country.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Ville d'arrivée */}
-                <div className="space-y-2">
-                  <Label htmlFor="arrival_city">Ville d'arrivée</Label>
-                  <div className="relative">
-                    <Input
-                      id="arrival_city"
-                      placeholder="Paris, Lyon, Cotonou..."
-                      {...register('arrival_city')}
-                      onFocus={() => setShowArrivalSuggestions(true)}
-                      aria-invalid={errors.arrival_city ? 'true' : 'false'}
-                    />
-                    {showArrivalSuggestions &&
-                      arrivalCitySuggestions.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg">
-                          {arrivalCitySuggestions.map(city => (
-                            <button
-                              key={city}
-                              type="button"
-                              className="w-full text-left px-4 py-2 hover:bg-accent"
-                              onClick={() =>
-                                selectCity(
-                                  city,
-                                  'arrival',
-                                  setArrivalCitySuggestions,
-                                  setShowArrivalSuggestions
-                                )
-                              }
-                            >
-                              {city}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                    >
+                      <SelectTrigger id="departure_country">
+                        <SelectValue placeholder="Sélectionnez un pays" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRIES.map(country => (
+                          <SelectItem key={country} value={country}>
+                            {country === 'FR' ? 'France' : 'Bénin'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.departure_country && (
+                      <p className="text-sm text-destructive" role="alert">
+                        {errors.departure_country.message}
+                      </p>
+                    )}
                   </div>
-                  {errors.arrival_city && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.arrival_city.message}
-                    </p>
-                  )}
+
+                  {/* Ville de départ */}
+                  <div className="space-y-2">
+                    <Label htmlFor="departure_city">Ville de départ</Label>
+                    <div className="relative">
+                      <Input
+                        id="departure_city"
+                        placeholder="Paris, Lyon, Cotonou..."
+                        {...register('departure_city')}
+                        onFocus={() => setShowDepartureSuggestions(true)}
+                        aria-invalid={errors.departure_city ? 'true' : 'false'}
+                      />
+                      {showDepartureSuggestions &&
+                        departureCitySuggestions.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                            {departureCitySuggestions.map(city => (
+                              <button
+                                key={city}
+                                type="button"
+                                className="w-full text-left px-4 py-2 hover:bg-accent"
+                                onClick={() =>
+                                  selectCity(
+                                    city,
+                                    'departure',
+                                    setDepartureCitySuggestions,
+                                    setShowDepartureSuggestions
+                                  )
+                                }
+                              >
+                                {city}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                    {errors.departure_city && (
+                      <p className="text-sm text-destructive" role="alert">
+                        {errors.departure_city.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Date de départ */}
+                  <div className="space-y-2">
+                    <Label>Date de départ</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          <IconCalendar className="mr-2 h-4 w-4" />
+                          {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" side="bottom" align="end">
+                        <Calendar
+                          mode="single"
+                          selected={departureDate}
+                          onSelect={date => {
+                            setValue('departure_date', date || new Date())
+                            if (date) {
+                              // Ajuster la date d'arrivée si nécessaire
+                              const currentArrival = watch('arrival_date')
+                              if (!currentArrival || currentArrival <= date) {
+                                const nextDay = new Date(date)
+                                nextDay.setDate(nextDay.getDate() + 1)
+                                setValue('arrival_date', nextDay)
+                              }
+                            }
+                          }}
+                          disabled={date => date < new Date()}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {errors.departure_date && (
+                      <p className="text-sm text-destructive" role="alert">
+                        {errors.departure_date.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Date d'arrivée */}
-                <div className="space-y-2">
-                  <Label>Date d'arrivée</Label>
-                  <Calendar
-                    mode="single"
-                    selected={watch('arrival_date')}
-                    onSelect={date =>
-                      setValue('arrival_date', date || new Date())
-                    }
-                    disabled={date => {
-                      if (!departureDate) return date < new Date()
-                      const minDate = new Date(departureDate)
-                      minDate.setDate(minDate.getDate() + 1)
-                      return date < minDate
-                    }}
-                    className="rounded-md border"
-                  />
-                  {watch('arrival_date') && (
-                    <p className="text-sm text-muted-foreground">
-                      {format(watch('arrival_date')!, 'PP', { locale: fr })}
-                    </p>
-                  )}
-                  {errors.arrival_date && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.arrival_date.message}
-                    </p>
-                  )}
+                {/* Colonne ARRIVÉE */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
+                    <IconMapPin className="h-5 w-5" />
+                    Arrivée
+                  </h3>
+
+                  {/* Pays d'arrivée */}
+                  <div className="space-y-2">
+                    <Label htmlFor="arrival_country">Pays d'arrivée</Label>
+                    <Select
+                      value={arrivalCountry || ''}
+                      onValueChange={value =>
+                        setValue('arrival_country', value as 'FR' | 'BJ')
+                      }
+                    >
+                      <SelectTrigger id="arrival_country">
+                        <SelectValue placeholder="Sélectionnez un pays" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRIES.map(country => (
+                          <SelectItem key={country} value={country}>
+                            {country === 'FR' ? 'France' : 'Bénin'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.arrival_country && (
+                      <p className="text-sm text-destructive" role="alert">
+                        {errors.arrival_country.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Ville d'arrivée */}
+                  <div className="space-y-2">
+                    <Label htmlFor="arrival_city">Ville d'arrivée</Label>
+                    <div className="relative">
+                      <Input
+                        id="arrival_city"
+                        placeholder="Paris, Lyon, Cotonou..."
+                        {...register('arrival_city')}
+                        onFocus={() => setShowArrivalSuggestions(true)}
+                        aria-invalid={errors.arrival_city ? 'true' : 'false'}
+                      />
+                      {showArrivalSuggestions &&
+                        arrivalCitySuggestions.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                            {arrivalCitySuggestions.map(city => (
+                              <button
+                                key={city}
+                                type="button"
+                                className="w-full text-left px-4 py-2 hover:bg-accent"
+                                onClick={() =>
+                                  selectCity(
+                                    city,
+                                    'arrival',
+                                    setArrivalCitySuggestions,
+                                    setShowArrivalSuggestions
+                                  )
+                                }
+                              >
+                                {city}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                    </div>
+                    {errors.arrival_city && (
+                      <p className="text-sm text-destructive" role="alert">
+                        {errors.arrival_city.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Date d'arrivée */}
+                  <div className="space-y-2">
+                    <Label>Date d'arrivée</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          <IconCalendar className="mr-2 h-4 w-4" />
+                          {watch('arrival_date') ? format(watch('arrival_date')!, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" side="bottom" align="end">
+                        <Calendar
+                          mode="single"
+                          selected={watch('arrival_date')}
+                          onSelect={date =>
+                            setValue('arrival_date', date || new Date())
+                          }
+                          disabled={date => {
+                            if (!departureDate) return date < new Date()
+                            const minDate = new Date(departureDate)
+                            minDate.setDate(minDate.getDate() + 1)
+                            return date < minDate
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {errors.arrival_date && (
+                      <p className="text-sm text-destructive" role="alert">
+                        {errors.arrival_date.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -588,25 +624,25 @@ export default function NewAnnouncementPage() {
                 onClick={handleBack}
                 disabled={currentStep === 1}
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <IconArrowLeft className="mr-2 h-4 w-4" />
                 Retour
               </Button>
 
               {currentStep < 3 ? (
                 <Button type="button" onClick={handleNext}>
                   Suivant
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <IconArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                       Publication...
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      <IconCheck className="mr-2 h-4 w-4" />
                       Publier l'annonce
                     </>
                   )}

@@ -50,3 +50,4 @@ COMMENT ON POLICY "Users can update their own bookings" ON bookings IS 'Les util
 
 
 
+

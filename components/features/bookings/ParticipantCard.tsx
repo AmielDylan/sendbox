@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Star, MessageSquare, User } from 'lucide-react'
+import { IconStar, IconMessageCircle, IconUser } from '@tabler/icons-react'
 import { generateInitials } from "@/lib/core/profile/utils"
 
 interface ParticipantCardProps {
@@ -39,7 +39,7 @@ export function ParticipantCard({
           {role === 'sender' ? 'Expéditeur' : 'Voyageur'}
         </h3>
         <Badge variant="outline">
-          <User className="mr-1 h-3 w-3" />
+          <IconUser className="mr-1 h-3 w-3" />
           {role === 'sender' ? 'Envoi' : 'Transport'}
         </Badge>
       </div>
@@ -60,7 +60,7 @@ export function ParticipantCard({
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {profile.rating !== null && (
               <div className="flex items-center gap-1">
-                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                <IconStar className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                 <span>{profile.rating.toFixed(1)}</span>
               </div>
             )}
@@ -74,7 +74,7 @@ export function ParticipantCard({
       {showContactButton && bookingId && (
         <Button variant="outline" size="sm" className="w-full" asChild>
           <Link href={`/dashboard/messages?booking=${bookingId}`}>
-            <MessageSquare className="mr-2 h-4 w-4" />
+            <IconMessageCircle className="mr-2 h-4 w-4" />
             Contacter
           </Link>
         </Button>
@@ -82,6 +82,7 @@ export function ParticipantCard({
     </div>
   )
 }
+
 
 
 

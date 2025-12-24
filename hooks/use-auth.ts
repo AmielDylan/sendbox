@@ -25,26 +25,39 @@ export function useAuth(): UseAuthReturn {
   useEffect(() => {
     // Récupérer l'utilisateur actuel
     const getUser = async () => {
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser()
+      try {
+        const {
+          data: { user: currentUser },
+          error: userError,
+        } = await supabase.auth.getUser()
 
-      if (currentUser) {
-        setUser(currentUser)
-
-        // Récupérer le profil
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .single()
-
-        if (profileData) {
-          setProfile(profileData as Profile)
+        if (userError) {
+          console.error('Auth error:', userError)
+          setLoading(false)
+          return
         }
-      }
 
-      setLoading(false)
+        if (currentUser) {
+          setUser(currentUser)
+
+          // Récupérer le profil
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single()
+
+          if (profileError) {
+            console.error('Profile fetch error:', profileError)
+          } else if (profileData) {
+            setProfile(profileData as Profile)
+          }
+        }
+      } catch (error) {
+        console.error('Unexpected auth error:', error)
+      } finally {
+        setLoading(false)
+      }
     }
 
     getUser()
@@ -53,24 +66,31 @@ export function useAuth(): UseAuthReturn {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(session.user)
+      try {
+        if (session?.user) {
+          setUser(session.user)
 
-        // Récupérer le profil
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
+          // Récupérer le profil
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
 
-        if (profileData) {
-          setProfile(profileData as Profile)
+          if (profileError) {
+            console.error('Profile fetch error on auth change:', profileError)
+          } else if (profileData) {
+            setProfile(profileData as Profile)
+          }
+        } else {
+          setUser(null)
+          setProfile(null)
         }
-      } else {
-        setUser(null)
-        setProfile(null)
+      } catch (error) {
+        console.error('Unexpected error in auth state change:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     })
 
     return () => {

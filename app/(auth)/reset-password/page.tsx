@@ -27,7 +27,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Loader2, Package, Mail } from 'lucide-react'
+import { IconLoader2, IconPackage, IconMail } from '@tabler/icons-react'
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams()
@@ -93,7 +93,7 @@ function ResetPasswordForm() {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
-              <Package className="h-12 w-12 text-primary" />
+              <IconPackage className="h-12 w-12 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">
               Nouveau mot de passe
@@ -175,7 +175,7 @@ function ResetPasswordForm() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                     Réinitialisation en cours...
                   </>
                 ) : (
@@ -206,7 +206,7 @@ function ResetPasswordForm() {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
-              <Mail className="h-12 w-12 text-primary" />
+              <IconMail className="h-12 w-12 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">Email envoyé !</CardTitle>
             <CardDescription>
@@ -233,7 +233,7 @@ function ResetPasswordForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <Package className="h-12 w-12 text-primary" />
+            <IconPackage className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">
             Mot de passe oublié ?
@@ -278,7 +278,7 @@ function ResetPasswordForm() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Envoi en cours...
                 </>
               ) : (
@@ -311,7 +311,7 @@ export default function ResetPasswordPage() {
           <Card className="w-full max-w-md">
             <CardHeader className="space-y-1 text-center">
               <div className="flex justify-center mb-4">
-                <Package className="h-12 w-12 text-primary animate-pulse" />
+                <IconPackage className="h-12 w-12 text-primary animate-pulse" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 Chargement...

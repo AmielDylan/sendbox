@@ -4,7 +4,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star } from 'lucide-react'
+import { Star } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { generateInitials } from "@/lib/core/profile/utils"
@@ -90,6 +90,7 @@ export function ReviewsSection({ reviews, travelerId }: ReviewsSectionProps) {
     </Card>
   )
 }
+
 
 
 

@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Star, CheckCircle2, Briefcase, Calendar } from 'lucide-react'
+import { IconStar, IconCircleCheck, IconBriefcase, Calendar } from '@tabler/icons-react'
 import { generateInitials } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -94,6 +94,7 @@ export function TravelerSection({
     </Card>
   )
 }
+
 
 
 

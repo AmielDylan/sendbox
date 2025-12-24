@@ -2,7 +2,7 @@
  * Timeline du trajet pour une réservation
  */
 
-import { MapPin, Calendar } from 'lucide-react'
+import { IconMapPin, IconCalendar } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -28,7 +28,7 @@ export function BookingTimeline({
       {/* Départ */}
       <div className="flex items-start gap-3">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-          <MapPin className="h-4 w-4 text-primary-foreground" />
+          <IconMapPin className="h-4 w-4 text-primary-foreground" />
         </div>
         <div className="flex-1">
           <p className="font-medium">{originCity}</p>
@@ -36,7 +36,7 @@ export function BookingTimeline({
             {originCountry === 'FR' ? 'France' : 'Bénin'}
           </p>
           <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-            <Calendar className="h-3 w-3" />
+            <IconCalendar className="h-3 w-3" />
             <span>
               Départ : {format(new Date(departureDate), 'dd MMMM yyyy', { locale: fr })}
             </span>
@@ -50,7 +50,7 @@ export function BookingTimeline({
       {/* Arrivée */}
       <div className="flex items-start gap-3">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
+          <IconMapPin className="h-4 w-4 text-muted-foreground" />
         </div>
         <div className="flex-1">
           <p className="font-medium">{destinationCity}</p>
@@ -59,7 +59,7 @@ export function BookingTimeline({
           </p>
           {arrivalDate && (
             <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-              <Calendar className="h-3 w-3" />
+              <IconCalendar className="h-3 w-3" />
               <span>
                 Arrivée : {format(new Date(arrivalDate), 'dd MMMM yyyy', { locale: fr })}
               </span>
@@ -70,6 +70,7 @@ export function BookingTimeline({
     </div>
   )
 }
+
 
 
 

@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Loader2, CheckCircle2, XCircle, Eye, Clock } from 'lucide-react'
+import { IconLoader2, IconCircleCheck, IconCircleX, Eye, IconClock } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 

@@ -7,8 +7,8 @@ import { createClient } from "@/lib/shared/db/server"
 import { isAdmin, getAdminStats } from "@/lib/core/admin/actions"
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, FileCheck, Package, Euro, AlertTriangle } from 'lucide-react'
-import { Loader2 } from 'lucide-react'
+import { IconUsers, IconFileCheck, IconPackage, IconCurrencyEuro, IconAlertTriangle } from '@tabler/icons-react'
+import { Loader2 } from '@tabler/icons-react'
 
 async function DashboardContent() {
   const admin = await isAdmin()
@@ -142,6 +142,7 @@ export default function AdminDashboardPage() {
     </Suspense>
   )
 }
+
 
 
 

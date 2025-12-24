@@ -18,7 +18,7 @@ import {
   type SignatureCanvasRef,
 } from '@/components/features/bookings/SignatureCanvas'
 import { markAsDelivered } from "@/lib/core/bookings/workflow"
-import { Loader2, MapPin, CheckCircle2 } from 'lucide-react'
+import { IconLoader2, IconMapPin, IconCircleCheck } from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface ScanDeliveryPageProps {
@@ -225,7 +225,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -311,7 +311,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
           <CardContent>
             {location ? (
               <div className="flex items-center gap-2 text-sm text-green-600">
-                <MapPin className="h-4 w-4" />
+                <IconMapPin className="h-4 w-4" />
                 <span>Position enregistrée</span>
               </div>
             ) : (
@@ -336,12 +336,12 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                 Enregistrement...
               </>
             ) : (
               <>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
+                <IconCircleCheck className="mr-2 h-4 w-4" />
                 Valider la livraison
               </>
             )}

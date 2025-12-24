@@ -25,7 +25,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Star, Package, Euro, Calendar, MapPin, CheckCircle2, XCircle, MessageSquare, Image as ImageIcon } from 'lucide-react'
+import { IconStar, IconPackage, IconCurrencyEuro, Calendar, MapPin, IconCircleCheck, IconCircleX, IconMessageCircle, Image as ImageIcon } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { generateInitials } from "@/lib/core/profile/utils"
@@ -425,6 +425,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
     </>
   )
 }
+
 
 
 

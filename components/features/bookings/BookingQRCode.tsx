@@ -8,7 +8,7 @@ import { useRef } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Download, Printer } from 'lucide-react'
+import { IconDownload, Printer } from '@tabler/icons-react'
 import { toast } from 'sonner'
 
 interface BookingQRCodeProps {

@@ -26,18 +26,18 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
-  Loader2,
-  Plus,
-  MapPin,
-  Calendar,
-  Package,
-  Euro,
-  Edit,
-  Trash2,
-  CheckCircle2,
-  Eye,
-  MessageSquare,
-} from 'lucide-react'
+  IconLoader2,
+  IconPlus,
+  IconMapPin,
+  IconCalendar,
+  IconPackage,
+  IconCurrencyEuro,
+  IconEdit,
+  IconTrash,
+  IconCheck,
+  IconEye,
+  IconMessage,
+} from '@tabler/icons-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -130,7 +130,7 @@ export default function MyAnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div>
         <PageHeader
           title="Mes annonces"
           description="Gérez vos annonces de trajets"
@@ -139,12 +139,6 @@ export default function MyAnnouncementsPage() {
             { label: 'Annonces' },
           ]}
         />
-        <Link href="/dashboard/annonces/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle annonce
-          </Button>
-        </Link>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
@@ -158,7 +152,7 @@ export default function MyAnnouncementsPage() {
         <TabsContent value={activeTab} className="space-y-4">
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[400px]">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : announcements.length === 0 ? (
             <Card>
@@ -169,7 +163,7 @@ export default function MyAnnouncementsPage() {
                 <div className="mt-4 text-center">
                   <Link href="/dashboard/annonces/new">
                     <Button variant="outline">
-                      <Plus className="mr-2 h-4 w-4" />
+                      <IconPlus className="mr-2 h-4 w-4" />
                       Créer une annonce
                     </Button>
                   </Link>
@@ -210,7 +204,7 @@ export default function MyAnnouncementsPage() {
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <IconCalendar className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">
                           {format(
                             new Date(announcement.departure_date),
@@ -220,19 +214,19 @@ export default function MyAnnouncementsPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <IconPackage className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">
                           {announcement.max_weight_kg} kg
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Euro className="h-4 w-4 text-muted-foreground" />
+                        <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">
                           {announcement.price_per_kg} €/kg
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4 text-muted-foreground" />
+                        <IconEye className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">0 vues</span>
                       </div>
                     </div>
@@ -253,7 +247,7 @@ export default function MyAnnouncementsPage() {
                               handleMarkCompleted(announcement.id)
                             }
                           >
-                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            <IconCheck className="mr-2 h-4 w-4" />
                             Marquer terminée
                           </Button>
                           <Button
@@ -265,7 +259,7 @@ export default function MyAnnouncementsPage() {
                               )
                             }
                           >
-                            <Edit className="mr-2 h-4 w-4" />
+                            <IconEdit className="mr-2 h-4 w-4" />
                             Éditer
                           </Button>
                         </>
@@ -278,7 +272,7 @@ export default function MyAnnouncementsPage() {
                           setDeleteDialogOpen(true)
                         }}
                       >
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <IconTrash className="mr-2 h-4 w-4" />
                         Supprimer
                       </Button>
                     </div>
@@ -317,7 +311,7 @@ export default function MyAnnouncementsPage() {
             >
               {isDeleting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Suppression...
                 </>
               ) : (

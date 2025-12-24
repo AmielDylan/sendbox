@@ -14,15 +14,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
-  Loader2,
-  Plus,
-  Package,
-  MapPin,
-  Calendar,
-  Euro,
-  Eye,
-  ArrowRight,
-} from 'lucide-react'
+  IconLoader2,
+  IconPlus,
+  IconPackage,
+  IconMapPin,
+  IconCalendar,
+  IconCurrencyEuro,
+  IconEye,
+  IconArrowRight,
+} from '@tabler/icons-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -139,7 +139,7 @@ export default function MyBookingsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -149,14 +149,6 @@ export default function MyBookingsPage() {
       <PageHeader
         title="Mes colis"
         description="Gérez vos réservations et suivez vos colis"
-        actions={
-          <Button asChild>
-            <Link href="/dashboard/colis/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Nouvelle réservation
-            </Link>
-          </Button>
-        }
       />
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BookingStatus | 'all')}>
@@ -174,7 +166,7 @@ export default function MyBookingsPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center py-12">
-                  <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <IconPackage className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">
                     Aucun colis trouvé
                   </h3>
@@ -185,7 +177,7 @@ export default function MyBookingsPage() {
                   </p>
                   <Button asChild>
                     <Link href="/dashboard/colis/new">
-                      <Plus className="mr-2 h-4 w-4" />
+                      <IconPlus className="mr-2 h-4 w-4" />
                       Créer une réservation
                     </Link>
                   </Button>
@@ -223,19 +215,19 @@ export default function MyBookingsPage() {
                           {announcement && (
                             <>
                               <div className="flex items-center gap-2 text-sm">
-                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                <IconMapPin className="h-4 w-4 text-muted-foreground" />
                                 <span>
                                   {announcement.origin_city},{' '}
                                   {announcement.origin_country}
                                 </span>
-                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                <IconArrowRight className="h-4 w-4 text-muted-foreground" />
                                 <span>
                                   {announcement.destination_city},{' '}
                                   {announcement.destination_country}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 text-sm">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <IconCalendar className="h-4 w-4 text-muted-foreground" />
                                 <span>
                                   Départ:{' '}
                                   {format(
@@ -250,12 +242,12 @@ export default function MyBookingsPage() {
                         </div>
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-sm">
-                            <Package className="h-4 w-4 text-muted-foreground" />
+                            <IconPackage className="h-4 w-4 text-muted-foreground" />
                             <span>{booking.weight_kg} kg</span>
                           </div>
                           {booking.total_price && (
                             <div className="flex items-center gap-2 text-sm">
-                              <Euro className="h-4 w-4 text-muted-foreground" />
+                              <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
                               <span className="font-semibold">
                                 {booking.total_price.toFixed(2)} €
                               </span>
@@ -266,7 +258,7 @@ export default function MyBookingsPage() {
                       <div className="mt-4 pt-4 border-t">
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/dashboard/colis/${booking.id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
+                            <IconEye className="mr-2 h-4 w-4" />
                             Voir les détails
                           </Link>
                         </Button>

@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { refuseBooking } from "@/lib/core/bookings/requests"
-import { Loader2, XCircle } from 'lucide-react'
+import { IconLoader2, IconCircleX } from '@tabler/icons-react'
 
 interface RefuseBookingDialogProps {
   bookingId: string
@@ -65,7 +65,7 @@ export function RefuseBookingDialog({ bookingId, trigger }: RefuseBookingDialogP
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="destructive" className="w-full">
-            <XCircle className="mr-2 h-4 w-4" />
+            <IconCircleX className="mr-2 h-4 w-4" />
             Refuser
           </Button>
         )}
@@ -108,7 +108,7 @@ export function RefuseBookingDialog({ bookingId, trigger }: RefuseBookingDialogP
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                 Refus en cours...
               </>
             ) : (
@@ -120,6 +120,7 @@ export function RefuseBookingDialog({ bookingId, trigger }: RefuseBookingDialogP
     </Dialog>
   )
 }
+
 
 
 

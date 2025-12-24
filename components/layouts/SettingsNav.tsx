@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { User, IdCard, Shield, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { IconUser, IconIdBadge2, IconShield, IconCircleCheck, IconClock, IconAlertCircle } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 import { isFeatureEnabled } from "@/lib/shared/config/features"
 
@@ -23,19 +23,19 @@ export function SettingsNav({ kycStatus }: SettingsNavProps) {
     {
       label: 'Mon compte',
       href: '/dashboard/reglages/compte',
-      icon: User,
+      icon: IconUser,
       description: 'Email, mot de passe et sécurité',
     },
     {
       label: 'Profil',
       href: '/dashboard/reglages/profil',
-      icon: IdCard,
+      icon: IconIdBadge2,
       description: 'Informations personnelles',
     },
     {
       label: 'Vérification d\'identité',
       href: '/dashboard/reglages/kyc',
-      icon: Shield,
+      icon: IconShield,
       description: 'KYC et documents',
       badge: kycStatus,
       kycOnly: true, // Marqueur pour filtrage conditionnel
@@ -53,7 +53,7 @@ export function SettingsNav({ kycStatus }: SettingsNavProps) {
   const getKYCBadge = () => {
     if (kycStatus === 'approved') {
       return (
-        <CheckCircle2 className="ml-auto h-4 w-4 text-green-600" />
+        <IconCircleCheck className="ml-auto h-4 w-4 text-green-600" />
       )
     }
     if (kycStatus === 'pending') {
@@ -65,7 +65,7 @@ export function SettingsNav({ kycStatus }: SettingsNavProps) {
     }
     if (kycStatus === 'rejected') {
       return (
-        <AlertCircle className="ml-auto h-4 w-4 text-destructive" />
+        <IconAlertCircle className="ml-auto h-4 w-4 text-destructive" />
       )
     }
     return null

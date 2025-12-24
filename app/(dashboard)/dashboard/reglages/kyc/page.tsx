@@ -30,7 +30,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { toast } from 'sonner'
-import { Loader2, CheckCircle2, XCircle, Clock, Upload } from 'lucide-react'
+import { IconLoader2, IconCircleCheck, IconCircleX, IconClock, IconUpload } from '@tabler/icons-react'
 import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -143,7 +143,7 @@ export default function KYCPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -153,28 +153,28 @@ export default function KYCPage() {
       case 'approved':
         return (
           <Badge variant="default" className="bg-green-500">
-            <CheckCircle2 className="mr-1 h-3 w-3" />
+            <IconCircleCheck className="mr-1 h-3 w-3" />
             Approuvé
           </Badge>
         )
       case 'rejected':
         return (
           <Badge variant="destructive">
-            <XCircle className="mr-1 h-3 w-3" />
+            <IconCircleX className="mr-1 h-3 w-3" />
             Rejeté
           </Badge>
         )
       case 'pending':
         return (
           <Badge variant="secondary">
-            <Clock className="mr-1 h-3 w-3" />
+            <IconClock className="mr-1 h-3 w-3" />
             En attente
           </Badge>
         )
       case 'incomplete':
         return (
           <Badge variant="outline">
-            <Upload className="mr-1 h-3 w-3" />
+            <IconUpload className="mr-1 h-3 w-3" />
             À compléter
           </Badge>
         )
@@ -395,7 +395,7 @@ export default function KYCPage() {
                 )}
                 {uploadProgress.front === 100 && (
                   <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle2 className="h-4 w-4" />
+                    <IconCircleCheck className="h-4 w-4" />
                     <p className="text-xs">Document téléchargé avec succès</p>
                   </div>
                 )}
@@ -447,7 +447,7 @@ export default function KYCPage() {
                   )}
                   {uploadProgress.back === 100 && (
                     <div className="flex items-center gap-2 text-green-600">
-                      <CheckCircle2 className="h-4 w-4" />
+                      <IconCircleCheck className="h-4 w-4" />
                       <p className="text-xs">Document téléchargé avec succès</p>
                     </div>
                   )}
@@ -470,12 +470,12 @@ export default function KYCPage() {
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                     Envoi en cours...
                   </>
                 ) : (
                   <>
-                    <Upload className="mr-2 h-4 w-4" />
+                    <IconUpload className="mr-2 h-4 w-4" />
                     Soumettre ma demande KYC
                   </>
                 )}

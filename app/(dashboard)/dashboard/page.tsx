@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Package, MessageSquare, TrendingUp, Shield, CheckCircle2, Clock } from 'lucide-react'
+import { IconPackage, IconMessage, IconTrendingUp, IconShield, IconCheck, IconClock } from '@tabler/icons-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
 
@@ -52,19 +52,19 @@ async function DashboardContent() {
               <CardTitle className="text-sm font-medium">
                 Vérification d'identité
               </CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
+              <IconShield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {kycStatus === 'approved' && (
                 <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle2 className="h-5 w-5" />
+                  <IconCheck className="h-5 w-5" />
                   <span className="font-medium text-sm">Compte vérifié</span>
                 </div>
               )}
               {kycStatus === 'pending' && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-yellow-600">
-                    <Clock className="h-5 w-5" />
+                    <IconClock className="h-5 w-5" />
                     <span className="font-medium text-sm">En cours</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -93,7 +93,7 @@ async function DashboardContent() {
             <CardTitle className="text-sm font-medium">
               Annonces actives
             </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <IconPackage className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">12</div>
@@ -106,7 +106,7 @@ async function DashboardContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Messages</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <IconMessage className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">24</div>
@@ -117,7 +117,7 @@ async function DashboardContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Colis envoyés</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">156</div>
@@ -128,7 +128,7 @@ async function DashboardContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Revenus</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">€2,450</div>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
         actions={
           <Button asChild>
             <Link href="/dashboard/annonces/new">
-              <Package className="mr-2 h-4 w-4" />
+              <IconPackage className="mr-2 h-4 w-4" />
               Nouvelle annonce
             </Link>
           </Button>

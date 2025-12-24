@@ -17,7 +17,7 @@ import {
   AlertTriangle,
   CreditCard,
   Loader2,
-} from 'lucide-react'
+} from '@tabler/icons-react'
 
 export default async function AdminLayout({
   children,
@@ -83,6 +83,7 @@ export default async function AdminLayout({
     </div>
   )
 }
+
 
 
 

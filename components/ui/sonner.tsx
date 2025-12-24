@@ -1,30 +1,27 @@
 'use client'
 
 import {
-  CircleCheck,
-  Info,
-  LoaderCircle,
-  OctagonX,
-  TriangleAlert,
-} from 'lucide-react'
-import { useTheme } from 'next-themes'
+  IconCheck,
+  IconInfoCircle,
+  IconLoader2,
+  IconX,
+  IconAlertTriangle,
+} from '@tabler/icons-react'
 import { Toaster as Sonner } from 'sonner'
 
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = 'system' } = useTheme()
-
   return (
     <Sonner
-      theme={theme as ToasterProps['theme']}
+      theme="light"
       className="toaster group"
       icons={{
-        success: <CircleCheck className="h-4 w-4" />,
-        info: <Info className="h-4 w-4" />,
-        warning: <TriangleAlert className="h-4 w-4" />,
-        error: <OctagonX className="h-4 w-4" />,
-        loading: <LoaderCircle className="h-4 w-4 animate-spin" />,
+        success: <IconCheck className="h-4 w-4" />,
+        info: <IconInfoCircle className="h-4 w-4" />,
+        warning: <IconAlertTriangle className="h-4 w-4" />,
+        error: <IconX className="h-4 w-4" />,
+        loading: <IconLoader2 className="h-4 w-4 animate-spin" />,
       }}
       toastOptions={{
         classNames: {

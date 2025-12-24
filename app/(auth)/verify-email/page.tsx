@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Loader2, Package, CheckCircle2, XCircle } from 'lucide-react'
+import { IconLoader2, IconPackage, IconCheck, IconX } from '@tabler/icons-react'
 
 function VerifyEmailForm() {
   const searchParams = useSearchParams()
@@ -69,7 +69,7 @@ function VerifyEmailForm() {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
-              <Loader2 className="h-12 w-12 text-primary animate-spin" />
+              <IconLoader2 className="h-12 w-12 text-primary animate-spin" />
             </div>
             <CardTitle className="text-2xl font-bold">
               Vérification en cours...
@@ -89,7 +89,7 @@ function VerifyEmailForm() {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
-              <Package className="h-12 w-12 text-primary" />
+              <IconPackage className="h-12 w-12 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">
               Vérifiez votre email
@@ -127,7 +127,7 @@ function VerifyEmailForm() {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
-              <CheckCircle2 className="h-12 w-12 text-green-500" />
+              <IconCheck className="h-12 w-12 text-green-500" />
             </div>
             <CardTitle className="text-2xl font-bold">
               Email vérifié !
@@ -155,7 +155,7 @@ function VerifyEmailForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <XCircle className="h-12 w-12 text-destructive" />
+            <IconX className="h-12 w-12 text-destructive" />
           </div>
           <CardTitle className="text-2xl font-bold">
             Vérification échouée
@@ -196,7 +196,7 @@ export default function VerifyEmailPage() {
           <Card className="w-full max-w-md">
             <CardHeader className="space-y-1 text-center">
               <div className="flex justify-center mb-4">
-                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                <IconLoader2 className="h-12 w-12 text-primary animate-spin" />
               </div>
               <CardTitle className="text-2xl font-bold">
                 Chargement...

@@ -8,7 +8,7 @@ import { useRef, useState } from 'react'
 import SignatureCanvas from 'react-signature-canvas'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Trash2, Check } from 'lucide-react'
+import { IconTrash, Check } from '@tabler/icons-react'
 
 interface SignaturePadProps {
   onSave: (dataURL: string) => void
@@ -84,6 +84,7 @@ export function SignaturePad({
     </Card>
   )
 }
+
 
 
 

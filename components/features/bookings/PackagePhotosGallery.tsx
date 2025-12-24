@@ -8,7 +8,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { X, ZoomIn } from 'lucide-react'
+import { IconX, IconZoomIn } from '@tabler/icons-react'
 
 interface PackagePhotosGalleryProps {
   photos: string[]
@@ -42,7 +42,7 @@ export function PackagePhotosGallery({ photos, className }: PackagePhotosGallery
               className="object-cover transition-transform group-hover:scale-105"
             />
             <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
-              <ZoomIn className="h-6 w-6 text-white" />
+              <IconZoomIn className="h-6 w-6 text-white" />
             </div>
           </button>
         ))}
@@ -56,7 +56,7 @@ export function PackagePhotosGallery({ photos, className }: PackagePhotosGallery
             className="absolute right-4 top-4 z-50"
             onClick={() => setSelectedPhoto(null)}
           >
-            <X className="h-4 w-4" />
+            <IconX className="h-4 w-4" />
           </Button>
           {selectedPhoto && (
             <div className="relative h-[70vh] w-full">
@@ -73,6 +73,7 @@ export function PackagePhotosGallery({ photos, className }: PackagePhotosGallery
     </>
   )
 }
+
 
 
 

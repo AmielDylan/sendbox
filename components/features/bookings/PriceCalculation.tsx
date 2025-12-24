@@ -4,7 +4,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Euro, Shield, Package } from 'lucide-react'
+import { IconCurrencyEuro, IconShield, IconPackage } from '@tabler/icons-react'
 import type { BookingCalculation } from "@/lib/core/bookings/calculations"
 import { formatPrice } from "@/lib/core/bookings/calculations"
 
@@ -28,7 +28,7 @@ export function PriceCalculation({
         {/* Prix transport */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <IconPackage className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">Transport</span>
           </div>
           <span className="font-medium">
@@ -62,7 +62,7 @@ export function PriceCalculation({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-primary" />
+                  <IconShield className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">Assurance</span>
                 </div>
                 <span className="font-medium">
@@ -97,6 +97,7 @@ export function PriceCalculation({
     </Card>
   )
 }
+
 
 
 

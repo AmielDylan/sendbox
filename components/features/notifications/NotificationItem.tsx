@@ -9,17 +9,17 @@ import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from "@/lib/utils"
 import {
-  CheckCircle2,
-  XCircle,
-  CreditCard,
-  Package,
-  Truck,
-  Star,
-  AlertCircle,
-  MessageSquare,
-  Bell,
-  Shield,
-} from 'lucide-react'
+  IconCircleCheck,
+  IconCircleX,
+  IconCreditCard,
+  IconPackage,
+  IconTruck,
+  IconStar,
+  IconAlertCircle,
+  IconMessageCircle,
+  IconBell,
+  IconShield,
+} from '@tabler/icons-react'
 import Link from 'next/link'
 import { markNotificationAsRead } from "@/lib/core/bookings/requests"
 
@@ -29,16 +29,16 @@ interface NotificationItemProps {
 }
 
 const NOTIFICATION_ICONS = {
-  booking_request: Package,
-  booking_accepted: CheckCircle2,
-  booking_refused: XCircle,
-  payment_confirmed: CreditCard,
-  deposit_reminder: Package,
-  transit_started: Truck,
-  delivery_reminder: Package,
-  rating_request: Star,
-  admin_message: MessageSquare,
-  system_alert: Shield,
+  booking_request: IconPackage,
+  booking_accepted: IconCircleCheck,
+  booking_refused: IconCircleX,
+  payment_confirmed: IconCreditCard,
+  deposit_reminder: IconPackage,
+  transit_started: IconTruck,
+  delivery_reminder: IconPackage,
+  rating_request: IconStar,
+  admin_message: IconMessageCircle,
+  system_alert: IconShield,
 } as const
 
 const NOTIFICATION_COLORS = {
@@ -56,7 +56,7 @@ const NOTIFICATION_COLORS = {
 
 export function NotificationItem({ notification, onClick }: NotificationItemProps) {
   const Icon =
-    NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] || Bell
+    NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] || IconBell
   const iconColor =
     NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] ||
     'text-muted-foreground'
@@ -122,6 +122,7 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
 
   return content
 }
+
 
 
 

@@ -31,7 +31,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { Shield, Ban, Unlock, Loader2 } from 'lucide-react'
+import { IconShield, IconBan, IconLockOpen, IconLoader2 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -269,6 +269,7 @@ export default function AdminUsersPage() {
     </div>
   )
 }
+
 
 
 

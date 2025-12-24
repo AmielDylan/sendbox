@@ -16,7 +16,7 @@ import { ChatWindow } from '@/components/features/messages/ChatWindow'
 import { BookingRequestCard } from '@/components/features/bookings/BookingRequestCard'
 import { getPendingBookingRequests } from "@/lib/core/bookings/requests"
 import { Card, CardContent } from '@/components/ui/card'
-import { Loader2, Bell, Inbox, MessageSquare } from 'lucide-react'
+import { IconLoader2, IconBell, IconInbox, IconMessageCircle } from '@tabler/icons-react'
 import { createClient } from "@/lib/shared/db/client"
 import { Separator } from '@/components/ui/separator'
 

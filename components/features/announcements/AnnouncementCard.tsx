@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { Star, MapPin, Calendar, Package, Euro, ArrowRight } from 'lucide-react'
+import { IconStar, MapPin, Calendar, IconPackage, IconCurrencyEuro, ArrowRight } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { AnnouncementResult } from "@/lib/shared/db/queries/announcements"
@@ -116,6 +116,7 @@ export function AnnouncementCard({
     </Card>
   )
 }
+
 
 
 

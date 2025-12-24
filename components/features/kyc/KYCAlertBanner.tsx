@@ -7,7 +7,7 @@
 import Link from 'next/link'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Shield, Clock, AlertCircle, XCircle } from 'lucide-react'
+import { IconShield, IconClock, IconAlertCircle, IconX } from '@tabler/icons-react'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 
@@ -27,7 +27,7 @@ export function KYCAlertBanner({ kycStatus, rejectionReason, className }: KYCAle
   if (kycStatus === 'pending') {
     return (
       <Alert variant="default" className={`border-yellow-500 bg-yellow-50 ${className}`}>
-        <Clock className="h-4 w-4 text-yellow-600" />
+        <IconClock className="h-4 w-4 text-yellow-600" />
         <AlertTitle className="text-yellow-900">Vérification en cours</AlertTitle>
         <AlertDescription className="text-yellow-800">
           Nous examinons vos documents d'identité. Vous serez notifié par email dans les 24-48h.
@@ -40,7 +40,7 @@ export function KYCAlertBanner({ kycStatus, rejectionReason, className }: KYCAle
   if (kycStatus === 'rejected') {
     return (
       <Alert variant="destructive" className={className}>
-        <XCircle className="h-4 w-4" />
+        <IconX className="h-4 w-4" />
         <AlertTitle>Vérification refusée</AlertTitle>
         <AlertDescription>
           {rejectionReason || 'Votre demande de vérification a été refusée. Veuillez soumettre de nouveaux documents.'}
@@ -57,7 +57,7 @@ export function KYCAlertBanner({ kycStatus, rejectionReason, className }: KYCAle
   // Pas de KYC ou incomplete
   return (
     <Alert variant="default" className={`border-blue-500 bg-blue-50 ${className}`}>
-      <Shield className="h-4 w-4 text-blue-600" />
+      <IconShield className="h-4 w-4 text-blue-600" />
       <AlertTitle className="text-blue-900">Vérification d'identité requise</AlertTitle>
       <AlertDescription className="text-blue-800">
         Pour créer des annonces et réserver des colis, vous devez vérifier votre identité.

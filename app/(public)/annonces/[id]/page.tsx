@@ -17,7 +17,7 @@ import { TripTimeline } from '@/components/features/announcements/TripTimeline'
 import { CapacityProgress } from '@/components/features/announcements/CapacityProgress'
 import { ReviewsSection } from '@/components/features/announcements/ReviewsSection'
 import { BookingForm } from '@/components/features/announcements/BookingForm'
-import { Package, Edit, Trash2, CheckCircle2 } from 'lucide-react'
+import { IconPackage, IconEdit, IconTrash, IconCircleCheck } from '@tabler/icons-react'
 import Link from 'next/link'
 import {
   deleteAnnouncement,

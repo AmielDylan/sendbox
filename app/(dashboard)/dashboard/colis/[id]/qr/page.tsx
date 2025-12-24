@@ -8,10 +8,10 @@ import { createClient } from "@/lib/shared/db/server"
 import { BookingQRCode } from '@/components/features/bookings/BookingQRCode'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent } from '@/components/ui/card'
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@tabler/icons-react'
 
 interface QRCodePageProps {
   params: { id: string }

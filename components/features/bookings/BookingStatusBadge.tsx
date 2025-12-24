@@ -3,13 +3,13 @@
  */
 
 import { Badge } from '@/components/ui/badge'
-import { 
-  Clock, 
-  CheckCircle2, 
-  Truck, 
-  PackageCheck, 
-  XCircle 
-} from 'lucide-react'
+import {
+  IconClock,
+  IconCircleCheck,
+  IconTruck,
+  IconPackageExport,
+  IconCircleX
+} from '@tabler/icons-react'
 
 type BookingStatus = 'pending' | 'confirmed' | 'in_transit' | 'delivered' | 'cancelled'
 
@@ -23,31 +23,31 @@ export function BookingStatusBadge({ status, className }: BookingStatusBadgeProp
     pending: {
       label: 'En attente',
       variant: 'secondary' as const,
-      icon: Clock,
+      icon: IconClock,
       className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100',
     },
     confirmed: {
       label: 'Confirmé',
       variant: 'default' as const,
-      icon: CheckCircle2,
+      icon: IconCircleCheck,
       className: 'bg-blue-100 text-blue-800 hover:bg-blue-100',
     },
     in_transit: {
       label: 'En transit',
       variant: 'default' as const,
-      icon: Truck,
+      icon: IconTruck,
       className: 'bg-purple-100 text-purple-800 hover:bg-purple-100',
     },
     delivered: {
       label: 'Livré',
       variant: 'default' as const,
-      icon: PackageCheck,
+      icon: IconPackageExport,
       className: 'bg-green-100 text-green-800 hover:bg-green-100',
     },
     cancelled: {
       label: 'Annulé',
       variant: 'destructive' as const,
-      icon: XCircle,
+      icon: IconCircleX,
       className: 'bg-red-100 text-red-800 hover:bg-red-100',
     },
   }
@@ -62,6 +62,7 @@ export function BookingStatusBadge({ status, className }: BookingStatusBadgeProp
     </Badge>
   )
 }
+
 
 
 

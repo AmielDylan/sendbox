@@ -1,25 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
 import { toast } from 'sonner'
 import {
-  LayoutDashboard,
-  MessageSquare,
-  Package,
-  Settings,
-  Bell,
-  Menu,
-  X,
-  ChevronRight,
-  Loader2,
-  Shield,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-} from 'lucide-react'
+  IconLayoutDashboard,
+  IconMessage,
+  IconPackage,
+  IconSettings,
+  IconBell,
+  IconMenu2,
+  IconX,
+  IconChevronRight,
+  IconLoader2,
+  IconShield,
+  IconCheck,
+  IconClock,
+  IconAlertCircle,
+} from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -37,6 +37,7 @@ import { Separator } from '@/components/ui/separator'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -53,28 +54,28 @@ const navItems: NavItem[] = [
   {
     title: 'Tableau de bord',
     href: '/dashboard',
-    icon: LayoutDashboard,
+    icon: IconLayoutDashboard,
   },
   {
     title: 'Messages',
     href: '/dashboard/messages',
-    icon: MessageSquare,
+    icon: IconMessage,
     // badge dynamique géré par useUnreadCount
   },
   {
     title: 'Annonces',
     href: '/dashboard/annonces',
-    icon: Package,
+    icon: IconPackage,
   },
   {
     title: 'Colis',
     href: '/dashboard/colis',
-    icon: Package,
+    icon: IconPackage,
   },
   {
     title: 'Réglages',
     href: '/dashboard/reglages',
-    icon: Settings,
+    icon: IconSettings,
   },
 ]
 
@@ -89,7 +90,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Ouvrir le menu">
-              <Menu className="h-5 w-5" />
+              <IconMenu2 className="h-5 w-5" />
               <span className="sr-only">Ouvrir le menu</span>
             </Button>
           </SheetTrigger>
@@ -146,7 +147,7 @@ function SidebarContent({
           className="flex items-center gap-2 font-semibold text-primary"
           onClick={onNavigate}
         >
-          <Package className="h-6 w-6" />
+          <IconPackage className="h-6 w-6" />
           <span>Sendbox</span>
         </Link>
       </div>
@@ -197,6 +198,9 @@ function SidebarContent({
 function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
+      {/* Theme Toggle */}
+      <ThemeToggle />
+
       {/* Notifications */}
       <NotificationDropdown />
 
@@ -209,6 +213,20 @@ function HeaderActions() {
 function UserMenu() {
   const router = useRouter()
   const { user, profile, loading } = useAuth()
+  const [avatarError, setAvatarError] = useState(false)
+
+  // Timeout après 3s si toujours en chargement
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        if (loading) {
+          console.warn('Avatar loading timeout after 3s')
+          setAvatarError(true)
+        }
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [loading])
 
   const handleLogout = async () => {
     try {
@@ -223,10 +241,11 @@ function UserMenu() {
     }
   }
 
-  if (loading) {
+  // Si timeout atteint, afficher le fallback
+  if (loading && !avatarError) {
     return (
       <div className="flex items-center gap-3">
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <IconLoader2 className="h-4 w-4 animate-spin" />
       </div>
     )
   }
@@ -248,8 +267,16 @@ function UserMenu() {
           aria-label="Menu utilisateur"
         >
           <Avatar className="h-9 w-9">
-            <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
-            <AvatarFallback>{initials}</AvatarFallback>
+            {!avatarError && profile?.avatar_url && (
+              <AvatarImage 
+                src={profile.avatar_url} 
+                alt={displayName}
+                onError={() => setAvatarError(true)}
+              />
+            )}
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              {initials}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -263,19 +290,19 @@ function UserMenu() {
             {/* Badge statut KYC - SEULEMENT si feature activée */}
             {isFeatureEnabled('KYC_ENABLED') && profile?.kyc_status === 'approved' && (
               <Badge variant="outline" className="w-fit text-green-600 border-green-600 mt-2">
-                <CheckCircle2 className="mr-1 h-3 w-3" />
+                <IconCheck className="mr-1 h-3 w-3" />
                 Vérifié
               </Badge>
             )}
             {isFeatureEnabled('KYC_ENABLED') && profile?.kyc_status === 'pending' && (
               <Badge variant="outline" className="w-fit text-yellow-600 border-yellow-600 mt-2">
-                <Clock className="mr-1 h-3 w-3" />
+                <IconClock className="mr-1 h-3 w-3" />
                 Vérification en cours
               </Badge>
             )}
             {isFeatureEnabled('KYC_ENABLED') && (!profile?.kyc_status || profile.kyc_status === 'rejected') && (
               <Badge variant="outline" className="w-fit text-muted-foreground mt-2">
-                <AlertCircle className="mr-1 h-3 w-3" />
+                <IconAlertCircle className="mr-1 h-3 w-3" />
                 Non vérifié
               </Badge>
             )}
@@ -287,7 +314,7 @@ function UserMenu() {
           <>
             <DropdownMenuItem asChild>
               <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
-                <Shield className="mr-2 h-4 w-4" />
+                <IconShield className="mr-2 h-4 w-4" />
                 <span>Vérifier mon identité</span>
               </Link>
             </DropdownMenuItem>
@@ -296,7 +323,7 @@ function UserMenu() {
         )}
         <DropdownMenuItem asChild>
           <Link href="/dashboard/reglages" className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
+            <IconSettings className="mr-2 h-4 w-4" />
             <span>Paramètres</span>
           </Link>
         </DropdownMenuItem>
@@ -305,7 +332,7 @@ function UserMenu() {
           onClick={handleLogout}
           className="cursor-pointer text-destructive focus:text-destructive"
         >
-          <X className="mr-2 h-4 w-4" />
+          <IconX className="mr-2 h-4 w-4" />
           <span>Déconnexion</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -41,7 +41,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Loader2, Lock, Mail, Trash2, AlertTriangle } from 'lucide-react'
+import { IconLoader2, IconLock, IconMail, IconTrash, IconAlertTriangle } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 
 export default function AccountPage() {

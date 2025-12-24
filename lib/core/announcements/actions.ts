@@ -108,12 +108,13 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
       .from('announcements')
       .insert({
         traveler_id: user.id,
-        origin_country: validation.data.departure_country,
-        origin_city: validation.data.departure_city,
-        destination_country: validation.data.arrival_country,
-        destination_city: validation.data.arrival_city,
+        departure_country: validation.data.departure_country,
+        departure_city: validation.data.departure_city,
+        arrival_country: validation.data.arrival_country,
+        arrival_city: validation.data.arrival_city,
         departure_date: validation.data.departure_date.toISOString(),
-        max_weight_kg: validation.data.available_kg,
+        arrival_date: validation.data.arrival_date.toISOString(),
+        available_kg: validation.data.available_kg,
         price_per_kg: validation.data.price_per_kg,
         description: validation.data.description || null,
         status: 'active', // L'annonce est directement active

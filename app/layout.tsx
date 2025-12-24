@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr" suppressHydrationWarning className={figtree.variable}>
+    <html lang="fr" className={`${figtree.variable} light`} suppressHydrationWarning>
       <body className="font-sans antialiased">
         <Providers>
           {children}

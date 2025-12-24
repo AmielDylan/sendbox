@@ -9,7 +9,7 @@ import { getContractUrl, generateTransportContract } from "@/lib/shared/services
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Download, ExternalLink, Loader2 } from 'lucide-react'
+import { IconDownload, ExternalLink, IconLoader2 } from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface ContractPageProps {

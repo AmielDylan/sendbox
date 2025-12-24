@@ -9,7 +9,7 @@ import { BrowserQRCodeReader } from '@zxing/library'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Camera, AlertCircle } from 'lucide-react'
+import { IconLoader2, Camera, AlertCircle } from '@tabler/icons-react'
 
 interface QRScannerProps {
   onScan: (code: string) => void

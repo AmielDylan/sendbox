@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from "@/lib/utils"
-import { ChevronRight } from 'lucide-react'
+import { IconChevronRight } from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface BreadcrumbItem {
@@ -37,7 +37,7 @@ export function PageHeader({
             return (
               <div key={index} className="flex items-center space-x-2">
                 {index > 0 && (
-                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  <IconChevronRight className="h-4 w-4" aria-hidden="true" />
                 )}
                 {item.href && !isLast ? (
                   <Link
@@ -72,6 +72,7 @@ export function PageHeader({
     </div>
   )
 }
+
 
 
 

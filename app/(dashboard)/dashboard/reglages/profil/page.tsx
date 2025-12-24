@@ -27,7 +27,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { Loader2, Upload, User, Star, Package } from 'lucide-react'
+import { IconLoader2, IconUpload, IconUser, IconStar, IconPackage } from '@tabler/icons-react'
 import { generateInitials } from "@/lib/core/profile/utils"
 
 export default function ProfilePage() {
@@ -132,7 +132,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -172,11 +172,11 @@ export default function ProfilePage() {
               <p className="text-muted-foreground">{profile?.email}</p>
               <div className="flex items-center gap-4 mt-4">
                 <Badge variant="secondary" className="gap-2">
-                  <Star className="h-4 w-4" />
+                  <IconStar className="h-4 w-4" />
                   4.8/5
                 </Badge>
                 <Badge variant="secondary" className="gap-2">
-                  <Package className="h-4 w-4" />
+                  <IconPackage className="h-4 w-4" />
                   12 services
                 </Badge>
               </div>
@@ -222,7 +222,7 @@ export default function ProfilePage() {
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    <Upload className="mr-2 h-4 w-4" />
+                    <IconUpload className="mr-2 h-4 w-4" />
                     Changer la photo
                   </Button>
                   <p className="text-xs text-muted-foreground">
@@ -352,7 +352,7 @@ export default function ProfilePage() {
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Enregistrement...
                 </>
               ) : (

@@ -5,7 +5,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Star } from 'lucide-react'
+import { Star } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 
 interface StarRatingProps {
@@ -72,6 +72,7 @@ export function StarRating({
     </div>
   )
 }
+
 
 
 

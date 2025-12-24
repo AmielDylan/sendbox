@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { Euro, Package } from 'lucide-react'
+import { IconCurrencyEuro, IconPackage } from '@tabler/icons-react'
 
 interface BookingFormProps {
   announcementId: string
@@ -85,6 +85,7 @@ export function BookingForm({
     </Card>
   )
 }
+
 
 
 

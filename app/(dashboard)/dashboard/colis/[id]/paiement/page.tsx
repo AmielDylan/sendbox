@@ -16,7 +16,7 @@ import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Loader2, Lock, Shield, FileText, CheckCircle2 } from 'lucide-react'
+import { IconLoader2, IconLock, IconShield, FileText, IconCircleCheck } from '@tabler/icons-react'
 import { formatPrice } from "@/lib/core/bookings/calculations"
 import { PaymentForm } from '@/components/features/payments/PaymentForm'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
