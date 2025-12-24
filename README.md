@@ -1,18 +1,95 @@
-# 📦 Sendbox - Plateforme de Covoiturage de Colis
+# 📦 Sendbox
 
-> Connectez voyageurs et expéditeurs entre la France et le Bénin
+Plateforme de covoiturage de colis entre la France et le Bénin.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.0-black)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-2.0-green)](https://supabase.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8)](https://tailwindcss.com/)
+## 🚀 Stack Technique
 
----
+- **Framework**: Next.js 16 (App Router, Turbopack)
+- **UI**: Shadcn UI (Nova theme) + Tailwind CSS v4
+- **Base de données**: Supabase (PostgreSQL + RLS)
+- **Authentification**: Supabase Auth
+- **Paiements**: Stripe
+- **PDF**: React-PDF
+- **Validation**: Zod + React Hook Form
+- **Icons**: Tabler Icons
+- **Font**: Figtree
 
-## 🚀 Démarrage Rapide
+## 📁 Architecture
+
+```
+sendbox/
+├── app/                    # Routes Next.js
+│   ├── (auth)/            # Pages d'authentification
+│   ├── (dashboard)/       # Dashboard utilisateur
+│   ├── (public)/          # Pages publiques
+│   ├── admin/             # Dashboard admin
+│   └── api/               # API routes (webhooks, paiements)
+│
+├── components/
+│   ├── ui/                # Composants Shadcn UI
+│   ├── features/          # Composants métier
+│   │   ├── announcements/
+│   │   ├── bookings/
+│   │   ├── kyc/
+│   │   ├── messages/
+│   │   ├── notifications/
+│   │   ├── payments/
+│   │   └── ratings/
+│   └── layouts/           # Layouts réutilisables
+│
+├── lib/
+│   ├── core/              # Logique métier par domaine
+│   │   ├── admin/
+│   │   ├── announcements/
+│   │   ├── auth/
+│   │   ├── bookings/
+│   │   ├── kyc/
+│   │   ├── messages/
+│   │   ├── notifications/
+│   │   ├── payments/
+│   │   ├── profile/
+│   │   └── ratings/
+│   │
+│   ├── shared/            # Code partagé
+│   │   ├── config/        # Configuration (features, proxy)
+│   │   ├── db/            # Clients Supabase + queries
+│   │   ├── security/      # Rate limiting, validation uploads
+│   │   ├── services/      # Email, PDF, Stripe
+│   │   └── utils/         # Utilitaires (cities, files)
+│   │
+│   └── utils.ts           # Utilitaire cn() pour Tailwind
+│
+├── hooks/                 # React hooks personnalisés
+├── types/                 # Types TypeScript
+├── supabase/              # Migrations + seed
+└── tests/                 # Tests E2E (Playwright)
+```
+
+## 🎨 Design System
+
+- **Style**: Nova (compact layout)
+- **Base Color**: Zinc
+- **Theme**: Green
+- **Radius**: Small (0.375rem)
+- **Menu Accent**: Subtle
+
+## 🔐 Feature Flags
+
+Le projet utilise un système de feature flags (`lib/shared/config/features.ts`) :
+
+- `KYC_ENABLED`: Vérification d'identité (actuellement désactivé)
+- `REALTIME_MESSAGING`: Messagerie temps réel
+- `STRIPE_PAYMENTS`: Paiements Stripe
+- `ADMIN_DASHBOARD`: Dashboard administrateur
+
+## 🛠️ Installation
 
 ```bash
-# Installation des dépendances
+# Cloner le projet
+git clone https://github.com/AmielDylan/sendbox.git
+cd sendbox
+
+# Installer les dépendances
 npm install
 
 # Configurer les variables d'environnement
@@ -22,197 +99,72 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Ouvrir [http://localhost:3000](http://localhost:3000) dans votre navigateur.
-
----
-
-## 📚 Documentation
-
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Structure du projet et conventions
-- **[Supabase Docs](./supabase/)** - Configuration base de données
-- **[Tests](./tests/)** - Documentation des tests
-
----
-
-## 🏗️ Architecture
-
-Le projet suit une architecture **Domain-Driven Design** pour une meilleure organisation :
-
-```
-sendbox/
-├── app/                    # Next.js App Router (pages et API)
-├── components/             # Composants React
-│   ├── features/          # Composants métier par domaine
-│   ├── shared/            # Composants réutilisables
-│   └── ui/                # Composants UI de base (shadcn)
-├── lib/                   # Logique métier
-│   ├── core/             # Domaines métier
-│   │   ├── announcements/
-│   │   ├── bookings/
-│   │   ├── auth/
-│   │   └── ...
-│   └── shared/           # Code partagé
-│       ├── config/
-│       ├── db/
-│       ├── services/
-│       └── utils/
-├── hooks/                # Custom React Hooks
-├── tests/                # Tests (e2e, integration, unit)
-└── supabase/            # Configuration Supabase
-```
-
-Voir [ARCHITECTURE.md](./ARCHITECTURE.md) pour plus de détails.
-
----
-
-## ✨ Fonctionnalités
-
-### 🎯 MVP Actuel
-
-- ✅ Authentification (email/password)
-- ✅ Annonces de trajet (création, édition, recherche)
-- ✅ Réservations de colis (workflow complet)
-- ✅ Paiements Stripe
-- ✅ QR Codes (dépôt/livraison)
-- ✅ Notations et avis
-- ✅ Messagerie temps réel
-- ✅ Dashboard admin
-- ✅ KYC (vérification identité) - Feature flag
-
-### 🚧 En cours
-
-- [ ] Notifications push
-- [ ] Export PDF des contrats
-- [ ] Application mobile (React Native)
-
----
-
-## 🛠️ Stack Technique
-
-### Frontend
-- **Next.js 16** - App Router, Server Actions, Middleware
-- **React 19** - Composants serveur et client
-- **TypeScript 5** - Typage fort
-- **Tailwind CSS 4** - Styling
-- **shadcn/ui** - Composants UI (Nova theme)
-- **Tabler Icons** - Icônes
-- **Figtree** - Font
-
-### Backend
-- **Supabase** - Base de données PostgreSQL
-- **Supabase Auth** - Authentification
-- **Supabase Storage** - Fichiers (photos, documents KYC)
-- **Supabase Realtime** - Messagerie temps réel
-- **Stripe** - Paiements sécurisés
-
-### DevOps
-- **Playwright** - Tests end-to-end
-- **ESLint** - Linting
-- **Prettier** - Formatage
-- **Git** - Contrôle de version
-
----
-
-## 📜 Scripts Disponibles
-
-### Développement
-```bash
-npm run dev          # Démarrer le serveur de développement
-npm run build        # Build de production
-npm run start        # Démarrer le serveur de production
-npm run lint         # Linter le code
-npm run format       # Formater le code
-```
-
-### Tests
-```bash
-npm run test:e2e            # Tests end-to-end
-npm run test:e2e:ui         # Tests avec interface UI
-npm run test:e2e:debug      # Tests en mode debug
-```
-
-### Stripe
-```bash
-npm run stripe:listen       # Écouter les webhooks Stripe
-npm run stripe:test         # Tester les événements Stripe
-npm run stripe:check        # Vérifier les workflows
-```
-
-### Base de données
-```bash
-bash scripts/db/generate-types.sh   # Générer les types TypeScript
-bash scripts/db/apply-migration-*.sh # Appliquer une migration
-```
-
----
-
-## 🔐 Variables d'Environnement
-
-Créer un fichier `.env.local` avec :
+## 📝 Variables d'environnement
 
 ```env
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
-SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
 # Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
-STRIPE_SECRET_KEY=sk_test_xxx
-STRIPE_WEBHOOK_SECRET=whsec_xxx
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
 
-# Resend (Email)
-RESEND_API_KEY=re_xxx
+# Email (Resend)
+RESEND_API_KEY=
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
----
+## 🗄️ Base de données
+
+```bash
+# Lancer les migrations
+npx supabase db push
+
+# Réinitialiser la base
+npx supabase db reset
+
+# Générer les types TypeScript
+npm run generate:types
+```
 
 ## 🧪 Tests
 
 ```bash
-# Tests end-to-end avec Playwright
+# Tests E2E
 npm run test:e2e
 
-# Tests avec interface UI
+# Tests E2E en mode UI
 npm run test:e2e:ui
-
-# Tests en mode headed (voir le navigateur)
-npm run test:e2e:headed
 ```
 
-Les tests sont organisés par domaine dans `tests/e2e/`.
+## 📦 Build
 
----
+```bash
+# Build de production
+npm run build
 
-## 🤝 Contribution
+# Lancer en production
+npm start
+```
 
-1. Fork le projet
-2. Créer une branche (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+## 🚢 Déploiement
 
----
+Le projet est configuré pour être déployé sur Vercel :
+
+```bash
+# Déployer sur Vercel
+vercel --prod
+```
 
 ## 📄 Licence
 
-Ce projet est sous licence MIT.
+MIT
 
----
+## 👥 Auteur
 
-## 👥 Équipe
-
-Développé avec ❤️ par l'équipe Sendbox
-
----
-
-## 🔗 Liens Utiles
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Supabase Documentation](https://supabase.com/docs)
-- [Stripe Documentation](https://stripe.com/docs)
-- [shadcn/ui](https://ui.shadcn.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
+Amiel Dylan - [@AmielDylan](https://github.com/AmielDylan)
