@@ -77,8 +77,8 @@ export default function EditAnnouncementPage({
     resolver: zodResolver(createAnnouncementSchema),
   })
 
-  const departureCountry = watch('departure_country')
-  const arrivalCountry = watch('arrival_country')
+  const departureCountry = watch('departure_country') as 'FR' | 'BJ' | undefined
+  const arrivalCountry = watch('arrival_country') as 'FR' | 'BJ' | undefined
   const departureCity = watch('departure_city')
   const arrivalCity = watch('arrival_city')
   const departureDate = watch('departure_date')
@@ -122,8 +122,8 @@ export default function EditAnnouncementPage({
 
   // Recherche autocomplete pour ville de départ
   useEffect(() => {
-    if (debouncedDepartureCity && debouncedDepartureCity.length >= 2) {
-      searchCities(debouncedDepartureCity, departureCountry).then((cities) => {
+    if (debouncedDepartureCity && debouncedDepartureCity.length >= 2 && departureCountry) {
+      searchCities(departureCountry, debouncedDepartureCity).then((cities) => {
         setDepartureCitySuggestions(cities)
         setShowDepartureSuggestions(true)
       })
@@ -135,8 +135,8 @@ export default function EditAnnouncementPage({
 
   // Recherche autocomplete pour ville d'arrivée
   useEffect(() => {
-    if (debouncedArrivalCity && debouncedArrivalCity.length >= 2) {
-      searchCities(debouncedArrivalCity, arrivalCountry).then((cities) => {
+    if (debouncedArrivalCity && debouncedArrivalCity.length >= 2 && arrivalCountry) {
+      searchCities(arrivalCountry, debouncedArrivalCity).then((cities) => {
         setArrivalCitySuggestions(cities)
         setShowArrivalSuggestions(true)
       })

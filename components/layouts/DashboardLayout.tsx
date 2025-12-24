@@ -232,11 +232,11 @@ function UserMenu() {
   }
 
   const displayName = profile
-    ? `${profile.firstname || ''} ${profile.lastname || ''}`.trim() || 'Utilisateur'
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Utilisateur'
     : 'Utilisateur'
   
   const initials = profile
-    ? `${profile.firstname?.[0] || ''}${profile.lastname?.[0] || ''}`.toUpperCase() || 'U'
+    ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() || 'U'
     : 'U'
 
   return (
@@ -273,7 +273,7 @@ function UserMenu() {
                 Vérification en cours
               </Badge>
             )}
-            {isFeatureEnabled('KYC_ENABLED') && (!profile?.kyc_status || profile.kyc_status === 'rejected' || profile.kyc_status === 'incomplete') && (
+            {isFeatureEnabled('KYC_ENABLED') && (!profile?.kyc_status || profile.kyc_status === 'rejected') && (
               <Badge variant="outline" className="w-fit text-muted-foreground mt-2">
                 <AlertCircle className="mr-1 h-3 w-3" />
                 Non vérifié

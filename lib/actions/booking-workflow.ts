@@ -301,7 +301,7 @@ export async function markAsDelivered(
     })
 
     // Mettre à jour les statistiques du voyageur
-    await supabase.rpc('increment_user_stats', {
+    await (supabase.rpc as any)('increment_user_stats', {
       p_user_id: booking.traveler_id,
     })
 

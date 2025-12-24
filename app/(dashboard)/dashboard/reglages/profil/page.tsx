@@ -70,8 +70,8 @@ export default function ProfilePage() {
 
       if (result.profile) {
         setProfile({
-          firstname: result.profile.firstname,
-          lastname: result.profile.lastname,
+          firstname: result.profile.first_name,
+          lastname: result.profile.last_name,
           phone: result.profile.phone,
           address: result.profile.address,
           bio: result.profile.bio,
@@ -80,8 +80,8 @@ export default function ProfilePage() {
         })
         setAvatarPreview(result.profile.avatar_url)
         reset({
-          firstname: result.profile.firstname || '',
-          lastname: result.profile.lastname || '',
+          firstname: result.profile.first_name || '',
+          lastname: result.profile.last_name || '',
           phone: result.profile.phone || '',
           address: result.profile.address || '',
           bio: result.profile.bio || '',

@@ -5,7 +5,7 @@
 'use client'
 
 import { useRef } from 'react'
-import QRCode from 'qrcode.react'
+import { QRCodeCanvas } from 'qrcode.react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Printer } from 'lucide-react'
@@ -42,7 +42,7 @@ export function BookingQRCode({ qrCode, bookingId }: BookingQRCodeProps) {
     <Card>
       <CardContent className="pt-6 space-y-4">
         <div ref={qrRef} className="flex justify-center p-6 bg-white rounded-lg">
-          <QRCode
+            <QRCodeCanvas
             value={qrCode}
             size={256}
             level="H"

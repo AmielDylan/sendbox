@@ -61,20 +61,19 @@ export async function notifyUser(params: NotifyUserParams) {
         // Note: params.user_id est déjà l'ID du profil (qui correspond à auth.uid())
         const { data: authUser } = await supabase.auth.admin.getUserById(params.user_id)
 
-          if (authUser?.user?.email) {
-            await sendEmail({
-              to: authUser.user.email,
-              subject: params.title,
-              template: 'notification',
-              data: {
-                title: params.title,
-                content: params.content,
-                type: params.type,
-                booking_id: params.booking_id,
-                announcement_id: params.announcement_id,
-              },
-            })
-          }
+        if (authUser?.user?.email) {
+          await sendEmail({
+            to: authUser.user.email,
+            subject: params.title,
+            template: 'notification',
+            data: {
+              title: params.title,
+              content: params.content,
+              type: params.type,
+              booking_id: params.booking_id,
+              announcement_id: params.announcement_id,
+            },
+          })
         }
       } catch (emailError) {
         // Ne pas bloquer si l'email échoue

@@ -35,7 +35,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-type KYCStatus = 'pending' | 'approved' | 'rejected' | null
+type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 
 export default function KYCPage() {
   const [kycStatus, setKycStatus] = useState<KYCStatus>(null)

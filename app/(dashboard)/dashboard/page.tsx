@@ -72,7 +72,7 @@ async function DashboardContent() {
                   </p>
                 </div>
               )}
-              {(!kycStatus || kycStatus === 'rejected' || kycStatus === 'incomplete') && (
+              {(!kycStatus || kycStatus === 'rejected') && (
                 <div className="space-y-3">
                   <p className="text-xs text-muted-foreground">
                     Vérifiez votre identité

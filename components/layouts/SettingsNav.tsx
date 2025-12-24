@@ -93,8 +93,7 @@ export function SettingsNav({ kycStatus }: SettingsNavProps) {
                   {item.description}
                 </div>
               </div>
-              {item.badge === 'kyc' && getKYCBadge()}
-              {item.badge && item.badge !== 'kyc' && getKYCBadge()}
+              {item.badge && getKYCBadge()}
             </Button>
           </Link>
         )
