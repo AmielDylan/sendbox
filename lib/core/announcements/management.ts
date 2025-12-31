@@ -99,7 +99,6 @@ export async function updateAnnouncement(
         departure_date: toLocalDateString(validation.data.departure_date),
         arrival_date: toLocalDateString(validation.data.arrival_date),
         available_kg: validation.data.available_kg,
-        max_weight_kg: validation.data.available_kg,
         price_per_kg: validation.data.price_per_kg,
         description: validation.data.description || null,
         updated_at: new Date().toISOString(),

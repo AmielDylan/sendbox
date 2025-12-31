@@ -34,7 +34,7 @@ export async function acceptBooking(bookingId: string) {
       announcements:announcement_id (
         id,
         traveler_id,
-        max_weight_kg,
+        available_kg,
         status
       )
     `
@@ -80,7 +80,7 @@ export async function acceptBooking(bookingId: string) {
 
   const reservedWeight =
     existingBookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
-  const availableWeight = (announcement.max_weight_kg || 0) - reservedWeight
+  const availableWeight = (announcement.available_kg || 0) - reservedWeight
 
   // Vérifier la capacité disponible
   if ((booking.kilos_requested || 0) > availableWeight) {
