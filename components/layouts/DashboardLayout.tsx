@@ -18,7 +18,9 @@ import {
   IconCheck,
   IconClock,
   IconAlertCircle,
+  IconLogout,
 } from '@tabler/icons-react'
+import { signOut as serverSignOut } from '@/lib/core/auth/actions'
 import { cn } from "@/lib/utils"
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -236,26 +238,22 @@ function UserMenu() {
 
   const handleLogout = async () => {
     try {
-      // Utiliser la fonction signOut du hook useAuth qui nettoie le cache
+      // 1. Nettoyer côté client d'abord (cache, état local)
       await authSignOut()
 
-      // Nettoyer le localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('current_user_id')
-      }
+      // 2. Appeler l'action serveur pour nettoyer les cookies serveur
+      // Cela va aussi faire le redirect automatiquement
+      await serverSignOut()
 
-      toast.success('Déconnexion réussie')
-
-      // Rediriger vers la page de login
-      router.push('/login')
-
-      // Forcer un refresh complet après un court délai
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      // Note: serverSignOut() fait déjà un redirect('/')
+      // donc on n'a pas besoin de router.push ici
     } catch (error) {
       console.error('Logout error:', error)
       toast.error('Erreur lors de la déconnexion')
+
+      // En cas d'erreur, rediriger quand même vers la page de login
+      router.push('/login')
+      router.refresh()
     }
   }
 
@@ -346,11 +344,11 @@ function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleLogout}
           className="cursor-pointer text-destructive focus:text-destructive"
         >
-          <IconX className="mr-2 h-4 w-4" />
+          <IconLogout className="mr-2 h-4 w-4" />
           <span>Déconnexion</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -242,19 +242,28 @@ export function useAuth(): UseAuthReturn {
     }
   }, [refetch])
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
-      await supabase.auth.signOut()
+      // Nettoyer d'abord l'état local
       setUser(null)
       setProfile(null)
       setLoading(false)
-      // Nettoyer le cache des queries lors de la déconnexion
+
+      // Nettoyer le cache des queries
       queryClient.clear()
+
+      // Nettoyer le localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('current_user_id')
+      }
+
+      // Appeler signOut côté client pour nettoyer les cookies et la session
+      await supabase.auth.signOut({ scope: 'local' })
     } catch (error) {
       console.error('Sign out error:', error)
       throw error
     }
-  }
+  }, [supabase, queryClient])
 
   return {
     user,
