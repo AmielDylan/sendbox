@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconStar, IconCircleCheck, IconBriefcase, Calendar } from '@tabler/icons-react'
+import { IconStar, IconCircleCheck, IconBriefcase, IconCalendar } from '@tabler/icons-react'
 import { generateInitials } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -50,7 +50,7 @@ export function TravelerSection({
               <h3 className="font-semibold text-lg">{fullName}</h3>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-medium">{rating.toFixed(1)}</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
@@ -61,7 +61,7 @@ export function TravelerSection({
 
             {memberSince && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
+                <IconCalendar className="h-4 w-4" />
                 <span>
                   Membre depuis {format(new Date(memberSince), 'MMMM yyyy', { locale: fr })}
                 </span>
@@ -71,13 +71,13 @@ export function TravelerSection({
             <div className="flex flex-wrap gap-2">
               {kycStatus === 'approved' && (
                 <Badge variant="default" className="bg-green-500">
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                  <IconCircleCheck className="mr-1 h-3 w-3" />
                   Voyageur vérifié
                 </Badge>
               )}
               {servicesCount >= 50 && (
                 <Badge variant="secondary">
-                  <Briefcase className="mr-1 h-3 w-3" />
+                  <IconBriefcase className="mr-1 h-3 w-3" />
                   Professionnel
                 </Badge>
               )}

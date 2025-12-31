@@ -168,8 +168,8 @@ export async function getUserRatings(
       created_at,
       rater:rater_id (
         id,
-        first_name,
-        last_name,
+        firstname,
+        lastname,
         avatar_url
       )
     `
@@ -309,7 +309,7 @@ export async function canRateBooking(bookingId: string) {
   // Récupérer le nom de la personne à noter
   const { data: ratedUser } = await supabase
     .from('profiles')
-    .select('first_name, last_name')
+    .select('firstname, lastname')
     .eq('id', ratedId)
     .single()
 
@@ -317,7 +317,7 @@ export async function canRateBooking(bookingId: string) {
     canRate: true,
     ratedUserId: ratedId,
     ratedUserName: ratedUser
-      ? `${ratedUser.first_name} ${ratedUser.last_name}`
+      ? `${ratedUser.firstname} ${ratedUser.lastname}`
       : 'Utilisateur',
   }
 }

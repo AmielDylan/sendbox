@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { IconStar, MapPin, Calendar, IconPackage, IconCurrencyEuro, ArrowRight } from '@tabler/icons-react'
+import { IconStar, IconMapPin, IconCalendar, IconPackage, IconCurrencyEuro, IconArrowRight } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { AnnouncementResult } from "@/lib/shared/db/queries/announcements"
@@ -22,10 +22,10 @@ export function AnnouncementCard({
   announcement,
   showMatchScore = false,
 }: AnnouncementCardProps) {
-  const travelerName = `${announcement.traveler_first_name || ''} ${announcement.traveler_last_name || ''}`.trim() || 'Voyageur'
+  const travelerName = `${announcement.traveler_firstname || ''} ${announcement.traveler_lastname || ''}`.trim() || 'Voyageur'
   const travelerInitials = generateInitials(
-    announcement.traveler_first_name,
-    announcement.traveler_last_name
+    announcement.traveler_firstname,
+    announcement.traveler_lastname
   )
 
   return (
@@ -44,7 +44,7 @@ export function AnnouncementCard({
               <h3 className="font-semibold">{travelerName}</h3>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="text-sm font-medium">
                     {announcement.traveler_rating.toFixed(1)}
                   </span>
@@ -65,16 +65,16 @@ export function AnnouncementCard({
       <CardContent className="space-y-4">
         {/* Trajet */}
         <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
+          <IconMapPin className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">
-            {announcement.origin_city} ({announcement.origin_country}) →{' '}
-            {announcement.destination_city} ({announcement.destination_country})
+            {announcement.departure_city} ({announcement.departure_country}) →{' '}
+            {announcement.arrival_city} ({announcement.arrival_country})
           </span>
         </div>
 
         {/* Dates */}
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
+          <IconCalendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">
             {format(new Date(announcement.departure_date), 'd MMM', {
               locale: fr,
@@ -85,13 +85,13 @@ export function AnnouncementCard({
         {/* Capacité et Prix */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <IconPackage className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">
-              {announcement.max_weight_kg} kg disponibles
+              {announcement.available_kg} kg disponibles
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Euro className="h-4 w-4 text-muted-foreground" />
+            <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-semibold">
               {announcement.price_per_kg} €/kg
             </span>
@@ -109,7 +109,7 @@ export function AnnouncementCard({
         <Link href={`/annonces/${announcement.id}`} className="w-full">
           <Button className="w-full" variant="default">
             Voir détails
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <IconArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
       </CardFooter>

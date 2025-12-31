@@ -15,7 +15,7 @@ import { sendMessage, markMessagesAsRead } from "@/lib/core/messages/actions"
 import { generateInitials } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Send, IconLoader2, Image as ImageIcon } from '@tabler/icons-react'
+import { IconSend, IconLoader2, IconPhoto } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { createClient } from "@/lib/shared/db/client"
 import Image from 'next/image'
@@ -136,7 +136,7 @@ export function ChatWindow({
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <IconLoader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -148,7 +148,7 @@ export function ChatWindow({
               const isOwnMessage = message.sender_id === currentUserId
               const senderName = isOwnMessage
                 ? 'Vous'
-                : `${message.sender?.first_name || ''} ${message.sender?.last_name || ''}`.trim() ||
+                : `${message.sender?.firstname || ''} ${message.sender?.lastname || ''}`.trim() ||
                   'Utilisateur'
 
               return (
@@ -167,8 +167,8 @@ export function ChatWindow({
                       />
                       <AvatarFallback>
                         {generateInitials(
-                          message.sender?.first_name || null,
-                          message.sender?.last_name || null
+                          message.sender?.firstname || null,
+                          message.sender?.lastname || null
                         )}
                       </AvatarFallback>
                     </Avatar>
@@ -240,9 +240,9 @@ export function ChatWindow({
               size="icon"
             >
               {isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <IconLoader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <IconSend className="h-4 w-4" />
               )}
             </Button>
           </div>

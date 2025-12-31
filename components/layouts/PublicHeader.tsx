@@ -1,19 +1,43 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { IconPackage, IconMenu2, IconX, IconSearch, IconLogin } from '@tabler/icons-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { IconPackage, IconMenu2, IconX, IconSearch, IconLogin, IconLoader2 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
+import { ClientOnly } from '@/components/ui/client-only'
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
-  const { user } = useAuth()
+  const router = useRouter()
+  const { user, profile, loading, signOut: authSignOut } = useAuth()
+
+  // Debug: logger l'état de l'utilisateur et du profil
+  useEffect(() => {
+    console.log('PublicHeader - Auth state:', {
+      user: user?.id,
+      profile: (profile as any)?.id,
+      loading,
+      hasAvatar: !!(profile as any)?.avatar_url,
+      firstname: (profile as any)?.firstname,
+      lastname: (profile as any)?.lastname
+    })
+  }, [user, profile, loading])
 
   const navItems = [
     { label: 'Accueil', href: '/' },
@@ -23,6 +47,39 @@ export function PublicHeader() {
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
     return pathname.startsWith(href)
+  }
+
+  const displayName = profile
+    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() || 'Utilisateur'
+    : 'Utilisateur'
+
+  const initials = profile
+    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() || 'U'
+    : 'U'
+
+  const handleLogout = async () => {
+    try {
+      // Utiliser la fonction signOut du hook useAuth qui nettoie le cache
+      await authSignOut()
+
+      // Nettoyer le localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('current_user_id')
+      }
+
+      toast.success('Déconnexion réussie')
+
+      // Rediriger vers la page de login
+      router.push('/login')
+
+      // Forcer un refresh complet après un court délai
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast.error('Erreur lors de la déconnexion')
+    }
   }
 
   return (
@@ -58,19 +115,72 @@ export function PublicHeader() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-2">
-          {!user && (
-            <>
-              <Button asChild variant="ghost">
-                <Link href="/login">
-                  <IconLogin className="mr-2 h-4 w-4" />
-                  Connexion
-                </Link>
-              </Button>
-              <Button asChild>
-                <Link href="/signup">S'inscrire</Link>
-              </Button>
-            </>
-          )}
+          <ClientOnly fallback={
+            <Button variant="ghost" disabled>
+              <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+              Chargement...
+            </Button>
+          }>
+            {!user ? (
+              <>
+                <Button asChild variant="ghost">
+                  <Link href="/login">
+                    <IconLogin className="mr-2 h-4 w-4" />
+                    Connexion
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/register">S'inscrire</Link>
+                </Button>
+              </>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-9 w-9 rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    aria-label="Menu utilisateur"
+                  >
+                    <Avatar className="h-9 w-9">
+                      {(profile as any)?.avatar_url && (
+                        <AvatarImage
+                          src={(profile as any).avatar_url}
+                          alt={displayName}
+                        />
+                      )}
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{displayName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email || 'email@example.com'}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard">Tableau de bord</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profil">Mon profil</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="text-red-600 focus:text-red-600"
+                  >
+                    Se déconnecter
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </ClientOnly>
           <ThemeToggle />
         </div>
 
@@ -83,6 +193,7 @@ export function PublicHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-64">
+              <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
               <div className="flex flex-col gap-4 mt-8">
                 <nav className="flex flex-col gap-2">
                   {navItems.map((item) => {
@@ -106,21 +217,70 @@ export function PublicHeader() {
                   })}
                 </nav>
                 <div className="border-t pt-4 flex flex-col gap-2">
-                  {!user && (
-                    <>
-                      <Button asChild variant="outline" className="w-full">
-                        <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                          <IconLogin className="mr-2 h-4 w-4" />
-                          Connexion
-                        </Link>
-                      </Button>
-                      <Button asChild className="w-full">
-                        <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
-                          S'inscrire
-                        </Link>
-                      </Button>
-                    </>
+                  <ClientOnly fallback={
+                    <Button variant="outline" className="w-full" disabled>
+                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Chargement...
+                    </Button>
+                  }>
+                    {!user ? (
+                      <>
+                        <Button asChild variant="outline" className="w-full">
+                          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                            <IconLogin className="mr-2 h-4 w-4" />
+                            Connexion
+                          </Link>
+                        </Button>
+                        <Button asChild className="w-full">
+                          <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                            S'inscrire
+                          </Link>
+                        </Button>
+                      </>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3 px-3 py-2">
+                          <Avatar className="h-8 w-8">
+                            {(profile as any)?.avatar_url && (
+                              <AvatarImage
+                                src={(profile as any).avatar_url}
+                                alt={displayName}
+                              />
+                            )}
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                              {initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <p className="text-sm font-medium">{displayName}</p>
+                          <p className="text-xs text-muted-foreground">{user?.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <Button asChild variant="ghost" className="w-full justify-start">
+                          <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                            Tableau de bord
+                          </Link>
+                        </Button>
+                        <Button asChild variant="ghost" className="w-full justify-start">
+                          <Link href="/profil" onClick={() => setMobileMenuOpen(false)}>
+                            Mon profil
+                          </Link>
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
+                          onClick={() => {
+                            handleLogout()
+                            setMobileMenuOpen(false)
+                          }}
+                        >
+                          Se déconnecter
+                        </Button>
+                      </div>
+                    </div>
                   )}
+                  </ClientOnly>
                 </div>
               </div>
             </SheetContent>

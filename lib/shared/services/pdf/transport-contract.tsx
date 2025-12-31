@@ -32,20 +32,20 @@ interface BookingWithRelations {
   paid_at: string | null
   qrCodeDataURL?: string
   sender: {
-    first_name: string | null
-    last_name: string | null
+    firstname: string | null
+    lastname: string | null
     email?: string | null
   }
   traveler: {
-    first_name: string | null
-    last_name: string | null
+    firstname: string | null
+    lastname: string | null
     email?: string | null
   }
   announcement: {
-    origin_city: string
-    origin_country: string
-    destination_city: string
-    destination_country: string
+    departure_city: string
+    departure_country: string
+    arrival_city: string
+    arrival_country: string
     departure_date: string
     arrival_date: string
   }
@@ -88,7 +88,7 @@ export function TransportContract({ booking }: TransportContractProps) {
 
           <Text style={styles.label}>L'EXPÉDITEUR :</Text>
           <Text style={styles.text}>
-            {booking.sender.first_name} {booking.sender.last_name}
+            {booking.sender.firstname} {booking.sender.lastname}
           </Text>
           {booking.sender.email && (
             <Text style={styles.text}>{booking.sender.email}</Text>
@@ -98,7 +98,7 @@ export function TransportContract({ booking }: TransportContractProps) {
 
           <Text style={styles.label}>LE VOYAGEUR :</Text>
           <Text style={styles.text}>
-            {booking.traveler.first_name} {booking.traveler.last_name}
+            {booking.traveler.firstname} {booking.traveler.lastname}
           </Text>
           {booking.traveler.email && (
             <Text style={styles.text}>{booking.traveler.email}</Text>
@@ -109,15 +109,15 @@ export function TransportContract({ booking }: TransportContractProps) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>DÉTAILS DU TRAJET</Text>
           <Text style={styles.text}>
-            Départ : {booking.announcement.origin_city},{' '}
-            {booking.announcement.origin_country}
+            Départ : {booking.announcement.departure_city},{' '}
+            {booking.announcement.departure_country}
           </Text>
           <Text style={styles.text}>
             Date : {formatDate(booking.announcement.departure_date)}
           </Text>
           <Text style={styles.text}>
-            Arrivée : {booking.announcement.destination_city},{' '}
-            {booking.announcement.destination_country}
+            Arrivée : {booking.announcement.arrival_city},{' '}
+            {booking.announcement.arrival_country}
           </Text>
           <Text style={styles.text}>
             Date : {formatDate(booking.announcement.arrival_date)}

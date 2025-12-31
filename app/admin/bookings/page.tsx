@@ -96,7 +96,7 @@ export default function AdminBookingsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -158,7 +158,7 @@ export default function AdminBookingsPage() {
                         onClick={() => handleReleasePayment(booking.id)}
                         disabled={booking.status !== 'delivered'}
                       >
-                        <Unlock className="h-4 w-4" />
+                        <IconLockOpen className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
@@ -168,7 +168,7 @@ export default function AdminBookingsPage() {
                           setRefundDialogOpen(true)
                         }}
                       >
-                        <DollarSign className="h-4 w-4" />
+                        <IconCurrencyDollar className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="destructive"
@@ -178,7 +178,7 @@ export default function AdminBookingsPage() {
                           setDisputeDialogOpen(true)
                         }}
                       >
-                        <AlertTriangle className="h-4 w-4" />
+                        <IconAlertTriangle className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

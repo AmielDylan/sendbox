@@ -129,13 +129,15 @@ export async function createBooking(formData: CreateBookingInput & {
   // Récupérer l'annonce et vérifier la capacité
   const { data: announcement, error: announcementError } = await supabase
     .from('announcements')
-    .select('id, traveler_id, max_weight_kg, status, origin_city, destination_city')
+    .select('id, traveler_id, available_kg, status, departure_city, arrival_city, price_per_kg')
     .eq('id', formData.announcement_id)
     .single()
 
   if (announcementError || !announcement) {
+    console.error('Announcement fetch error:', announcementError)
+    console.error('Announcement ID:', formData.announcement_id)
     return {
-      error: 'Annonce introuvable',
+      error: announcementError?.message || 'Annonce introuvable',
     }
   }
 
@@ -156,13 +158,14 @@ export async function createBooking(formData: CreateBookingInput & {
   // Calculer le poids réservé actuel
   const { data: existingBookings } = await supabase
     .from('bookings')
-    .select('weight_kg')
+    .select('kilos_requested, weight_kg')
     .eq('announcement_id', formData.announcement_id)
-    .in('status', ['pending', 'confirmed', 'in_transit'])
+    .in('status', ['pending', 'accepted', 'in_transit'])
 
   const reservedWeight =
-    existingBookings?.reduce((sum, b) => sum + (b.weight_kg || 0), 0) || 0
-  const availableWeight = announcement.max_weight_kg - reservedWeight
+    existingBookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
+  const maxWeight = (announcement as any).available_kg || 0
+  const availableWeight = Math.max(0, maxWeight - reservedWeight)
 
   // Vérifier la capacité disponible
   if (formData.kilos_requested > availableWeight) {
@@ -183,15 +186,18 @@ export async function createBooking(formData: CreateBookingInput & {
 
   try {
     // Créer la réservation
+    // Le QR code sera généré automatiquement par le trigger de base de données
     const { data: booking, error: createError } = await supabase
       .from('bookings')
       .insert({
         announcement_id: validation.data.announcement_id,
         sender_id: user.id,
         traveler_id: announcement.traveler_id,
-        weight_kg: validation.data.kilos_requested,
-        description: validation.data.package_description,
+        kilos_requested: validation.data.kilos_requested,
+        package_description: validation.data.package_description,
         package_value: validation.data.package_value,
+        price_per_kg: announcement.price_per_kg,
+        qr_code: '', // Sera remplacé automatiquement par le trigger
         insurance_opted: validation.data.insurance_opted,
         status: 'pending',
       })
@@ -200,8 +206,16 @@ export async function createBooking(formData: CreateBookingInput & {
 
     if (createError || !booking) {
       console.error('Create booking error:', createError)
+      console.error('Create booking error details:', JSON.stringify(createError, null, 2))
+      console.error('Booking data attempted:', {
+        announcement_id: validation.data.announcement_id,
+        sender_id: user.id,
+        traveler_id: announcement.traveler_id,
+        kilos_requested: validation.data.kilos_requested,
+      })
+      const errorMessage = createError?.message || createError?.details || createError?.hint || 'Erreur inconnue'
       return {
-        error: 'Erreur lors de la création de la réservation',
+        error: `Erreur lors de la création de la réservation: ${errorMessage}`,
       }
     }
 
@@ -288,7 +302,7 @@ export async function createBooking(formData: CreateBookingInput & {
       p_user_id: announcement.traveler_id,
       p_type: 'booking_request',
       p_title: 'Nouvelle demande de réservation',
-      p_content: `Une nouvelle demande de réservation a été créée pour votre trajet ${announcement.origin_city} → ${announcement.destination_city}`,
+      p_content: `Une nouvelle demande de réservation a été créée pour votre trajet ${announcement.departure_city} → ${announcement.arrival_city}`,
       p_booking_id: booking.id,
       p_announcement_id: announcement.id,
     })
@@ -332,9 +346,9 @@ export async function getAnnouncementForBooking(announcementId: string) {
     .select(
       `
       *,
-      profiles:traveler_id (
-        first_name,
-        last_name,
+      profiles!announcements_traveler_id_fkey (
+        firstname,
+        lastname,
         avatar_url,
         kyc_status
       )
@@ -366,29 +380,30 @@ export async function getAnnouncementForBooking(announcementId: string) {
   // Calculer le poids réservé
   const { data: bookings } = await supabase
     .from('bookings')
-    .select('weight_kg')
+    .select('kilos_requested, weight_kg')
     .eq('announcement_id', announcementId)
-    .in('status', ['pending', 'confirmed', 'in_transit'])
+    .in('status', ['pending', 'accepted', 'in_transit'])
 
   const reservedWeight =
-    bookings?.reduce((sum, b) => sum + (b.weight_kg || 0), 0) || 0
-  const availableWeight = announcement.max_weight_kg - reservedWeight
+    bookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
+  const maxWeight = (announcement as any).available_kg || 0
+  const availableWeight = Math.max(0, maxWeight - reservedWeight)
 
   const profile = announcement.profiles as any
 
   return {
     announcement: {
       id: announcement.id,
-      origin_city: announcement.origin_city,
-      origin_country: announcement.origin_country,
-      destination_city: announcement.destination_city,
-      destination_country: announcement.destination_country,
+      departure_city: announcement.departure_city,
+      departure_country: announcement.departure_country,
+      arrival_city: announcement.arrival_city,
+      arrival_country: announcement.arrival_country,
       departure_date: announcement.departure_date,
-      price_per_kg: announcement.price_per_kg,
-      max_weight_kg: announcement.max_weight_kg,
+      price_per_kg: announcement.price_per_kg || 0,
+      available_kg: (announcement as any).available_kg || 0,
       available_weight: availableWeight,
-      traveler_first_name: profile?.first_name || null,
-      traveler_last_name: profile?.last_name || null,
+      traveler_firstname: profile?.firstname || null,
+      traveler_lastname: profile?.lastname || null,
       traveler_avatar_url: profile?.avatar_url || null,
     },
   }

@@ -47,8 +47,8 @@ export async function signUp(formData: RegisterInput) {
       options: {
         emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify-email`,
         data: {
-          first_name: validation.data.firstname,
-          last_name: validation.data.lastname,
+          firstname: validation.data.firstname,
+          lastname: validation.data.lastname,
           phone: validation.data.phone,
         },
       },
@@ -77,8 +77,8 @@ export async function signUp(formData: RegisterInput) {
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          first_name: validation.data.firstname,
-          last_name: validation.data.lastname,
+          firstname: validation.data.firstname,
+          lastname: validation.data.lastname,
           phone: validation.data.phone,
         })
         .eq('user_id', authData.user.id)

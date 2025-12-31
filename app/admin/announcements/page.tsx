@@ -67,7 +67,7 @@ export default function AdminAnnouncementsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -111,10 +111,10 @@ export default function AdminAnnouncementsPage() {
               {announcements?.map((announcement: any) => (
                 <TableRow key={announcement.id}>
                   <TableCell>
-                    {announcement.origin_city} → {announcement.destination_city}
+                    {announcement.departure_city} → {announcement.arrival_city}
                   </TableCell>
                   <TableCell>{announcement.price_per_kg} EUR/kg</TableCell>
-                  <TableCell>{announcement.max_weight_kg} kg</TableCell>
+                  <TableCell>{announcement.available_kg} kg</TableCell>
                   <TableCell>{getStatusBadge(announcement.status)}</TableCell>
                   <TableCell>
                     {format(new Date(announcement.created_at), 'PP', { locale: fr })}
@@ -128,7 +128,7 @@ export default function AdminAnnouncementsPage() {
                         setRejectDialogOpen(true)
                       }}
                     >
-                      <XCircle className="h-4 w-4" />
+                      <IconCircleX className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>

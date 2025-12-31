@@ -4,7 +4,7 @@
 
 'use client'
 
-import { Star } from '@tabler/icons-react'
+import { IconStar } from '@tabler/icons-react'
 
 interface RatingDistributionProps {
   distribution: Record<number, number>
@@ -28,7 +28,7 @@ export function RatingDistribution({
           <div key={stars} className="flex items-center gap-2">
             <div className="flex items-center gap-1 w-16">
               <span className="text-sm font-medium">{stars}</span>
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
             </div>
             <div className="flex-1">
               <div className="h-4 bg-gray-200 rounded-full overflow-hidden">

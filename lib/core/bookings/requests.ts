@@ -74,16 +74,16 @@ export async function acceptBooking(bookingId: string) {
   // Calculer le poids réservé actuel (y compris les autres bookings confirmés)
   const { data: existingBookings } = await supabase
     .from('bookings')
-    .select('weight_kg')
+    .select('kilos_requested, weight_kg')
     .eq('announcement_id', announcement.id)
-    .in('status', ['pending', 'confirmed', 'in_transit'])
+    .in('status', ['pending', 'accepted', 'in_transit'])
 
   const reservedWeight =
-    existingBookings?.reduce((sum, b) => sum + (b.weight_kg || 0), 0) || 0
-  const availableWeight = announcement.max_weight_kg - reservedWeight
+    existingBookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
+  const availableWeight = (announcement.max_weight_kg || 0) - reservedWeight
 
   // Vérifier la capacité disponible
-  if (booking.weight_kg > availableWeight) {
+  if ((booking.kilos_requested || 0) > availableWeight) {
     return {
       error: `Capacité insuffisante. Il reste ${availableWeight.toFixed(1)} kg disponible(s).`,
     }
@@ -94,7 +94,7 @@ export async function acceptBooking(bookingId: string) {
     const { error: updateError } = await supabase
       .from('bookings')
       .update({
-        status: 'confirmed',
+        status: 'accepted',
         accepted_at: new Date().toISOString(),
       })
       .eq('id', bookingId)
@@ -276,16 +276,16 @@ export async function getPendingBookingRequests() {
       `
       *,
       announcements:announcement_id (
-        origin_city,
-        destination_city,
-        origin_country,
-        destination_country,
+        departure_city,
+        arrival_city,
+        departure_country,
+        arrival_country,
         departure_date,
         price_per_kg
       ),
       sender:sender_id (
-        first_name,
-        last_name,
+        firstname,
+        lastname,
         avatar_url
       )
     `

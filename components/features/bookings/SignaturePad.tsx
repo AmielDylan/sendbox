@@ -8,7 +8,7 @@ import { useRef, useState } from 'react'
 import SignatureCanvas from 'react-signature-canvas'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { IconTrash, Check } from '@tabler/icons-react'
+import { IconTrash, IconCheck } from '@tabler/icons-react'
 
 interface SignaturePadProps {
   onSave: (dataURL: string) => void
@@ -72,11 +72,11 @@ export function SignaturePad({
         </div>
         <div className="flex gap-2">
           <Button onClick={handleClear} variant="outline" className="flex-1">
-            <Trash2 className="mr-2 h-4 w-4" />
+            <IconTrash className="mr-2 h-4 w-4" />
             Effacer
           </Button>
           <Button onClick={handleSave} disabled={isEmpty} className="flex-1">
-            <Check className="mr-2 h-4 w-4" />
+            <IconCheck className="mr-2 h-4 w-4" />
             Valider la signature
           </Button>
         </div>

@@ -39,13 +39,13 @@ import { PriceCalculation } from '@/components/features/bookings/PriceCalculatio
 import { TripTimeline } from '@/components/features/announcements/TripTimeline'
 import { toast } from 'sonner'
 import {
-  Loader2,
-  Upload,
-  X,
-  Star,
-  Package,
-  Euro,
-  Shield,
+  IconLoader2,
+  IconUpload,
+  IconX,
+  IconStar,
+  IconPackage,
+  IconCurrencyEuro,
+  IconShield,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -100,7 +100,7 @@ function NewBookingPageContent() {
     if (announcementId) {
       loadAnnouncement()
     } else {
-      toast.error('Annonce non spécifiée')
+      // Rediriger silencieusement vers la page de recherche sans toast
       router.push('/recherche')
     }
   }, [announcementId])
@@ -119,11 +119,15 @@ function NewBookingPageContent() {
       if (result.announcement) {
         setAnnouncement(result.announcement)
         setValue('announcement_id', result.announcement.id)
+
+        console.log('Initial weight from URL:', initialWeight)
+        console.log('Available weight from announcement:', result.announcement.available_weight)
+
         if (initialWeight) {
-          setValue(
-            'kilos_requested',
-            Math.min(initialWeight, result.announcement.available_weight)
-          )
+          const maxWeight = result.announcement.available_weight || 999
+          const weightToSet = Math.min(initialWeight, maxWeight)
+          console.log('Setting weight to:', weightToSet)
+          setValue('kilos_requested', weightToSet)
         }
       }
     } catch (error) {
@@ -207,7 +211,7 @@ function NewBookingPageContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -216,7 +220,7 @@ function NewBookingPageContent() {
     return null
   }
 
-  const travelerName = `${announcement.traveler_first_name || ''} ${announcement.traveler_last_name || ''}`.trim() || 'Voyageur'
+  const travelerName = `${announcement.traveler_firstname || ''} ${announcement.traveler_lastname || ''}`.trim() || 'Voyageur'
 
   return (
     <div className="space-y-6">
@@ -240,10 +244,10 @@ function NewBookingPageContent() {
             </CardHeader>
             <CardContent className="space-y-4">
               <TripTimeline
-                originCity={announcement.origin_city}
-                originCountry={announcement.origin_country}
-                destinationCity={announcement.destination_city}
-                destinationCountry={announcement.destination_country}
+                originCity={announcement.departure_city}
+                originCountry={announcement.departure_country}
+                destinationCity={announcement.arrival_city}
+                destinationCountry={announcement.arrival_country}
                 departureDate={announcement.departure_date}
               />
 
@@ -255,15 +259,15 @@ function NewBookingPageContent() {
                   />
                   <AvatarFallback>
                     {generateInitials(
-                      announcement.traveler_first_name,
-                      announcement.traveler_last_name
+                      announcement.traveler_firstname,
+                      announcement.traveler_lastname
                     )}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">{travelerName}</p>
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     <span className="text-sm">4.5</span>
                   </div>
                 </div>
@@ -294,7 +298,7 @@ function NewBookingPageContent() {
                     type="number"
                     step="0.5"
                     min={0.5}
-                    max={announcement.available_weight}
+                    max={announcement.available_weight || 999}
                     {...register('kilos_requested', {
                       valueAsNumber: true,
                     })}
@@ -306,7 +310,7 @@ function NewBookingPageContent() {
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Maximum disponible : {announcement.available_weight} kg
+                    Maximum disponible : {announcement.available_weight || 0} kg
                   </p>
                 </div>
 
@@ -385,7 +389,7 @@ function NewBookingPageContent() {
                             onClick={() => removePhoto(index)}
                             className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <X className="h-4 w-4" />
+                            <IconX className="h-4 w-4" />
                           </button>
                         </div>
                       ))}
@@ -402,7 +406,7 @@ function NewBookingPageContent() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
+                  <IconShield className="h-5 w-5" />
                   Assurance
                 </CardTitle>
                 <CardDescription>
@@ -459,7 +463,7 @@ function NewBookingPageContent() {
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                     Création...
                   </>
                 ) : (

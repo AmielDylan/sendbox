@@ -8,10 +8,10 @@ import { createClient } from "@/lib/shared/db/server"
 import { BookingQRCode } from '@/components/features/bookings/BookingQRCode'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent } from '@/components/ui/card'
-import { Loader2 } from '@tabler/icons-react'
+import { IconLoader2 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from '@tabler/icons-react'
+import { IconArrowLeft } from '@tabler/icons-react'
 
 interface QRCodePageProps {
   params: { id: string }
@@ -99,7 +99,7 @@ async function QRCodePageContent({ params }: QRCodePageProps) {
           <div className="flex gap-2">
             <Button variant="outline" asChild className="flex-1">
               <Link href={`/dashboard/colis/${bookingId}`}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
+                <IconArrowLeft className="mr-2 h-4 w-4" />
                 Retour
               </Link>
             </Button>
@@ -120,7 +120,7 @@ export default function QRCodePage({ params }: QRCodePageProps) {
     <Suspense
       fallback={
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }
     >

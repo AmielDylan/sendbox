@@ -27,10 +27,11 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/use-auth'
 
 type BookingStatus =
   | 'pending'
-  | 'confirmed'
+  | 'accepted'
   | 'in_transit'
   | 'delivered'
   | 'cancelled'
@@ -42,35 +43,24 @@ interface Booking {
   total_price: number | null
   created_at: string
   announcements: {
-    origin_city: string
-    destination_city: string
-    origin_country: string
-    destination_country: string
+    departure_city: string
+    arrival_city: string
+    departure_country: string
+    arrival_country: string
     departure_date: string
   } | null
 }
 
 export default function MyBookingsPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<BookingStatus | 'all'>('all')
-  const [userId, setUserId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const getUserId = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
-    }
-    getUserId()
-  }, [])
 
   // Query pour récupérer les bookings
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['user-bookings', userId, activeTab],
+    queryKey: ['user-bookings', user?.id, activeTab],
     queryFn: async () => {
-      if (!userId) return { data: null, error: null }
+      if (!user?.id) return { data: null, error: null }
 
       const supabase = createClient()
       let query = supabase
@@ -83,15 +73,15 @@ export default function MyBookingsPage() {
           total_price,
           created_at,
           announcements:announcement_id (
-            origin_city,
-            destination_city,
-            origin_country,
-            destination_country,
+            departure_city,
+            arrival_city,
+            departure_country,
+            arrival_country,
             departure_date
           )
         `
         )
-        .or(`sender_id.eq.${userId},traveler_id.eq.${userId}`)
+        .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
 
       if (activeTab !== 'all') {
@@ -105,9 +95,9 @@ export default function MyBookingsPage() {
         return { data: null, error }
       }
 
-      return { data: bookings as Booking[], error: null }
+      return { data: bookings as any as Booking[], error: null }
     },
-    enabled: !!userId,
+    enabled: !!user?.id,
   })
 
   const bookings = data?.data || []
@@ -115,7 +105,7 @@ export default function MyBookingsPage() {
   const getStatusBadge = (status: BookingStatus) => {
     const variants: Record<BookingStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       pending: 'secondary',
-      confirmed: 'default',
+      accepted: 'default',
       in_transit: 'default',
       delivered: 'default',
       cancelled: 'destructive',
@@ -123,7 +113,7 @@ export default function MyBookingsPage() {
 
     const labels: Record<BookingStatus, string> = {
       pending: 'En attente',
-      confirmed: 'Confirmé',
+      accepted: 'Confirmé',
       in_transit: 'En transit',
       delivered: 'Livré',
       cancelled: 'Annulé',
@@ -155,7 +145,7 @@ export default function MyBookingsPage() {
         <TabsList>
           <TabsTrigger value="all">Tous</TabsTrigger>
           <TabsTrigger value="pending">En attente</TabsTrigger>
-          <TabsTrigger value="confirmed">Confirmés</TabsTrigger>
+          <TabsTrigger value="accepted">Confirmés</TabsTrigger>
           <TabsTrigger value="in_transit">En transit</TabsTrigger>
           <TabsTrigger value="delivered">Livrés</TabsTrigger>
           <TabsTrigger value="cancelled">Annulés</TabsTrigger>
@@ -196,7 +186,7 @@ export default function MyBookingsPage() {
                         <div className="space-y-1">
                           <CardTitle className="text-lg">
                             {announcement
-                              ? `${announcement.origin_city} → ${announcement.destination_city}`
+                              ? `${announcement.departure_city} → ${announcement.arrival_city}`
                               : 'Colis'}
                           </CardTitle>
                           <p className="text-sm text-muted-foreground">
@@ -217,13 +207,13 @@ export default function MyBookingsPage() {
                               <div className="flex items-center gap-2 text-sm">
                                 <IconMapPin className="h-4 w-4 text-muted-foreground" />
                                 <span>
-                                  {announcement.origin_city},{' '}
-                                  {announcement.origin_country}
+                                  {announcement.departure_city},{' '}
+                                  {announcement.departure_country}
                                 </span>
                                 <IconArrowRight className="h-4 w-4 text-muted-foreground" />
                                 <span>
-                                  {announcement.destination_city},{' '}
-                                  {announcement.destination_country}
+                                  {announcement.arrival_city},{' '}
+                                  {announcement.arrival_country}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 text-sm">

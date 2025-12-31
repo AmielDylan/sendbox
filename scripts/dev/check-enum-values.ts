@@ -66,13 +66,13 @@ async function checkEnum() {
         .from('announcements')
         .insert({
           traveler_id: '00000000-0000-0000-0000-000000000000',
-          origin_country: 'FR',
-          origin_city: 'Test',
-          destination_country: 'BJ',
-          destination_city: 'Test',
+          departure_country: 'FR',
+          departure_city: 'Test',
+          arrival_country: 'BJ',
+          arrival_city: 'Test',
           departure_date: new Date().toISOString(),
           arrival_date: new Date().toISOString(),
-          max_weight_kg: 10,
+          available_kg: 10,
           price_per_kg: 10,
           status: status as any,
         })

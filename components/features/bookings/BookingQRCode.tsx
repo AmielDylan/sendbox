@@ -8,7 +8,7 @@ import { useRef } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { IconDownload, Printer } from '@tabler/icons-react'
+import { IconDownload, IconPrinter } from '@tabler/icons-react'
 import { toast } from 'sonner'
 
 interface BookingQRCodeProps {
@@ -59,11 +59,11 @@ export function BookingQRCode({ qrCode, bookingId }: BookingQRCodeProps) {
 
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" onClick={handleDownload}>
-            <Download className="mr-2 h-4 w-4" />
+            <IconDownload className="mr-2 h-4 w-4" />
             Télécharger
           </Button>
           <Button variant="outline" onClick={handlePrint}>
-            <Printer className="mr-2 h-4 w-4" />
+            <IconPrinter className="mr-2 h-4 w-4" />
             Imprimer
           </Button>
         </div>

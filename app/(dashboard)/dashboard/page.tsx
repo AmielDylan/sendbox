@@ -2,9 +2,11 @@
  * Page d'accueil du dashboard
  */
 
+'use client'
+
 import Link from 'next/link'
-import { Suspense } from 'react'
-import { createClient } from "@/lib/shared/db/server"
+import { useEffect, useState } from 'react'
+import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
 import {
   Card,
@@ -17,27 +19,57 @@ import { Button } from '@/components/ui/button'
 import { IconPackage, IconMessage, IconTrendingUp, IconShield, IconCheck, IconClock } from '@tabler/icons-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
+import { toast } from 'sonner'
+import { useAuth } from '@/hooks/use-auth'
+import type { KYCStatus } from '@/types'
 
-async function DashboardContent() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function DashboardPage() {
+  const { user, profile } = useAuth()
+  const [kycStatus, setKycStatus] = useState<KYCStatus | null>(null)
+  const [kycRejectionReason, setKycRejectionReason] = useState<string | null>(null)
 
-  let kycStatus = null
-  let kycRejectionReason = null
-  
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('kyc_status, kyc_rejection_reason')
-      .eq('id', user.id)
-      .single()
-    
-    kycStatus = profile?.kyc_status || null
-    kycRejectionReason = profile?.kyc_rejection_reason || null
-  }
+  useEffect(() => {
+    // Gérer l'alert de vérification email
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('verified') === 'true') {
+        toast.success('Compte vérifié avec succès!', {
+          description: 'Vous pouvez maintenant utiliser toutes les fonctionnalités'
+        })
+        window.history.replaceState({}, '', '/dashboard')
+      }
+    }
+
+    // Charger le statut KYC
+    const loadKycStatus = async () => {
+      if (profile) {
+        setKycStatus((profile as any).kyc_status as KYCStatus)
+        setKycRejectionReason((profile as any).kyc_rejection_reason || null)
+      }
+    }
+
+    loadKycStatus()
+  }, [user?.id, profile])
 
   return (
-    <>
+    <div className="space-y-6">
+      <PageHeader
+        title="Tableau de bord"
+        description="Vue d'ensemble de votre activité Sendbox"
+        breadcrumbs={[
+          { label: 'Accueil', href: '/' },
+          { label: 'Tableau de bord' },
+        ]}
+        actions={
+          <Button asChild>
+            <Link href="/dashboard/annonces/new">
+              <IconPackage className="mr-2 h-4 w-4" />
+              Nouvelle annonce
+            </Link>
+          </Button>
+        }
+      />
+
       {/* Alert Banner KYC - SEULEMENT si feature activée */}
       {isFeatureEnabled('KYC_ENABLED') && (
         <KYCAlertBanner kycStatus={kycStatus} rejectionReason={kycRejectionReason} />
@@ -170,33 +202,6 @@ async function DashboardContent() {
           </div>
         </CardContent>
       </Card>
-    </>
-  )
-}
-
-export default function DashboardPage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Tableau de bord"
-        description="Vue d'ensemble de votre activité Sendbox"
-        breadcrumbs={[
-          { label: 'Accueil', href: '/' },
-          { label: 'Tableau de bord' },
-        ]}
-        actions={
-          <Button asChild>
-            <Link href="/dashboard/annonces/new">
-              <IconPackage className="mr-2 h-4 w-4" />
-              Nouvelle annonce
-            </Link>
-          </Button>
-        }
-      />
-
-      <Suspense fallback={<div>Chargement...</div>}>
-        <DashboardContent />
-      </Suspense>
     </div>
   )
 }

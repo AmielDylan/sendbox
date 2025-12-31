@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/client"
 import { toast } from 'sonner'
 import {
   IconLayoutDashboard,
@@ -22,7 +21,7 @@ import {
 } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +37,7 @@ import { NotificationDropdown } from '@/components/features/notifications/Notifi
 import { useAuth } from '@/hooks/use-auth'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { ClientOnly } from '@/components/ui/client-only'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -87,20 +87,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
       <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:hidden">
-        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Ouvrir le menu">
-              <IconMenu2 className="h-5 w-5" />
-              <span className="sr-only">Ouvrir le menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0">
-            <SidebarContent
-              pathname={pathname}
-              onNavigate={() => setSidebarOpen(false)}
-            />
-          </SheetContent>
-        </Sheet>
+        <ClientOnly>
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Ouvrir le menu">
+                <IconMenu2 className="h-5 w-5" />
+                <span className="sr-only">Ouvrir le menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0">
+              <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
+              <SidebarContent
+                pathname={pathname}
+                onNavigate={() => setSidebarOpen(false)}
+              />
+            </SheetContent>
+          </Sheet>
+        </ClientOnly>
         <div className="flex-1">
           <h1 className="text-lg font-semibold">Sendbox</h1>
         </div>
@@ -198,21 +201,24 @@ function SidebarContent({
 function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
-      {/* Theme Toggle */}
-      <ThemeToggle />
+      <ClientOnly>
+        <ThemeToggle />
+      </ClientOnly>
 
-      {/* Notifications */}
-      <NotificationDropdown />
+      <ClientOnly>
+        <NotificationDropdown />
+      </ClientOnly>
 
-      {/* User Menu */}
-      <UserMenu />
+      <ClientOnly>
+        <UserMenu />
+      </ClientOnly>
     </div>
   )
 }
 
 function UserMenu() {
   const router = useRouter()
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, signOut: authSignOut } = useAuth()
   const [avatarError, setAvatarError] = useState(false)
 
   // Timeout après 3s si toujours en chargement
@@ -230,11 +236,23 @@ function UserMenu() {
 
   const handleLogout = async () => {
     try {
-      const supabase = createClient()
-      await supabase.auth.signOut()
+      // Utiliser la fonction signOut du hook useAuth qui nettoie le cache
+      await authSignOut()
+
+      // Nettoyer le localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('current_user_id')
+      }
+
       toast.success('Déconnexion réussie')
+
+      // Rediriger vers la page de login
       router.push('/login')
-      router.refresh()
+
+      // Forcer un refresh complet après un court délai
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error('Logout error:', error)
       toast.error('Erreur lors de la déconnexion')
@@ -251,11 +269,11 @@ function UserMenu() {
   }
 
   const displayName = profile
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Utilisateur'
+    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() || 'Utilisateur'
     : 'Utilisateur'
-  
+
   const initials = profile
-    ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() || 'U'
+    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() || 'U'
     : 'U'
 
   return (
@@ -267,9 +285,9 @@ function UserMenu() {
           aria-label="Menu utilisateur"
         >
           <Avatar className="h-9 w-9">
-            {!avatarError && profile?.avatar_url && (
-              <AvatarImage 
-                src={profile.avatar_url} 
+            {!avatarError && (profile as any)?.avatar_url && (
+              <AvatarImage
+                src={(profile as any).avatar_url}
                 alt={displayName}
                 onError={() => setAvatarError(true)}
               />
@@ -288,19 +306,19 @@ function UserMenu() {
               {user?.email || 'email@example.com'}
             </p>
             {/* Badge statut KYC - SEULEMENT si feature activée */}
-            {isFeatureEnabled('KYC_ENABLED') && profile?.kyc_status === 'approved' && (
+            {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status === 'approved' && (
               <Badge variant="outline" className="w-fit text-green-600 border-green-600 mt-2">
                 <IconCheck className="mr-1 h-3 w-3" />
                 Vérifié
               </Badge>
             )}
-            {isFeatureEnabled('KYC_ENABLED') && profile?.kyc_status === 'pending' && (
+            {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status === 'pending' && (
               <Badge variant="outline" className="w-fit text-yellow-600 border-yellow-600 mt-2">
                 <IconClock className="mr-1 h-3 w-3" />
                 Vérification en cours
               </Badge>
             )}
-            {isFeatureEnabled('KYC_ENABLED') && (!profile?.kyc_status || profile.kyc_status === 'rejected') && (
+            {isFeatureEnabled('KYC_ENABLED') && (!(profile as any)?.kyc_status || (profile as any).kyc_status === 'rejected') && (
               <Badge variant="outline" className="w-fit text-muted-foreground mt-2">
                 <IconAlertCircle className="mr-1 h-3 w-3" />
                 Non vérifié
@@ -310,7 +328,7 @@ function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {/* Lien rapide vers KYC si non approuvé - SEULEMENT si feature activée */}
-        {isFeatureEnabled('KYC_ENABLED') && profile?.kyc_status !== 'approved' && (
+        {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status !== 'approved' && (
           <>
             <DropdownMenuItem asChild>
               <Link href="/dashboard/reglages/kyc" className="cursor-pointer">

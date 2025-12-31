@@ -9,14 +9,14 @@ import { isAdmin } from "@/lib/core/admin/actions"
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
-  LayoutDashboard,
-  Users,
-  FileCheck,
-  Megaphone,
-  Package,
-  AlertTriangle,
-  CreditCard,
-  Loader2,
+  IconLayoutDashboard,
+  IconUsers,
+  IconFileCheck,
+  IconHeadphones,
+  IconPackage,
+  IconAlertTriangle,
+  IconCreditCard,
+  IconLoader2,
 } from '@tabler/icons-react'
 
 export default async function AdminLayout({
@@ -31,13 +31,13 @@ export default async function AdminLayout({
   }
 
   const navItems = [
-    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/users', label: 'Utilisateurs', icon: Users },
-    { href: '/admin/kyc', label: 'KYC', icon: FileCheck },
-    { href: '/admin/announcements', label: 'Annonces', icon: Megaphone },
-    { href: '/admin/bookings', label: 'Réservations', icon: Package },
-    { href: '/admin/disputes', label: 'Litiges', icon: AlertTriangle },
-    { href: '/admin/transactions', label: 'Transactions', icon: CreditCard },
+    { href: '/admin/dashboard', label: 'Dashboard', icon: IconLayoutDashboard },
+    { href: '/admin/users', label: 'Utilisateurs', icon: IconUsers },
+    { href: '/admin/kyc', label: 'KYC', icon: IconFileCheck },
+    { href: '/admin/announcements', label: 'Annonces', icon: IconHeadphones },
+    { href: '/admin/bookings', label: 'Réservations', icon: IconPackage },
+    { href: '/admin/disputes', label: 'Litiges', icon: IconAlertTriangle },
+    { href: '/admin/transactions', label: 'Transactions', icon: IconCreditCard },
   ]
 
   return (
@@ -73,7 +73,7 @@ export default async function AdminLayout({
         <Suspense
           fallback={
             <div className="flex items-center justify-center min-h-[400px]">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           }
         >

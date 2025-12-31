@@ -7,8 +7,7 @@ import { createClient } from "@/lib/shared/db/server"
 import { isAdmin, getAdminStats } from "@/lib/core/admin/actions"
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { IconUsers, IconFileCheck, IconPackage, IconCurrencyEuro, IconAlertTriangle } from '@tabler/icons-react'
-import { Loader2 } from '@tabler/icons-react'
+import { IconUsers, IconFileCheck, IconPackage, IconCurrencyEuro, IconAlertTriangle, IconLoader2 } from '@tabler/icons-react'
 
 async function DashboardContent() {
   const admin = await isAdmin()
@@ -39,7 +38,7 @@ async function DashboardContent() {
             <CardTitle className="text-sm font-medium">
               Utilisateurs inscrits
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <IconUsers className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalUsers}</div>
@@ -49,7 +48,7 @@ async function DashboardContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">KYC en attente</CardTitle>
-            <FileCheck className="h-4 w-4 text-muted-foreground" />
+            <IconFileCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pendingKYC}</div>
@@ -61,7 +60,7 @@ async function DashboardContent() {
             <CardTitle className="text-sm font-medium">
               Réservations actives
             </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <IconPackage className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeBookings}</div>
@@ -71,7 +70,7 @@ async function DashboardContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">CA ce mois</CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
+            <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -85,7 +84,7 @@ async function DashboardContent() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
+            <IconAlertTriangle className="h-5 w-5" />
             Alertes
           </CardTitle>
         </CardHeader>
@@ -134,7 +133,7 @@ export default function AdminDashboardPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }
     >

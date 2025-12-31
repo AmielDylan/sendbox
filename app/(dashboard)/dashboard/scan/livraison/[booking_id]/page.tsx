@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { use, useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
@@ -22,10 +22,11 @@ import { IconLoader2, IconMapPin, IconCircleCheck } from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface ScanDeliveryPageProps {
-  params: { booking_id: string }
+  params: Promise<{ booking_id: string }>
 }
 
 export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
+  const { booking_id } = use(params)
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -39,7 +40,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   useEffect(() => {
     loadBooking()
     getCurrentLocation()
-  }, [params.booking_id])
+  }, [booking_id])
 
   const loadBooking = async () => {
     try {
@@ -55,7 +56,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('id', params.booking_id)
+        .eq('id', booking_id)
         .single()
 
       if (error || !data) {
@@ -72,7 +73,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
 
       if (data.status !== 'in_transit') {
         toast.error('Le colis doit être en transit')
-        router.push(`/dashboard/colis/${params.booking_id}`)
+        router.push(`/dashboard/colis/${booking_id}`)
         return
       }
 
@@ -174,7 +175,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
 
     try {
       // Upload photo
-      const photoPath = `deliveries/${params.booking_id}/${Date.now()}.jpg`
+      const photoPath = `deliveries/${booking_id}/${Date.now()}.jpg`
       const photoUrl = await uploadFile(photo, photoPath)
 
       if (!photoUrl) {
@@ -190,7 +191,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
       }
 
       const signatureBlob = await fetch(signatureDataUrl).then((res) => res.blob())
-      const signaturePath = `deliveries/${params.booking_id}/signature_${Date.now()}.png`
+      const signaturePath = `deliveries/${booking_id}/signature_${Date.now()}.png`
       const signatureUrl = await uploadFile(signatureBlob, signaturePath)
 
       if (!signatureUrl) {
@@ -200,7 +201,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
 
       // Marquer comme livré
       const result = await markAsDelivered(
-        params.booking_id,
+        booking_id,
         scannedCode,
         photoUrl,
         signatureUrl,
@@ -213,7 +214,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
       }
 
       toast.success('Colis livré avec succès !')
-      router.push(`/dashboard/colis/${params.booking_id}`)
+      router.push(`/dashboard/colis/${booking_id}`)
     } catch (error) {
       console.error('Error submitting delivery:', error)
       toast.error('Une erreur est survenue')
@@ -325,7 +326,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
         {/* Actions */}
         <div className="flex gap-3">
           <Button variant="outline" asChild className="flex-1">
-            <Link href={`/dashboard/colis/${params.booking_id}`}>
+            <Link href={`/dashboard/colis/${booking_id}`}>
               Annuler
             </Link>
           </Button>

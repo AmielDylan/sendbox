@@ -8,7 +8,7 @@ import { useState, useEffect, useTransition, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconStar, IconLoader2, Send } from '@tabler/icons-react'
+import { IconStar, IconLoader2, IconSend } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -98,7 +98,7 @@ function RatingPageContent() {
   if (canRate === null) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -212,12 +212,12 @@ function RatingPageContent() {
             >
               {isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Envoi en cours...
                 </>
               ) : (
                 <>
-                  <Send className="mr-2 h-4 w-4" />
+                  <IconSend className="mr-2 h-4 w-4" />
                   Envoyer l'avis
                 </>
               )}
@@ -234,7 +234,7 @@ export default function RatingPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }
     >

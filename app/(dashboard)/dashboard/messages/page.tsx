@@ -121,8 +121,8 @@ function MessagesPageContent() {
       setSelectedConversation({
         bookingId,
         otherUserId: conversation.other_user_id,
-        otherUserName: `${conversation.other_user_first_name || ''} ${
-          conversation.other_user_last_name || ''
+        otherUserName: `${conversation.other_user_firstname || ''} ${
+          conversation.other_user_lastname || ''
         }`.trim() || 'Utilisateur',
         otherUserAvatar: conversation.other_user_avatar_url,
       })
@@ -146,7 +146,7 @@ function MessagesPageContent() {
       <Tabs defaultValue="chat" className="space-y-6">
         <TabsList>
           <TabsTrigger value="chat">
-            <MessageSquare className="mr-2 h-4 w-4" />
+            <IconMessageCircle className="mr-2 h-4 w-4" />
             Chat
           </TabsTrigger>
           <TabsTrigger value="requests">
@@ -158,7 +158,7 @@ function MessagesPageContent() {
             )}
           </TabsTrigger>
           <TabsTrigger value="notifications">
-            <Bell className="mr-2 h-4 w-4" />
+            <IconBell className="mr-2 h-4 w-4" />
             Notifications
             {unreadCount > 0 && (
               <Badge variant="default" className="ml-2">
@@ -179,7 +179,7 @@ function MessagesPageContent() {
               <div className="flex-1 overflow-hidden">
                 {isLoadingConversations ? (
                   <div className="flex items-center justify-center h-full">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <IconLoader2 className="h-6 w-6 animate-spin text-primary" />
                   </div>
                 ) : (
                   <ConversationList
@@ -212,7 +212,7 @@ function MessagesPageContent() {
         <TabsContent value="requests" className="space-y-4">
           {isLoadingRequests ? (
             <div className="flex items-center justify-center min-h-[400px]">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : bookings.length === 0 ? (
             <Card>
@@ -239,7 +239,7 @@ function MessagesPageContent() {
         <TabsContent value="notifications" className="space-y-4">
           {isLoadingNotifications ? (
             <div className="flex items-center justify-center min-h-[400px]">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : notifications.length === 0 ? (
             <Card>

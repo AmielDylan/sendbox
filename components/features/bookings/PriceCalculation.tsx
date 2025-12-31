@@ -36,7 +36,7 @@ export function PriceCalculation({
           </span>
         </div>
         <p className="text-xs text-muted-foreground ml-6">
-          {weightKg} kg × {calculation.transportPrice / weightKg} €/kg
+          {weightKg.toFixed(1)} kg × {weightKg > 0 ? (calculation.transportPrice / weightKg).toFixed(2) : '0.00'} €/kg
         </p>
 
         {/* Commission */}

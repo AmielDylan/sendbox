@@ -13,14 +13,14 @@ import { getUserConversations } from "@/lib/core/messages/actions"
 import { generateInitials } from "@/lib/core/profile/utils"
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Loader2 } from '@tabler/icons-react'
+import { IconLoader2 } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 
 interface Conversation {
   booking_id: string
   other_user_id: string
-  other_user_first_name: string | null
-  other_user_last_name: string | null
+  other_user_firstname: string | null
+  other_user_lastname: string | null
   other_user_avatar_url: string | null
   last_message_content: string
   last_message_created_at: string
@@ -65,7 +65,7 @@ export function ConversationList({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <IconLoader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     )
   }
@@ -82,12 +82,12 @@ export function ConversationList({
     <ScrollArea className="h-full">
       <div className="space-y-1 p-2">
         {conversations.map((conversation) => {
-          const otherUserName = `${conversation.other_user_first_name || ''} ${
-            conversation.other_user_last_name || ''
+          const otherUserName = `${conversation.other_user_firstname || ''} ${
+            conversation.other_user_lastname || ''
           }`.trim() || 'Utilisateur'
           const otherUserInitials = generateInitials(
-            conversation.other_user_first_name,
-            conversation.other_user_last_name
+            conversation.other_user_firstname,
+            conversation.other_user_lastname
           )
           const isSelected = selectedBookingId === conversation.booking_id
           const hasUnread = conversation.unread_count > 0

@@ -43,11 +43,14 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
+import { useAuth } from '@/hooks/use-auth'
+import { ClientOnly } from '@/components/ui/client-only'
 
 type AnnouncementStatus = 'active' | 'draft' | 'completed' | 'cancelled'
 
 export default function MyAnnouncementsPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] =
     useState<AnnouncementStatus | 'all'>('active')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -56,34 +59,31 @@ export default function MyAnnouncementsPage() {
   >(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Récupérer l'utilisateur actuel
-  const [userId, setUserId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const getUserId = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (user) setUserId(user.id)
-    }
-    getUserId()
-  }, [])
-
   // Query pour récupérer les annonces
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['user-announcements', userId, activeTab],
+    queryKey: ['user-announcements', user?.id, activeTab],
     queryFn: async () => {
-      if (!userId) return { data: null, error: null }
+      if (!user?.id) return { data: null, error: null }
       return getUserAnnouncements(
-        userId,
+        user.id,
         activeTab === 'all' ? undefined : activeTab
       )
     },
-    enabled: !!userId,
+    enabled: !!user?.id,
   })
 
   const announcements = data?.data || []
+
+  // Gérer le rafraîchissement après création (Safari)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('refresh') === 'true') {
+        refetch()
+        window.history.replaceState({}, '', '/dashboard/annonces')
+      }
+    }
+  }, [refetch])
 
   const handleDelete = async () => {
     if (!announcementToDelete) return
@@ -120,8 +120,9 @@ export default function MyAnnouncementsPage() {
       }
 
       if (result.success) {
-        toast.success(result.message)
-        refetch()
+        toast.success('Annonce marquée comme terminée. Elle est maintenant dans l\'onglet "Terminées".')
+        // Changer vers l'onglet "Terminées" pour montrer le résultat
+        setActiveTab('completed')
       }
     } catch (error) {
       toast.error('Une erreur est survenue')
@@ -138,151 +139,167 @@ export default function MyAnnouncementsPage() {
             { label: 'Dashboard', href: '/dashboard' },
             { label: 'Annonces' },
           ]}
+          actions={
+            announcements.length > 0 ? (
+              <Link href="/dashboard/annonces/new">
+                <Button>
+                  <IconPlus className="mr-2 h-4 w-4" />
+                  Nouvelle annonce
+                </Button>
+              </Link>
+            ) : undefined
+          }
         />
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList>
-          <TabsTrigger value="active">Publiées</TabsTrigger>
-          <TabsTrigger value="draft">Brouillons</TabsTrigger>
-          <TabsTrigger value="completed">Terminées</TabsTrigger>
-          <TabsTrigger value="all">Toutes</TabsTrigger>
-        </TabsList>
+      <ClientOnly fallback={
+        <div className="flex items-center justify-center min-h-[400px]">
+          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+          <TabsList>
+            <TabsTrigger value="active">Publiées</TabsTrigger>
+            <TabsTrigger value="draft">Brouillons</TabsTrigger>
+            <TabsTrigger value="completed">Terminées</TabsTrigger>
+            <TabsTrigger value="all">Toutes</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value={activeTab} className="space-y-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center min-h-[400px]">
-              <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : announcements.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">
-                  Aucune annonce {activeTab === 'all' ? '' : activeTab}.
-                </p>
-                <div className="mt-4 text-center">
-                  <Link href="/dashboard/annonces/new">
-                    <Button variant="outline">
-                      <IconPlus className="mr-2 h-4 w-4" />
-                      Créer une annonce
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {announcements.map((announcement) => (
-                <Card key={announcement.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          {announcement.origin_city} →{' '}
-                          {announcement.destination_city}
-                          <Badge
-                            variant={
-                              announcement.status === 'active'
-                                ? 'default'
-                                : announcement.status === 'completed'
-                                  ? 'secondary'
-                                  : 'outline'
-                            }
-                          >
-                            {announcement.status === 'active'
-                              ? 'Publiée'
-                              : announcement.status === 'completed'
-                                ? 'Terminée'
-                                : announcement.status === 'draft'
-                                  ? 'Brouillon'
-                                  : 'Annulée'}
-                          </Badge>
-                        </CardTitle>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                      <div className="flex items-center gap-2">
-                        <IconCalendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">
-                          {format(
-                            new Date(announcement.departure_date),
-                            'd MMM yyyy',
-                            { locale: fr }
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <IconPackage className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">
-                          {announcement.max_weight_kg} kg
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">
-                          {announcement.price_per_kg} €/kg
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <IconEye className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">0 vues</span>
-                      </div>
-                    </div>
-
-                    {announcement.description && (
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                        {announcement.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      {announcement.status === 'active' && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleMarkCompleted(announcement.id)
-                            }
-                          >
-                            <IconCheck className="mr-2 h-4 w-4" />
-                            Marquer terminée
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              router.push(
-                                `/dashboard/annonces/${announcement.id}/edit`
-                              )
-                            }
-                          >
-                            <IconEdit className="mr-2 h-4 w-4" />
-                            Éditer
-                          </Button>
-                        </>
-                      )}
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          setAnnouncementToDelete(announcement.id)
-                          setDeleteDialogOpen(true)
-                        }}
-                      >
-                        <IconTrash className="mr-2 h-4 w-4" />
-                        Supprimer
+          <TabsContent value={activeTab} className="space-y-4">
+            {isLoading ? (
+              <div className="flex items-center justify-center min-h-[400px]">
+                <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : announcements.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-center text-muted-foreground">
+                    Aucune annonce {activeTab === 'all' ? '' : activeTab}.
+                  </p>
+                  <div className="mt-4 text-center">
+                    <Link href="/dashboard/annonces/new">
+                      <Button variant="outline">
+                        <IconPlus className="mr-2 h-4 w-4" />
+                        Créer une annonce
                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {announcements.map((announcement) => (
+                  <Card key={announcement.id}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            {announcement.departure_city} →{' '}
+                            {announcement.arrival_city}
+                            <Badge
+                              variant={
+                                announcement.status === 'active'
+                                  ? 'default'
+                                  : announcement.status === 'completed'
+                                    ? 'secondary'
+                                    : 'outline'
+                              }
+                            >
+                              {announcement.status === 'active'
+                                ? 'Publiée'
+                                : announcement.status === 'completed'
+                                  ? 'Terminée'
+                                  : announcement.status === 'draft'
+                                    ? 'Brouillon'
+                                    : 'Annulée'}
+                            </Badge>
+                          </CardTitle>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div className="flex items-center gap-2">
+                          <IconCalendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {format(
+                              new Date(announcement.departure_date),
+                              'd MMM yyyy',
+                              { locale: fr }
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <IconPackage className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {announcement.available_kg} kg
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {announcement.price_per_kg} €/kg
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <IconEye className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">0 vues</span>
+                        </div>
+                      </div>
+
+                      {announcement.description && (
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {announcement.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        {announcement.status === 'active' && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleMarkCompleted(announcement.id)
+                              }
+                            >
+                              <IconCheck className="mr-2 h-4 w-4" />
+                              Marquer terminée
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                router.push(
+                                  `/dashboard/annonces/${announcement.id}/edit`
+                                )
+                              }
+                            >
+                              <IconEdit className="mr-2 h-4 w-4" />
+                              Éditer
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setAnnouncementToDelete(announcement.id)
+                            setDeleteDialogOpen(true)
+                          }}
+                        >
+                          <IconTrash className="mr-2 h-4 w-4" />
+                          Supprimer
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </ClientOnly>
 
       {/* Dialog de confirmation de suppression */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

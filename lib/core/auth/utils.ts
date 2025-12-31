@@ -1,3 +1,4 @@
+
 /**
  * Utilitaires pour l'authentification
  */
@@ -56,7 +57,7 @@ export async function isAuthenticated() {
  */
 export async function hasApprovedKYC() {
   const currentUser = await getCurrentUser()
-  return currentUser?.profile?.kyc_status === 'approved'
+  return (currentUser?.profile as any)?.kyc_status === 'approved'
 }
 
 /**

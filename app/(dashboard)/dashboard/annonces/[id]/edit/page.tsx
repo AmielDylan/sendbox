@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { use, useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -35,6 +35,11 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { toast } from 'sonner'
 import {
   IconLoader2,
@@ -52,8 +57,9 @@ import { createClient } from "@/lib/shared/db/client"
 export default function EditAnnouncementPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = use(params)
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -66,6 +72,8 @@ export default function EditAnnouncementPage({
   const [showDepartureSuggestions, setShowDepartureSuggestions] =
     useState(false)
   const [showArrivalSuggestions, setShowArrivalSuggestions] = useState(false)
+  const [departureCityTyped, setDepartureCityTyped] = useState(false)
+  const [arrivalCityTyped, setArrivalCityTyped] = useState(false)
 
   const {
     register,
@@ -95,7 +103,7 @@ export default function EditAnnouncementPage({
       const { data, error } = await supabase
         .from('announcements')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single()
 
       if (error || !data) {
@@ -105,12 +113,28 @@ export default function EditAnnouncementPage({
       }
 
       // Pré-remplir le formulaire
-      setValue('departure_country', data.origin_country as 'FR' | 'BJ')
-      setValue('departure_city', data.origin_city)
-      setValue('arrival_country', data.destination_country as 'FR' | 'BJ')
-      setValue('arrival_city', data.destination_city)
-      setValue('departure_date', new Date(data.departure_date))
-      setValue('available_kg', data.max_weight_kg)
+      setValue('departure_country', data.departure_country as 'FR' | 'BJ')
+      setValue('departure_city', data.departure_city)
+      setValue('arrival_country', data.arrival_country as 'FR' | 'BJ')
+      setValue('arrival_city', data.arrival_city)
+
+      // Convertir les dates ISO en dates locales
+      // Si la date est au format YYYY-MM-DD, on la parse directement
+      // Si elle contient l'heure (YYYY-MM-DDTHH:MM:SS), on extrait juste la date
+      const parseDateFromDB = (dateString: string) => {
+        // Extraire juste la partie date (YYYY-MM-DD)
+        const dateOnly = dateString.split('T')[0]
+        const [year, month, day] = dateOnly.split('-').map(Number)
+        // Créer une date locale à minuit
+        return new Date(year, month - 1, day)
+      }
+
+      setValue('departure_date', parseDateFromDB(data.departure_date))
+      if (data.arrival_date) {
+        setValue('arrival_date', parseDateFromDB(data.arrival_date))
+      }
+
+      setValue('available_kg', data.available_kg || 0)
       setValue('price_per_kg', data.price_per_kg)
       setValue('description', data.description || '')
 
@@ -118,11 +142,11 @@ export default function EditAnnouncementPage({
     }
 
     loadAnnouncement()
-  }, [params.id, router, setValue])
+  }, [id, router, setValue])
 
   // Recherche autocomplete pour ville de départ
   useEffect(() => {
-    if (debouncedDepartureCity && debouncedDepartureCity.length >= 2 && departureCountry) {
+    if (debouncedDepartureCity && debouncedDepartureCity.length >= 2 && departureCountry && departureCityTyped) {
       searchCities(departureCountry, debouncedDepartureCity).then((cities) => {
         setDepartureCitySuggestions(cities)
         setShowDepartureSuggestions(true)
@@ -131,11 +155,11 @@ export default function EditAnnouncementPage({
       setDepartureCitySuggestions([])
       setShowDepartureSuggestions(false)
     }
-  }, [debouncedDepartureCity, departureCountry])
+  }, [debouncedDepartureCity, departureCountry, departureCityTyped])
 
   // Recherche autocomplete pour ville d'arrivée
   useEffect(() => {
-    if (debouncedArrivalCity && debouncedArrivalCity.length >= 2 && arrivalCountry) {
+    if (debouncedArrivalCity && debouncedArrivalCity.length >= 2 && arrivalCountry && arrivalCityTyped) {
       searchCities(arrivalCountry, debouncedArrivalCity).then((cities) => {
         setArrivalCitySuggestions(cities)
         setShowArrivalSuggestions(true)
@@ -144,13 +168,13 @@ export default function EditAnnouncementPage({
       setArrivalCitySuggestions([])
       setShowArrivalSuggestions(false)
     }
-  }, [debouncedArrivalCity, arrivalCountry])
+  }, [debouncedArrivalCity, arrivalCountry, arrivalCityTyped])
 
   const onSubmit = async (data: CreateAnnouncementInput) => {
     setIsSubmitting(true)
 
     try {
-      const result = await updateAnnouncement(params.id, data)
+      const result = await updateAnnouncement(id, data)
 
       if (result.error) {
         toast.error(result.error)
@@ -234,7 +258,11 @@ export default function EditAnnouncementPage({
                 <Input
                   {...register('departure_city')}
                   placeholder="Paris, Cotonou..."
-                  onFocus={() => setShowDepartureSuggestions(true)}
+                  onFocus={() => setShowDepartureSuggestions(departureCityTyped && departureCitySuggestions.length > 0)}
+                  onChange={(e) => {
+                    register('departure_city').onChange(e)
+                    setDepartureCityTyped(true)
+                  }}
                 />
                 {errors.departure_city && (
                   <p className="text-sm text-destructive">
@@ -292,7 +320,11 @@ export default function EditAnnouncementPage({
                 <Input
                   {...register('arrival_city')}
                   placeholder="Paris, Cotonou..."
-                  onFocus={() => setShowArrivalSuggestions(true)}
+                  onFocus={() => setShowArrivalSuggestions(arrivalCityTyped && arrivalCitySuggestions.length > 0)}
+                  onChange={(e) => {
+                    register('arrival_city').onChange(e)
+                    setArrivalCityTyped(true)
+                  }}
                 />
                 {errors.arrival_city && (
                   <p className="text-sm text-destructive">
@@ -319,24 +351,74 @@ export default function EditAnnouncementPage({
               </div>
             </div>
 
-            {/* Date */}
+            {/* Date de départ */}
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <IconCalendar className="h-4 w-4" />
-                Date de départ
-              </Label>
-              <div className="w-full overflow-x-auto mx-auto">
-                <Calendar
-                  mode="single"
-                  selected={departureDate}
-                  onSelect={(date) => setValue('departure_date', date || new Date())}
-                  disabled={(date) => date < new Date()}
-                  className="rounded-md border"
-                />
-              </div>
+              <Label>Date de départ</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <IconCalendar className="mr-2 h-4 w-4" />
+                    {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" side="bottom" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={departureDate}
+                    onSelect={(date) => {
+                      setValue('departure_date', date || new Date())
+                      // Ajuster la date d'arrivée si elle devient invalide
+                      const currentArrival = watch('arrival_date')
+                      if (!currentArrival || currentArrival <= date!) {
+                        const nextDay = new Date(date!)
+                        nextDay.setDate(nextDay.getDate() + 1)
+                        setValue('arrival_date', nextDay)
+                      }
+                    }}
+                    disabled={date => date < new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
               {errors.departure_date && (
                 <p className="text-sm text-destructive">
                   {errors.departure_date.message}
+                </p>
+              )}
+            </div>
+
+            {/* Date d'arrivée */}
+            <div className="space-y-2">
+              <Label>Date d'arrivée</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <IconCalendar className="mr-2 h-4 w-4" />
+                    {watch('arrival_date') ? format(watch('arrival_date')!, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" side="bottom" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={watch('arrival_date')}
+                    onSelect={date => setValue('arrival_date', date || new Date())}
+                    disabled={date => {
+                      if (!departureDate) return date < new Date()
+                      const minDate = new Date(departureDate)
+                      minDate.setDate(minDate.getDate() + 1)
+                      return date < minDate
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              {errors.arrival_date && (
+                <p className="text-sm text-destructive">
+                  {errors.arrival_date.message}
                 </p>
               )}
             </div>

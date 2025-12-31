@@ -26,18 +26,18 @@ export async function generateTransportContract(bookingId: string) {
         `
         *,
         sender:sender_id (
-          first_name,
-          last_name
+          firstname,
+          lastname
         ),
         traveler:traveler_id (
-          first_name,
-          last_name
+          firstname,
+          lastname
         ),
         announcements:announcement_id (
-          origin_city,
-          origin_country,
-          destination_city,
-          destination_country,
+          departure_city,
+          departure_country,
+          arrival_city,
+          arrival_country,
           departure_date,
           arrival_date
         )
@@ -141,18 +141,18 @@ export async function generateDepositProof(bookingId: string) {
         `
         *,
         sender:sender_id (
-          first_name,
-          last_name
+          firstname,
+          lastname
         ),
         traveler:traveler_id (
-          first_name,
-          last_name
+          firstname,
+          lastname
         ),
         announcements:announcement_id (
-          origin_city,
-          origin_country,
-          destination_city,
-          destination_country,
+          departure_city,
+          departure_country,
+          arrival_city,
+          arrival_country,
           departure_date
         )
       `
@@ -244,18 +244,18 @@ export async function generateDeliveryProof(bookingId: string) {
         `
         *,
         sender:sender_id (
-          first_name,
-          last_name
+          firstname,
+          lastname
         ),
         traveler:traveler_id (
-          first_name,
-          last_name
+          firstname,
+          lastname
         ),
         announcements:announcement_id (
-          origin_city,
-          origin_country,
-          destination_city,
-          destination_country,
+          departure_city,
+          departure_country,
+          arrival_city,
+          arrival_country,
           departure_date,
           arrival_date
         )

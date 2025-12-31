@@ -16,19 +16,19 @@ export interface SearchFilters {
 export interface AnnouncementResult {
   id: string
   traveler_id: string
-  origin_country: string
-  origin_city: string
-  destination_country: string
-  destination_city: string
+  departure_country: string
+  departure_city: string
+  arrival_country: string
+  arrival_city: string
   departure_date: string
-  max_weight_kg: number
+  available_kg: number
   price_per_kg: number
   description: string | null
   status: string
   created_at: string
   updated_at: string
-  traveler_first_name: string | null
-  traveler_last_name: string | null
+  traveler_firstname: string | null
+  traveler_lastname: string | null
   traveler_avatar_url: string | null
   traveler_rating: number
   traveler_services_count: number
@@ -41,7 +41,7 @@ export interface AnnouncementResult {
 export async function searchAnnouncementsClient(filters: SearchFilters) {
   const supabase = createClient()
 
-  const { data, error } = await (supabase.rpc as any)('search_announcements', {
+  const params = {
     p_departure_country: filters.departureCountry || null,
     p_arrival_country: filters.arrivalCountry || null,
     p_departure_date: filters.departureDate
@@ -51,7 +51,13 @@ export async function searchAnnouncementsClient(filters: SearchFilters) {
     p_sort_by: filters.sortBy || 'date',
     p_limit: 10,
     p_offset: ((filters.page || 1) - 1) * 10,
-  })
+  }
+
+  console.log('searchAnnouncementsClient - params:', params)
+
+  const { data, error } = await (supabase.rpc as any)('search_announcements', params)
+
+  console.log('searchAnnouncementsClient - result:', { data, error, count: data?.length })
 
   if (error) {
     console.error('Search announcements error:', error)
@@ -105,6 +111,8 @@ export async function getUserAnnouncements(
 
   const { data, error } = await query
 
+  console.log('getUserAnnouncements:', { userId, status, data, error })
+
   if (error) {
     console.error('Get user announcements error:', error)
     return { data: null, error }
@@ -124,9 +132,9 @@ export async function getAnnouncementById(announcementId: string) {
     .select(
       `
       *,
-      profiles:traveler_id (
-        first_name,
-        last_name,
+      profiles!announcements_traveler_id_fkey (
+        firstname,
+        lastname,
         avatar_url,
         kyc_status
       )

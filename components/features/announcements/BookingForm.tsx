@@ -30,7 +30,7 @@ export function BookingForm({
 
   const handleContinue = () => {
     router.push(
-      `/dashboard/bookings/new?announcement=${announcementId}&weight=${weight}`
+      `/dashboard/colis/new?announcement=${announcementId}&weight=${weight}`
     )
   }
 
@@ -62,14 +62,14 @@ export function BookingForm({
         <div className="p-4 bg-muted rounded-lg space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <IconPackage className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">Poids</span>
             </div>
             <span className="font-semibold">{weight} kg</span>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Euro className="h-4 w-4 text-muted-foreground" />
+              <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">Prix total</span>
             </div>
             <span className="font-bold text-lg text-primary">

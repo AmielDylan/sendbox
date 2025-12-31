@@ -31,15 +31,14 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { IconLoader2, IconCircleCheck, IconCircleX, Eye, IconClock } from '@tabler/icons-react'
+import { IconLoader2, IconCircleCheck, IconCircleX, IconEye, IconClock } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 interface PendingKYC {
   id: string
-  user_id: string
-  first_name: string | null
-  last_name: string | null
+  firstname: string | null
+  lastname: string | null
   kyc_status: string
   kyc_submitted_at: string | null
   kyc_document_type: string | null
@@ -154,7 +153,7 @@ export default function AdminKYCPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -184,7 +183,7 @@ export default function AdminKYCPage() {
         <CardContent>
           {kycList.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <IconClock className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Aucune demande KYC en attente</p>
             </div>
           ) : (
@@ -196,15 +195,15 @@ export default function AdminKYCPage() {
                       <div className="space-y-2 flex-1">
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold">
-                            {kyc.first_name} {kyc.last_name}
+                            {kyc.firstname} {kyc.lastname}
                           </h3>
                           <Badge variant="secondary">
-                            <Clock className="mr-1 h-3 w-3" />
+                            <IconClock className="mr-1 h-3 w-3" />
                             En attente
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground space-y-1">
-                          <p>User ID: {kyc.user_id.slice(0, 8)}...</p>
+                          <p>User ID: {kyc.id.slice(0, 8)}...</p>
                           <p>
                             Type de document:{' '}
                             {kyc.kyc_document_type === 'passport'
@@ -234,7 +233,7 @@ export default function AdminKYCPage() {
                             )
                           }
                         >
-                          <Eye className="mr-2 h-4 w-4" />
+                          <IconEye className="mr-2 h-4 w-4" />
                           Voir recto
                         </Button>
                         {kyc.kyc_document_back && (
@@ -248,7 +247,7 @@ export default function AdminKYCPage() {
                               )
                             }
                           >
-                            <Eye className="mr-2 h-4 w-4" />
+                            <IconEye className="mr-2 h-4 w-4" />
                             Voir verso
                           </Button>
                         )}
@@ -258,7 +257,7 @@ export default function AdminKYCPage() {
                           onClick={() => handleReview(kyc, 'approve')}
                           className="bg-green-500 hover:bg-green-600"
                         >
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          <IconCircleCheck className="mr-2 h-4 w-4" />
                           Approuver
                         </Button>
                         <Button
@@ -266,7 +265,7 @@ export default function AdminKYCPage() {
                           size="sm"
                           onClick={() => handleReview(kyc, 'reject')}
                         >
-                          <XCircle className="mr-2 h-4 w-4" />
+                          <IconCircleX className="mr-2 h-4 w-4" />
                           Rejeter
                         </Button>
                       </div>
@@ -292,8 +291,8 @@ export default function AdminKYCPage() {
             <DialogDescription>
               {selectedKYC &&
                 (watch('action') === 'approve'
-                  ? `Approuver la demande KYC de ${selectedKYC.first_name} ${selectedKYC.last_name} ?`
-                  : `Rejeter la demande KYC de ${selectedKYC.first_name} ${selectedKYC.last_name} ?`)}
+                  ? `Approuver la demande KYC de ${selectedKYC.firstname} ${selectedKYC.lastname} ?`
+                  : `Rejeter la demande KYC de ${selectedKYC.firstname} ${selectedKYC.lastname} ?`)}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmitReview)} className="space-y-4">
@@ -334,7 +333,7 @@ export default function AdminKYCPage() {
               >
                 {isReviewing ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                     Traitement...
                   </>
                 ) : watch('action') === 'approve' ? (

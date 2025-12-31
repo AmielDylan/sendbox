@@ -62,7 +62,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Profil de ${profile.first_name} ${profile.last_name}`}
+        title={`Profil de ${profile.firstname} ${profile.lastname}`}
         description="Informations et réputation"
         breadcrumbs={[
           { label: 'Accueil', href: '/' },
@@ -77,12 +77,12 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
             <Avatar className="h-24 w-24">
               <AvatarImage src={profile.avatar_url || undefined} />
               <AvatarFallback className="text-2xl">
-                {generateInitials(profile.first_name, profile.last_name)}
+                {generateInitials(profile.firstname, profile.lastname)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 text-center md:text-left">
               <h2 className="text-2xl font-bold">
-                {profile.first_name} {profile.last_name}
+                {profile.firstname} {profile.lastname}
               </h2>
               {profile.bio && (
                 <p className="text-muted-foreground mt-2">{profile.bio}</p>
@@ -90,9 +90,9 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
               <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
                 {badges.map((badge) => (
                   <Badge key={badge} variant="secondary">
-                    {badge === '5 étoiles' && <Award className="h-3 w-3 mr-1" />}
-                    {badge === 'Vérifié' && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                    {badge === 'Expert' && <Briefcase className="h-3 w-3 mr-1" />}
+                    {badge === '5 étoiles' && <IconAward className="h-3 w-3 mr-1" />}
+                    {badge === 'Vérifié' && <IconCircleCheck className="h-3 w-3 mr-1" />}
+                    {badge === 'Expert' && <IconBriefcase className="h-3 w-3 mr-1" />}
                     {badge}
                   </Badge>
                 ))}
@@ -111,7 +111,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
           {/* Rating moyen */}
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Star className="h-8 w-8 fill-yellow-400 text-yellow-400" />
+              <IconStar className="h-8 w-8 fill-yellow-400 text-yellow-400" />
               <span className="text-4xl font-bold">
                 {stats.averageRating.toFixed(1)}
               </span>
@@ -152,12 +152,12 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                   <Avatar className="h-10 w-10">
                     <AvatarImage
                       src={rating.rater?.avatar_url || undefined}
-                      alt={`${rating.rater?.first_name} ${rating.rater?.last_name}`}
+                      alt={`${rating.rater?.firstname} ${rating.rater?.lastname}`}
                     />
                     <AvatarFallback>
                       {generateInitials(
-                        rating.rater?.first_name,
-                        rating.rater?.last_name
+                        rating.rater?.firstname,
+                        rating.rater?.lastname
                       )}
                     </AvatarFallback>
                   </Avatar>
@@ -165,14 +165,14 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <p className="font-semibold">
-                          {rating.rater?.first_name} {rating.rater?.last_name}
+                          {rating.rater?.firstname} {rating.rater?.lastname}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {format(new Date(rating.created_at), 'PP', { locale: fr })}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                         <span className="font-semibold">{rating.rating}</span>
                       </div>
                     </div>
@@ -212,7 +212,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     <Suspense
       fallback={
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }
     >

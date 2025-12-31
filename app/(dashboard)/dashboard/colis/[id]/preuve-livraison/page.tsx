@@ -9,7 +9,7 @@ import { getContractUrl, generateDeliveryProof } from "@/lib/shared/services/pdf
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconDownload, ExternalLink, IconLoader2 } from '@tabler/icons-react'
+import { IconDownload, IconExternalLink, IconLoader2 } from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface DeliveryProofPageProps {
@@ -100,13 +100,13 @@ async function DeliveryProofPageContent({ params }: DeliveryProofPageProps) {
             <div className="flex gap-2">
               <Button asChild variant="outline">
                 <a href={proofUrl} download>
-                  <Download className="mr-2 h-4 w-4" />
+                  <IconDownload className="mr-2 h-4 w-4" />
                   Télécharger PDF
                 </a>
               </Button>
               <Button asChild variant="outline">
                 <a href={proofUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="mr-2 h-4 w-4" />
+                  <IconExternalLink className="mr-2 h-4 w-4" />
                   Ouvrir dans nouvel onglet
                 </a>
               </Button>
@@ -136,7 +136,7 @@ export default function DeliveryProofPage({ params }: DeliveryProofPageProps) {
     <Suspense
       fallback={
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }
     >

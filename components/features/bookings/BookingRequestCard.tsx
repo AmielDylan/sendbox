@@ -25,7 +25,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { IconStar, IconPackage, IconCurrencyEuro, Calendar, MapPin, IconCircleCheck, IconCircleX, IconMessageCircle, Image as ImageIcon } from '@tabler/icons-react'
+import { IconStar, IconPackage, IconCurrencyEuro, IconCalendar, IconMapPin, IconCircleCheck, IconCircleX, IconMessageCircle, IconPhoto } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { generateInitials } from "@/lib/core/profile/utils"
@@ -43,16 +43,16 @@ interface BookingRequest {
   package_photos: string[] | null
   created_at: string
   announcements: {
-    origin_city: string
-    destination_city: string
-    origin_country: string
-    destination_country: string
+    departure_city: string
+    arrival_city: string
+    departure_country: string
+    arrival_country: string
     departure_date: string
     price_per_kg: number
   }
   sender: {
-    first_name: string | null
-    last_name: string | null
+    firstname: string | null
+    lastname: string | null
     avatar_url: string | null
   }
 }
@@ -79,8 +79,8 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
 
-  const senderName = `${booking.sender.first_name || ''} ${booking.sender.last_name || ''}`.trim() || 'Expéditeur'
-  const senderInitials = generateInitials(booking.sender.first_name, booking.sender.last_name)
+  const senderName = `${booking.sender.firstname || ''} ${booking.sender.lastname || ''}`.trim() || 'Expéditeur'
+  const senderInitials = generateInitials(booking.sender.firstname, booking.sender.lastname)
   const isNew = new Date(booking.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
   const announcement = booking.announcements
 
@@ -160,7 +160,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
               <div>
                 <h3 className="font-semibold">{senderName}</h3>
                 <div className="flex items-center gap-1 mt-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="text-sm">4.5</span>
                 </div>
               </div>
@@ -175,15 +175,15 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
         <CardContent className="space-y-4">
           {/* Trajet */}
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <IconMapPin className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">
-              {announcement.origin_city} → {announcement.destination_city}
+              {announcement.departure_city} → {announcement.arrival_city}
             </span>
           </div>
 
           {/* Date */}
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <IconCalendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">
               {format(new Date(announcement.departure_date), 'd MMM yyyy', {
                 locale: fr,
@@ -195,7 +195,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
           <div className="p-4 bg-muted rounded-lg space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
+                <IconPackage className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Demande</span>
               </div>
               <span className="font-semibold">
@@ -213,7 +213,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
           {booking.package_photos && booking.package_photos.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                <IconPhoto className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Photos du colis</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -255,7 +255,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
               onClick={() => setShowAcceptModal(true)}
               className="flex-1"
             >
-              <CheckCircle2 className="mr-2 h-4 w-4" />
+              <IconCircleCheck className="mr-2 h-4 w-4" />
               Accepter
             </Button>
             <Button
@@ -264,7 +264,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
               onClick={() => setShowRefuseModal(true)}
               className="flex-1"
             >
-              <XCircle className="mr-2 h-4 w-4" />
+              <IconCircleX className="mr-2 h-4 w-4" />
               Refuser
             </Button>
             <Button
@@ -272,7 +272,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
               size="sm"
               onClick={() => router.push(`/dashboard/messages/chat?booking=${booking.id}`)}
             >
-              <MessageSquare className="h-4 w-4" />
+              <IconMessageCircle className="h-4 w-4" />
             </Button>
           </div>
         </CardContent>
@@ -292,7 +292,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
               <p className="text-sm font-medium">Rappels importants :</p>
               <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                 <li>
-                  Vous devez récupérer le colis à {announcement.origin_city}
+                  Vous devez récupérer le colis à {announcement.departure_city}
                 </li>
                 <li>
                   Date de départ :{' '}

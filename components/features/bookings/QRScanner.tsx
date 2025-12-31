@@ -9,7 +9,7 @@ import { BrowserQRCodeReader } from '@zxing/library'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { IconLoader2, Camera, AlertCircle } from '@tabler/icons-react'
+import { IconLoader2, IconCamera, IconAlertCircle } from '@tabler/icons-react'
 
 interface QRScannerProps {
   onScan: (code: string) => void
@@ -102,7 +102,7 @@ export function QRScanner({
         </CardHeader>
         <CardContent>
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+            <IconAlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
           <Button onClick={handleRetry} className="mt-4 w-full">
@@ -117,14 +117,14 @@ export function QRScanner({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Camera className="h-5 w-5" />
+          <IconCamera className="h-5 w-5" />
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+            <IconAlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -145,7 +145,7 @@ export function QRScanner({
         <p className="text-center text-sm text-muted-foreground">{description}</p>
         {isScanning && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <IconLoader2 className="h-4 w-4 animate-spin" />
             <span>Recherche du QR code...</span>
           </div>
         )}

@@ -7,8 +7,8 @@ import {
   getAnnouncementDetail,
   getTravelerReviews,
 } from "@/lib/shared/db/queries/announcement-detail"
-import { incrementAnnouncementViews } from "@/lib/core/announcements/views"
 import { createClient } from "@/lib/shared/db/server"
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,7 @@ import { TripTimeline } from '@/components/features/announcements/TripTimeline'
 import { CapacityProgress } from '@/components/features/announcements/CapacityProgress'
 import { ReviewsSection } from '@/components/features/announcements/ReviewsSection'
 import { BookingForm } from '@/components/features/announcements/BookingForm'
+import { ViewTracker } from '@/components/features/announcements/ViewTracker'
 import { IconPackage, IconEdit, IconTrash, IconCircleCheck } from '@tabler/icons-react'
 import Link from 'next/link'
 import {
@@ -33,33 +34,32 @@ export default async function PublicAnnouncementDetailPage({
 }: PageProps) {
   const { id } = await params
 
+  // Créer le client Supabase serveur
+  const supabase = await createClient()
+
   // Récupérer les détails de l'annonce
-  const { data: announcement, error } = await getAnnouncementDetail(id)
+  const { data: announcement, error } = await getAnnouncementDetail(id, supabase)
 
   if (error || !announcement) {
+    console.error('Error fetching announcement:', error)
     notFound()
   }
 
   // Vérifier que l'annonce est active
   if (announcement.status !== 'active') {
+    console.log('Announcement not active:', announcement.status)
     notFound()
   }
 
-  // Incrémenter les vues
-  await incrementAnnouncementViews(id)
-
   // Récupérer les avis du voyageur
-  const { data: reviews } = await getTravelerReviews(announcement.traveler_id, 5)
-
-  // Vérifier l'authentification et le KYC pour afficher le formulaire de réservation
-  const supabase = await createClient()
+  const { data: reviews } = await getTravelerReviews(announcement.traveler_id, 5, supabase)
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   let canBook = false
   let isOwner = false
-  let userKycStatus: 'pending' | 'approved' | 'rejected' | null = null
+  let userKycStatus: 'pending' | 'approved' | 'rejected' | 'incomplete' | null = null
 
   if (user) {
     isOwner = user.id === announcement.traveler_id
@@ -67,40 +67,50 @@ export default async function PublicAnnouncementDetailPage({
     const { data: profile } = await supabase
       .from('profiles')
       .select('kyc_status')
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .single()
 
-    userKycStatus = profile?.kyc_status || null
+    userKycStatus = (profile?.kyc_status as any) || null
+
+    // Déterminer si l'utilisateur peut réserver
+    // Si KYC est activé, vérifier le statut KYC
+    // Si KYC est désactivé, autoriser la réservation sans vérification
+    const kycEnabled = isFeatureEnabled('KYC_ENABLED')
+    const kycValid = kycEnabled ? userKycStatus === 'approved' : true
 
     canBook =
       !isOwner &&
-      userKycStatus === 'approved' &&
+      kycValid &&
       announcement.status === 'active' &&
-      announcement.max_weight_kg - announcement.reserved_weight > 0
+      (announcement.available_kg || 0) - (announcement.reserved_weight || 0) > 0
   }
 
-  const availableWeight = announcement.max_weight_kg - announcement.reserved_weight
+  const availableWeight = Math.max(0, (announcement.available_kg || 0) - (announcement.reserved_weight || 0))
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <PageHeader
-          title={`Trajet ${announcement.origin_city} → ${announcement.destination_city}`}
-          description={`Départ le ${new Date(announcement.departure_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`}
-        />
-        {isOwner && (
-          <div className="flex items-center gap-2">
-            {announcement.status === 'active' && (
-              <Link href={`/dashboard/annonces/${id}/edit`}>
-                <Button variant="outline" size="sm">
-                  <Edit className="mr-2 h-4 w-4" />
-                  Éditer
-                </Button>
-              </Link>
-            )}
-          </div>
-        )}
-      </div>
+    <>
+      {/* Tracker de vues - composant client qui incrémente les vues après le montage */}
+      <ViewTracker announcementId={id} />
+
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <PageHeader
+            title={`Trajet ${announcement.departure_city} → ${announcement.arrival_city}`}
+            description={`Départ le ${new Date(announcement.departure_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+          />
+          {isOwner && (
+            <div className="flex items-center gap-2">
+              {announcement.status === 'active' && (
+                <Link href={`/dashboard/annonces/${id}/edit`}>
+                  <Button variant="outline" size="sm">
+                    <IconEdit className="mr-2 h-4 w-4" />
+                    Éditer
+                  </Button>
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Colonne principale */}
@@ -112,10 +122,10 @@ export default async function PublicAnnouncementDetailPage({
             </CardHeader>
             <CardContent>
               <TripTimeline
-                originCity={announcement.origin_city}
-                originCountry={announcement.origin_country}
-                destinationCity={announcement.destination_city}
-                destinationCountry={announcement.destination_country}
+                originCity={announcement.departure_city}
+                originCountry={announcement.departure_country}
+                destinationCity={announcement.arrival_city}
+                destinationCountry={announcement.arrival_country}
                 departureDate={announcement.departure_date}
               />
             </CardContent>
@@ -128,9 +138,9 @@ export default async function PublicAnnouncementDetailPage({
             </CardHeader>
             <CardContent>
               <CapacityProgress
-                maxWeight={announcement.max_weight_kg}
-                reservedWeight={announcement.reserved_weight}
-                pricePerKg={announcement.price_per_kg}
+                maxWeight={announcement.available_kg || 0}
+                reservedWeight={announcement.reserved_weight || 0}
+                pricePerKg={announcement.price_per_kg || 0}
               />
             </CardContent>
           </Card>
@@ -161,8 +171,8 @@ export default async function PublicAnnouncementDetailPage({
           {/* Section Voyageur */}
           <TravelerSection
             travelerId={announcement.traveler_id}
-            firstName={announcement.traveler_first_name}
-            lastName={announcement.traveler_last_name}
+            firstName={announcement.traveler_firstname}
+            lastName={announcement.traveler_lastname}
             avatarUrl={announcement.traveler_avatar_url}
             rating={announcement.traveler_rating}
             servicesCount={announcement.traveler_services_count}
@@ -192,7 +202,7 @@ export default async function PublicAnnouncementDetailPage({
                     Poids réservé
                   </span>
                   <span className="font-medium">
-                    {announcement.reserved_weight} / {announcement.max_weight_kg} kg
+                    {announcement.reserved_weight} / {announcement.available_kg} kg
                   </span>
                 </div>
               </CardContent>
@@ -217,7 +227,7 @@ export default async function PublicAnnouncementDetailPage({
                 </Link>
               </CardContent>
             </Card>
-          ) : userKycStatus !== 'approved' ? (
+          ) : isFeatureEnabled('KYC_ENABLED') && userKycStatus !== 'approved' ? (
             <Card>
               <CardContent className="pt-6">
                 <p className="text-sm text-muted-foreground mb-4">
@@ -230,11 +240,20 @@ export default async function PublicAnnouncementDetailPage({
                 </Link>
               </CardContent>
             </Card>
-          ) : announcement.max_weight_kg - announcement.reserved_weight <= 0 ? (
+          ) : isOwner ? (
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Package className="h-5 w-5" />
+                  <IconPackage className="h-5 w-5" />
+                  <p className="text-sm">Vous ne pouvez pas réserver votre propre annonce</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (announcement.available_kg || 0) - (announcement.reserved_weight || 0) <= 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <IconPackage className="h-5 w-5" />
                   <p className="text-sm">Capacité complète</p>
                 </div>
               </CardContent>
@@ -242,7 +261,8 @@ export default async function PublicAnnouncementDetailPage({
           ) : null}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 

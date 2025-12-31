@@ -103,6 +103,14 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
   }
 
   try {
+    // Fonction pour convertir une Date en string ISO de date locale (YYYY-MM-DD)
+    const toLocalDateString = (date: Date) => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+
     // Créer l'annonce
     const { data: announcement, error: createError } = await supabase
       .from('announcements')
@@ -112,9 +120,10 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
         departure_city: validation.data.departure_city,
         arrival_country: validation.data.arrival_country,
         arrival_city: validation.data.arrival_city,
-        departure_date: validation.data.departure_date.toISOString(),
-        arrival_date: validation.data.arrival_date.toISOString(),
+        departure_date: toLocalDateString(validation.data.departure_date),
+        arrival_date: toLocalDateString(validation.data.arrival_date),
         available_kg: validation.data.available_kg,
+        max_weight_kg: validation.data.available_kg,
         price_per_kg: validation.data.price_per_kg,
         description: validation.data.description || null,
         status: 'active', // L'annonce est directement active
@@ -129,7 +138,7 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
       }
     }
 
-    // TODO: Envoyer notification email aux abonnés (optionnel)
+    console.log('Announcement created successfully:', announcement)
 
     revalidatePath('/dashboard/annonces')
     revalidatePath('/annonces')

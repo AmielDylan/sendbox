@@ -90,7 +90,7 @@ export default function AdminUsersPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -125,7 +125,7 @@ export default function AdminUsersPage() {
               {users?.map((user: any) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    {user.first_name} {user.last_name}
+                    {user.firstname} {user.lastname}
                   </TableCell>
                   <TableCell>{user.email || 'N/A'}</TableCell>
                   <TableCell>
@@ -167,7 +167,7 @@ export default function AdminUsersPage() {
                           setRoleDialogOpen(true)
                         }}
                       >
-                        <Shield className="h-4 w-4" />
+                        <IconShield className="h-4 w-4" />
                       </Button>
                       {user.is_banned ? (
                         <Button
@@ -175,7 +175,7 @@ export default function AdminUsersPage() {
                           size="sm"
                           onClick={() => handleBan(user.id, false)}
                         >
-                          <Unlock className="h-4 w-4" />
+                          <IconLockOpen className="h-4 w-4" />
                         </Button>
                       ) : (
                         <Button
@@ -186,7 +186,7 @@ export default function AdminUsersPage() {
                             setBanDialogOpen(true)
                           }}
                         >
-                          <Ban className="h-4 w-4" />
+                          <IconBan className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
@@ -204,8 +204,8 @@ export default function AdminUsersPage() {
           <DialogHeader>
             <DialogTitle>Bannir l'utilisateur</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir bannir {selectedUser?.first_name}{' '}
-              {selectedUser?.last_name} ?
+              Êtes-vous sûr de vouloir bannir {selectedUser?.firstname}{' '}
+              {selectedUser?.lastname} ?
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -240,8 +240,8 @@ export default function AdminUsersPage() {
           <DialogHeader>
             <DialogTitle>Modifier le rôle</DialogTitle>
             <DialogDescription>
-              Modifier le rôle de {selectedUser?.first_name}{' '}
-              {selectedUser?.last_name}
+              Modifier le rôle de {selectedUser?.firstname}{' '}
+              {selectedUser?.lastname}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

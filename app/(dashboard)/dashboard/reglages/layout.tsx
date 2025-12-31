@@ -12,15 +12,15 @@ async function SettingsLayoutContent({ children }: { children: React.ReactNode }
   
   const { data: { user } } = await supabase.auth.getUser()
   
-  let kycStatus = null
+  let kycStatus: 'pending' | 'approved' | 'rejected' | 'incomplete' | null | undefined = null
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('kyc_status')
       .eq('id', user.id)
       .single()
-    
-    kycStatus = profile?.kyc_status || null
+
+    kycStatus = profile?.kyc_status as any
   }
 
   return (

@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { use, useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
@@ -22,10 +22,11 @@ import { IconLoader2, IconCamera, IconMapPin, IconCircleCheck } from '@tabler/ic
 import Link from 'next/link'
 
 interface ScanDepositPageProps {
-  params: { booking_id: string }
+  params: Promise<{ booking_id: string }>
 }
 
 export default function ScanDepositPage({ params }: ScanDepositPageProps) {
+  const { booking_id } = use(params)
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -39,7 +40,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
   useEffect(() => {
     loadBooking()
     getCurrentLocation()
-  }, [params.booking_id])
+  }, [booking_id])
 
   const loadBooking = async () => {
     try {
@@ -55,7 +56,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
-        .eq('id', params.booking_id)
+        .eq('id', booking_id)
         .single()
 
       if (error || !data) {
@@ -70,9 +71,9 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
         return
       }
 
-      if (data.status !== 'confirmed') {
-        toast.error('La réservation doit être confirmée')
-        router.push(`/dashboard/colis/${params.booking_id}`)
+      if (data.status !== 'accepted') {
+        toast.error('La réservation doit être acceptée')
+        router.push(`/dashboard/colis/${booking_id}`)
         return
       }
 
@@ -174,7 +175,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
 
     try {
       // Upload photo
-      const photoPath = `deposits/${params.booking_id}/${Date.now()}.jpg`
+      const photoPath = `deposits/${booking_id}/${Date.now()}.jpg`
       const photoUrl = await uploadFile(photo, photoPath)
 
       if (!photoUrl) {
@@ -190,7 +191,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
       }
 
       const signatureBlob = await fetch(signatureDataUrl).then((res) => res.blob())
-      const signaturePath = `deposits/${params.booking_id}/signature_${Date.now()}.png`
+      const signaturePath = `deposits/${booking_id}/signature_${Date.now()}.png`
       const signatureUrl = await uploadFile(signatureBlob, signaturePath)
 
       if (!signatureUrl) {
@@ -200,7 +201,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
 
       // Marquer comme en transit
       const result = await markAsInTransit(
-        params.booking_id,
+        booking_id,
         scannedCode,
         photoUrl,
         signatureUrl,
@@ -213,7 +214,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
       }
 
       toast.success('Colis pris en charge !')
-      router.push(`/dashboard/colis/${params.booking_id}`)
+      router.push(`/dashboard/colis/${booking_id}`)
     } catch (error) {
       console.error('Error submitting deposit:', error)
       toast.error('Une erreur est survenue')
@@ -325,7 +326,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
         {/* Actions */}
         <div className="flex gap-3">
           <Button variant="outline" asChild className="flex-1">
-            <Link href={`/dashboard/colis/${params.booking_id}`}>
+            <Link href={`/dashboard/colis/${booking_id}`}>
               Annuler
             </Link>
           </Button>

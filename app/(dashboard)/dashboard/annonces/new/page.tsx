@@ -166,7 +166,7 @@ export default function NewAnnouncementPage() {
 
       if (result.success && result.announcementId) {
         toast.success(result.message || 'Annonce créée avec succès')
-        router.push(`/dashboard/annonces/${result.announcementId}`)
+        router.push('/dashboard/annonces?refresh=true')
       }
     } catch (error) {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
@@ -275,9 +275,11 @@ export default function NewAnnouncementPage() {
                     <Label htmlFor="departure_country">Pays de départ</Label>
                     <Select
                       value={departureCountry || ''}
-                      onValueChange={value =>
+                      onValueChange={value => {
                         setValue('departure_country', value as 'FR' | 'BJ')
-                      }
+                        setValue('departure_city', '')
+                        setShowDepartureSuggestions(false)
+                      }}
                     >
                       <SelectTrigger id="departure_country">
                         <SelectValue placeholder="Sélectionnez un pays" />
@@ -351,7 +353,7 @@ export default function NewAnnouncementPage() {
                           {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" side="bottom" align="end">
+                      <PopoverContent className="w-auto p-0" side="bottom" align="start">
                         <Calendar
                           mode="single"
                           selected={departureDate}
@@ -391,9 +393,11 @@ export default function NewAnnouncementPage() {
                     <Label htmlFor="arrival_country">Pays d'arrivée</Label>
                     <Select
                       value={arrivalCountry || ''}
-                      onValueChange={value =>
+                      onValueChange={value => {
                         setValue('arrival_country', value as 'FR' | 'BJ')
-                      }
+                        setValue('arrival_city', '')
+                        setShowArrivalSuggestions(false)
+                      }}
                     >
                       <SelectTrigger id="arrival_country">
                         <SelectValue placeholder="Sélectionnez un pays" />
@@ -467,7 +471,7 @@ export default function NewAnnouncementPage() {
                           {watch('arrival_date') ? format(watch('arrival_date')!, 'PP', { locale: fr }) : 'Sélectionner une date'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" side="bottom" align="end">
+                      <PopoverContent className="w-auto p-0" side="bottom" align="start">
                         <Calendar
                           mode="single"
                           selected={watch('arrival_date')}

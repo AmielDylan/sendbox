@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select'
 import { NotificationItem } from '@/components/features/notifications/NotificationItem'
 import { markAllNotificationsAsRead, getNotifications } from "@/lib/core/notifications/actions"
-import { IconLoader2, CheckCheck } from '@tabler/icons-react'
+import { IconLoader2, IconCheck } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/use-notifications'
 
@@ -85,7 +85,7 @@ export default function NotificationsPage() {
         actions={
           unreadCount > 0 ? (
             <Button onClick={handleMarkAllAsRead} variant="outline">
-              <CheckCheck className="mr-2 h-4 w-4" />
+              <IconCheck className="mr-2 h-4 w-4" />
               Tout marquer comme lu
             </Button>
           ) : undefined
@@ -116,7 +116,7 @@ export default function NotificationsPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : notifications.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">

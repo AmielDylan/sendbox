@@ -17,13 +17,13 @@ export interface Message {
   created_at: string
   updated_at: string
   sender?: {
-    first_name: string | null
-    last_name: string | null
+    firstname: string | null
+    lastname: string | null
     avatar_url: string | null
   }
   receiver?: {
-    first_name: string | null
-    last_name: string | null
+    firstname: string | null
+    lastname: string | null
     avatar_url: string | null
   }
 }
@@ -48,19 +48,19 @@ export function useMessages(bookingId: string | null) {
       setError(null)
 
       try {
-        const { data, error: fetchError } = await supabase
+        const { data, error: fetchError } = await (supabase as any)
           .from('messages')
           .select(
             `
             *,
             sender:profiles!messages_sender_id_fkey (
-              first_name,
-              last_name,
+              firstname,
+              lastname,
               avatar_url
             ),
             receiver:profiles!messages_receiver_id_fkey (
-              first_name,
-              last_name,
+              firstname,
+              lastname,
               avatar_url
             )
           `
@@ -98,19 +98,19 @@ export function useMessages(bookingId: string | null) {
         },
         async (payload) => {
           // Récupérer les détails complets du nouveau message
-          const { data: newMessage } = await supabase
+          const { data: newMessage } = await (supabase as any)
             .from('messages')
             .select(
               `
               *,
               sender:profiles!messages_sender_id_fkey (
-                first_name,
-                last_name,
+                firstname,
+                lastname,
                 avatar_url
               ),
               receiver:profiles!messages_receiver_id_fkey (
-                first_name,
-                last_name,
+                firstname,
+                lastname,
                 avatar_url
               )
             `
@@ -124,7 +124,7 @@ export function useMessages(bookingId: string | null) {
               if (prev.some((m) => m.id === newMessage.id)) {
                 return prev
               }
-              return [...prev, newMessage as Message]
+              return [...prev, newMessage as unknown as Message]
             })
           }
         }

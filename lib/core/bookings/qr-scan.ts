@@ -60,8 +60,8 @@ export async function handleDepositScan(
       }
     }
 
-    // Vérifier le statut (doit être confirmé après paiement)
-    if (booking.status !== 'confirmed') {
+    // Vérifier le statut (doit être accepté après paiement)
+    if (booking.status !== 'accepted') {
       return {
         error: `Le colis ne peut pas être déposé. Statut actuel : ${booking.status}`,
       }
@@ -364,10 +364,11 @@ export async function getBookingByQRCode(qrCode: string) {
       status,
       sender_id,
       traveler_id,
+      kilos_requested,
       weight_kg,
       announcements:announcement_id (
-        origin_city,
-        destination_city,
+        departure_city,
+        arrival_city,
         departure_date
       )
     `

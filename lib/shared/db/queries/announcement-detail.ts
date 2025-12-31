@@ -7,20 +7,20 @@ import { createClient } from "@/lib/shared/db/client"
 export interface AnnouncementDetail {
   id: string
   traveler_id: string
-  origin_country: string
-  origin_city: string
-  destination_country: string
-  destination_city: string
+  departure_country: string
+  departure_city: string
+  arrival_country: string
+  arrival_city: string
   departure_date: string
-  max_weight_kg: number
+  available_kg: number
   price_per_kg: number
   description: string | null
   status: string
-  created_at: string
-  updated_at: string
+  created_at: string | null
+  updated_at: string | null
   views_count?: number
-  traveler_first_name: string | null
-  traveler_last_name: string | null
+  traveler_firstname: string | null
+  traveler_lastname: string | null
   traveler_avatar_url: string | null
   traveler_rating: number
   traveler_services_count: number
@@ -31,8 +31,8 @@ export interface AnnouncementDetail {
 
 export interface Review {
   id: string
-  rater_first_name: string | null
-  rater_last_name: string | null
+  rater_firstname: string | null
+  rater_lastname: string | null
   rater_avatar_url: string | null
   rating: number
   comment: string | null
@@ -41,21 +41,25 @@ export interface Review {
 
 /**
  * Récupère les détails complets d'une annonce
+ * @param announcementId - ID de l'annonce
+ * @param supabaseClient - Client Supabase (optionnel, créé automatiquement si non fourni)
  */
 export async function getAnnouncementDetail(
-  announcementId: string
+  announcementId: string,
+  supabaseClient?: any
 ): Promise<{ data: AnnouncementDetail | null; error: any }> {
-  const supabase = createClient()
+  const supabase = supabaseClient || createClient()
 
   // Récupérer l'annonce avec les infos du voyageur
+  // Utiliser la relation explicite pour éviter l'ambiguïté entre traveler_id et user_id
   const { data: announcement, error: announcementError } = await supabase
     .from('announcements')
     .select(
       `
       *,
-      profiles:traveler_id (
-        first_name,
-        last_name,
+      profiles!announcements_traveler_id_fkey (
+        firstname,
+        lastname,
         avatar_url,
         kyc_status,
         created_at
@@ -69,15 +73,15 @@ export async function getAnnouncementDetail(
     return { data: null, error: announcementError }
   }
 
-  // Calculer le poids réservé (somme des bookings confirmés)
+  // Calculer le poids réservé (somme des bookings acceptés)
   const { data: bookings } = await supabase
     .from('bookings')
-    .select('weight_kg')
+    .select('kilos_requested, weight_kg')
     .eq('announcement_id', announcementId)
-    .in('status', ['confirmed', 'in_transit'])
+    .in('status', ['accepted', 'in_transit'])
 
   const reservedWeight =
-    bookings?.reduce((sum, booking) => sum + (booking.weight_kg || 0), 0) || 0
+    bookings?.reduce((sum: number, booking: any) => sum + ((booking.kilos_requested || booking.weight_kg) || 0), 0) || 0
 
   // Calculer le rating et le nombre de services du voyageur
   const { data: ratings } = await supabase
@@ -87,7 +91,7 @@ export async function getAnnouncementDetail(
 
   const travelerRating =
     ratings && ratings.length > 0
-      ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
+      ? ratings.reduce((sum: number, r: any) => sum + r.rating, 0) / ratings.length
       : 0
 
   const { count: servicesCount } = await supabase
@@ -103,19 +107,19 @@ export async function getAnnouncementDetail(
     data: {
       id: announcement.id,
       traveler_id: announcement.traveler_id,
-      origin_country: announcement.origin_country,
-      origin_city: announcement.origin_city,
-      destination_country: announcement.destination_country,
-      destination_city: announcement.destination_city,
+      departure_country: announcement.departure_country,
+      departure_city: announcement.departure_city,
+      arrival_country: announcement.arrival_country,
+      arrival_city: announcement.arrival_city,
       departure_date: announcement.departure_date,
-      max_weight_kg: announcement.max_weight_kg,
+      available_kg: announcementData.available_kg || 0,
       price_per_kg: announcement.price_per_kg,
       description: announcement.description,
       status: announcement.status,
       created_at: announcement.created_at,
       updated_at: announcement.updated_at,
-      traveler_first_name: profile?.first_name || null,
-      traveler_last_name: profile?.last_name || null,
+      traveler_firstname: profile?.firstname || null,
+      traveler_lastname: profile?.lastname || null,
       traveler_avatar_url: profile?.avatar_url || null,
       traveler_rating: travelerRating,
       traveler_services_count: servicesCount || 0,
@@ -130,12 +134,16 @@ export async function getAnnouncementDetail(
 
 /**
  * Récupère les avis pour un voyageur
+ * @param travelerId - ID du voyageur
+ * @param limit - Nombre maximum d'avis à récupérer
+ * @param supabaseClient - Client Supabase (optionnel, créé automatiquement si non fourni)
  */
 export async function getTravelerReviews(
   travelerId: string,
-  limit: number = 10
+  limit: number = 10,
+  supabaseClient?: any
 ): Promise<{ data: Review[] | null; error: any }> {
-  const supabase = createClient()
+  const supabase = supabaseClient || createClient()
 
   const { data, error } = await supabase
     .from('ratings')
@@ -146,8 +154,8 @@ export async function getTravelerReviews(
       comment,
       created_at,
       rater:rater_id (
-        first_name,
-        last_name,
+        firstname,
+        lastname,
         avatar_url
       )
     `
@@ -163,8 +171,8 @@ export async function getTravelerReviews(
   const reviews: Review[] =
     data?.map((rating: any) => ({
       id: rating.id,
-      rater_first_name: rating.rater?.first_name || null,
-      rater_last_name: rating.rater?.last_name || null,
+      rater_firstname: rating.rater?.firstname || null,
+      rater_lastname: rating.rater?.lastname || null,
       rater_avatar_url: rating.rater?.avatar_url || null,
       rating: rating.rating,
       comment: rating.comment,

@@ -8,11 +8,10 @@ import Link from 'next/link'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { IconShield, IconClock, IconAlertCircle, IconX } from '@tabler/icons-react'
-
-type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
+import type { KYCStatus } from '@/types'
 
 interface KYCAlertBannerProps {
-  kycStatus: KYCStatus
+  kycStatus: KYCStatus | null
   rejectionReason?: string | null
   className?: string
 }

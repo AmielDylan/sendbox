@@ -2,7 +2,7 @@
  * Composant Timeline pour afficher le trajet
  */
 
-import { MapPin } from '@tabler/icons-react'
+import { IconMapPin } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -45,7 +45,7 @@ export function TripTimeline({
         {/* Départ */}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <MapPin className="h-5 w-5 text-primary" />
+            <IconMapPin className="h-5 w-5 text-primary" />
             <span className="text-2xl">
               {COUNTRY_FLAGS[originCountry] || '📍'}
             </span>
@@ -72,7 +72,7 @@ export function TripTimeline({
             <span className="text-2xl">
               {COUNTRY_FLAGS[destinationCountry] || '📍'}
             </span>
-            <MapPin className="h-5 w-5 text-primary" />
+            <IconMapPin className="h-5 w-5 text-primary" />
           </div>
           {arrDate && (
             <p className="text-sm text-muted-foreground">

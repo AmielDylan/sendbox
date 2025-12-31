@@ -23,18 +23,18 @@ interface DeliveryProofProps {
     delivery_location_lng: number | null
     deposited_at: string | null
     sender: {
-      first_name: string | null
-      last_name: string | null
+      firstname: string | null
+      lastname: string | null
     }
     traveler: {
-      first_name: string | null
-      last_name: string | null
+      firstname: string | null
+      lastname: string | null
     }
     announcement: {
-      origin_city: string
-      origin_country: string
-      destination_city: string
-      destination_country: string
+      departure_city: string
+      departure_country: string
+      arrival_city: string
+      arrival_country: string
       departure_date: string
       arrival_date: string
     }
@@ -87,14 +87,14 @@ export function DeliveryProof({ booking }: DeliveryProofProps) {
             </Text>
           )}
           <Text style={styles.text}>
-            Expéditeur : {booking.sender.first_name} {booking.sender.last_name}
+            Expéditeur : {booking.sender.firstname} {booking.sender.lastname}
           </Text>
           <Text style={styles.text}>
-            Voyageur : {booking.traveler.first_name} {booking.traveler.last_name}
+            Voyageur : {booking.traveler.firstname} {booking.traveler.lastname}
           </Text>
           <Text style={styles.text}>
-            Trajet : {booking.announcement.origin_city} →{' '}
-            {booking.announcement.destination_city}
+            Trajet : {booking.announcement.departure_city} →{' '}
+            {booking.announcement.arrival_city}
           </Text>
           <Text style={styles.text}>Poids : {booking.weight_kg} Kg</Text>
           {booking.delivery_location_lat && booking.delivery_location_lng && (

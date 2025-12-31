@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     // Calculer les montants
     const amounts = calculateBookingAmounts(
-      booking.weight_kg,
+      (booking.kilos_requested || booking.weight_kg) || 0,
       announcement.price_per_kg,
       booking.package_value || 0,
       booking.insurance_opted || false
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       // Note: En mode escrow, les fonds sont bloqués jusqu'à confirmation
       application_fee_amount: toStripeAmount(amounts.commissionAmount),
       // Description pour le client
-      description: `Réservation Sendbox - ${booking.weight_kg}kg`,
+      description: `Réservation Sendbox - ${(booking.kilos_requested || booking.weight_kg)}kg`,
     })
 
     // Sauvegarder le payment_intent_id dans le booking

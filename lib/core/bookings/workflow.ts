@@ -70,14 +70,14 @@ export async function cancelBooking(bookingId: string) {
       }
     }
 
-    // Si la réservation était confirmée et payée, initier un remboursement
-    if (booking.status === 'confirmed' && booking.paid_at) {
+    // Si la réservation était acceptée et payée, initier un remboursement
+    if (booking.status === 'accepted' && booking.paid_at) {
       // TODO: Implémenter logique de remboursement Stripe
       console.log('TODO: Initiate refund for booking', bookingId)
     }
 
-    // Notifier le voyageur si la réservation était confirmée
-    if (booking.status === 'confirmed') {
+    // Notifier le voyageur si la réservation était acceptée
+    if (booking.status === 'accepted') {
       await (supabase.rpc as any)('create_notification', {
         p_user_id: booking.traveler_id,
         p_type: 'booking_cancelled',
@@ -148,9 +148,9 @@ export async function markAsInTransit(
   }
 
   // Vérifier le statut
-  if (booking.status !== 'confirmed') {
+  if (booking.status !== 'accepted') {
     return {
-      error: 'La réservation doit être confirmée',
+      error: 'La réservation doit être acceptée',
     }
   }
 

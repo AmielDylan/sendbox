@@ -323,7 +323,7 @@ export async function getAdminStats() {
   const { count: activeBookings } = await supabase
     .from('bookings')
     .select('*', { count: 'exact', head: true })
-    .in('status', ['confirmed', 'in_transit'])
+    .in('status', ['accepted', 'in_transit'])
 
   // CA ce mois
   const startOfMonth = new Date()

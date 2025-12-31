@@ -4,15 +4,15 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star } from '@tabler/icons-react'
+import { IconStar } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { generateInitials } from "@/lib/core/profile/utils"
 
 interface Review {
   id: string
-  rater_first_name: string | null
-  rater_last_name: string | null
+  rater_firstname: string | null
+  rater_lastname: string | null
   rater_avatar_url: string | null
   rating: number
   comment: string | null
@@ -47,10 +47,10 @@ export function ReviewsSection({ reviews, travelerId }: ReviewsSectionProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {reviews.map((review) => {
-          const raterName = `${review.rater_first_name || ''} ${review.rater_last_name || ''}`.trim() || 'Utilisateur'
+          const raterName = `${review.rater_firstname || ''} ${review.rater_lastname || ''}`.trim() || 'Utilisateur'
           const raterInitials = generateInitials(
-            review.rater_first_name,
-            review.rater_last_name
+            review.rater_firstname,
+            review.rater_lastname
           )
 
           return (
@@ -74,7 +74,7 @@ export function ReviewsSection({ reviews, travelerId }: ReviewsSectionProps) {
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     <span className="font-medium">{review.rating}</span>
                   </div>
                 </div>

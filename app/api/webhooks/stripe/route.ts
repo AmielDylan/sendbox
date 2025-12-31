@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         await supabase
           .from('bookings')
           .update({
-            status: 'confirmed', // Passer à 'confirmed' après paiement
+            status: 'paid', // Passer à 'paid' après paiement
             paid_at: new Date().toISOString(),
             payment_intent_id: paymentIntent.id,
           })
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Créer la transaction
-        await supabase.from('transactions').insert({
+        await (supabase as any).from('transactions').insert({
           booking_id,
           user_id: paymentIntent.metadata.sender_id,
           type: 'payment',
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
 
         if (booking_id) {
           // Créer une transaction pour l'échec
-          await supabase.from('transactions').insert({
+          await (supabase as any).from('transactions').insert({
             booking_id,
             user_id: paymentIntent.metadata.sender_id,
             type: 'payment',
@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
 
           if (booking) {
             // Créer une transaction de refund
-            await supabase.from('transactions').insert({
+            await (supabase as any).from('transactions').insert({
               booking_id: booking.id,
               user_id: charge.metadata.sender_id || '',
               type: 'refund',

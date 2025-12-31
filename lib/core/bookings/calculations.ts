@@ -27,8 +27,13 @@ export function calculateBookingPrice(
   packageValue: number,
   insuranceOpted: boolean
 ): BookingCalculation {
+  // S'assurer que les valeurs sont valides
+  const safeWeightKg = Math.max(0, weightKg || 0)
+  const safePricePerKg = Math.max(0, pricePerKg || 0)
+  const safePackageValue = Math.max(0, packageValue || 0)
+
   // Prix transport
-  const transportPrice = weightKg * pricePerKg
+  const transportPrice = safeWeightKg * safePricePerKg
 
   // Commission Sendbox (12%)
   const commission = transportPrice * COMMISSION_RATE
@@ -42,9 +47,9 @@ export function calculateBookingPrice(
 
   if (insuranceOpted) {
     // Prime = 1.5% de la valeur + 2 EUR de base
-    insurancePremium = packageValue * INSURANCE_RATE + INSURANCE_BASE_FEE
+    insurancePremium = safePackageValue * INSURANCE_RATE + INSURANCE_BASE_FEE
     // Couverture : jusqu'à 500 EUR ou valeur déclarée si < 500
-    insuranceCoverage = Math.min(packageValue, MAX_INSURANCE_COVERAGE)
+    insuranceCoverage = Math.min(safePackageValue, MAX_INSURANCE_COVERAGE)
   }
 
   // Total final

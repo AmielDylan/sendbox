@@ -390,7 +390,7 @@ export async function getPendingKYC() {
   const { data, error } = await supabase
     .from('profiles')
     .select(
-      'id, user_id, first_name, last_name, kyc_status, kyc_submitted_at, kyc_document_type, kyc_document_front, kyc_document_back, kyc_rejection_reason'
+      'id, firstname, lastname, kyc_status, kyc_submitted_at, kyc_document_type, kyc_document_front, kyc_document_back, kyc_rejection_reason'
     )
     .eq('kyc_status', 'pending')
     .order('kyc_submitted_at', { ascending: true })
@@ -405,9 +405,8 @@ export async function getPendingKYC() {
   return {
     kycList: (data || []) as Array<{
       id: string
-      user_id: string
-      first_name: string | null
-      last_name: string | null
+      firstname: string | null
+      lastname: string | null
       kyc_status: string
       kyc_submitted_at: string | null
       kyc_document_type: string | null

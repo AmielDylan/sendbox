@@ -22,18 +22,18 @@ interface DepositProofProps {
     deposit_location_lat: number | null
     deposit_location_lng: number | null
     sender: {
-      first_name: string | null
-      last_name: string | null
+      firstname: string | null
+      lastname: string | null
     }
     traveler: {
-      first_name: string | null
-      last_name: string | null
+      firstname: string | null
+      lastname: string | null
     }
     announcement: {
-      origin_city: string
-      origin_country: string
-      destination_city: string
-      destination_country: string
+      departure_city: string
+      departure_country: string
+      arrival_city: string
+      arrival_country: string
       departure_date: string
     }
   }
@@ -66,14 +66,14 @@ export function DepositProof({ booking }: DepositProofProps) {
             Date et heure du dépôt : {formatDateTime(booking.deposited_at)}
           </Text>
           <Text style={styles.text}>
-            Expéditeur : {booking.sender.first_name} {booking.sender.last_name}
+            Expéditeur : {booking.sender.firstname} {booking.sender.lastname}
           </Text>
           <Text style={styles.text}>
-            Voyageur : {booking.traveler.first_name} {booking.traveler.last_name}
+            Voyageur : {booking.traveler.firstname} {booking.traveler.lastname}
           </Text>
           <Text style={styles.text}>
-            Trajet : {booking.announcement.origin_city} →{' '}
-            {booking.announcement.destination_city}
+            Trajet : {booking.announcement.departure_city} →{' '}
+            {booking.announcement.arrival_city}
           </Text>
           <Text style={styles.text}>Poids : {booking.weight_kg} Kg</Text>
           {booking.deposit_location_lat && booking.deposit_location_lng && (

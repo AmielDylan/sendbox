@@ -4,13 +4,14 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerSchema, type RegisterInput } from "@/lib/core/auth/validations"
 import { signUp } from "@/lib/core/auth/actions"
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -27,7 +28,11 @@ import { IconLoader2, IconPackage } from '@tabler/icons-react'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { user, loading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+  const [authCheckComplete, setAuthCheckComplete] = useState(false)
+
+  // Tous les hooks doivent être définis avant toute condition de rendu
   const {
     register,
     handleSubmit,
@@ -42,6 +47,42 @@ export default function RegisterPage() {
   })
 
   const password = watch('password')
+
+  // Vérification d'authentification avec timeout
+  useEffect(() => {
+    if (!loading) {
+      // Auth check is complete
+      setAuthCheckComplete(true)
+      if (user) {
+        router.push('/dashboard')
+      }
+    }
+
+    // Timeout de sécurité côté client (3 secondes)
+    const timeout = setTimeout(() => {
+      setAuthCheckComplete(true)
+    }, 3000)
+
+    return () => clearTimeout(timeout)
+  }, [user, loading, router])
+
+  // Afficher un indicateur de chargement pendant la vérification d'authentification
+  if (!authCheckComplete) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4">
+              <IconPackage className="h-12 w-12 text-primary animate-pulse" />
+            </div>
+            <CardTitle className="text-2xl font-bold">
+              Vérification de la connexion...
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+    )
+  }
 
   const onSubmit = async (data: RegisterInput) => {
     setIsLoading(true)

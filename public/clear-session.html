@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nettoyer la session - Sendbox</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #dc2626;
+        }
+        .success {
+            background: #10b981;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        .info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #3b82f6;
+        }
+        ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Nettoyage de session</h1>
+
+        <p>Cet outil va nettoyer toutes les données de session stockées dans votre navigateur.</p>
+
+        <div class="info">
+            <strong>⚠️ Cela va :</strong>
+            <ul>
+                <li>Supprimer votre session actuelle</li>
+                <li>Nettoyer le cache d'authentification</li>
+                <li>Supprimer toutes les clés Supabase</li>
+            </ul>
+            <p><strong>Vous devrez vous reconnecter après cette opération.</strong></p>
+        </div>
+
+        <button onclick="clearSession()">Nettoyer maintenant</button>
+
+        <div class="success" id="success">
+            ✅ Session nettoyée avec succès !<br>
+            <small>Vous allez être redirigé vers la page de connexion...</small>
+        </div>
+
+        <div id="result" style="margin-top: 20px; font-family: monospace; font-size: 12px; color: #666;"></div>
+    </div>
+
+    <script>
+        function clearSession() {
+            const results = [];
+
+            // 1. Nettoyer toutes les clés Supabase
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('supabase') || key === 'current_user_id')) {
+                    keysToRemove.push(key);
+                }
+            }
+
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                results.push(`Supprimé: ${key}`);
+            });
+
+            // 2. Nettoyer sessionStorage aussi
+            const sessionKeys = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && key.startsWith('supabase')) {
+                    sessionKeys.push(key);
+                }
+            }
+
+            sessionKeys.forEach(key => {
+                sessionStorage.removeItem(key);
+                results.push(`Supprimé (session): ${key}`);
+            });
+
+            // 3. Nettoyer les cookies
+            document.cookie.split(";").forEach(function(c) {
+                const cookieName = c.trim().split("=")[0];
+                if (cookieName.startsWith('supabase') || cookieName.startsWith('sb-')) {
+                    document.cookie = cookieName + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                    results.push(`Supprimé (cookie): ${cookieName}`);
+                }
+            });
+
+            // Afficher les résultats
+            document.getElementById('result').innerHTML = results.join('<br>') || 'Aucune donnée à nettoyer.';
+            document.getElementById('success').style.display = 'block';
+
+            // Rediriger après 2 secondes
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

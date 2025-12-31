@@ -16,19 +16,19 @@ export function CapacityProgress({
   reservedWeight = 0,
   pricePerKg,
 }: CapacityProgressProps) {
-  const availableWeight = maxWeight - reservedWeight
-  const percentageUsed = (reservedWeight / maxWeight) * 100
-  const percentageAvailable = (availableWeight / maxWeight) * 100
+  const availableWeight = Math.max(0, maxWeight - reservedWeight)
+  const percentageUsed = maxWeight > 0 ? (reservedWeight / maxWeight) * 100 : 0
+  const percentageAvailable = maxWeight > 0 ? (availableWeight / maxWeight) * 100 : 0
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Package className="h-5 w-5 text-muted-foreground" />
+          <IconPackage className="h-5 w-5 text-muted-foreground" />
           <span className="font-semibold">Capacité disponible</span>
         </div>
         <div className="flex items-center gap-2">
-          <Euro className="h-5 w-5 text-muted-foreground" />
+          <IconCurrencyEuro className="h-5 w-5 text-muted-foreground" />
           <span className="font-semibold">{pricePerKg} €/kg</span>
         </div>
       </div>
@@ -53,10 +53,10 @@ export function CapacityProgress({
         <p className="text-sm font-medium mb-2">Calcul du prix :</p>
         <div className="space-y-1 text-sm">
           <p>
-            <span className="font-semibold">{availableWeight} kg</span> ×{' '}
-            <span className="font-semibold">{pricePerKg} €/kg</span> ={' '}
+            <span className="font-semibold">{availableWeight.toFixed(1)} kg</span> ×{' '}
+            <span className="font-semibold">{pricePerKg.toFixed(2)} €/kg</span> ={' '}
             <span className="font-bold text-primary">
-              {availableWeight * pricePerKg} €
+              {(availableWeight * pricePerKg).toFixed(2)} €
             </span>
           </p>
         </div>

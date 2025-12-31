@@ -158,7 +158,7 @@ export default function AccountPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
+            <IconLock className="h-5 w-5" />
             Mot de passe
           </CardTitle>
           <CardDescription>
@@ -267,7 +267,7 @@ export default function AccountPage() {
             <Button type="submit" disabled={isChangingPassword}>
               {isChangingPassword ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Modification...
                 </>
               ) : (
@@ -282,7 +282,7 @@ export default function AccountPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
+            <IconMail className="h-5 w-5" />
             Adresse email
           </CardTitle>
           <CardDescription>
@@ -355,7 +355,7 @@ export default function AccountPage() {
             <Button type="submit" disabled={isChangingEmail}>
               {isChangingEmail ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                   Modification...
                 </>
               ) : (
@@ -370,7 +370,7 @@ export default function AccountPage() {
       <Card className="border-destructive">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
-            <AlertTriangle className="h-5 w-5" />
+            <IconAlertTriangle className="h-5 w-5" />
             Zone de danger
           </CardTitle>
           <CardDescription>
@@ -381,7 +381,7 @@ export default function AccountPage() {
           <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
+                <IconTrash className="mr-2 h-4 w-4" />
                 Supprimer mon compte
               </Button>
             </DialogTrigger>
@@ -455,7 +455,7 @@ export default function AccountPage() {
                   >
                     {isDeleting ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
                         Suppression...
                       </>
                     ) : (

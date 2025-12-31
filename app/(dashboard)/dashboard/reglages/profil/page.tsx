@@ -70,21 +70,21 @@ export default function ProfilePage() {
 
       if (result.profile) {
         setProfile({
-          firstname: result.profile.first_name,
-          lastname: result.profile.last_name,
-          phone: result.profile.phone,
-          address: result.profile.address,
-          bio: result.profile.bio,
-          avatar_url: result.profile.avatar_url,
-          email: result.profile.email || null,
+          firstname: (result.profile as any).firstname || '',
+          lastname: (result.profile as any).lastname || '',
+          phone: (result.profile as any).phone || '',
+          address: (result.profile as any).address || '',
+          bio: (result.profile as any).bio || '',
+          avatar_url: (result.profile as any).avatar_url || null,
+          email: (result.profile as any).email || null,
         })
-        setAvatarPreview(result.profile.avatar_url)
+        setAvatarPreview((result.profile as any).avatar_url)
         reset({
-          firstname: result.profile.first_name || '',
-          lastname: result.profile.last_name || '',
-          phone: result.profile.phone || '',
-          address: result.profile.address || '',
-          bio: result.profile.bio || '',
+          firstname: (result.profile as any).firstname || '',
+          lastname: (result.profile as any).lastname || '',
+          phone: (result.profile as any).phone || '',
+          address: (result.profile as any).address || '',
+          bio: (result.profile as any).bio || '',
         })
       }
     } catch (error) {

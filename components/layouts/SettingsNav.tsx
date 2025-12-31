@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { isFeatureEnabled } from "@/lib/shared/config/features"
 
 interface SettingsNavProps {
-  kycStatus?: 'pending' | 'approved' | 'rejected' | null
+  kycStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 }
 
 export function SettingsNav({ kycStatus }: SettingsNavProps) {

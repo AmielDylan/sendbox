@@ -20,7 +20,7 @@ export default function AdminTransactionsPage() {
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['adminTransactions'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('transactions')
         .select('*')
         .order('created_at', { ascending: false })
@@ -32,7 +32,7 @@ export default function AdminTransactionsPage() {
   })
 
   const totalRevenue =
-    transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
+    transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0
 
   const handleExportCSV = () => {
     // TODO: Implémenter export CSV
@@ -42,7 +42,7 @@ export default function AdminTransactionsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -66,7 +66,7 @@ export default function AdminTransactionsPage() {
           </p>
         </div>
         <Button onClick={handleExportCSV}>
-          <Download className="mr-2 h-4 w-4" />
+          <IconDownload className="mr-2 h-4 w-4" />
           Exporter CSV
         </Button>
       </div>

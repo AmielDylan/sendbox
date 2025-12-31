@@ -16,7 +16,7 @@ import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { IconLoader2, IconLock, IconShield, FileText, IconCircleCheck } from '@tabler/icons-react'
+import { IconLoader2, IconLock, IconShield, IconFileText, IconCircleCheck } from '@tabler/icons-react'
 import { formatPrice } from "@/lib/core/bookings/calculations"
 import { PaymentForm } from '@/components/features/payments/PaymentForm'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -50,10 +50,10 @@ function PaymentPageContent() {
           `
           *,
           announcements:announcement_id (
-            origin_city,
-            destination_city,
-            origin_country,
-            destination_country,
+            departure_city,
+            arrival_city,
+            departure_country,
+            arrival_country,
             departure_date,
             price_per_kg
           )
@@ -108,7 +108,7 @@ function PaymentPageContent() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -143,7 +143,7 @@ function PaymentPageContent() {
               <div>
                 <p className="text-sm text-muted-foreground">Trajet</p>
                 <p className="font-medium">
-                  {announcement.origin_city} → {announcement.destination_city}
+                  {announcement.departure_city} → {announcement.arrival_city}
                 </p>
               </div>
               <Separator />
@@ -160,7 +160,7 @@ function PaymentPageContent() {
                 <>
                   <Separator />
                   <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-primary" />
+                    <IconShield className="h-4 w-4 text-primary" />
                     <div>
                       <p className="text-sm text-muted-foreground">Assurance</p>
                       <p className="font-medium">Souscrite</p>
@@ -175,7 +175,7 @@ function PaymentPageContent() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5" />
+                <IconLock className="h-5 w-5" />
                 Informations de paiement
               </CardTitle>
             </CardHeader>
@@ -205,7 +205,7 @@ function PaymentPageContent() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+                <IconFileText className="h-5 w-5" />
                 Mentions légales
               </CardTitle>
             </CardHeader>
@@ -237,7 +237,7 @@ function PaymentPageContent() {
               {booking.insurance_opted && (
                 <div className="p-4 bg-muted rounded-lg">
                   <div className="flex items-start gap-2">
-                    <Shield className="h-5 w-5 text-primary mt-0.5" />
+                    <IconShield className="h-5 w-5 text-primary mt-0.5" />
                     <div className="space-y-1">
                       <p className="font-medium text-sm">Assurance souscrite</p>
                       <p className="text-xs text-muted-foreground">
@@ -294,11 +294,11 @@ function PaymentPageContent() {
 
               <div className="pt-4 border-t space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  <IconCircleCheck className="h-4 w-4 text-green-500" />
                   <span>Paiement sécurisé par Stripe</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Lock className="h-4 w-4 text-primary" />
+                  <IconLock className="h-4 w-4 text-primary" />
                   <span>Fonds bloqués jusqu'à livraison</span>
                 </div>
               </div>

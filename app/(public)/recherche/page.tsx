@@ -41,8 +41,10 @@ import { IconLoader2, IconSearch, IconChevronLeft, IconChevronRight, IconCalenda
 import { COUNTRIES } from "@/lib/core/announcements/validations"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function SearchPage() {
+  const { user } = useAuth()
   const [filters, setFilters] = useState<SearchFilters>({
     departureCountry: null,
     arrivalCountry: null,
@@ -51,6 +53,7 @@ export default function SearchPage() {
     sortBy: 'date',
     page: 1,
   })
+  const [hasSearched, setHasSearched] = useState(false)
 
   const [departureDate, setDepartureDate] = useState<Date | undefined>(undefined)
 
@@ -62,12 +65,14 @@ export default function SearchPage() {
   } = useQuery({
     queryKey: ['announcements', 'search', filters],
     queryFn: () => searchAnnouncementsClient(filters),
+    enabled: hasSearched,
   })
 
   // Query pour compter le total
   const { data: countData } = useQuery({
     queryKey: ['announcements', 'count', filters],
     queryFn: () => countSearchAnnouncements(filters),
+    enabled: hasSearched,
   })
 
   const announcements = announcementsData?.data || []
@@ -76,6 +81,7 @@ export default function SearchPage() {
 
   const handleSearch = () => {
     setFilters((prev) => ({ ...prev, page: 1 }))
+    setHasSearched(true)
   }
 
   const handlePageChange = (newPage: number) => {
@@ -88,6 +94,14 @@ export default function SearchPage() {
       <PageHeader
         title="Rechercher une annonce"
         description="Trouvez le trajet idéal pour votre colis"
+        actions={user ? (
+          <Button asChild>
+            <a href="/dashboard/annonces/new">
+              <IconSearch className="mr-2 h-4 w-4" />
+              Créer une annonce
+            </a>
+          </Button>
+        ) : null}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -156,7 +170,7 @@ export default function SearchPage() {
                       {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" side="right" align="start">
+                  <PopoverContent className="w-auto p-0" side="bottom" align="start">
                     <Calendar
                       mode="single"
                       selected={departureDate}
@@ -221,7 +235,15 @@ export default function SearchPage() {
 
         {/* Résultats */}
         <div className="lg:col-span-3">
-          {isLoading ? (
+          {!hasSearched ? (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">
+                  Utilisez les filtres pour rechercher une annonce
+                </p>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
             <div className="flex items-center justify-center min-h-[400px]">
               <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>

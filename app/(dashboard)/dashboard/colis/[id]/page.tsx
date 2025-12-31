@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from "@/lib/shared/db/client"
@@ -75,20 +75,21 @@ interface BookingDetail {
     completed_services: number | null
   }
   announcement: {
-    origin_country: string
-    origin_city: string
-    destination_country: string
-    destination_city: string
+    departure_country: string
+    departure_city: string
+    arrival_country: string
+    arrival_city: string
     departure_date: string
     arrival_date: string | null
   }
 }
 
 interface BookingDetailPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default function BookingDetailPage({ params }: BookingDetailPageProps) {
+  const { id } = use(params)
   const router = useRouter()
   const [booking, setBooking] = useState<BookingDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -97,7 +98,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
   useEffect(() => {
     loadBookingDetails()
-  }, [params.id])
+  }, [id])
 
   const loadBookingDetails = async () => {
     try {
@@ -134,15 +135,15 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             completed_services
           ),
           announcement:announcement_id (
-            origin_country,
-            origin_city,
-            destination_country,
-            destination_city,
+            departure_country,
+            departure_city,
+            arrival_country,
+            arrival_city,
             departure_date,
             arrival_date
           )
         `)
-        .eq('id', params.id)
+        .eq('id', id)
         .single()
 
       if (error) throw error
@@ -303,10 +304,10 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         </CardHeader>
         <CardContent>
           <BookingTimeline
-            originCountry={booking.announcement.origin_country}
-            originCity={booking.announcement.origin_city}
-            destinationCountry={booking.announcement.destination_country}
-            destinationCity={booking.announcement.destination_city}
+            originCountry={booking.announcement.departure_country}
+            originCity={booking.announcement.departure_city}
+            destinationCountry={booking.announcement.arrival_country}
+            destinationCity={booking.announcement.arrival_city}
             departureDate={booking.announcement.departure_date}
             arrivalDate={booking.announcement.arrival_date || undefined}
           />

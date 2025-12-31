@@ -11,7 +11,7 @@ import {
   useElements,
 } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from '@tabler/icons-react'
+import { IconLoader2 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -95,7 +95,7 @@ export function PaymentForm({
         <Button type="submit" disabled={!stripe || !acceptedTerms || isProcessing}>
           {isProcessing ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
               Traitement...
             </>
           ) : (
