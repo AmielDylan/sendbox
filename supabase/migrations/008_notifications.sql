@@ -2,30 +2,21 @@
 -- Created: 2024-12-10
 -- Description: Table notifications et champs booking pour refus
 
--- Créer la table notifications
-CREATE TABLE IF NOT EXISTS notifications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN (
-    'booking_request',
-    'booking_accepted',
-    'booking_refused',
-    'payment_confirmed',
-    'deposit_reminder',
-    'transit_started',
-    'delivery_reminder',
-    'rating_request',
-    'admin_message',
-    'system_alert',
-    'message'
-  )),
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
-  announcement_id UUID REFERENCES announcements(id) ON DELETE CASCADE,
-  read_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- Ajouter des colonnes supplémentaires à la table notifications (créée par migration 001)
+ALTER TABLE notifications
+ADD COLUMN IF NOT EXISTS booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
+ADD COLUMN IF NOT EXISTS announcement_id UUID REFERENCES announcements(id) ON DELETE CASCADE;
+
+-- Renommer la colonne message en content si elle existe
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'notifications' AND column_name = 'message'
+  ) THEN
+    ALTER TABLE notifications RENAME COLUMN message TO content;
+  END IF;
+END $$;
 
 -- Index pour les requêtes fréquentes
 CREATE INDEX IF NOT EXISTS notifications_user_id_idx ON notifications(user_id);
@@ -33,22 +24,9 @@ CREATE INDEX IF NOT EXISTS notifications_read_at_idx ON notifications(read_at);
 CREATE INDEX IF NOT EXISTS notifications_created_at_idx ON notifications(created_at DESC);
 CREATE INDEX IF NOT EXISTS notifications_booking_id_idx ON notifications(booking_id);
 
--- RLS Policies
+-- RLS Policies (déjà définies dans migration 001)
+-- On les garde activées mais ne les recrée pas pour éviter les conflits
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-
--- Les utilisateurs peuvent voir leurs propres notifications
-DROP POLICY IF EXISTS "Users can view their own notifications" ON notifications;
-CREATE POLICY "Users can view their own notifications"
-ON notifications FOR SELECT
-TO authenticated
-USING (user_id = auth.uid());
-
--- Les utilisateurs peuvent marquer leurs notifications comme lues
-DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
-CREATE POLICY "Users can update their own notifications"
-ON notifications FOR UPDATE
-TO authenticated
-USING (user_id = auth.uid());
 
 -- Fonction pour créer une notification
 CREATE OR REPLACE FUNCTION create_notification(

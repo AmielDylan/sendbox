@@ -10,25 +10,16 @@ ADD COLUMN IF NOT EXISTS total_price NUMERIC,
 ADD COLUMN IF NOT EXISTS commission_amount NUMERIC,
 ADD COLUMN IF NOT EXISTS insurance_premium NUMERIC;
 
--- Créer la table transactions
-CREATE TABLE IF NOT EXISTS transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  booking_id UUID REFERENCES bookings(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('payment', 'refund', 'payout')),
-  amount NUMERIC NOT NULL CHECK (amount > 0),
-  currency TEXT NOT NULL DEFAULT 'eur',
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'refunded')),
-  stripe_payment_intent_id TEXT,
-  stripe_refund_id TEXT,
-  metadata JSONB DEFAULT '{}'::jsonb,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- Créer la table transactions si elle n'existe pas
+-- Note: La migration 001 a déjà créé cette table avec sender_id et traveler_id
+-- Cette migration ajoute des champs supplémentaires si nécessaire
+ALTER TABLE transactions
+ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'eur';
 
--- Index pour les requêtes fréquentes
+-- Index pour les requêtes fréquentes (avec vérification de l'existence)
 CREATE INDEX IF NOT EXISTS transactions_booking_id_idx ON transactions(booking_id);
-CREATE INDEX IF NOT EXISTS transactions_user_id_idx ON transactions(user_id);
+CREATE INDEX IF NOT EXISTS transactions_sender_id_idx ON transactions(sender_id);
+CREATE INDEX IF NOT EXISTS transactions_traveler_id_idx ON transactions(traveler_id);
 -- Index sur status (si la colonne existe)
 DO $$ 
 BEGIN
@@ -61,24 +52,8 @@ EXECUTE FUNCTION update_updated_at_column();
 -- RLS Policies pour transactions
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
--- Les utilisateurs peuvent voir leurs propres transactions
-DROP POLICY IF EXISTS "Users can view their own transactions" ON transactions;
-CREATE POLICY "Users can view their own transactions"
-ON transactions FOR SELECT
-TO authenticated
-USING (user_id = auth.uid());
-
--- Les admins peuvent voir toutes les transactions
-DROP POLICY IF EXISTS "Admins can view all transactions" ON transactions;
-CREATE POLICY "Admins can view all transactions"
-ON transactions FOR SELECT
-TO authenticated
-USING (
-  EXISTS (
-    SELECT 1 FROM profiles
-    WHERE user_id = auth.uid() AND role = 'admin'
-  )
-);
+-- Note: Les RLS policies pour transactions sont déjà définies dans migration 001
+-- Cette migration ne les réc rée pas pour éviter les conflits
 
 -- Commentaires
 COMMENT ON COLUMN bookings.payment_intent_id IS 'ID du Payment Intent Stripe';
