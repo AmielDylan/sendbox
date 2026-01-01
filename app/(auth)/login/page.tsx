@@ -48,7 +48,7 @@ function LoginForm() {
     },
   })
 
-  // Vérification d'authentification avec timeout
+  // Vérification d'authentification avec timeout réduit
   useEffect(() => {
     if (!loading) {
       // Auth check is complete
@@ -59,10 +59,10 @@ function LoginForm() {
       }
     }
 
-    // Timeout de sécurité côté client (3 secondes)
+    // Timeout de sécurité côté client réduit à 800ms
     const timeout = setTimeout(() => {
       setAuthCheckComplete(true)
-    }, 3000)
+    }, 800)
 
     return () => clearTimeout(timeout)
   }, [user, loading, router])

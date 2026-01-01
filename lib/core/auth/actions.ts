@@ -190,7 +190,8 @@ export async function signOut() {
  */
 export async function signOutServer() {
   const supabase = await createClient()
-  await supabase.auth.signOut()
+  // Utiliser scope: 'global' pour nettoyer tous les tokens et cookies
+  await supabase.auth.signOut({ scope: 'global' })
   revalidatePath('/', 'layout')
 }
 
