@@ -246,8 +246,8 @@ function UserMenu() {
       // 2. Appeler l'action serveur pour nettoyer les cookies serveur
       await signOutServer()
 
-      // 3. Rediriger manuellement vers la page d'accueil
-      router.push('/')
+      // 3. Rediriger vers la page de login
+      router.push('/login')
       router.refresh()
     } catch (error) {
       console.error('Logout error:', error)

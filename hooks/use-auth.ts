@@ -144,31 +144,43 @@ export function useAuth(): UseAuthReturn {
 
       if (!mounted) return
 
+      // Ignorer certains événements qui ne nécessitent pas de mise à jour
+      if (event === 'TOKEN_REFRESHED') {
+        return
+      }
+
       try {
         if (session?.user) {
+          // Ne mettre à jour que si l'utilisateur a changé
+          const hasUserChanged = !user || user.id !== session.user.id
+
           setUser(session.user)
 
-          // Récupérer le profil
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
+          // Récupérer le profil seulement si nécessaire
+          if (hasUserChanged || !profile) {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
 
-          if (!mounted) return
+            if (!mounted) return
 
-          if (profileError) {
-            console.error('Profile fetch error on auth change:', profileError)
-          } else if (profileData) {
-            setProfile(profileData as Profile)
+            if (profileError) {
+              console.error('Profile fetch error on auth change:', profileError)
+            } else if (profileData) {
+              setProfile(profileData as Profile)
+            }
+
+            // Invalider les queries seulement si l'utilisateur a changé
+            if (hasUserChanged) {
+              queryClient.invalidateQueries()
+            }
           }
-
-          // Invalider toutes les queries pour forcer le rafraîchissement
-          queryClient.invalidateQueries()
-        } else {
+        } else if (event === 'SIGNED_OUT') {
+          // Ne nettoyer que lors d'un vrai sign out
           setUser(null)
           setProfile(null)
-          // Nettoyer le cache des queries lors de la déconnexion
           queryClient.clear()
         }
       } catch (error) {
