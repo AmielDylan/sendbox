@@ -189,9 +189,22 @@ export async function signOut() {
  * Déconnexion serveur (sans redirect - pour utilisation côté client)
  */
 export async function signOutServer() {
+  const { cookies } = await import('next/headers')
+  const cookieStore = await cookies()
+
   const supabase = await createClient()
+
   // Utiliser scope: 'global' pour nettoyer tous les tokens et cookies
   await supabase.auth.signOut({ scope: 'global' })
+
+  // Supprimer manuellement tous les cookies Supabase
+  const allCookies = cookieStore.getAll()
+  allCookies.forEach(cookie => {
+    if (cookie.name.startsWith('sb-')) {
+      cookieStore.delete(cookie.name)
+    }
+  })
+
   revalidatePath('/', 'layout')
 }
 
