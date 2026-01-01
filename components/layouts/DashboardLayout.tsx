@@ -223,17 +223,19 @@ function UserMenu() {
   const { user, profile, loading, signOut: authSignOut } = useAuth()
   const [avatarError, setAvatarError] = useState(false)
 
-  // Timeout après 3s si toujours en chargement
+  // Timeout après 10s si toujours en chargement
   useEffect(() => {
-    if (loading) {
-      const timer = setTimeout(() => {
-        if (loading) {
-          console.warn('Avatar loading timeout after 3s')
-          setAvatarError(true)
-        }
-      }, 3000)
-      return () => clearTimeout(timer)
+    if (!loading) {
+      setAvatarError(false)
+      return
     }
+
+    const timer = setTimeout(() => {
+      console.warn('Avatar loading timeout after 10s')
+      setAvatarError(true)
+    }, 10000)
+
+    return () => clearTimeout(timer)
   }, [loading])
 
   const handleLogout = async () => {
