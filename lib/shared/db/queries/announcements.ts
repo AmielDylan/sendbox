@@ -4,6 +4,16 @@
 
 import { createClient } from "@/lib/shared/db/client"
 
+/**
+ * Formate une date en YYYY-MM-DD sans décalage de fuseau horaire
+ */
+function formatDateLocal(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export interface SearchFilters {
   departureCountry?: string | null
   arrivalCountry?: string | null
@@ -45,7 +55,7 @@ export async function searchAnnouncementsClient(filters: SearchFilters) {
     p_departure_country: filters.departureCountry || null,
     p_arrival_country: filters.arrivalCountry || null,
     p_departure_date: filters.departureDate
-      ? filters.departureDate.toISOString().split('T')[0]
+      ? formatDateLocal(filters.departureDate)
       : null,
     p_min_kg: filters.minKg || null,
     p_sort_by: filters.sortBy || 'date',
@@ -77,7 +87,7 @@ export async function countSearchAnnouncements(filters: SearchFilters) {
     p_departure_country: filters.departureCountry || null,
     p_arrival_country: filters.arrivalCountry || null,
     p_departure_date: filters.departureDate
-      ? filters.departureDate.toISOString().split('T')[0]
+      ? formatDateLocal(filters.departureDate)
       : null,
     p_min_kg: filters.minKg || null,
   })
