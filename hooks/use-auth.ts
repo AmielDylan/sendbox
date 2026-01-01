@@ -54,30 +54,21 @@ export function useAuth(): UseAuthReturn {
 
   useEffect(() => {
     let mounted = true
-    let timeoutId: NodeJS.Timeout
-    let dataFetched = false
-
-    // Timeout de sécurité pour éviter le blocage
-    const startTimeout = () => {
-      timeoutId = setTimeout(() => {
-        if (mounted && !dataFetched) {
-          console.warn('Auth loading timeout - data not loaded yet, retrying once...')
-          // Au lieu de simplement forcer loading à false, on va réessayer une fois
-          getUser().catch(err => {
-            console.error('Retry failed:', err)
-            if (mounted) {
-              setLoading(false)
-            }
-          })
-        }
-      }, 3000) // 3 secondes puis retry
-    }
+    let timeoutId: NodeJS.Timeout | null = null
+    let retryAttempted = false
 
     // Récupérer l'utilisateur actuel
     const getUser = async () => {
       try {
-        if (!dataFetched) {
-          startTimeout()
+        // Timeout de sécurité uniquement pour la première tentative
+        if (!retryAttempted && !timeoutId) {
+          timeoutId = setTimeout(() => {
+            if (mounted && !retryAttempted) {
+              console.warn('Auth loading timeout - setting loading to false')
+              retryAttempted = true
+              setLoading(false)
+            }
+          }, 5000) // 5 secondes max
         }
 
         // Utiliser getSession au lieu de getUser pour forcer la lecture depuis les cookies
@@ -90,7 +81,6 @@ export function useAuth(): UseAuthReturn {
 
         if (sessionError) {
           console.error('Session error:', sessionError)
-          dataFetched = true
           setLoading(false)
           return
         }
@@ -126,20 +116,19 @@ export function useAuth(): UseAuthReturn {
           } else if (profileData) {
             setProfile(profileData as Profile)
           }
-
-          dataFetched = true
         } else {
           setUser(null)
           setProfile(null)
-          dataFetched = true
         }
       } catch (error) {
         if (!mounted) return
         console.error('Unexpected auth error:', error)
-        dataFetched = true
       } finally {
-        if (mounted && dataFetched) {
-          clearTimeout(timeoutId)
+        if (mounted) {
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
           setLoading(false)
         }
       }
@@ -194,6 +183,9 @@ export function useAuth(): UseAuthReturn {
 
     return () => {
       mounted = false
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       subscription.unsubscribe()
     }
   }, [supabase, queryClient])
