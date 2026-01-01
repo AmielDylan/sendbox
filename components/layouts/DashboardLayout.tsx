@@ -20,7 +20,7 @@ import {
   IconAlertCircle,
   IconLogout,
 } from '@tabler/icons-react'
-import { signOut as serverSignOut } from '@/lib/core/auth/actions'
+import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from "@/lib/utils"
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -242,11 +242,11 @@ function UserMenu() {
       await authSignOut()
 
       // 2. Appeler l'action serveur pour nettoyer les cookies serveur
-      // Cela va aussi faire le redirect automatiquement
-      await serverSignOut()
+      await signOutServer()
 
-      // Note: serverSignOut() fait déjà un redirect('/')
-      // donc on n'a pas besoin de router.push ici
+      // 3. Rediriger manuellement vers la page d'accueil
+      router.push('/')
+      router.refresh()
     } catch (error) {
       console.error('Logout error:', error)
       toast.error('Erreur lors de la déconnexion')

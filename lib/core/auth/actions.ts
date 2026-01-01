@@ -176,13 +176,22 @@ export async function signIn(formData: LoginInput) {
 }
 
 /**
- * Déconnexion
+ * Déconnexion (avec redirect)
  */
 export async function signOut() {
   const supabase = await createClient()
   await supabase.auth.signOut()
   revalidatePath('/', 'layout')
   redirect('/')
+}
+
+/**
+ * Déconnexion serveur (sans redirect - pour utilisation côté client)
+ */
+export async function signOutServer() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  revalidatePath('/', 'layout')
 }
 
 /**
