@@ -103,9 +103,9 @@ export async function POST(req: NextRequest) {
         insurance_amount: toStripeAmount(amounts.insurancePremium).toString(),
         total_price: toStripeAmount(amounts.totalPrice).toString(),
       },
-      // Application fee (commission Sendbox) - pour Stripe Connect
-      // Note: En mode escrow, les fonds sont bloqués jusqu'à confirmation
-      application_fee_amount: toStripeAmount(amounts.commissionAmount),
+      // Application fee désactivé temporairement - nécessite Stripe Connect
+      // TODO: Implémenter Stripe Connect pour gérer les commissions automatiquement
+      // application_fee_amount: toStripeAmount(amounts.commissionAmount),
       // Description pour le client
       description: `Réservation Sendbox - ${(booking.kilos_requested || booking.weight_kg)}kg`,
     })
