@@ -37,8 +37,10 @@ import Image from 'next/image'
 
 interface BookingRequest {
   id: string
-  weight_kg: number
-  description: string | null
+  kilos_requested?: number
+  weight_kg?: number
+  package_description?: string | null
+  description?: string | null
   package_value: number | null
   package_photos: string[] | null
   created_at: string
@@ -83,6 +85,10 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
   const senderInitials = generateInitials(booking.sender.firstname, booking.sender.lastname)
   const isNew = new Date(booking.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
   const announcement = booking.announcements
+
+  // Support pour les deux colonnes: kilos_requested (nouveau) et weight_kg (ancien)
+  const weightKg = booking.kilos_requested || booking.weight_kg || 0
+  const packageDescription = booking.package_description || booking.description || null
 
   const handleAccept = async () => {
     if (!acceptedTerms) {
@@ -142,7 +148,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
     }
   }
 
-  const totalPrice = booking.weight_kg * announcement.price_per_kg
+  const totalPrice = weightKg * announcement.price_per_kg
 
   return (
     <>
@@ -199,12 +205,12 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
                 <span className="text-sm font-medium">Demande</span>
               </div>
               <span className="font-semibold">
-                {booking.weight_kg} kg pour {formatPrice(totalPrice)}
+                {weightKg} kg pour {formatPrice(totalPrice)}
               </span>
             </div>
-            {booking.description && (
+            {packageDescription && (
               <p className="text-sm text-muted-foreground">
-                {booking.description}
+                {packageDescription}
               </p>
             )}
           </div>
@@ -300,7 +306,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
                     locale: fr,
                   })}
                 </li>
-                <li>Poids à transporter : {booking.weight_kg} kg</li>
+                <li>Poids à transporter : {weightKg} kg</li>
                 <li>
                   Vous serez payé {formatPrice(totalPrice)} à la livraison
                 </li>
