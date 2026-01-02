@@ -116,14 +116,28 @@ export async function POST(req: NextRequest) {
           },
         })
 
-        // TODO: Créer notification pour le voyageur
-        // await supabase.rpc('create_notification', {
-        //   p_user_id: paymentIntent.metadata.traveler_id,
-        //   p_type: 'payment_confirmed',
-        //   p_title: 'Réservation confirmée',
-        //   p_content: 'Un expéditeur a réservé de l\'espace sur votre trajet',
-        //   p_booking_id: booking_id,
-        // })
+        // Créer notifications pour les deux parties (ne pas bloquer si ça échoue)
+        try {
+          // Notification au voyageur
+          await (supabase.rpc as any)('create_notification', {
+            p_user_id: paymentIntent.metadata.traveler_id,
+            p_type: 'payment_confirmed',
+            p_title: 'Paiement confirmé',
+            p_content: 'Le paiement a été reçu pour une réservation sur votre trajet. Vous pouvez maintenant organiser le dépôt du colis.',
+            p_booking_id: booking_id,
+          })
+
+          // Notification à l'expéditeur
+          await (supabase.rpc as any)('create_notification', {
+            p_user_id: paymentIntent.metadata.sender_id,
+            p_type: 'payment_confirmed',
+            p_title: 'Paiement confirmé',
+            p_content: 'Votre paiement a été confirmé. Vous pouvez maintenant voir le contrat de transport et le QR code.',
+            p_booking_id: booking_id,
+          })
+        } catch (notifError) {
+          console.error('Notification creation failed (non-blocking):', notifError)
+        }
 
         // Générer contrat de transport PDF
         await generateTransportContract(booking_id)

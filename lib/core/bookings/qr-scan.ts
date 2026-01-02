@@ -312,7 +312,15 @@ export async function handleDeliveryScan(
       user_id: booking.sender_id,
       type: 'delivery_reminder',
       title: 'Colis livré',
-      content: 'Votre colis a été livré avec succès',
+      content: 'Votre colis a été livré avec succès. Vous pouvez maintenant noter le voyageur.',
+      booking_id: bookingId,
+    })
+
+    await notifyUser({
+      user_id: booking.traveler_id,
+      type: 'delivery_confirmed',
+      title: 'Livraison confirmée',
+      content: 'La livraison a été confirmée. Votre paiement sera traité prochainement.',
       booking_id: bookingId,
     })
 
