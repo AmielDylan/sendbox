@@ -198,20 +198,30 @@ export default function MyAnnouncementsPage() {
                             {announcement.arrival_city}
                             <Badge
                               variant={
-                                announcement.status === 'active'
+                                announcement.status === 'active' || announcement.status === 'partially_booked'
                                   ? 'default'
-                                  : announcement.status === 'completed'
+                                  : announcement.status === 'fully_booked'
                                     ? 'secondary'
-                                    : 'outline'
+                                    : announcement.status === 'completed'
+                                      ? 'secondary'
+                                      : announcement.status === 'cancelled'
+                                        ? 'destructive'
+                                        : 'outline'
                               }
                             >
                               {announcement.status === 'active'
                                 ? 'Publiée'
-                                : announcement.status === 'completed'
-                                  ? 'Terminée'
-                                  : announcement.status === 'draft'
-                                    ? 'Brouillon'
-                                    : 'Annulée'}
+                                : announcement.status === 'partially_booked'
+                                  ? 'Partiellement réservée'
+                                  : announcement.status === 'fully_booked'
+                                    ? 'Complète'
+                                    : announcement.status === 'completed'
+                                      ? 'Terminée'
+                                      : announcement.status === 'draft'
+                                        ? 'Brouillon'
+                                        : announcement.status === 'cancelled'
+                                          ? 'Annulée'
+                                          : announcement.status}
                             </Badge>
                           </CardTitle>
                         </div>

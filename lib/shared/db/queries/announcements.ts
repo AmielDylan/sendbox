@@ -116,7 +116,11 @@ export async function getUserAnnouncements(
     .order('created_at', { ascending: false })
 
   if (status) {
-    query = query.eq('status', status)
+    // "active" inclut toutes les annonces publiées (active, partially_booked, fully_booked)
+    if (status === 'active') {
+      query = query.in('status', ['active', 'partially_booked', 'fully_booked'])
+    } else {
+      query = query.eq('status', status)
   }
 
   const { data, error } = await query

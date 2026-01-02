@@ -359,7 +359,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2">
             {/* Actions Expéditeur */}
-            {isSender && booking.status === 'pending' && !booking.paid_at && (
+            {isSender && booking.status === 'accepted' && (
               <>
                 <Button asChild className="w-full">
                   <Link href={`/dashboard/colis/${booking.id}/paiement`}>
@@ -371,7 +371,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
               </>
             )}
 
-            {isSender && booking.status === 'confirmed' && (
+            {isSender && (booking.status === 'paid' || booking.status === 'deposited') && (
               <>
                 <Button variant="outline" asChild className="w-full">
                   <Link href={`/dashboard/colis/${booking.id}/contrat`}>
@@ -421,7 +421,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
               </>
             )}
 
-            {isTraveler && booking.status === 'confirmed' && (
+            {isTraveler && (booking.status === 'paid' || booking.status === 'deposited') && (
               <>
                 <Button variant="outline" asChild className="w-full">
                   <Link href={`/dashboard/colis/${booking.id}/contrat`}>
