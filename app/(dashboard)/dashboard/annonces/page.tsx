@@ -194,8 +194,8 @@ export default function MyAnnouncementsPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <CardTitle className="flex items-center gap-2">
-                            {announcement.departure_city} →{' '}
-                            {announcement.arrival_city}
+                            {announcement.departure_country} ({announcement.departure_city}) →{' '}
+                            {announcement.arrival_country} ({announcement.arrival_city})
                             <Badge
                               variant={
                                 announcement.status === 'active' || announcement.status === 'partially_booked'

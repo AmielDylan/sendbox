@@ -121,6 +121,7 @@ export async function getUserAnnouncements(
       query = query.in('status', ['active', 'partially_booked', 'fully_booked'])
     } else {
       query = query.eq('status', status)
+    }
   }
 
   const { data, error } = await query
