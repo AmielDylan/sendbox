@@ -297,19 +297,26 @@ export async function createBooking(formData: CreateBookingInput & {
         .eq('id', booking.id)
     }
 
-    // Créer notification pour le voyageur
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: announcement.traveler_id,
-      p_type: 'booking_request',
-      p_title: 'Nouvelle demande de réservation',
-      p_content: `Une nouvelle demande de réservation a été créée pour votre trajet ${announcement.departure_city} → ${announcement.arrival_city}`,
-      p_booking_id: booking.id,
-      p_announcement_id: announcement.id,
-    })
+    // Créer notification pour le voyageur (ne pas bloquer si ça échoue)
+    try {
+      await (supabase.rpc as any)('create_notification', {
+        p_user_id: announcement.traveler_id,
+        p_type: 'booking_request',
+        p_title: 'Nouvelle demande de réservation',
+        p_content: `Une nouvelle demande de réservation a été créée pour votre trajet ${announcement.departure_city} → ${announcement.arrival_city}`,
+        p_booking_id: booking.id,
+        p_announcement_id: announcement.id,
+      })
+    } catch (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+      // Ne pas bloquer la création de la réservation si la notification échoue
+    }
 
     revalidatePath('/dashboard/colis')
     revalidatePath('/dashboard/messages')
     revalidatePath(`/annonces/${formData.announcement_id}`)
+
+    console.log('✅ Booking created successfully:', booking.id)
 
     return {
       success: true,
