@@ -90,3 +90,4 @@ COMMENT ON FUNCTION is_admin IS 'Vérifie si un utilisateur est admin sans crée
 
 
 
+

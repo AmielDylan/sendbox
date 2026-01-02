@@ -391,3 +391,4 @@ COMMENT ON COLUMN bookings.qr_code IS 'Code QR unique pour le suivi du colis';
 
 
 
+
