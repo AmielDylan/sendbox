@@ -43,10 +43,8 @@ interface BookingDetail {
   id: string
   status: BookingStatus
   kilos_requested: number
-  weight_kg?: number  // Ancienne colonne (fallback pour compatibilité)
   total_price: number | null
   package_description: string | null
-  description?: string | null  // Ancienne colonne (fallback pour compatibilité)
   tracking_number: string | null
   package_photos: string[] | null
   insurance_opted: boolean | null
@@ -182,10 +180,6 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   const isSender = booking.sender_id === currentUserId
   const isTraveler = booking.traveler_id === currentUserId
 
-  // Support pour les deux colonnes: kilos_requested (nouveau) et weight_kg (ancien)
-  const weightKg = booking.kilos_requested || booking.weight_kg || 0
-  const packageDescription = booking.package_description || booking.description || null
-
   const handleAcceptBooking = async () => {
     setIsAccepting(true)
     try {
@@ -244,7 +238,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
               <IconWeight className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Poids</p>
-                <p className="font-medium">{weightKg} kg</p>
+                <p className="font-medium">{booking.kilos_requested} kg</p>
               </div>
             </div>
 
@@ -281,12 +275,12 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             </div>
           </div>
 
-          {packageDescription && (
+          {booking.package_description && (
             <>
               <Separator />
               <div>
                 <p className="text-sm font-medium">Description du colis</p>
-                <p className="mt-1 text-sm text-muted-foreground">{packageDescription}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{booking.package_description}</p>
               </div>
             </>
           )}

@@ -40,7 +40,6 @@ interface Booking {
   id: string
   status: BookingStatus
   kilos_requested: number
-  weight_kg?: number  // Ancienne colonne (fallback)
   total_price: number | null
   created_at: string
   announcements: {
@@ -71,7 +70,6 @@ export default function MyBookingsPage() {
           id,
           status,
           kilos_requested,
-          weight_kg,
           total_price,
           created_at,
           announcements:announcement_id (
@@ -235,7 +233,7 @@ export default function MyBookingsPage() {
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-sm">
                             <IconPackage className="h-4 w-4 text-muted-foreground" />
-                            <span>{booking.kilos_requested || booking.weight_kg || 0} kg</span>
+                            <span>{booking.kilos_requested} kg</span>
                           </div>
                           {booking.total_price && (
                             <div className="flex items-center gap-2 text-sm">

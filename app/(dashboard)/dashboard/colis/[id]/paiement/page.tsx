@@ -118,7 +118,6 @@ function PaymentPageContent() {
   }
 
   const announcement = booking.announcements as any
-  const weightKg = booking.kilos_requested || booking.weight_kg || 0
 
   return (
     <div className="space-y-6">
@@ -150,7 +149,7 @@ function PaymentPageContent() {
               <Separator />
               <div>
                 <p className="text-sm text-muted-foreground">Poids</p>
-                <p className="font-medium">{weightKg} kg</p>
+                <p className="font-medium">{booking.kilos_requested} kg</p>
               </div>
               <Separator />
               <div>

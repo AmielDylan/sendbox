@@ -87,7 +87,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
   const announcement = booking.announcements
 
   // Support pour les deux colonnes: kilos_requested (nouveau) et weight_kg (ancien)
-  const weightKg = booking.kilos_requested || booking.weight_kg || 0
+  const weightKg = booking.kilos_requested
   const packageDescription = booking.package_description || booking.description || null
 
   const handleAccept = async () => {
