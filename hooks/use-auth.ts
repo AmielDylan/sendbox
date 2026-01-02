@@ -29,6 +29,9 @@ export function useAuth(): UseAuthReturn {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    // Ne rien faire pendant le chargement initial
+    if (loading) return
+
     // Nettoyer l'ancienne clé de storage si elle existe (migration)
     const oldKey = 'supabase.auth.token'
     if (localStorage.getItem(oldKey)) {
@@ -50,7 +53,7 @@ export function useAuth(): UseAuthReturn {
       queryClient.clear()
       localStorage.removeItem('current_user_id')
     }
-  }, [user?.id, queryClient])
+  }, [user?.id, loading, queryClient])
 
   useEffect(() => {
     let mounted = true
