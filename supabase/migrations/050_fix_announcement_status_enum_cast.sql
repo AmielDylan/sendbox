@@ -1,11 +1,8 @@
--- Migration: Recréer la fonction update_announcement_status avec available_kg
+-- Migration: Correction du cast ENUM dans update_announcement_status
 -- Created: 2026-01-01
--- Description: S'assure que la fonction trigger utilise bien available_kg et non max_weight_kg
+-- Description: Ajoute le cast explicite ::announcement_status pour les valeurs de statut
 
--- Supprimer l'ancienne fonction si elle existe
-DROP FUNCTION IF EXISTS update_announcement_status() CASCADE;
-
--- Recréer la fonction avec available_kg
+-- Recréer la fonction avec les casts corrects
 CREATE OR REPLACE FUNCTION update_announcement_status()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -47,13 +44,5 @@ BEGIN
 END;
 $$;
 
--- Recréer le trigger
-DROP TRIGGER IF EXISTS on_booking_status_changed ON bookings;
-
-CREATE TRIGGER on_booking_status_changed
-  AFTER INSERT OR UPDATE OF status ON bookings
-  FOR EACH ROW
-  EXECUTE FUNCTION update_announcement_status();
-
 -- Commentaire
-COMMENT ON FUNCTION update_announcement_status() IS 'Met à jour le statut de l''annonce en fonction des réservations - utilise available_kg';
+COMMENT ON FUNCTION update_announcement_status() IS 'Met à jour le statut de l''annonce en fonction des réservations - utilise available_kg avec cast ENUM correct';
