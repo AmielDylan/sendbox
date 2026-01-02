@@ -106,15 +106,19 @@ export async function acceptBooking(bookingId: string) {
       }
     }
 
-    // Créer notification pour l'expéditeur
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: booking.sender_id,
-      p_type: 'booking_accepted',
-      p_title: 'Demande acceptée',
-      p_content: `Votre demande de réservation a été acceptée. Veuillez procéder au paiement.`,
-      p_booking_id: bookingId,
-      p_announcement_id: announcement.id,
-    })
+    // Créer notification pour l'expéditeur (ne pas bloquer si ça échoue)
+    try {
+      await (supabase.rpc as any)('create_notification', {
+        p_user_id: booking.sender_id,
+        p_type: 'booking_accepted',
+        p_title: 'Demande acceptée',
+        p_content: `Votre demande de réservation a été acceptée. Veuillez procéder au paiement.`,
+        p_booking_id: bookingId,
+        p_announcement_id: announcement.id,
+      })
+    } catch (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
 
     // TODO: Envoyer email à l'expéditeur
 
@@ -212,15 +216,19 @@ export async function refuseBooking(bookingId: string, reason: string) {
       }
     }
 
-    // Créer notification pour l'expéditeur
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: booking.sender_id,
-      p_type: 'booking_refused',
-      p_title: 'Demande refusée',
-      p_content: `Votre demande de réservation a été refusée. Raison : ${reason.trim()}`,
-      p_booking_id: bookingId,
-      p_announcement_id: announcement.id,
-    })
+    // Créer notification pour l'expéditeur (ne pas bloquer si ça échoue)
+    try {
+      await (supabase.rpc as any)('create_notification', {
+        p_user_id: booking.sender_id,
+        p_type: 'booking_refused',
+        p_title: 'Demande refusée',
+        p_content: `Votre demande de réservation a été refusée. Raison : ${reason.trim()}`,
+        p_booking_id: bookingId,
+        p_announcement_id: announcement.id,
+      })
+    } catch (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
 
     // TODO: Envoyer email à l'expéditeur
 

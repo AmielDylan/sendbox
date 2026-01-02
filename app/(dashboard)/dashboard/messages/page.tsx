@@ -4,8 +4,9 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSearchParams } from 'next/navigation'
 import { getUserConversations } from "@/lib/core/messages/actions"
 import { getUserNotifications, getUnreadNotificationsCount } from "@/lib/shared/db/queries/notifications"
 import { PageHeader } from '@/components/ui/page-header'
@@ -21,14 +22,18 @@ import { createClient } from "@/lib/shared/db/client"
 import { Separator } from '@/components/ui/separator'
 
 function MessagesPageContent() {
+  const searchParams = useSearchParams()
+  const bookingIdFromUrl = searchParams.get('booking')
+
   const [unreadCount, setUnreadCount] = useState(0)
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null)
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(bookingIdFromUrl)
   const [selectedConversation, setSelectedConversation] = useState<{
     bookingId: string
     otherUserId: string
     otherUserName: string
     otherUserAvatar: string | null
   } | null>(null)
+  const [activeTab, setActiveTab] = useState(bookingIdFromUrl ? 'chat' : 'chat')
 
   // Query pour les conversations
   const {
@@ -76,6 +81,13 @@ function MessagesPageContent() {
       return result.data || []
     },
   })
+
+  // Auto-sélectionner la conversation si booking_id dans l'URL
+  useEffect(() => {
+    if (bookingIdFromUrl && conversationsData) {
+      handleSelectConversation(bookingIdFromUrl)
+    }
+  }, [bookingIdFromUrl, conversationsData])
 
   // Récupérer le nombre de notifications non lues
   useEffect(() => {
@@ -143,13 +155,14 @@ function MessagesPageContent() {
         ]}
       />
 
-      <Tabs defaultValue="chat" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="chat">
             <IconMessageCircle className="mr-2 h-4 w-4" />
             Chat
           </TabsTrigger>
           <TabsTrigger value="requests">
+            <IconInbox className="mr-2 h-4 w-4" />
             Demandes
             {bookings.length > 0 && (
               <Badge variant="secondary" className="ml-2">
@@ -293,5 +306,13 @@ function MessagesPageContent() {
 }
 
 export default function MessagesPage() {
-  return <MessagesPageContent />
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[400px]">
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <MessagesPageContent />
+    </Suspense>
+  )
 }

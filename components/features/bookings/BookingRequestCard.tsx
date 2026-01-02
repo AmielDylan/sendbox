@@ -276,7 +276,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push(`/dashboard/messages/chat?booking=${booking.id}`)}
+              onClick={() => router.push(`/dashboard/messages?booking=${booking.id}`)}
             >
               <IconMessageCircle className="h-4 w-4" />
             </Button>
