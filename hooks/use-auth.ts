@@ -57,23 +57,10 @@ export function useAuth(): UseAuthReturn {
 
   useEffect(() => {
     let mounted = true
-    let timeoutId: NodeJS.Timeout | null = null
-    let retryAttempted = false
 
     // Récupérer l'utilisateur actuel
     const getUser = async () => {
       try {
-        // Timeout de sécurité uniquement pour la première tentative
-        if (!retryAttempted && !timeoutId) {
-          timeoutId = setTimeout(() => {
-            if (mounted && !retryAttempted) {
-              console.warn('Auth loading timeout - setting loading to false')
-              retryAttempted = true
-              setLoading(false)
-            }
-          }, 5000) // 5 secondes max
-        }
-
         // Utiliser getSession au lieu de getUser pour forcer la lecture depuis les cookies
         const {
           data: { session },
@@ -128,10 +115,6 @@ export function useAuth(): UseAuthReturn {
         console.error('Unexpected auth error:', error)
       } finally {
         if (mounted) {
-          if (timeoutId) {
-            clearTimeout(timeoutId)
-            timeoutId = null
-          }
           setLoading(false)
         }
       }
@@ -198,9 +181,6 @@ export function useAuth(): UseAuthReturn {
 
     return () => {
       mounted = false
-      if (timeoutId) {
-        clearTimeout(timeoutId)
-      }
       subscription.unsubscribe()
     }
   }, [supabase, queryClient])
@@ -280,4 +260,3 @@ export function useAuth(): UseAuthReturn {
     refetch,
   }
 }
-
