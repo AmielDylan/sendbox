@@ -71,8 +71,8 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
         return
       }
 
-      if (data.status !== 'accepted') {
-        toast.error('La réservation doit être acceptée')
+      if (data.status !== 'accepted' && data.status !== 'paid') {
+        toast.error('La réservation doit être acceptée et payée')
         router.push(`/dashboard/colis/${booking_id}`)
         return
       }

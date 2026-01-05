@@ -8,6 +8,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   createBookingSchema,
   type CreateBookingInput,
@@ -55,6 +56,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 function NewBookingPageContent() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const searchParams = useSearchParams()
   const announcementId = searchParams.get('announcement') || ''
   const initialWeight = searchParams.get('weight')
@@ -199,6 +201,11 @@ function NewBookingPageContent() {
 
       if (result.success && result.bookingId) {
         toast.success(result.message)
+
+        // Invalider les queries pour forcer le rafraîchissement
+        queryClient.invalidateQueries({ queryKey: ['user-bookings'] })
+        queryClient.invalidateQueries({ queryKey: ['user-announcements'] })
+
         router.push(`/dashboard/colis/${result.bookingId}/paiement`)
       }
     } catch (error) {

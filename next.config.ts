@@ -9,7 +9,7 @@ const ContentSecurityPolicy = `
   img-src 'self' data: https: blob:;
   font-src 'self' data: https://fonts.gstatic.com;
   connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.stripe.com/v1 https://api-adresse.data.gouv.fr${isDevelopment ? ' ws://localhost:* ws://127.0.0.1:*' : ''};
-  frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
+  frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.supabase.co;
   object-src 'none';
   base-uri 'self';
   form-action 'self';

@@ -13,11 +13,11 @@ import { IconDownload, IconExternalLink, IconLoader2 } from '@tabler/icons-react
 import Link from 'next/link'
 
 interface ContractPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 async function ContractPageContent({ params }: ContractPageProps) {
-  const { id: bookingId } = params
+  const { id: bookingId } = await params
   const supabase = await createClient()
 
   const {
@@ -99,7 +99,7 @@ async function ContractPageContent({ params }: ContractPageProps) {
           <Card>
             <CardContent className="p-0">
               <iframe
-                src={contractUrl}
+                src={`${contractUrl}#toolbar=0&view=FitH`}
                 className="w-full h-[800px] border-0 rounded-lg"
                 title="Contrat de transport"
               />

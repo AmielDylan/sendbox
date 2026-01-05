@@ -104,7 +104,7 @@ export function useAuth(): UseAuthReturn {
           if (profileError) {
             console.error('Profile fetch error:', profileError)
           } else if (profileData) {
-            setProfile(profileData as Profile)
+            setProfile(profileData as unknown as Profile)
           }
         } else {
           setUser(null)
@@ -155,7 +155,7 @@ export function useAuth(): UseAuthReturn {
             if (profileError) {
               console.error('Profile fetch error on auth change:', profileError)
             } else if (profileData) {
-              setProfile(profileData as Profile)
+              setProfile(profileData as unknown as Profile)
             }
 
             // Invalider les queries seulement si l'utilisateur a changé
@@ -202,7 +202,7 @@ export function useAuth(): UseAuthReturn {
           .single()
 
         if (profileData) {
-          setProfile(profileData as Profile)
+          setProfile(profileData as unknown as Profile)
         }
 
         // Invalider toutes les queries pour forcer le rafraîchissement

@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
@@ -64,6 +65,7 @@ const STEPS = [
 
 export default function NewAnnouncementPage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [departureCitySuggestions, setDepartureCitySuggestions] = useState<
@@ -166,7 +168,11 @@ export default function NewAnnouncementPage() {
 
       if (result.success && result.announcementId) {
         toast.success(result.message || 'Annonce créée avec succès')
-        router.push('/dashboard/annonces?refresh=true')
+
+        // Invalider les queries pour forcer le rafraîchissement
+        queryClient.invalidateQueries({ queryKey: ['user-announcements'] })
+
+        router.push('/dashboard/annonces')
       }
     } catch (error) {
       toast.error('Une erreur est survenue. Veuillez réessayer.')

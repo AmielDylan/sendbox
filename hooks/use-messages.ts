@@ -33,6 +33,44 @@ export function useMessages(bookingId: string | null) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Fonction pour ajouter un message optimiste (affichage immédiat)
+  const addOptimisticMessage = (message: Partial<Message> & { content: string; sender_id: string; receiver_id: string }) => {
+    const optimisticMessage: Message = {
+      id: `optimistic-${Date.now()}`,
+      booking_id: bookingId || '',
+      sender_id: message.sender_id,
+      receiver_id: message.receiver_id,
+      content: message.content,
+      attachments: null,
+      is_read: false,
+      read_at: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    setMessages((prev) => [...prev, optimisticMessage])
+
+    // Auto-scroll
+    setTimeout(() => {
+      const messagesEnd = document.querySelector('[data-messages-end]')
+      messagesEnd?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+
+    return optimisticMessage.id
+  }
+
+  // Fonction pour remplacer un message optimiste par le message réel
+  const replaceOptimisticMessage = (optimisticId: string, realMessage: Message) => {
+    setMessages((prev) =>
+      prev.map((msg) => msg.id === optimisticId ? realMessage : msg)
+    )
+  }
+
+  // Fonction pour supprimer un message optimiste (en cas d'erreur)
+  const removeOptimisticMessage = (optimisticId: string) => {
+    setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+  }
+
   useEffect(() => {
     if (!bookingId) {
       setMessages([])
@@ -120,10 +158,34 @@ export function useMessages(bookingId: string | null) {
 
           if (newMessage) {
             setMessages((prev) => {
-              // Éviter les doublons
+              // Éviter les doublons (par ID réel)
               if (prev.some((m) => m.id === newMessage.id)) {
                 return prev
               }
+
+              // Remplacer le message optimiste s'il existe
+              // On cherche un message optimiste avec le même contenu envoyé dans les dernières secondes
+              const optimisticIndex = prev.findIndex(
+                (m) =>
+                  m.id.startsWith('optimistic-') &&
+                  m.content === newMessage.content &&
+                  m.sender_id === newMessage.sender_id &&
+                  Math.abs(new Date(m.created_at).getTime() - new Date(newMessage.created_at).getTime()) < 5000
+              )
+
+              if (optimisticIndex !== -1) {
+                // Remplacer le message optimiste par le message réel
+                const updatedMessages = [...prev]
+                updatedMessages[optimisticIndex] = newMessage as unknown as Message
+                return updatedMessages
+              }
+
+              // Sinon, ajouter le nouveau message normalement
+              // Scroll automatiquement vers le bas
+              setTimeout(() => {
+                const messagesEnd = document.querySelector('[data-messages-end]')
+                messagesEnd?.scrollIntoView({ behavior: 'smooth' })
+              }, 100)
               return [...prev, newMessage as unknown as Message]
             })
           }
@@ -153,6 +215,13 @@ export function useMessages(bookingId: string | null) {
     }
   }, [bookingId])
 
-  return { messages, isLoading, error }
+  return {
+    messages,
+    isLoading,
+    error,
+    addOptimisticMessage,
+    replaceOptimisticMessage,
+    removeOptimisticMessage,
+  }
 }
 

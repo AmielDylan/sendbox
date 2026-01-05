@@ -51,7 +51,7 @@ async function checkTriggerFunctions() {
 
     if (data) {
       console.log(`\n📝 Fonction: ${funcName}`)
-      const def = data.definition || ''
+      const def = (data as any).definition || ''
 
       // Vérifier si la fonction contient max_weight_kg
       if (def.includes('max_weight_kg')) {

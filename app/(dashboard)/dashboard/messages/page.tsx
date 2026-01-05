@@ -84,9 +84,55 @@ function MessagesPageContent() {
 
   // Auto-sélectionner la conversation si booking_id dans l'URL
   useEffect(() => {
-    if (bookingIdFromUrl && conversationsData) {
-      handleSelectConversation(bookingIdFromUrl)
+    const loadConversationFromBooking = async () => {
+      if (!bookingIdFromUrl) return
+
+      // D'abord essayer de trouver dans les conversations existantes
+      if (conversationsData) {
+        const conversation = conversationsData.find((c: any) => c.booking_id === bookingIdFromUrl)
+        if (conversation) {
+          handleSelectConversation(bookingIdFromUrl)
+          return
+        }
+      }
+
+      // Si pas trouvé, récupérer les détails de la réservation
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) return
+
+      const { data: booking } = await supabase
+        .from('bookings')
+        .select('id, sender_id, traveler_id')
+        .eq('id', bookingIdFromUrl)
+        .single()
+
+      if (booking) {
+        // Déterminer l'autre utilisateur
+        const isUserSender = booking.sender_id === user.id
+        const otherUserId = isUserSender ? booking.traveler_id : booking.sender_id
+
+        // Récupérer les infos de l'autre utilisateur
+        const { data: otherUserProfile } = await supabase
+          .from('profiles')
+          .select('id, firstname, lastname, avatar_url')
+          .eq('id', otherUserId)
+          .single()
+
+        if (otherUserProfile) {
+          setSelectedBookingId(bookingIdFromUrl)
+          setSelectedConversation({
+            bookingId: bookingIdFromUrl,
+            otherUserId: otherUserProfile.id,
+            otherUserName: `${otherUserProfile.firstname || ''} ${otherUserProfile.lastname || ''}`.trim() || 'Utilisateur',
+            otherUserAvatar: otherUserProfile.avatar_url,
+          })
+        }
+      }
     }
+
+    loadConversationFromBooking()
   }, [bookingIdFromUrl, conversationsData])
 
   // Récupérer le nombre de notifications non lues

@@ -20,11 +20,11 @@ import { generateInitials } from "@/lib/core/profile/utils"
 import Link from 'next/link'
 
 interface ProfilePageProps {
-  params: { user_id: string }
+  params: Promise<{ user_id: string }>
 }
 
 async function ProfilePageContent({ params }: ProfilePageProps) {
-  const { user_id } = params
+  const { user_id } = await params
   const supabase = await createClient()
 
   // Récupérer le profil

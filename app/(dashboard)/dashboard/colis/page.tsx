@@ -28,10 +28,13 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
+import { getCountryName } from '@/lib/utils/countries'
 
 type BookingStatus =
   | 'pending'
   | 'accepted'
+  | 'paid'
+  | 'deposited'
   | 'in_transit'
   | 'delivered'
   | 'cancelled'
@@ -85,7 +88,12 @@ export default function MyBookingsPage() {
         .order('created_at', { ascending: false })
 
       if (activeTab !== 'all') {
-        query = query.eq('status', activeTab)
+        // "Confirmés" inclut accepted, paid et deposited
+        if (activeTab === 'accepted') {
+          query = query.in('status', ['accepted', 'paid', 'deposited'])
+        } else {
+          query = query.eq('status', activeTab)
+        }
       }
 
       const { data: bookings, error } = await query
@@ -106,6 +114,8 @@ export default function MyBookingsPage() {
     const variants: Record<BookingStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       pending: 'secondary',
       accepted: 'default',
+      paid: 'default',
+      deposited: 'default',
       in_transit: 'default',
       delivered: 'default',
       cancelled: 'destructive',
@@ -113,7 +123,9 @@ export default function MyBookingsPage() {
 
     const labels: Record<BookingStatus, string> = {
       pending: 'En attente',
-      accepted: 'Confirmé',
+      accepted: 'Accepté',
+      paid: 'Payé',
+      deposited: 'Déposé',
       in_transit: 'En transit',
       delivered: 'Livré',
       cancelled: 'Annulé',
@@ -208,12 +220,12 @@ export default function MyBookingsPage() {
                                 <IconMapPin className="h-4 w-4 text-muted-foreground" />
                                 <span>
                                   {announcement.departure_city},{' '}
-                                  {announcement.departure_country}
+                                  {getCountryName(announcement.departure_country)}
                                 </span>
                                 <IconArrowRight className="h-4 w-4 text-muted-foreground" />
                                 <span>
                                   {announcement.arrival_city},{' '}
-                                  {announcement.arrival_country}
+                                  {getCountryName(announcement.arrival_country)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 text-sm">

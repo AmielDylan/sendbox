@@ -318,7 +318,7 @@ export async function handleDeliveryScan(
 
     await notifyUser({
       user_id: booking.traveler_id,
-      type: 'delivery_confirmed',
+      type: 'system_alert',
       title: 'Livraison confirmée',
       content: 'La livraison a été confirmée. Votre paiement sera traité prochainement.',
       booking_id: bookingId,

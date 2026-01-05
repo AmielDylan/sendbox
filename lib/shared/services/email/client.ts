@@ -36,7 +36,7 @@ function checkEmailRateLimit(userId: string): boolean {
 interface SendEmailParams {
   to: string
   subject: string
-  template: 'notification' | 'booking_confirmed' | 'payment_received' | 'delivery_reminder'
+  template: 'notification' | 'booking_confirmed' | 'payment_received' | 'payment_receipt' | 'delivery_reminder'
   data: Record<string, any>
 }
 
@@ -129,6 +129,80 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
               <div class="footer">
                 <p>Sendbox - Covoiturage France ↔ Bénin</p>
                 <p>Vous recevez cet email car vous avez une notification sur Sendbox.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `
+
+    case 'payment_receipt':
+      return `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            ${baseStyles}
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>✅ Paiement Confirmé</h1>
+              </div>
+              <div class="content">
+                <h2>Votre paiement a été effectué avec succès</h2>
+                <p>Bonjour,</p>
+                <p>Nous confirmons que votre paiement de <strong>${data.amount}€</strong> a été effectué avec succès.</p>
+                <p>Vous pouvez maintenant accéder au contrat de transport et au QR code pour le dépôt de votre colis.</p>
+
+                <div style="margin: 30px 0; padding: 20px; background: white; border-radius: 8px;">
+                  <h3>Détails du paiement</h3>
+                  <p><strong>Montant:</strong> ${data.amount}€</p>
+                  <p><strong>Date:</strong> ${new Date().toLocaleDateString('fr-FR')}</p>
+                  ${data.booking_id ? `<p><strong>Réservation:</strong> ${data.booking_id}</p>` : ''}
+                </div>
+
+                ${data.receiptUrl ? `<p><a href="${data.receiptUrl}" class="button">📄 Télécharger le reçu Stripe</a></p>` : ''}
+                ${data.booking_id ? `<a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${data.booking_id}" class="button">Voir la réservation</a>` : ''}
+              </div>
+              <div class="footer">
+                <p>Sendbox - Covoiturage France ↔ Bénin</p>
+                <p>Pour toute question, contactez-nous via votre espace personnel.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `
+
+    case 'payment_received':
+      return `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            ${baseStyles}
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>💰 Paiement Reçu</h1>
+              </div>
+              <div class="content">
+                <h2>Un paiement a été reçu pour votre trajet</h2>
+                <p>Bonjour,</p>
+                <p>Vous avez reçu un paiement de <strong>${data.amount}€</strong> pour une réservation sur votre trajet.</p>
+
+                <div style="margin: 30px 0; padding: 20px; background: white; border-radius: 8px;">
+                  <h3>Informations importantes</h3>
+                  <p>✅ Le paiement a été sécurisé par Stripe</p>
+                  <p>⏳ Les fonds seront versés après la livraison confirmée</p>
+                  <p>📦 L'expéditeur peut maintenant déposer son colis</p>
+                </div>
+
+                ${data.booking_id ? `<a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${data.booking_id}" class="button">Voir la réservation</a>` : ''}
+              </div>
+              <div class="footer">
+                <p>Sendbox - Covoiturage France ↔ Bénin</p>
+                <p>Les fonds seront automatiquement versés sur votre compte après confirmation de la livraison.</p>
               </div>
             </div>
           </body>

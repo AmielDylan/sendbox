@@ -36,11 +36,12 @@ export function ChatWindow({
   otherUserAvatar,
 }: ChatWindowProps) {
   const router = useRouter()
-  const { messages, isLoading } = useMessages(bookingId)
+  const { messages, isLoading, addOptimisticMessage, removeOptimisticMessage } = useMessages(bookingId)
   const [messageContent, setMessageContent] = useState('')
   const [isPending, startTransition] = useTransition()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   // Marquer les messages comme lus quand la conversation est ouverte
   useEffect(() => {
@@ -57,12 +58,19 @@ export function ChatWindow({
   }, [messages])
 
   const handleSendMessage = () => {
-    if (!bookingId || !otherUserId || !messageContent.trim()) {
+    if (!bookingId || !otherUserId || !messageContent.trim() || !currentUserId) {
       return
     }
 
     const content = messageContent.trim()
     setMessageContent('')
+
+    // Ajouter immédiatement le message de manière optimiste
+    const optimisticId = addOptimisticMessage({
+      content,
+      sender_id: currentUserId,
+      receiver_id: otherUserId,
+    })
 
     startTransition(async () => {
       const result = await sendMessage({
@@ -74,7 +82,9 @@ export function ChatWindow({
       if (result.error) {
         toast.error(result.error)
         setMessageContent(content) // Restaurer le contenu en cas d'erreur
+        removeOptimisticMessage(optimisticId) // Supprimer le message optimiste
       }
+      // Si succès, le message optimiste sera remplacé par le vrai message via Realtime
     })
   }
 
@@ -84,8 +94,6 @@ export function ChatWindow({
       handleSendMessage()
     }
   }
-
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -146,6 +154,7 @@ export function ChatWindow({
           <div className="space-y-4">
             {messages.map((message) => {
               const isOwnMessage = message.sender_id === currentUserId
+              const isOptimistic = message.id.startsWith('optimistic-')
               const senderName = isOwnMessage
                 ? 'Vous'
                 : `${message.sender?.firstname || ''} ${message.sender?.lastname || ''}`.trim() ||
@@ -156,7 +165,8 @@ export function ChatWindow({
                   key={message.id}
                   className={cn(
                     'flex gap-3',
-                    isOwnMessage ? 'flex-row-reverse' : 'flex-row'
+                    isOwnMessage ? 'flex-row-reverse' : 'flex-row',
+                    isOptimistic && 'opacity-70'
                   )}
                 >
                   {!isOwnMessage && (
@@ -209,14 +219,17 @@ export function ChatWindow({
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                      {isOptimistic && (
+                        <IconLoader2 className="h-3 w-3 animate-spin" />
+                      )}
                       {format(new Date(message.created_at), 'HH:mm', { locale: fr })}
                     </p>
                   </div>
                 </div>
               )
             })}
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} data-messages-end />
           </div>
         )}
       </ScrollArea>

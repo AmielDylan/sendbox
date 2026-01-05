@@ -132,17 +132,18 @@ export async function updateAnnouncement(
  * Supprime une annonce
  */
 export async function deleteAnnouncement(announcementId: string) {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (!user) {
-    return {
-      error: 'Vous devez être connecté',
+    if (!user) {
+      return {
+        error: 'Vous devez être connecté',
+      }
     }
-  }
 
   // Vérifier que l'annonce appartient à l'utilisateur et récupérer les informations complètes
   const { data: announcement, error: fetchError } = await supabase
@@ -222,15 +223,32 @@ export async function deleteAnnouncement(announcementId: string) {
     .eq('id', announcementId)
 
   if (deleteError) {
+    console.error('Erreur lors de la suppression de l\'annonce:', deleteError)
     return {
-      error: "Erreur lors de la suppression de l'annonce",
+      error: `Erreur lors de la suppression de l'annonce: ${deleteError.message}`,
     }
   }
 
-  revalidatePath('/dashboard/annonces')
-  return {
-    success: true,
-    message: 'Annonce supprimée avec succès',
+    revalidatePath('/dashboard/annonces')
+    return {
+      success: true,
+      message: 'Annonce supprimée avec succès',
+    }
+  } catch (error) {
+    console.error('Erreur inattendue lors de la suppression:', error)
+    if (error instanceof Error) {
+      if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+        return {
+          error: 'Délai d\'attente dépassé. Veuillez vérifier votre connexion et réessayer.',
+        }
+      }
+      return {
+        error: `Erreur: ${error.message}`,
+      }
+    }
+    return {
+      error: 'Une erreur inattendue est survenue. Veuillez réessayer.',
+    }
   }
 }
 

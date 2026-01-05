@@ -45,6 +45,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
 import { useAuth } from '@/hooks/use-auth'
 import { ClientOnly } from '@/components/ui/client-only'
+import { getCountryName } from '@/lib/utils/countries'
 
 type AnnouncementStatus = 'active' | 'draft' | 'completed' | 'cancelled'
 
@@ -52,7 +53,7 @@ export default function MyAnnouncementsPage() {
   const router = useRouter()
   const { user } = useAuth()
   const [activeTab, setActiveTab] =
-    useState<AnnouncementStatus | 'all'>('active')
+    useState<AnnouncementStatus | 'all'>('all')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [announcementToDelete, setAnnouncementToDelete] = useState<
     string | null
@@ -159,10 +160,10 @@ export default function MyAnnouncementsPage() {
       }>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
           <TabsList>
+            <TabsTrigger value="all">Toutes</TabsTrigger>
             <TabsTrigger value="active">Publiées</TabsTrigger>
             <TabsTrigger value="draft">Brouillons</TabsTrigger>
             <TabsTrigger value="completed">Terminées</TabsTrigger>
-            <TabsTrigger value="all">Toutes</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="space-y-4">
@@ -194,8 +195,8 @@ export default function MyAnnouncementsPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <CardTitle className="flex items-center gap-2">
-                            {announcement.departure_country} ({announcement.departure_city}) →{' '}
-                            {announcement.arrival_country} ({announcement.arrival_city})
+                            {getCountryName(announcement.departure_country)} ({announcement.departure_city}) →{' '}
+                            {getCountryName(announcement.arrival_country)} ({announcement.arrival_city})
                             <Badge
                               variant={
                                 announcement.status === 'active' || announcement.status === 'partially_booked'

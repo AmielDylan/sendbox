@@ -9,6 +9,7 @@ import { createClient } from "@/lib/shared/db/server"
 import { fromStripeAmount } from "@/lib/core/payments/calculations"
 import { generateTransportContract } from "@/lib/shared/services/pdf/generation"
 import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
+import { sendEmail } from "@/lib/shared/services/email/client"
 import Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
@@ -55,66 +56,113 @@ export async function POST(req: NextRequest) {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const booking_id = paymentIntent.metadata.booking_id
 
+        console.log('🔔 Webhook payment_intent.succeeded received:', {
+          booking_id,
+          payment_intent_id: paymentIntent.id,
+          amount: paymentIntent.amount,
+        })
+
         if (!booking_id) {
-          console.error('Missing booking_id in payment intent metadata')
+          console.error('❌ Missing booking_id in payment intent metadata')
           break
         }
 
         // Vérifier que le booking existe et n'est pas déjà payé (idempotency)
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
-          .select('id, paid_at')
+          .select('id, paid_at, qr_code, status')
           .eq('id', booking_id)
           .single()
 
         if (bookingError || !booking) {
-          console.error('Booking not found:', booking_id)
+          console.error('❌ Booking not found:', booking_id, bookingError)
           break
         }
 
+        console.log('📦 Booking found:', {
+          id: booking.id,
+          status: booking.status,
+          paid_at: booking.paid_at,
+          has_qr: !!booking.qr_code,
+        })
+
         // Vérifier que le booking n'est pas déjà payé (idempotency)
         if (booking.paid_at) {
-          console.log('Booking already paid, skipping:', booking_id)
+          console.log('⏭️  Booking already paid, skipping:', booking_id)
           break
         }
 
         // Mettre à jour le booking
-        await supabase
+        const { error: updateError } = await supabase
           .from('bookings')
           .update({
-            status: 'paid', // Passer à 'paid' après paiement
+            status: 'paid',
             paid_at: new Date().toISOString(),
             payment_intent_id: paymentIntent.id,
           })
           .eq('id', booking_id)
 
-        // Générer le QR code pour le booking
-        try {
-          await generateBookingQRCode(booking_id)
-          console.log('QR code generated for booking:', booking_id)
-        } catch (error) {
-          console.error('Failed to generate QR code:', error)
-          // Ne pas bloquer le webhook si la génération du QR échoue
+        if (updateError) {
+          console.error('❌ Failed to update booking:', updateError)
+          throw updateError
+        }
+
+        console.log('✅ Booking updated to paid')
+
+        // Générer le QR code seulement s'il n'existe pas (le trigger le crée normalement)
+        if (!booking.qr_code) {
+          try {
+            const qrCode = await generateBookingQRCode(booking_id)
+            console.log('✅ QR code generated:', qrCode)
+          } catch (error) {
+            console.error('❌ Failed to generate QR code:', error)
+            // Ne pas bloquer le webhook si la génération du QR échoue
+          }
+        } else {
+          console.log('ℹ️  QR code already exists:', booking.qr_code)
         }
 
         // Créer la transaction
-        await (supabase as any).from('transactions').insert({
-          booking_id,
-          user_id: paymentIntent.metadata.sender_id,
-          type: 'payment',
-          amount: fromStripeAmount(paymentIntent.amount),
-          currency: 'eur',
-          status: 'completed',
-          stripe_payment_intent_id: paymentIntent.id,
-          metadata: {
-            commission_amount: fromStripeAmount(
-              parseInt(paymentIntent.metadata.commission_amount || '0')
-            ),
-            insurance_amount: fromStripeAmount(
-              parseInt(paymentIntent.metadata.insurance_amount || '0')
-            ),
-          },
-        })
+        const { error: transactionError } = await (supabase as any)
+          .from('transactions')
+          .insert({
+            booking_id,
+            user_id: paymentIntent.metadata.sender_id,
+            type: 'payment',
+            amount: fromStripeAmount(paymentIntent.amount),
+            currency: 'eur',
+            status: 'completed',
+            stripe_payment_intent_id: paymentIntent.id,
+            metadata: {
+              commission_amount: fromStripeAmount(
+                parseInt(paymentIntent.metadata.commission_amount || '0')
+              ),
+              insurance_amount: fromStripeAmount(
+                parseInt(paymentIntent.metadata.insurance_amount || '0')
+              ),
+            },
+          })
+
+        if (transactionError) {
+          console.error('❌ Failed to create transaction:', transactionError)
+        } else {
+          console.log('✅ Transaction created')
+        }
+
+        // Récupérer les emails des utilisateurs pour l'envoi d'emails
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', paymentIntent.metadata.sender_id)
+          .single()
+
+        const { data: travelerProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', paymentIntent.metadata.traveler_id)
+          .single()
+
+        const totalAmount = fromStripeAmount(paymentIntent.amount)
 
         // Créer notifications pour les deux parties (ne pas bloquer si ça échoue)
         try {
@@ -122,8 +170,8 @@ export async function POST(req: NextRequest) {
           await (supabase.rpc as any)('create_notification', {
             p_user_id: paymentIntent.metadata.traveler_id,
             p_type: 'payment_confirmed',
-            p_title: 'Paiement confirmé',
-            p_content: 'Le paiement a été reçu pour une réservation sur votre trajet. Vous pouvez maintenant organiser le dépôt du colis.',
+            p_title: 'Paiement reçu',
+            p_content: `Paiement de ${totalAmount}€ reçu. Les fonds seront versés après la livraison confirmée.`,
             p_booking_id: booking_id,
           })
 
@@ -135,15 +183,84 @@ export async function POST(req: NextRequest) {
             p_content: 'Votre paiement a été confirmé. Vous pouvez maintenant voir le contrat de transport et le QR code.',
             p_booking_id: booking_id,
           })
+          console.log('✅ Notifications sent')
         } catch (notifError) {
-          console.error('Notification creation failed (non-blocking):', notifError)
+          console.error('❌ Notification creation failed (non-blocking):', notifError)
+        }
+
+        // Récupérer le reçu Stripe depuis le dernier charge
+        let receiptUrl: string | null = null
+        try {
+          if (paymentIntent.latest_charge) {
+            const chargeId = typeof paymentIntent.latest_charge === 'string'
+              ? paymentIntent.latest_charge
+              : paymentIntent.latest_charge.id
+            const charge = await stripe.charges.retrieve(chargeId)
+            receiptUrl = charge.receipt_url
+          }
+        } catch (chargeError) {
+          console.error('❌ Failed to retrieve charge for receipt:', chargeError)
+        }
+
+        // Envoyer email avec reçu à l'expéditeur
+        if (senderProfile?.email && receiptUrl) {
+          try {
+            console.log('📧 Envoi email reçu à l\'expéditeur:', {
+              to: senderProfile.email,
+              receiptUrl,
+              amount: totalAmount,
+            })
+
+            await sendEmail({
+              to: senderProfile.email,
+              subject: `Paiement confirmé - ${totalAmount}€ - Sendbox`,
+              template: 'payment_receipt',
+              data: {
+                amount: totalAmount,
+                receiptUrl,
+                booking_id,
+              },
+            })
+
+            console.log('✅ Email reçu envoyé à l\'expéditeur')
+          } catch (emailError) {
+            console.error('❌ Failed to send receipt email (non-blocking):', emailError)
+          }
+        }
+
+        // Envoyer email de notification de paiement au voyageur
+        if (travelerProfile?.email) {
+          try {
+            console.log('📧 Envoi email notification au voyageur:', {
+              to: travelerProfile.email,
+              amount: totalAmount,
+            })
+
+            await sendEmail({
+              to: travelerProfile.email,
+              subject: `Paiement reçu - ${totalAmount}€ - Sendbox`,
+              template: 'payment_received',
+              data: {
+                amount: totalAmount,
+                booking_id,
+              },
+            })
+
+            console.log('✅ Email notification envoyé au voyageur')
+          } catch (emailError) {
+            console.error('❌ Failed to send traveler email (non-blocking):', emailError)
+          }
         }
 
         // Générer contrat de transport PDF
-        await generateTransportContract(booking_id)
+        try {
+          await generateTransportContract(booking_id)
+          console.log('✅ Transport contract generated')
+        } catch (pdfError) {
+          console.error('❌ Failed to generate contract (non-blocking):', pdfError)
+        }
 
-        // TODO: Envoyer email de confirmation
-        console.log('Payment succeeded for booking:', booking_id)
+        console.log('✅✅✅ Payment succeeded for booking:', booking_id)
         break
       }
 

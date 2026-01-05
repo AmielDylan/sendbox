@@ -12,6 +12,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { AnnouncementResult } from "@/lib/shared/db/queries/announcements"
 import { generateInitials } from "@/lib/core/profile/utils"
+import { getCountryName } from "@/lib/utils/countries"
 
 interface AnnouncementCardProps {
   announcement: AnnouncementResult
@@ -67,8 +68,8 @@ export function AnnouncementCard({
         <div className="flex items-center gap-2">
           <IconMapPin className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">
-            {announcement.departure_city} ({announcement.departure_country}) →{' '}
-            {announcement.arrival_city} ({announcement.arrival_country})
+            {announcement.departure_city} ({getCountryName(announcement.departure_country)}) →{' '}
+            {announcement.arrival_city} ({getCountryName(announcement.arrival_country)})
           </span>
         </div>
 

@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Font,
 } from '@react-pdf/renderer'
+import { getCountryName } from '@/lib/utils/countries'
 
 // Enregistrer les polices (optionnel, utilise Helvetica par défaut)
 Font.register({
@@ -22,9 +23,11 @@ Font.register({
 interface BookingWithRelations {
   id: string
   qr_code: string
-  weight_kg: number
+  weight_kg: number | null
+  kilos_requested: string | null
   package_value: number | null
   description: string | null
+  package_description: string | null
   total_price: number | null
   commission_amount: number | null
   insurance_opted: boolean | null
@@ -110,14 +113,14 @@ export function TransportContract({ booking }: TransportContractProps) {
           <Text style={styles.sectionTitle}>DÉTAILS DU TRAJET</Text>
           <Text style={styles.text}>
             Départ : {booking.announcement.departure_city},{' '}
-            {booking.announcement.departure_country}
+            {getCountryName(booking.announcement.departure_country)}
           </Text>
           <Text style={styles.text}>
             Date : {formatDate(booking.announcement.departure_date)}
           </Text>
           <Text style={styles.text}>
             Arrivée : {booking.announcement.arrival_city},{' '}
-            {booking.announcement.arrival_country}
+            {getCountryName(booking.announcement.arrival_country)}
           </Text>
           <Text style={styles.text}>
             Date : {formatDate(booking.announcement.arrival_date)}
@@ -127,12 +130,16 @@ export function TransportContract({ booking }: TransportContractProps) {
         {/* Colis */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>DESCRIPTION DU COLIS</Text>
-          <Text style={styles.text}>Poids : {booking.weight_kg} Kg</Text>
+          <Text style={styles.text}>
+            Poids : {booking.weight_kg || booking.kilos_requested || 0} kg
+          </Text>
           <Text style={styles.text}>
             Valeur déclarée : {booking.package_value || 0} EUR
           </Text>
-          {booking.description && (
-            <Text style={styles.text}>Description : {booking.description}</Text>
+          {(booking.description || booking.package_description) && (
+            <Text style={styles.text}>
+              Description : {booking.description || booking.package_description}
+            </Text>
           )}
         </View>
 

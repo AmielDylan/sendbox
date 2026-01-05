@@ -37,7 +37,7 @@ import { acceptBooking } from "@/lib/core/bookings/requests"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-type BookingStatus = 'pending' | 'confirmed' | 'in_transit' | 'delivered' | 'cancelled'
+type BookingStatus = 'pending' | 'accepted' | 'paid' | 'deposited' | 'in_transit' | 'delivered' | 'cancelled'
 
 interface BookingDetail {
   id: string
@@ -93,20 +93,31 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   const router = useRouter()
   const [booking, setBooking] = useState<BookingDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [isAccepting, setIsAccepting] = useState(false)
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false)
 
   useEffect(() => {
     loadBookingDetails()
   }, [id])
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    if (searchParams.get('payment') === 'success' && !isCheckingPayment) {
+      handlePaymentSuccess()
+    }
+  }, [id, isCheckingPayment])
+
   const loadBookingDetails = async () => {
     try {
+      setError(null)
       const supabase = createClient()
-      
+
       // Récupérer l'utilisateur actuel
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        setError('Vous devez être connecté')
         toast.error('Vous devez être connecté')
         router.push('/login')
         return
@@ -114,7 +125,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
       setCurrentUserId(user.id)
 
       // Récupérer les détails du booking
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('bookings')
         .select(`
           *,
@@ -146,35 +157,154 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         .eq('id', id)
         .single()
 
-      if (error) throw error
+      if (fetchError) {
+        console.error('Error loading booking:', fetchError)
+
+        if (fetchError.code === 'PGRST116') {
+          // Aucune ligne trouvée
+          setError('Réservation introuvable')
+          toast.error('Réservation introuvable')
+        } else {
+          setError(`Erreur: ${fetchError.message}`)
+          toast.error('Erreur lors du chargement des détails')
+        }
+
+        // Ne pas rediriger immédiatement, afficher l'erreur
+        setTimeout(() => router.push('/dashboard/colis'), 2000)
+        return
+      }
+
+      if (!data) {
+        setError('Réservation introuvable')
+        toast.error('Réservation introuvable')
+        setTimeout(() => router.push('/dashboard/colis'), 2000)
+        return
+      }
 
       // Vérifier que l'utilisateur est autorisé
       if (data.sender_id !== user.id && data.traveler_id !== user.id) {
+        setError('Accès non autorisé')
         toast.error('Accès non autorisé')
-        router.push('/dashboard/colis')
+        setTimeout(() => router.push('/dashboard/colis'), 2000)
         return
       }
 
       setBooking(data as unknown as BookingDetail)
+      setError(null)
     } catch (error) {
-      console.error('Error loading booking:', error)
+      console.error('Unexpected error loading booking:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inattendue'
+      setError(errorMessage)
       toast.error('Erreur lors du chargement des détails')
-      router.push('/dashboard/colis')
+      setTimeout(() => router.push('/dashboard/colis'), 2000)
     } finally {
       setIsLoading(false)
     }
   }
 
-  if (isLoading) {
+  const handlePaymentSuccess = async () => {
+    setIsCheckingPayment(true)
+    toast.info('Vérification du paiement en cours...')
+
+    let attempts = 0
+    const maxAttempts = 5
+    const pollInterval = 2000 // 2 secondes
+
+    const checkPayment = async (): Promise<void> => {
+      attempts++
+
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('status, paid_at')
+          .eq('id', id)
+          .single()
+
+        if (error) throw error
+
+        if (data.status === 'paid' || data.paid_at) {
+          // Paiement confirmé
+          toast.success('Paiement confirmé ! Vous pouvez maintenant accéder au contrat et au QR code.')
+          setIsCheckingPayment(false)
+
+          // Nettoyer l'URL
+          window.history.replaceState({}, '', `/dashboard/colis/${id}`)
+
+          // Recharger les détails complets
+          await loadBookingDetails()
+          return
+        }
+
+        if (attempts < maxAttempts) {
+          // Continuer le polling
+          setTimeout(() => checkPayment(), pollInterval)
+        } else {
+          // Timeout atteint
+          toast.warning(
+            'Le paiement est en cours de traitement. Veuillez actualiser la page dans quelques instants.',
+            { duration: 5000 }
+          )
+          setIsCheckingPayment(false)
+          window.history.replaceState({}, '', `/dashboard/colis/${id}`)
+        }
+      } catch (error) {
+        console.error('Error checking payment:', error)
+        toast.error('Erreur lors de la vérification du paiement')
+        setIsCheckingPayment(false)
+        window.history.replaceState({}, '', `/dashboard/colis/${id}`)
+      }
+    }
+
+    // Lancer le polling
+    await checkPayment()
+  }
+
+  if (isLoading || isCheckingPayment) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center flex-col gap-4">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+        {isCheckingPayment && (
+          <p className="text-sm text-muted-foreground">Vérification du paiement en cours...</p>
+        )}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center flex-col gap-4">
+        <div className="text-center">
+          <IconPackage className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Erreur</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button asChild>
+            <Link href="/dashboard/colis">
+              <IconArrowLeft className="mr-2 h-4 w-4" />
+              Retour aux réservations
+            </Link>
+          </Button>
+        </div>
       </div>
     )
   }
 
   if (!booking || !currentUserId) {
-    return null
+    return (
+      <div className="flex h-screen items-center justify-center flex-col gap-4">
+        <div className="text-center">
+          <IconPackage className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Réservation introuvable</h2>
+          <p className="text-muted-foreground mb-4">Cette réservation n'existe pas ou vous n'y avez pas accès</p>
+          <Button asChild>
+            <Link href="/dashboard/colis">
+              <IconArrowLeft className="mr-2 h-4 w-4" />
+              Retour aux réservations
+            </Link>
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   const isSender = booking.sender_id === currentUserId

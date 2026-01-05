@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:stripe": "bash scripts/dev-with-stripe.sh",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

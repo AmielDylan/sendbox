@@ -14,8 +14,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
+            staleTime: 10 * 1000, // 10 secondes (réduit de 60s pour éviter données obsolètes)
             refetchOnWindowFocus: true, // Activer le refetch au focus pour améliorer la réactivité
+            gcTime: 5 * 60 * 1000, // 5 minutes
           },
         },
       })
@@ -36,7 +37,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [queryClient])
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </ThemeProvider>
   )

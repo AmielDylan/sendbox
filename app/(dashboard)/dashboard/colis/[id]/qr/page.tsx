@@ -14,11 +14,11 @@ import { Button } from '@/components/ui/button'
 import { IconArrowLeft } from '@tabler/icons-react'
 
 interface QRCodePageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 async function QRCodePageContent({ params }: QRCodePageProps) {
-  const { id: bookingId } = params
+  const { id: bookingId } = await params
   const supabase = await createClient()
 
   const {
@@ -68,6 +68,9 @@ async function QRCodePageContent({ params }: QRCodePageProps) {
     )
   }
 
+  const isSender = booking.sender_id === user.id
+  const isTraveler = booking.traveler_id === user.id
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -86,13 +89,24 @@ async function QRCodePageContent({ params }: QRCodePageProps) {
         <div className="mt-6 space-y-4">
           <Card>
             <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">Instructions</h3>
-              <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
-                <li>Présentez ce QR code lors du dépôt du colis</li>
-                <li>Le QR code sera scanné par le voyageur</li>
-                <li>Conservez une copie pour vos archives</li>
-                <li>Le même QR code sera utilisé pour la livraison</li>
-              </ul>
+              <h3 className="font-semibold mb-2">
+                {isSender ? 'Instructions pour l\'expéditeur' : 'Instructions pour le voyageur'}
+              </h3>
+              {isSender ? (
+                <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
+                  <li>Imprimez ou enregistrez ce QR code sur votre téléphone</li>
+                  <li>Présentez-le au voyageur lors de la remise du colis</li>
+                  <li>Le voyageur scannera ce code pour confirmer la prise en charge</li>
+                  <li>Conservez une copie pour le suivi de votre envoi</li>
+                </ul>
+              ) : (
+                <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
+                  <li>Scannez ce QR code lors de la récupération du colis</li>
+                  <li>Prenez une photo du colis et faites signer l'expéditeur</li>
+                  <li>Scannez à nouveau ce code lors de la livraison</li>
+                  <li>Prenez une photo de la livraison et faites signer le destinataire</li>
+                </ul>
+              )}
             </CardContent>
           </Card>
 
@@ -103,11 +117,13 @@ async function QRCodePageContent({ params }: QRCodePageProps) {
                 Retour
               </Link>
             </Button>
-            <Button asChild className="flex-1">
-              <Link href={`/dashboard/scan/depot/${bookingId}`}>
-                Scanner pour dépôt
-              </Link>
-            </Button>
+            {isTraveler && booking.status === 'paid' && (
+              <Button asChild className="flex-1">
+                <Link href={`/dashboard/scan/depot/${bookingId}`}>
+                  Scanner pour dépôt
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>

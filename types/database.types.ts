@@ -1190,3 +1190,12 @@ export const Constants = {
     },
   },
 } as const
+
+// Export individual table types for easier usage
+export type Profile = Tables<"profiles">
+export type Announcement = Tables<"announcements">
+export type Booking = Tables<"bookings">
+export type Message = Tables<"messages">
+export type Notification = Tables<"notifications">
+export type Rating = Tables<"ratings">
+export type Transaction = Tables<"transactions">

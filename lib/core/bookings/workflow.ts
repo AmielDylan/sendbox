@@ -148,9 +148,9 @@ export async function markAsInTransit(
   }
 
   // Vérifier le statut
-  if (booking.status !== 'accepted') {
+  if (booking.status !== 'accepted' && booking.status !== 'paid') {
     return {
-      error: 'La réservation doit être acceptée',
+      error: 'La réservation doit être acceptée et payée',
     }
   }
 

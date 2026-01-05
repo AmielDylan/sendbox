@@ -37,7 +37,7 @@ export async function getCurrentUser() {
 
   return {
     user,
-    profile: profile as Profile,
+    profile: profile as unknown as Profile,
   }
 }
 
