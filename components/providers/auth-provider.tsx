@@ -10,27 +10,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
   const { setUser, setProfile, setLoading, setInitialized, clear, user } = useAuthStore()
   const listenerSetup = useRef(false)
+  const supabaseRef = useRef(createClient())
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = supabaseRef.current
 
     // Initialisation: récupérer session et profil
     const initAuth = async () => {
-      setLoading(true) // Marquer comme en cours de chargement
       try {
         const { data: { session } } = await supabase.auth.getSession()
 
         if (session?.user) {
           setUser(session.user)
 
-          // Récupérer le profil
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
+          // Récupérer le profil avec timeout de 5s
+          try {
+            const { data: profile, error: profileError } = await Promise.race([
+              supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single(),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+              )
+            ]) as any
 
-          if (profile) setProfile(createProfile(profile))
+            if (profile) {
+              setProfile(createProfile(profile))
+            } else if (profileError) {
+              console.error('Profile query error:', profileError)
+            }
+          } catch (profileFetchError) {
+            console.error('Profile fetch failed:', profileFetchError)
+          }
         } else {
           setUser(null)
           setProfile(null)
@@ -38,7 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Auth initialization error:', error)
       } finally {
-        setLoading(false)
         setInitialized(true)
       }
     }
@@ -53,20 +65,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Listener auth state changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          console.log('Auth state changed:', event)
-
           if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
             if (session?.user) {
               setUser(session.user)
 
-              // Récupérer profil à jour
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single()
+              // Récupérer profil à jour avec timeout de 5s
+              try {
+                const { data: profile, error: profileError } = await Promise.race([
+                  supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single(),
+                  new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+                  )
+                ]) as any
 
-              if (profile) setProfile(createProfile(profile))
+                if (profile) {
+                  setProfile(createProfile(profile))
+                } else if (profileError) {
+                  console.error('Profile error from auth change:', profileError)
+                }
+              } catch (profileFetchError) {
+                console.error('Profile fetch from auth change failed:', profileFetchError)
+              }
             }
 
             // Invalider queries React Query
