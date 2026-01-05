@@ -42,6 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Init auth immédiatement
+    initAuth()
+
     // Éviter double setup du listener
     if (!listenerSetup.current) {
       listenerSetup.current = true
@@ -73,9 +76,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       )
-
-      // Init
-      initAuth()
 
       return () => {
         subscription.unsubscribe()
