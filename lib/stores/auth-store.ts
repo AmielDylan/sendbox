@@ -23,7 +23,7 @@ export type AuthStore = AuthState & AuthActions
 const initialState: AuthState = {
   user: null,
   profile: null,
-  loading: true,
+  loading: false, // false par défaut car hydratation depuis localStorage
   initialized: false,
 }
 

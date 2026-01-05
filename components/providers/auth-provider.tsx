@@ -16,6 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Initialisation: récupérer session et profil
     const initAuth = async () => {
+      setLoading(true) // Marquer comme en cours de chargement
       try {
         const { data: { session } } = await supabase.auth.getSession()
 
