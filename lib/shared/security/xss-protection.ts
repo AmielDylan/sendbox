@@ -41,6 +41,17 @@ export function sanitizeURL(url: string): string | null {
   }
 }
 
+/**
+ * Nettoie le contenu pour les messages (escape HTML uniquement)
+ * Utilisé côté client ET serveur pour garantir la cohérence
+ */
+export function sanitizeMessageContent(text: string): string {
+  return text
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .trim()
+}
+
 
 
 

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/shared/db/client"
 
 export interface Message {
   id: string
+  tempId?: string  // ID temporaire pour matching optimiste
   booking_id: string
   sender_id: string
   receiver_id: string
@@ -34,13 +35,19 @@ export function useMessages(bookingId: string | null) {
   const [error, setError] = useState<string | null>(null)
 
   // Fonction pour ajouter un message optimiste (affichage immédiat)
-  const addOptimisticMessage = (message: Partial<Message> & { content: string; sender_id: string; receiver_id: string }) => {
+  const addOptimisticMessage = (message: Partial<Message> & {
+    content: string
+    sender_id: string
+    receiver_id: string
+    tempId?: string
+  }) => {
     const optimisticMessage: Message = {
       id: `optimistic-${Date.now()}`,
+      tempId: message.tempId,  // ID unique pour le matching
       booking_id: bookingId || '',
       sender_id: message.sender_id,
       receiver_id: message.receiver_id,
-      content: message.content,
+      content: message.content,  // Contenu déjà nettoyé côté ChatWindow
       attachments: null,
       is_read: false,
       read_at: null,
@@ -158,13 +165,26 @@ export function useMessages(bookingId: string | null) {
 
           if (newMessage) {
             setMessages((prev) => {
-              // Éviter les doublons (par ID réel)
+              // Éviter doublons par ID réel
               if (prev.some((m) => m.id === newMessage.id)) {
                 return prev
               }
 
-              // Remplacer le message optimiste s'il existe
-              // On cherche un message optimiste avec le même contenu envoyé dans les dernières secondes
+              // NOUVEAU: Matcher par tempId si disponible (prioritaire et plus fiable)
+              if (newMessage.tempId) {
+                const optimisticIndex = prev.findIndex(
+                  (m) => m.id.startsWith('optimistic-') && m.tempId === newMessage.tempId
+                )
+
+                if (optimisticIndex !== -1) {
+                  console.log('✅ Message optimiste remplacé par tempId:', newMessage.tempId)
+                  const updatedMessages = [...prev]
+                  updatedMessages[optimisticIndex] = newMessage as unknown as Message
+                  return updatedMessages
+                }
+              }
+
+              // FALLBACK: Matcher par contenu (pour compatibilité anciens messages)
               const optimisticIndex = prev.findIndex(
                 (m) =>
                   m.id.startsWith('optimistic-') &&
@@ -174,14 +194,14 @@ export function useMessages(bookingId: string | null) {
               )
 
               if (optimisticIndex !== -1) {
-                // Remplacer le message optimiste par le message réel
+                console.log('✅ Message optimiste remplacé par contenu (fallback)')
                 const updatedMessages = [...prev]
                 updatedMessages[optimisticIndex] = newMessage as unknown as Message
                 return updatedMessages
               }
 
-              // Sinon, ajouter le nouveau message normalement
-              // Scroll automatiquement vers le bas
+              // Nouveau message (pas optimiste)
+              console.log('📨 Nouveau message reçu (pas optimiste)')
               setTimeout(() => {
                 const messagesEnd = document.querySelector('[data-messages-end]')
                 messagesEnd?.scrollIntoView({ behavior: 'smooth' })

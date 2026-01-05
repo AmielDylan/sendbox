@@ -6,6 +6,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
+import { sanitizeMessageContent } from '@/lib/shared/security/xss-protection'
 import { z } from 'zod'
 
 const sendMessageSchema = z.object({
@@ -16,6 +17,7 @@ const sendMessageSchema = z.object({
     .min(1, 'Le message ne peut pas être vide')
     .max(2000, 'Le message ne peut pas dépasser 2000 caractères'),
   attachments: z.array(z.string().url()).optional(),
+  tempId: z.string().optional(),
 })
 
 export type SendMessageInput = z.infer<typeof sendMessageSchema>
@@ -67,7 +69,7 @@ export async function sendMessage(data: SendMessageInput) {
     }
   }
 
-  const { booking_id, receiver_id, content, attachments } = validation.data
+  const { booking_id, receiver_id, content, attachments, tempId } = validation.data
 
   // Rate limiting
   if (!checkRateLimit(user.id)) {
@@ -106,11 +108,8 @@ export async function sendMessage(data: SendMessageInput) {
     }
   }
 
-  // Nettoyer le contenu (protection XSS basique)
-  const cleanContent = content
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .trim()
+  // Nettoyer le contenu (protection XSS - devrait déjà être nettoyé côté client, mais double check)
+  const cleanContent = sanitizeMessageContent(content)
 
   if (cleanContent.length === 0) {
     return {
@@ -153,7 +152,10 @@ export async function sendMessage(data: SendMessageInput) {
     revalidatePath('/dashboard/messages')
     return {
       success: true,
-      message: message,
+      message: {
+        ...message,
+        tempId,
+      },
     }
   } catch (error) {
     console.error('Error sending message:', error)

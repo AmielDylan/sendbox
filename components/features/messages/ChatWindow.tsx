@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useMessages } from '@/hooks/use-messages'
 import { sendMessage, markMessagesAsRead } from "@/lib/core/messages/actions"
 import { generateInitials } from "@/lib/core/profile/utils"
+import { sanitizeMessageContent } from '@/lib/shared/security/xss-protection'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { IconSend, IconLoader2, IconPhoto } from '@tabler/icons-react'
@@ -63,11 +64,15 @@ export function ChatWindow({
     }
 
     const content = messageContent.trim()
+    const cleanContent = sanitizeMessageContent(content)
+    const tempId = `temp-${crypto.randomUUID()}`
+
     setMessageContent('')
 
     // Ajouter immédiatement le message de manière optimiste
     const optimisticId = addOptimisticMessage({
-      content,
+      tempId,
+      content: cleanContent,
       sender_id: currentUserId,
       receiver_id: otherUserId,
     })
@@ -76,7 +81,8 @@ export function ChatWindow({
       const result = await sendMessage({
         booking_id: bookingId,
         receiver_id: otherUserId,
-        content,
+        content: cleanContent,
+        tempId,
       })
 
       if (result.error) {
