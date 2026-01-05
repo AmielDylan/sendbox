@@ -2,8 +2,9 @@
  * Hook personnalisé pour gérer les messages en temps réel avec Supabase Realtime
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from "@/lib/shared/db/client"
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export interface Message {
   id: string
@@ -33,6 +34,7 @@ export function useMessages(bookingId: string | null) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const channelRef = useRef<RealtimeChannel | null>(null)
 
   // Fonction pour ajouter un message optimiste (affichage immédiat)
   const addOptimisticMessage = (message: Partial<Message> & {
@@ -129,6 +131,12 @@ export function useMessages(bookingId: string | null) {
     }
 
     loadMessages()
+
+    // Cleanup du channel précédent si existant
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+      channelRef.current = null
+    }
 
     // S'abonner aux nouveaux messages en temps réel
     const channel = supabase
@@ -230,8 +238,15 @@ export function useMessages(bookingId: string | null) {
       )
       .subscribe()
 
+    // Stocker référence du channel
+    channelRef.current = channel
+
     return () => {
-      channel.unsubscribe()
+      // Cleanup proper avec removeChannel (recommandé par Supabase)
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
     }
   }, [bookingId])
 
