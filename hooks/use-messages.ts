@@ -50,6 +50,8 @@ export function useMessages(bookingId: string | null) {
     sender_id: string
     receiver_id: string
     tempId?: string
+    sender?: { firstname: string | null; lastname: string | null; avatar_url: string | null }
+    receiver?: { firstname: string | null; lastname: string | null; avatar_url: string | null }
   }) => {
     const optimisticMessage: Message = {
       id: `optimistic-${Date.now()}`,
@@ -63,6 +65,8 @@ export function useMessages(bookingId: string | null) {
       read_at: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      sender: message.sender,
+      receiver: message.receiver,
     }
 
     // Stocker le mapping hash → tempId pour le matching Realtime
@@ -171,83 +175,110 @@ export function useMessages(bookingId: string | null) {
           table: 'messages',
           filter: `booking_id=eq.${bookingId}`,
         },
-        async (payload) => {
-          // Récupérer les détails complets du nouveau message
-          const { data: newMessage } = await (supabase as any)
-            .from('messages')
-            .select(
-              `
-              *,
-              sender:profiles!messages_sender_id_fkey (
-                firstname,
-                lastname,
-                avatar_url
-              ),
-              receiver:profiles!messages_receiver_id_fkey (
-                firstname,
-                lastname,
-                avatar_url
-              )
-            `
-            )
-            .eq('id', payload.new.id)
-            .single()
+        (payload) => {
+          const newMessageData = payload.new as any
 
-          if (newMessage) {
-            setMessages((prev) => {
-              // Éviter doublons par ID réel
-              if (prev.some((m) => m.id === newMessage.id)) {
-                return prev
-              }
+          setMessages((prev) => {
+            // Éviter doublons par ID réel
+            if (prev.some((m) => m.id === newMessageData.id)) {
+              return prev
+            }
 
-              // Calculer le hash du message reçu pour chercher le tempId correspondant
-              const contentHash = hashContent(newMessage.content, newMessage.sender_id)
-              const pendingMessage = pendingMessagesMap.current.get(contentHash)
+            // Calculer le hash du message reçu pour chercher le tempId correspondant
+            const contentHash = hashContent(newMessageData.content, newMessageData.sender_id)
+            const pendingMessage = pendingMessagesMap.current.get(contentHash)
 
-              if (pendingMessage) {
-                // On a trouvé le tempId correspondant dans notre Map!
-                const optimisticIndex = prev.findIndex(
-                  (m) => m.id.startsWith('optimistic-') && m.tempId === pendingMessage.tempId
-                )
-
-                if (optimisticIndex !== -1) {
-                  // Remplacer le message optimiste par le message réel
-                  const updatedMessages = [...prev]
-                  updatedMessages[optimisticIndex] = newMessage as unknown as Message
-
-                  // Nettoyer le Map
-                  pendingMessagesMap.current.delete(contentHash)
-
-                  return updatedMessages
-                }
-
-                // Nettoyer le Map même si pas de match (message optimiste déjà supprimé?)
-                pendingMessagesMap.current.delete(contentHash)
-              }
-
-              // FALLBACK: Matcher par contenu + timestamp (pour messages sans tempId)
-              const fallbackIndex = prev.findIndex(
-                (m) =>
-                  m.id.startsWith('optimistic-') &&
-                  m.content === newMessage.content &&
-                  m.sender_id === newMessage.sender_id &&
-                  Math.abs(new Date(m.created_at).getTime() - new Date(newMessage.created_at).getTime()) < 5000
+            if (pendingMessage) {
+              // On a trouvé le tempId correspondant dans notre Map!
+              // C'est un message qu'on vient d'envoyer nous-mêmes
+              const optimisticIndex = prev.findIndex(
+                (m) => m.id.startsWith('optimistic-') && m.tempId === pendingMessage.tempId
               )
 
-              if (fallbackIndex !== -1) {
+              if (optimisticIndex !== -1) {
+                // Remplacer le message optimiste par le message réel
+                // IMPORTANT: On garde les sender/receiver déjà chargés du message optimiste
+                const optimisticMsg = prev[optimisticIndex]
+                const realMessage: Message = {
+                  ...newMessageData,
+                  sender: optimisticMsg.sender,
+                  receiver: optimisticMsg.receiver,
+                } as Message
+
                 const updatedMessages = [...prev]
-                updatedMessages[fallbackIndex] = newMessage as unknown as Message
+                updatedMessages[optimisticIndex] = realMessage
+
+                // Nettoyer le Map
+                pendingMessagesMap.current.delete(contentHash)
+
                 return updatedMessages
               }
 
-              // Nouveau message (pas de correspondance optimiste trouvée)
-              setTimeout(() => {
-                const messagesEnd = document.querySelector('[data-messages-end]')
-                messagesEnd?.scrollIntoView({ behavior: 'smooth' })
-              }, 100)
-              return [...prev, newMessage as unknown as Message]
-            })
-          }
+              // Nettoyer le Map même si pas de match
+              pendingMessagesMap.current.delete(contentHash)
+            }
+
+            // FALLBACK: Matcher par contenu + timestamp (pour messages sans tempId)
+            const fallbackIndex = prev.findIndex(
+              (m) =>
+                m.id.startsWith('optimistic-') &&
+                m.content === newMessageData.content &&
+                m.sender_id === newMessageData.sender_id &&
+                Math.abs(new Date(m.created_at).getTime() - new Date(newMessageData.created_at).getTime()) < 5000
+            )
+
+            if (fallbackIndex !== -1) {
+              const optimisticMsg = prev[fallbackIndex]
+              const realMessage: Message = {
+                ...newMessageData,
+                sender: optimisticMsg.sender,
+                receiver: optimisticMsg.receiver,
+              } as Message
+              const updatedMessages = [...prev]
+              updatedMessages[fallbackIndex] = realMessage
+              return updatedMessages
+            }
+
+            // Nouveau message reçu d'un autre utilisateur
+            // On doit fetch les infos sender/receiver de manière asynchrone
+            // MAIS on ajoute d'abord le message sans ces infos pour affichage immédiat
+            ;(async () => {
+              const { data: fullMessage } = await (supabase as any)
+                .from('messages')
+                .select(
+                  `
+                  *,
+                  sender:profiles!messages_sender_id_fkey (
+                    firstname,
+                    lastname,
+                    avatar_url
+                  ),
+                  receiver:profiles!messages_receiver_id_fkey (
+                    firstname,
+                    lastname,
+                    avatar_url
+                  )
+                `
+                )
+                .eq('id', newMessageData.id)
+                .single()
+
+              if (fullMessage) {
+                setMessages((current) =>
+                  current.map((m) =>
+                    m.id === newMessageData.id ? (fullMessage as unknown as Message) : m
+                  )
+                )
+              }
+            })()
+
+            // Ajouter immédiatement le message (sans sender/receiver complet)
+            setTimeout(() => {
+              const messagesEnd = document.querySelector('[data-messages-end]')
+              messagesEnd?.scrollIntoView({ behavior: 'smooth' })
+            }, 100)
+            return [...prev, newMessageData as Message]
+          })
         }
       )
       .on(

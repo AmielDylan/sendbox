@@ -71,6 +71,7 @@ function MessagesPageContent() {
   const {
     data: notificationsData,
     isLoading: isLoadingNotifications,
+    refetch: refetchNotifications,
   } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
@@ -158,6 +159,7 @@ function MessagesPageContent() {
           loadUnreadCount()
           refetchRequests()
           refetchConversations()
+          refetchNotifications() // Rafraîchir aussi les notifications!
         }
       )
       .subscribe()
@@ -165,7 +167,7 @@ function MessagesPageContent() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [refetchRequests, refetchConversations])
+  }, [refetchRequests, refetchConversations, refetchNotifications])
 
   // Mettre à jour la conversation sélectionnée quand on clique sur une conversation
   const handleSelectConversation = async (bookingId: string) => {

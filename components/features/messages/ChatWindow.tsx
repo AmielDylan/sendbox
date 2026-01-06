@@ -165,12 +165,28 @@ export function ChatWindow({
 
     setMessageContent('')
 
-    // Ajouter immédiatement le message de manière optimiste
+    // Récupérer les infos sender depuis les messages existants OU créer un objet minimal
+    const senderInfo = messages.find(m => m.sender_id === currentUserId)?.sender || {
+      firstname: null,
+      lastname: null,
+      avatar_url: null,
+    }
+
+    // Créer objet receiver minimal
+    const receiverInfo = {
+      firstname: otherUserName?.split(' ')[0] || null,
+      lastname: otherUserName?.split(' ')[1] || null,
+      avatar_url: otherUserAvatar,
+    }
+
+    // Ajouter immédiatement le message de manière optimiste avec infos complètes
     const optimisticId = addOptimisticMessage({
       tempId,
       content: cleanContent,
       sender_id: currentUserId,
       receiver_id: otherUserId,
+      sender: senderInfo,
+      receiver: receiverInfo,
     })
 
     startTransition(async () => {
