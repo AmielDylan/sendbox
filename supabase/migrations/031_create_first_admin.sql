@@ -33,3 +33,4 @@ COMMENT ON COLUMN profiles.role IS 'user | admin - définit les permissions d''a
 
 
 
+

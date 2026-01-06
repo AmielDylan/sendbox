@@ -41,7 +41,6 @@ interface MessageItemProps {
  */
 const MessageItem = memo(({ message, currentUserId }: MessageItemProps) => {
   const isOwnMessage = message.sender_id === currentUserId
-  const isOptimistic = message.id.startsWith('optimistic-')
   const senderName = isOwnMessage
     ? 'Vous'
     : `${message.sender?.firstname || ''} ${message.sender?.lastname || ''}`.trim() ||
@@ -51,8 +50,7 @@ const MessageItem = memo(({ message, currentUserId }: MessageItemProps) => {
     <div
       className={cn(
         'flex gap-3',
-        isOwnMessage ? 'flex-row-reverse' : 'flex-row',
-        isOptimistic && 'opacity-70'
+        isOwnMessage ? 'flex-row-reverse' : 'flex-row'
       )}
     >
       {!isOwnMessage && (
@@ -105,10 +103,7 @@ const MessageItem = memo(({ message, currentUserId }: MessageItemProps) => {
             </div>
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-          {isOptimistic && (
-            <IconLoader2 className="h-3 w-3 animate-spin" />
-          )}
+        <p className="text-xs text-muted-foreground mt-1">
           {format(new Date(message.created_at), 'HH:mm', { locale: fr })}
         </p>
       </div>

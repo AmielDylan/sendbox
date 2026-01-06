@@ -253,3 +253,4 @@ COMMENT ON FUNCTION count_search_announcements IS 'Compte le nombre total d''ann
 
 
 
+

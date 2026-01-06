@@ -139,13 +139,28 @@ export async function sendMessage(data: SendMessageInput) {
       }
     }
 
-    // Créer une notification si le destinataire est hors ligne
-    // (On suppose qu'il est hors ligne si pas de read_at récent)
+    // Récupérer le nom de l'expéditeur pour la notification
+    const { data: senderProfile } = await supabase
+      .from('profiles')
+      .select('firstname, lastname')
+      .eq('id', user.id)
+      .single()
+
+    const senderName = senderProfile
+      ? `${senderProfile.firstname || ''} ${senderProfile.lastname || ''}`.trim()
+      : 'Un utilisateur'
+
+    // Créer un aperçu du message (max 50 caractères)
+    const messagePreview = cleanContent.length > 50
+      ? cleanContent.substring(0, 50) + '...'
+      : cleanContent
+
+    // Créer une notification pour le destinataire
     await (supabase.rpc as any)('create_notification', {
       p_user_id: receiver_id,
       p_type: 'message',
-      p_title: 'Nouveau message',
-      p_content: `Vous avez reçu un nouveau message concernant une réservation`,
+      p_title: `Message de ${senderName}`,
+      p_content: messagePreview,
       p_booking_id: booking_id,
     })
 

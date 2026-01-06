@@ -243,7 +243,7 @@ export function useMessages(bookingId: string | null) {
             // On doit fetch les infos sender/receiver de manière asynchrone
             // MAIS on ajoute d'abord le message sans ces infos pour affichage immédiat
             ;(async () => {
-              const { data: fullMessage } = await (supabase as any)
+              const { data: fullMessage, error: fetchError } = await (supabase as any)
                 .from('messages')
                 .select(
                   `
@@ -262,6 +262,10 @@ export function useMessages(bookingId: string | null) {
                 )
                 .eq('id', newMessageData.id)
                 .single()
+
+              if (fetchError) {
+                console.error('[Realtime] Error fetching message details:', fetchError)
+              }
 
               if (fullMessage) {
                 setMessages((current) =>
