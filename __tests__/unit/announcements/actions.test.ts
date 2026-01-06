@@ -80,50 +80,63 @@ describe('Announcements Actions', () => {
         error: null,
       })
 
-      // Mock profile query (KYC approved)
-      const fromMock = vi.fn()
-      fromMock.mockReturnValueOnce({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn(() =>
-              Promise.resolve({
-                data: {
-                  kyc_status: 'approved',
-                  kyc_rejection_reason: null,
-                },
-                error: null,
-              })
-            ),
-          })),
-        })),
-      })
+      let callCount = 0
+      const fromMock = vi.fn().mockImplementation((tableName: string) => {
+        callCount++
 
-      // Mock active announcements count (under limit)
-      fromMock.mockReturnValueOnce({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            in: vi.fn(() =>
-              Promise.resolve({
-                data: [], // No active announcements
-                error: null,
-              })
-            ),
-          })),
-        })),
-      })
+        // First call: profiles query
+        if (callCount === 1 && tableName === 'profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: {
+                    kyc_status: 'approved',
+                    kyc_rejection_reason: null,
+                  },
+                  error: null,
+                }),
+              }),
+            }),
+          }
+        }
 
-      // Mock announcement creation
-      fromMock.mockReturnValueOnce({
-        insert: vi.fn(() => ({
-          select: vi.fn(() => ({
-            single: vi.fn(() =>
-              Promise.resolve({
-                data: { id: 'announcement-123' },
-                error: null,
-              })
-            ),
-          })),
-        })),
+        // Second call: count active announcements
+        if (callCount === 2 && tableName === 'announcements') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                in: vi.fn().mockResolvedValue({
+                  data: [], // No active announcements
+                  error: null,
+                }),
+              }),
+            }),
+          }
+        }
+
+        // Third call: insert announcement
+        if (callCount === 3 && tableName === 'announcements') {
+          return {
+            insert: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: { id: 'announcement-123' },
+                  error: null,
+                }),
+              }),
+            }),
+          }
+        }
+
+        // Default fallback
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({ data: null, error: null }),
+            }),
+          }),
+        }
       })
 
       mockSupabase.from = fromMock
@@ -154,6 +167,45 @@ describe('Announcements Actions', () => {
         },
         error: null,
       })
+
+      let callCount = 0
+      const fromMock = vi.fn((tableName: string) => {
+        callCount++
+
+        // Profile query
+        if (callCount === 1) {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                single: vi.fn(() =>
+                  Promise.resolve({
+                    data: { kyc_status: 'approved' },
+                    error: null,
+                  })
+                ),
+              })),
+            })),
+          }
+        }
+
+        // Active announcements count
+        if (callCount === 2) {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                in: vi.fn(() =>
+                  Promise.resolve({
+                    data: [],
+                    error: null,
+                  })
+                ),
+              })),
+            })),
+          }
+        }
+      })
+
+      mockSupabase.from = fromMock
 
       const invalidData = {
         ...validAnnouncementData,
