@@ -30,11 +30,19 @@ export interface Message {
   }
 }
 
+// Fonction de hash pour identifier un message par contenu + sender
+function hashContent(content: string, senderId: string): string {
+  return `${senderId}:${content.trim()}`
+}
+
 export function useMessages(bookingId: string | null) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const channelRef = useRef<RealtimeChannel | null>(null)
+
+  // Map pour stocker temporairement le mapping hash → tempId des messages en attente
+  const pendingMessagesMap = useRef<Map<string, {tempId: string, timestamp: number}>>(new Map())
 
   // Fonction pour ajouter un message optimiste (affichage immédiat)
   const addOptimisticMessage = (message: Partial<Message> & {
@@ -55,6 +63,20 @@ export function useMessages(bookingId: string | null) {
       read_at: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+    }
+
+    // Stocker le mapping hash → tempId pour le matching Realtime
+    if (message.tempId) {
+      const contentHash = hashContent(message.content, message.sender_id)
+      pendingMessagesMap.current.set(contentHash, {
+        tempId: message.tempId,
+        timestamp: Date.now()
+      })
+
+      // Auto-nettoyage après 30 secondes (au cas où le message Realtime ne revient jamais)
+      setTimeout(() => {
+        pendingMessagesMap.current.delete(contentHash)
+      }, 30000)
     }
 
     setMessages((prev) => [...prev, optimisticMessage])
@@ -178,22 +200,33 @@ export function useMessages(bookingId: string | null) {
                 return prev
               }
 
-              // NOUVEAU: Matcher par tempId si disponible (prioritaire et plus fiable)
-              if (newMessage.tempId) {
+              // Calculer le hash du message reçu pour chercher le tempId correspondant
+              const contentHash = hashContent(newMessage.content, newMessage.sender_id)
+              const pendingMessage = pendingMessagesMap.current.get(contentHash)
+
+              if (pendingMessage) {
+                // On a trouvé le tempId correspondant dans notre Map!
                 const optimisticIndex = prev.findIndex(
-                  (m) => m.id.startsWith('optimistic-') && m.tempId === newMessage.tempId
+                  (m) => m.id.startsWith('optimistic-') && m.tempId === pendingMessage.tempId
                 )
 
                 if (optimisticIndex !== -1) {
-                  console.log('✅ Message optimiste remplacé par tempId:', newMessage.tempId)
+                  // Remplacer le message optimiste par le message réel
                   const updatedMessages = [...prev]
                   updatedMessages[optimisticIndex] = newMessage as unknown as Message
+
+                  // Nettoyer le Map
+                  pendingMessagesMap.current.delete(contentHash)
+
                   return updatedMessages
                 }
+
+                // Nettoyer le Map même si pas de match (message optimiste déjà supprimé?)
+                pendingMessagesMap.current.delete(contentHash)
               }
 
-              // FALLBACK: Matcher par contenu (pour compatibilité anciens messages)
-              const optimisticIndex = prev.findIndex(
+              // FALLBACK: Matcher par contenu + timestamp (pour messages sans tempId)
+              const fallbackIndex = prev.findIndex(
                 (m) =>
                   m.id.startsWith('optimistic-') &&
                   m.content === newMessage.content &&
@@ -201,15 +234,13 @@ export function useMessages(bookingId: string | null) {
                   Math.abs(new Date(m.created_at).getTime() - new Date(newMessage.created_at).getTime()) < 5000
               )
 
-              if (optimisticIndex !== -1) {
-                console.log('✅ Message optimiste remplacé par contenu (fallback)')
+              if (fallbackIndex !== -1) {
                 const updatedMessages = [...prev]
-                updatedMessages[optimisticIndex] = newMessage as unknown as Message
+                updatedMessages[fallbackIndex] = newMessage as unknown as Message
                 return updatedMessages
               }
 
-              // Nouveau message (pas optimiste)
-              console.log('📨 Nouveau message reçu (pas optimiste)')
+              // Nouveau message (pas de correspondance optimiste trouvée)
               setTimeout(() => {
                 const messagesEnd = document.querySelector('[data-messages-end]')
                 messagesEnd?.scrollIntoView({ behavior: 'smooth' })
