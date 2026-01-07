@@ -23,8 +23,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           setUser(session.user)
 
-          // Récupérer le profil avec timeout de 5s
+          // Récupérer le profil avec timeout de 10s (augmenté) + logs détaillés
+          const startTime = Date.now()
           try {
+            console.log('[AuthProvider] Fetching profile for user:', session.user.id)
+
             const { data: profile, error: profileError } = await Promise.race([
               supabase
                 .from('profiles')
@@ -32,17 +35,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 .eq('id', session.user.id)
                 .single(),
               new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+                setTimeout(() => reject(new Error('Profile query timeout')), 10000)
               )
             ]) as any
 
+            const elapsed = Date.now() - startTime
+            console.log(`[AuthProvider] Profile query took ${elapsed}ms`)
+
             if (profile) {
+              console.log('[AuthProvider] Profile loaded successfully:', profile.id)
               setProfile(createProfile(profile))
             } else if (profileError) {
-              console.error('Profile query error:', profileError)
+              console.error('[AuthProvider] Profile query error:', profileError)
             }
           } catch (profileFetchError) {
-            console.error('Profile fetch failed:', profileFetchError)
+            const elapsed = Date.now() - startTime
+            console.error(`[AuthProvider] Profile fetch failed after ${elapsed}ms:`, profileFetchError)
           }
         } else {
           setUser(null)
@@ -69,8 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (session?.user) {
               setUser(session.user)
 
-              // Récupérer profil à jour avec timeout de 5s
+              // Récupérer profil à jour avec timeout de 10s (augmenté) + logs détaillés
+              const startTime = Date.now()
               try {
+                console.log('[AuthProvider] onAuthStateChange - Fetching profile for:', session.user.id)
+
                 const { data: profile, error: profileError } = await Promise.race([
                   supabase
                     .from('profiles')
@@ -78,22 +89,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     .eq('id', session.user.id)
                     .single(),
                   new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Profile query timeout')), 5000)
+                    setTimeout(() => reject(new Error('Profile query timeout')), 10000)
                   )
                 ]) as any
 
+                const elapsed = Date.now() - startTime
+                console.log(`[AuthProvider] onAuthStateChange - Profile query took ${elapsed}ms`)
+
                 if (profile) {
+                  console.log('[AuthProvider] onAuthStateChange - Profile loaded:', profile.id)
                   setProfile(createProfile(profile))
                 } else if (profileError) {
-                  console.error('Profile error from auth change:', profileError)
+                  console.error('[AuthProvider] onAuthStateChange - Profile error:', profileError)
                 }
               } catch (profileFetchError) {
-                console.error('Profile fetch from auth change failed:', profileFetchError)
+                const elapsed = Date.now() - startTime
+                console.error(`[AuthProvider] onAuthStateChange - Profile fetch failed after ${elapsed}ms:`, profileFetchError)
               }
             }
 
-            // Invalider queries React Query
-            queryClient.invalidateQueries()
+            // Invalider seulement les queries pertinentes (pas toutes!)
+            // Évite boucle infinie avec onAuthStateChange
+            queryClient.invalidateQueries({ queryKey: ['user'] })
+            queryClient.invalidateQueries({ queryKey: ['profile'] })
           } else if (event === 'SIGNED_OUT') {
             clear()
             queryClient.clear()
