@@ -156,32 +156,32 @@ export default function HomePage() {
       </section>
 
       <section className="py-16 md:py-20 bg-muted/20">
-        <div className="container-wide grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start lg:items-center">
-          <div className="order-2 lg:order-1 hidden sm:block">
-            <div className="max-w-sm mx-auto lg:mx-0">
-              <div className="aspect-square overflow-hidden rounded-md border border-border bg-muted/40">
-                <Image
-                  src="/images/illustrations/covoiturage.svg"
-                  alt="Comment fonctionne le covoiturage de colis"
-                  width={520}
-                  height={520}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </div>
+        <div className="container-wide space-y-8">
+          <div className="max-w-3xl space-y-3">
+            <Badge variant="outline" className="text-xs uppercase tracking-wide rounded">
+              Processus simple
+            </Badge>
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-balance">
+              Comment ça marche ?
+            </h2>
+            <p className="text-base text-muted-foreground">
+              Envoyez votre colis en 4 étapes simples.
+            </p>
           </div>
 
-          <div className="order-1 lg:order-2 space-y-6">
-            <div className="space-y-3">
-              <Badge variant="outline" className="text-xs uppercase tracking-wide rounded">
-                Processus simple
-              </Badge>
-              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-balance">
-                Comment ça marche ?
-              </h2>
-              <p className="text-base text-muted-foreground">
-                Envoyez votre colis en 4 étapes simples.
-              </p>
+          <div className="grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start lg:items-center">
+            <div className="hidden sm:block">
+              <div className="max-w-sm mx-auto lg:mx-0">
+                <div className="aspect-square overflow-hidden rounded-md border border-border bg-muted/40">
+                  <Image
+                    src="/images/illustrations/covoiturage.svg"
+                    alt="Comment fonctionne le covoiturage de colis"
+                    width={520}
+                    height={520}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
             </div>
 
             <ol className="space-y-3">
