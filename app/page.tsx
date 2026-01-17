@@ -62,8 +62,8 @@ export default function HomePage() {
       <PublicHeader />
       <main className="flex-1 bg-background">
         <section className="relative min-h-[calc(100dvh-4rem)] flex items-center overflow-hidden">
-          <div className="absolute inset-0 bg-hero-image opacity-20" aria-hidden="true" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background" aria-hidden="true" />
+          <div className="absolute inset-0 bg-hero-image opacity-35" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/75 via-background/50 to-background" aria-hidden="true" />
           <div className="container-wide relative z-10 grid gap-10 lg:grid-cols-2 lg:gap-12 items-center py-10 sm:py-14 md:py-20">
             <div className="space-y-6 text-center lg:text-left">
               <Badge
