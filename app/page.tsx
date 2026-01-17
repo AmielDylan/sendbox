@@ -64,7 +64,10 @@ export default function HomePage() {
         <section className="relative min-h-[calc(100dvh-4rem)] flex items-center">
           <div className="container-wide grid gap-10 lg:grid-cols-2 lg:gap-12 items-center py-16 md:py-20">
             <div className="space-y-6 text-center lg:text-left">
-              <Badge variant="secondary" className="gap-2 rounded px-3 py-1.5 text-xs">
+              <Badge
+                variant="outline"
+                className="gap-2 rounded px-3 py-1.5 text-xs border-foreground/20 bg-foreground/5 text-foreground dark:bg-foreground/10"
+              >
                 <IconSparkles className="h-3.5 w-3.5" />
                 Service sécurisé et vérifié
               </Badge>
@@ -101,7 +104,7 @@ export default function HomePage() {
             </div>
 
             <div className="relative order-first lg:order-last">
-              <div className="relative w-full max-w-sm mx-auto">
+              <div className="relative w-full max-w-[220px] sm:max-w-[320px] md:max-w-sm mx-auto">
                 <div className="aspect-square overflow-hidden rounded-md border border-border bg-muted/40">
                   <Image
                     src="/images/illustrations/envoi-colis.svg"
@@ -155,8 +158,8 @@ export default function HomePage() {
         </section>
 
         <section className="py-16 md:py-20 bg-muted/20">
-          <div className="container-wide grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] items-center">
-            <div className="order-2 lg:order-1">
+          <div className="container-wide grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start">
+            <div className="order-2 lg:order-1 hidden sm:block">
               <div className="max-w-sm mx-auto lg:mx-0">
                 <div className="aspect-square overflow-hidden rounded-md border border-border bg-muted/40">
                   <Image
@@ -183,21 +186,23 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <ol className="space-y-4 border-l border-border pl-5">
-                {steps.map((step) => (
-                  <li key={step.title} className="relative">
-                    <span className="absolute -left-[9px] top-2 h-2.5 w-2.5 rounded-full bg-primary" />
-                    <div className="space-y-1">
-                      <p className="font-semibold text-sm sm:text-base">
-                        {step.title}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {step.description}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+            <ol className="space-y-3">
+              {steps.map((step, index) => (
+                <li key={step.title} className="flex items-start gap-3 border border-border/70 bg-background/70 px-3 py-3 rounded">
+                  <span className="flex h-7 w-7 items-center justify-center rounded border border-border bg-muted text-xs font-semibold text-foreground">
+                    {index + 1}
+                  </span>
+                  <div className="space-y-1">
+                    <p className="font-semibold text-sm sm:text-base">
+                      {step.title}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {step.description}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
             </div>
           </div>
         </section>
