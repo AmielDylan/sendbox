@@ -5,6 +5,7 @@
 import { Suspense } from 'react'
 import { createClient } from "@/lib/shared/db/server"
 import { SettingsNav } from '@/components/layouts/SettingsNav'
+import { SettingsBreadcrumb } from '@/components/layouts/SettingsBreadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
 
 async function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
@@ -29,9 +30,7 @@ async function SettingsLayoutContent({ children }: { children: React.ReactNode }
       <aside className="w-full lg:w-72 xl:w-80">
         <div className="sticky top-6 space-y-4">
           <div className="space-y-1">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Réglages
-            </p>
+            <SettingsBreadcrumb />
             <h2 className="text-xl font-semibold">Centre de compte</h2>
             <p className="text-sm text-muted-foreground">
               Gérez votre compte et vos préférences
@@ -64,7 +63,7 @@ function SettingsLayoutSkeleton() {
     <div className="flex flex-col lg:flex-row gap-8">
       <aside className="w-full lg:w-72 xl:w-80">
         <div className="space-y-3">
-          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-52" />
           <Skeleton className="h-7 w-40" />
           <Skeleton className="h-4 w-60" />
         </div>
@@ -80,8 +79,6 @@ function SettingsLayoutSkeleton() {
     </div>
   )
 }
-
-
 
 
 
