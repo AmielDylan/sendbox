@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -107,7 +108,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </Sheet>
         </ClientOnly>
         <div className="flex-1">
-          <h1 className="text-lg font-semibold">Sendbox</h1>
+          <LogoLink className="h-6" />
         </div>
         <HeaderActions />
       </header>
@@ -123,7 +124,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Desktop Header */}
           <header className="sticky top-0 z-40 hidden h-16 items-center gap-4 border-b bg-background px-6 md:flex">
             <div className="flex flex-1 items-center gap-4">
-              <h1 className="text-lg font-semibold">Sendbox</h1>
+              <LogoLink className="h-6" />
             </div>
             <HeaderActions />
           </header>
@@ -147,14 +148,7 @@ function SidebarContent({
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 font-semibold text-primary"
-          onClick={onNavigate}
-        >
-          <IconPackage className="h-6 w-6" />
-          <span>Sendbox</span>
-        </Link>
+        <LogoLink className="h-6" onClick={onNavigate} />
       </div>
 
       {/* Navigation */}
@@ -215,6 +209,37 @@ function HeaderActions() {
         <UserMenu />
       </ClientOnly>
     </div>
+  )
+}
+
+function LogoLink({
+  className,
+  onClick,
+}: {
+  className?: string
+  onClick?: () => void
+}) {
+  return (
+    <Link
+      href="/"
+      className={cn('flex items-center gap-2', className)}
+      onClick={onClick}
+    >
+      <Image
+        src="/images/branding/logo.svg"
+        alt="Sendbox"
+        width={130}
+        height={26}
+        className="h-6 w-auto dark:hidden"
+      />
+      <Image
+        src="/images/branding/logo-white.svg"
+        alt="Sendbox"
+        width={130}
+        height={26}
+        className="hidden h-6 w-auto dark:block"
+      />
+    </Link>
   )
 }
 
