@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { IconPackage, IconMenu2, IconX, IconSearch, IconLogin, IconLoader2, IconLayoutDashboard } from '@tabler/icons-react'
+import { IconMenu2, IconSearch, IconLogin, IconLoader2, IconLayoutDashboard } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -98,7 +98,16 @@ export function PublicHeader() {
             width={145}
             height={29}
             priority
-            className="h-7 w-auto sm:h-8 transition-opacity group-hover:opacity-80"
+            className="h-7 w-auto sm:h-8 transition-opacity group-hover:opacity-80 dark:hidden"
+            style={{ maxWidth: '145px' }}
+          />
+          <Image
+            src="/images/branding/logo-white.svg"
+            alt="Sendbox - Covalisage international Europe-Afrique"
+            width={145}
+            height={29}
+            priority
+            className="hidden h-7 w-auto sm:h-8 transition-opacity group-hover:opacity-80 dark:block"
             style={{ maxWidth: '145px' }}
           />
         </Link>

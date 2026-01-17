@@ -4,7 +4,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { IconPackage, IconBrandFacebook, IconBrandInstagram, IconBrandLinkedin, IconShieldCheck, IconStar } from '@tabler/icons-react'
+import { IconBrandFacebook, IconBrandInstagram, IconBrandLinkedin, IconShieldCheck } from '@tabler/icons-react'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 
@@ -24,7 +24,14 @@ export function PublicFooter() {
                 alt="Sendbox"
                 width={145}
                 height={29}
-                className="h-8 w-auto transition-opacity group-hover:opacity-80"
+                className="h-8 w-auto transition-opacity group-hover:opacity-80 dark:hidden"
+              />
+              <Image
+                src="/images/branding/logo-white.svg"
+                alt="Sendbox"
+                width={145}
+                height={29}
+                className="hidden h-8 w-auto transition-opacity group-hover:opacity-80 dark:block"
               />
             </Link>
 
@@ -42,10 +49,6 @@ export function PublicFooter() {
               <Badge variant="outline" className="text-xs gap-1.5">
                 <IconShieldCheck className="h-3.5 w-3.5" />
                 100% Sécurisé
-              </Badge>
-              <Badge variant="outline" className="text-xs gap-1.5">
-                <IconStar className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                4.8/5 Avis
               </Badge>
             </div>
           </div>
