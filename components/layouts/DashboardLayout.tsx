@@ -123,9 +123,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="flex-1 md:ml-64">
           {/* Desktop Header */}
           <header className="sticky top-0 z-40 hidden h-16 items-center gap-4 border-b bg-background px-6 md:flex">
-            <div className="flex flex-1 items-center gap-4">
-              <LogoLink className="h-6" />
-            </div>
+            <div className="flex flex-1 items-center gap-4" />
             <HeaderActions />
           </header>
 
