@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner'
 import {
   IconLoader2,
   IconPlus,
@@ -21,13 +20,10 @@ import {
   IconCalendar,
   IconCurrencyEuro,
   IconEye,
-  IconArrowRight,
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/use-auth'
 import { getCountryName } from '@/lib/utils/countries'
 
 type BookingStatus =
@@ -55,17 +51,20 @@ interface Booking {
 }
 
 export default function MyBookingsPage() {
-  const router = useRouter()
-  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<BookingStatus | 'all'>('all')
 
   // Query pour récupérer les bookings
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['user-bookings', user?.id, activeTab],
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['user-bookings', activeTab],
     queryFn: async () => {
-      if (!user?.id) return { data: null, error: null }
-
       const supabase = createClient()
+      const { data: authData } = await supabase.auth.getSession()
+      const authUser = authData?.session?.user
+
+      if (!authUser?.id) {
+        return [] as Booking[]
+      }
+
       let query = supabase
         .from('bookings')
         .select(
@@ -84,7 +83,7 @@ export default function MyBookingsPage() {
           )
         `
         )
-        .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`)
+        .or(`sender_id.eq.${authUser.id},traveler_id.eq.${authUser.id}`)
         .order('created_at', { ascending: false })
 
       if (activeTab !== 'all') {
@@ -96,19 +95,24 @@ export default function MyBookingsPage() {
         }
       }
 
-      const { data: bookings, error } = await query
+      const { data: bookings, error } = await Promise.race([
+        query,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Bookings query timeout')), 8000)
+        ),
+      ]) as any
 
       if (error) {
         console.error('Get bookings error:', error)
-        return { data: null, error }
+        throw error
       }
 
-      return { data: bookings as any as Booking[], error: null }
+      return bookings as Booking[]
     },
-    enabled: !!user?.id,
+    retry: 1,
   })
 
-  const bookings = data?.data || []
+  const bookings = data || []
 
   const getStatusBadge = (status: BookingStatus) => {
     const variants: Record<BookingStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -142,6 +146,27 @@ export default function MyBookingsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-4">
+        <PageHeader
+          title="Mes colis"
+          description="Gérez vos réservations et suivez vos colis"
+        />
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Le chargement des colis prend trop de temps. Réessayez dans un instant.
+            </p>
+            <Button variant="outline" onClick={() => refetch()}>
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -289,5 +314,3 @@ export default function MyBookingsPage() {
     </div>
   )
 }
-
-
