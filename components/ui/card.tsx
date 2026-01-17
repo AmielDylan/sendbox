@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const cardVariants = cva(
-  "rounded-2xl border bg-card text-card-foreground transition-shadow",
+  "rounded-md border bg-card text-card-foreground",
   {
     variants: {
       elevation: {
@@ -12,7 +12,7 @@ const cardVariants = cva(
         sm: "shadow-sm",
         md: "shadow-md",
         lg: "shadow-lg",
-        elevated: "shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all",
+        elevated: "shadow-md",
       },
     },
     defaultVariants: {

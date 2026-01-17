@@ -1,18 +1,19 @@
 import type { Metadata } from 'next'
-import { DM_Sans, Inter } from 'next/font/google'
+import { Fraunces, Space_Grotesk } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { Providers } from './providers'
 import './globals.css'
 
-const dmSans = DM_Sans({
+const fraunces = Fraunces({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-display',
   display: 'swap',
 })
 
-const inter = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-body',
   display: 'swap',
 })
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr" className={`${dmSans.variable} ${inter.variable} light`} suppressHydrationWarning>
+    <html lang="fr" className={`${fraunces.variable} ${spaceGrotesk.variable} light`} suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <Providers>
           {children}
