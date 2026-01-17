@@ -132,7 +132,7 @@ export default function MyBookingsPage() {
     }
 
     return (
-      <Badge variant={variants[status]}>
+      <Badge variant={variants[status]} className="w-fit whitespace-nowrap">
         {labels[status]}
       </Badge>
     )
@@ -147,7 +147,7 @@ export default function MyBookingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         title="Mes colis"
         description="Gérez vos réservations et suivez vos colis"
@@ -165,19 +165,23 @@ export default function MyBookingsPage() {
 
         <TabsContent value={activeTab} className="space-y-4">
           {bookings.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center py-12">
-                  <IconPackage className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    Aucun colis trouvé
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {activeTab === 'all'
-                      ? 'Vous n\'avez pas encore de réservations.'
-                      : `Vous n'avez pas de colis avec le statut "${activeTab}".`}
-                  </p>
-                  <Button asChild>
+            <Card className="border-2 border-dashed">
+              <CardContent className="pt-12 pb-12">
+                <div className="flex flex-col items-center gap-4 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
+                    <IconPackage className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="font-display text-lg font-semibold">
+                      Aucun colis trouvé
+                    </h3>
+                    <p className="text-sm text-muted-foreground max-w-sm">
+                      {activeTab === 'all'
+                        ? 'Vous n\'avez pas encore de réservations.'
+                        : `Vous n'avez pas de colis avec le statut "${activeTab}".`}
+                    </p>
+                  </div>
+                  <Button asChild className="mt-2 shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5">
                     <Link href="/dashboard/colis/new">
                       <IconPlus className="mr-2 h-4 w-4" />
                       Créer une réservation
@@ -192,44 +196,51 @@ export default function MyBookingsPage() {
                 const announcement = booking.announcements
 
                 return (
-                  <Card key={booking.id}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
+                  <Card key={booking.id} className="card-elevated hover:shadow-xl transition-all overflow-hidden">
+                    <CardHeader className="p-4 sm:p-6 bg-muted/20">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                         <div className="space-y-1">
-                          <CardTitle className="text-lg">
-                            {announcement
-                              ? `${announcement.departure_city} → ${announcement.arrival_city}`
-                              : 'Colis'}
-                          </CardTitle>
-                          <p className="text-sm text-muted-foreground">
+                          <div className="flex items-start justify-between sm:block">
+                            <CardTitle className="text-base sm:text-lg leading-tight">
+                              {announcement
+                                ? `${announcement.departure_city} → ${announcement.arrival_city}`
+                                : 'Colis'}
+                            </CardTitle>
+                            {/* Badge visible only on mobile next to title to save space, hidden on sm */}
+                            <div className="sm:hidden ml-2 shrink-0">
+                              {getStatusBadge(booking.status)}
+                            </div>
+                          </div>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             Créé le{' '}
                             {format(new Date(booking.created_at), 'PPP', {
                               locale: fr,
                             })}
                           </p>
                         </div>
-                        {getStatusBadge(booking.status)}
+                        {/* Badge visible only on sm */}
+                        <div className="hidden sm:block shrink-0">
+                          {getStatusBadge(booking.status)}
+                        </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-2">
+                    <CardContent className="p-4 sm:p-6">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-3">
                           {announcement && (
                             <>
-                              <div className="flex items-center gap-2 text-sm">
-                                <IconMapPin className="h-4 w-4 text-muted-foreground" />
-                                <span>
-                                  {announcement.departure_city},{' '}
-                                  {getCountryName(announcement.departure_country)}
-                                </span>
-                                <IconArrowRight className="h-4 w-4 text-muted-foreground" />
-                                <span>
-                                  {announcement.arrival_city},{' '}
-                                  {getCountryName(announcement.arrival_country)}
+                              <div className="flex items-start gap-2 text-sm">
+                                <IconMapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                <span className="leading-tight">
+                                  {announcement.departure_city}, {getCountryName(announcement.departure_country)}
+                                  <br className="sm:hidden" />
+                                  <span className="hidden sm:inline"> → </span>
+                                  <span className="sm:hidden block mt-1">↓</span>
+                                  {announcement.arrival_city}, {getCountryName(announcement.arrival_country)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 text-sm">
-                                <IconCalendar className="h-4 w-4 text-muted-foreground" />
+                                <IconCalendar className="h-4 w-4 text-muted-foreground shrink-0" />
                                 <span>
                                   Départ:{' '}
                                   {format(
@@ -242,23 +253,25 @@ export default function MyBookingsPage() {
                             </>
                           )}
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <IconPackage className="h-4 w-4 text-muted-foreground" />
-                            <span>{booking.kilos_requested} kg</span>
-                          </div>
-                          {booking.total_price && (
+                        <div className="space-y-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                          <div className="flex items-center justify-between sm:justify-start sm:gap-6">
                             <div className="flex items-center gap-2 text-sm">
-                              <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-semibold">
-                                {booking.total_price.toFixed(2)} €
-                              </span>
+                              <IconPackage className="h-4 w-4 text-muted-foreground" />
+                              <span>{booking.kilos_requested} kg</span>
                             </div>
-                          )}
+                            {booking.total_price && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-semibold text-base">
+                                  {booking.total_price.toFixed(2)} €
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t">
-                        <Button variant="outline" size="sm" asChild>
+                      <div className="mt-4 pt-4 border-t flex justify-end">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto" asChild>
                           <Link href={`/dashboard/colis/${booking.id}`}>
                             <IconEye className="mr-2 h-4 w-4" />
                             Voir les détails

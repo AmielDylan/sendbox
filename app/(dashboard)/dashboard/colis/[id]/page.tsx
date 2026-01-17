@@ -348,7 +348,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
       {/* Statut et Informations principales */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Statut de la réservation</CardTitle>
             <BookingStatusBadge status={booking.status} />
           </div>
@@ -357,7 +357,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
           {booking.tracking_number && (
             <div>
               <p className="text-sm text-muted-foreground">Numéro de suivi</p>
-              <p className="font-mono font-medium">{booking.tracking_number}</p>
+              <p className="font-mono font-medium break-all">{booking.tracking_number}</p>
             </div>
           )}
 

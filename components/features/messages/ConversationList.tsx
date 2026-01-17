@@ -16,6 +16,8 @@ import { fr } from 'date-fns/locale'
 import { IconLoader2 } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 
+import { useAuth } from '@/hooks/use-auth'
+
 interface Conversation {
   booking_id: string
   other_user_id: string
@@ -24,6 +26,7 @@ interface Conversation {
   other_user_avatar_url: string | null
   last_message_content: string
   last_message_created_at: string
+  last_message_sender_id: string
   unread_count: number
 }
 
@@ -36,6 +39,7 @@ export function ConversationList({
   selectedBookingId,
   onSelectConversation,
 }: ConversationListProps) {
+  const { user } = useAuth()
   const {
     data: conversationsData,
     isLoading,
@@ -82,15 +86,18 @@ export function ConversationList({
     <ScrollArea className="h-full">
       <div className="space-y-1 p-2">
         {conversations.map((conversation) => {
-          const otherUserName = `${conversation.other_user_firstname || ''} ${
-            conversation.other_user_lastname || ''
-          }`.trim() || 'Utilisateur'
+          const otherUserName = `${conversation.other_user_firstname || ''} ${conversation.other_user_lastname || ''
+            }`.trim() || 'Utilisateur'
           const otherUserInitials = generateInitials(
             conversation.other_user_firstname,
             conversation.other_user_lastname
           )
           const isSelected = selectedBookingId === conversation.booking_id
-          const hasUnread = conversation.unread_count > 0
+
+          // Logic: Show unread only if count > 0 AND (we don't know who sent it OR it wasn't us)
+          // Ideally unread_count is 0 if we sent it, but to be safe per user request:
+          const isLastMessageFromMe = user?.id === conversation.last_message_sender_id
+          const hasUnread = conversation.unread_count > 0 && !isLastMessageFromMe
 
           return (
             <button
@@ -98,25 +105,28 @@ export function ConversationList({
               type="button"
               onClick={() => onSelectConversation(conversation.booking_id)}
               className={cn(
-                'w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left',
+                'w-full flex items-start gap-3 p-4 rounded-xl transition-all text-left group',
+                'active:scale-[0.98] touch-manipulation',
                 isSelected
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted',
-                hasUnread && !isSelected && 'bg-muted/50'
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'hover:bg-muted active:bg-muted/80',
+                hasUnread && !isSelected && 'bg-muted/50 border-l-4 border-primary'
               )}
+              aria-label={`Conversation avec ${otherUserName}, ${hasUnread ? `${conversation.unread_count} message(s) non lu(s)` : 'aucun nouveau message'}`}
+              aria-current={isSelected ? 'true' : 'false'}
             >
-              <Avatar className="h-10 w-10 flex-shrink-0">
+              <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border-2 border-background">
                 <AvatarImage
                   src={conversation.other_user_avatar_url || undefined}
                   alt={otherUserName}
                 />
                 <AvatarFallback>{otherUserInitials}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 space-y-0.5">
                 <div className="flex items-center justify-between gap-2">
                   <p
                     className={cn(
-                      'font-medium truncate',
+                      'font-semibold truncate text-sm sm:text-base',
                       isSelected && 'text-primary-foreground'
                     )}
                   >
@@ -125,7 +135,7 @@ export function ConversationList({
                   {hasUnread && (
                     <Badge
                       variant={isSelected ? 'secondary' : 'default'}
-                      className="ml-auto flex-shrink-0"
+                      className="ml-auto flex-shrink-0 h-5 min-w-[1.25rem] px-1 flex items-center justify-center"
                     >
                       {conversation.unread_count}
                     </Badge>
@@ -133,20 +143,21 @@ export function ConversationList({
                 </div>
                 <p
                   className={cn(
-                    'text-sm truncate mt-1',
+                    'text-xs sm:text-sm truncate leading-snug',
                     isSelected
-                      ? 'text-primary-foreground/80'
+                      ? 'text-primary-foreground/90'
                       : 'text-muted-foreground',
-                    hasUnread && !isSelected && 'font-medium'
+                    hasUnread && !isSelected && 'font-medium text-foreground'
                   )}
                 >
+                  {isLastMessageFromMe && <span className="mr-1">Vous:</span>}
                   {conversation.last_message_content}
                 </p>
                 <p
                   className={cn(
-                    'text-xs mt-1',
+                    'text-[10px] sm:text-xs',
                     isSelected
-                      ? 'text-primary-foreground/60'
+                      ? 'text-primary-foreground/70'
                       : 'text-muted-foreground'
                   )}
                 >

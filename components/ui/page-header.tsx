@@ -58,16 +58,16 @@ export function PageHeader({
       )}
 
       {/* Title and Description */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="flex-1 min-w-0 space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground truncate">
             {title}
           </h1>
           {description && (
-            <p className="text-muted-foreground">{description}</p>
+            <p className="text-muted-foreground break-words">{description}</p>
           )}
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
       </div>
     </div>
   )

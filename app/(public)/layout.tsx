@@ -4,6 +4,7 @@
  */
 
 import { PublicHeader } from '@/components/layouts/PublicHeader'
+import { PublicFooter } from '@/components/layouts/PublicFooter'
 
 export default function PublicLayout({
   children,
@@ -11,11 +12,12 @@ export default function PublicLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <PublicHeader />
-      <main className="container mx-auto px-4 py-6">
+      <main className="flex-1">
         {children}
       </main>
+      <PublicFooter />
     </div>
   )
 }

@@ -1,0 +1,276 @@
+/**
+ * Sendbox Design System - "Teal/Lyra"
+ * Modern, clean color palette with teal primary
+ * Professional and approachable aesthetic
+ */
+
+@layer base {
+  :root {
+    /* === Colors === */
+    /* Primary - Teal/Cyan */
+    --color-primary: 185 60% 50%; /* ~#33C2C2 Teal */
+    --color-primary-foreground: 181 50% 98%;
+
+    /* Secondary - Neutral gray */
+    --color-secondary: 240 5% 96%;
+    --color-secondary-foreground: 240 6% 20%;
+
+    /* Accent - Pure neutral */
+    --color-accent: 0 0% 97%;
+    --color-accent-foreground: 0 0% 20%;
+
+    /* Neutrals - Cool grays */
+    --color-background: 0 0% 100%;
+    --color-foreground: 0 0% 14%;
+
+    --color-card: 0 0% 100%;
+    --color-card-foreground: 0 0% 14%;
+
+    --color-muted: 240 5% 96%;
+    --color-muted-foreground: 240 4% 60%;
+
+    --color-border: 240 6% 88%;
+    --color-input: 240 6% 88%;
+    --color-ring: 185 60% 50%;
+
+    /* Status colors */
+    --color-destructive: 0 84% 60%;
+    --color-destructive-foreground: 0 0% 100%;
+
+    --color-success: 142 76% 36%;
+    --color-success-foreground: 0 0% 100%;
+
+    /* === Typography === */
+    --font-display: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* Font sizes - fluid scale */
+    --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --text-sm: clamp(0.875rem, 0.825rem + 0.25vw, 1rem);
+    --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+    --text-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);
+    --text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+    --text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+    --text-3xl: clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem);
+    --text-4xl: clamp(2.25rem, 1.95rem + 1.5vw, 3rem);
+    --text-5xl: clamp(3rem, 2.55rem + 2.25vw, 3.75rem);
+    --text-6xl: clamp(3.75rem, 3.15rem + 3vw, 4.5rem);
+
+    /* === Spacing - 8px base === */
+    --space-1: 0.25rem; /* 4px */
+    --space-2: 0.5rem;  /* 8px */
+    --space-3: 0.75rem; /* 12px */
+    --space-4: 1rem;    /* 16px */
+    --space-5: 1.25rem; /* 20px */
+    --space-6: 1.5rem;  /* 24px */
+    --space-8: 2rem;    /* 32px */
+    --space-10: 2.5rem; /* 40px */
+    --space-12: 3rem;   /* 48px */
+    --space-16: 4rem;   /* 64px */
+    --space-20: 5rem;   /* 80px */
+    --space-24: 6rem;   /* 96px */
+    --space-32: 8rem;   /* 128px */
+
+    /* === Borders & Radius === */
+    /* Lyra uses minimal radius - let globals.css handle this */
+
+    /* === Shadows === */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.20);
+    --shadow-teal: 0 8px 24px -4px rgb(51 194 194 / 0.12);
+
+    /* === Transitions === */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .dark {
+    --color-background: 0 0% 14%;
+    --color-foreground: 0 0% 98%;
+
+    --color-card: 240 6% 18%;
+    --color-card-foreground: 0 0% 98%;
+
+    --color-muted: 240 6% 24%;
+    --color-muted-foreground: 240 4% 68%;
+
+    --color-border: 240 6% 24%;
+    --color-input: 240 6% 24%;
+
+    /* Ajuster shadows pour dark mode */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
+    --shadow-teal: 0 8px 24px -4px rgb(51 194 194 / 0.2);
+  }
+}
+
+/* === Typography Classes === */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.font-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* === Semantic Typography === */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+p, li, td, th, label, span {
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+button {
+  font-family: var(--font-display);
+}
+
+/* === Gradient Backgrounds - Minimal pour Lyra === */
+.bg-gradient-warm {
+  background: hsl(var(--color-background));
+}
+
+.bg-gradient-hero {
+  background: hsl(var(--color-background));
+}
+
+.bg-noise {
+  position: relative;
+}
+
+.bg-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* === Utility Classes === */
+.container-wide {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.bg-map-grid {
+  background-image:
+    linear-gradient(to right, hsl(var(--color-border) / 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--color-border) / 0.35) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center;
+}
+
+.surface-glass {
+  background: hsl(var(--color-card) / 0.75);
+  border: 1px solid hsl(var(--color-border) / 0.6);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(16px);
+}
+
+@media (min-width: 640px) {
+  .container-wide {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-wide {
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
+
+/* === Component Patterns - Minimal pour Lyra === */
+.card-elevated {
+  background: hsl(var(--color-card));
+  border: 1px solid hsl(var(--color-border));
+  border-radius: var(--radius);
+  transition: all var(--transition-base);
+}
+
+.card-elevated:hover {
+  border-color: hsl(var(--color-border) / 0.8);
+}
+
+/* btn-primary removed - use Button component instead for consistency */
+
+/* === Animations === */
+@keyframes fade-in-up-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(var(--color-primary) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(var(--color-primary) / 0.5);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up-stagger 0.8s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.stagger-1 { animation-delay: 100ms; }
+.stagger-2 { animation-delay: 200ms; }
+.stagger-3 { animation-delay: 300ms; }
+.stagger-4 { animation-delay: 400ms; }
+.stagger-5 { animation-delay: 500ms; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

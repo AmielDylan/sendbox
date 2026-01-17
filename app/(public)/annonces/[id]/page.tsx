@@ -92,19 +92,28 @@ export default async function PublicAnnouncementDetailPage({
       {/* Tracker de vues - composant client qui incrémente les vues après le montage */}
       <ViewTracker announcementId={id} />
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <PageHeader
-            title={`Trajet ${announcement.departure_city} → ${announcement.arrival_city}`}
-            description={`Départ le ${new Date(announcement.departure_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`}
-          />
+      <div className="space-y-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="space-y-2">
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+                {announcement.departure_city}
+                <span className="text-primary mx-3">→</span>
+                {announcement.arrival_city}
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Départ le {new Date(announcement.departure_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
           {isOwner && (
             <div className="flex items-center gap-2">
               {announcement.status === 'active' && (
                 <Link href={`/dashboard/annonces/${id}/edit`}>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="default" className="hover:bg-primary/5 hover:border-primary/30 transition-all">
                     <IconEdit className="mr-2 h-4 w-4" />
-                    Éditer
+                    <span className="hidden sm:inline">Éditer</span>
+                    <span className="sm:hidden">Éditer l'annonce</span>
                   </Button>
                 </Link>
               )}
@@ -112,13 +121,13 @@ export default async function PublicAnnouncementDetailPage({
           )}
         </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Colonne principale */}
         <div className="lg:col-span-2 space-y-6">
           {/* Timeline */}
-          <Card>
+          <Card className="card-elevated">
             <CardHeader>
-              <CardTitle>Détails du trajet</CardTitle>
+              <CardTitle className="font-display text-2xl">Détails du trajet</CardTitle>
             </CardHeader>
             <CardContent>
               <TripTimeline
@@ -132,9 +141,9 @@ export default async function PublicAnnouncementDetailPage({
           </Card>
 
           {/* Capacité */}
-          <Card>
+          <Card className="card-elevated ">
             <CardHeader>
-              <CardTitle>Capacité et tarification</CardTitle>
+              <CardTitle className="font-display text-2xl">Capacité et tarification</CardTitle>
             </CardHeader>
             <CardContent>
               <CapacityProgress
@@ -147,12 +156,12 @@ export default async function PublicAnnouncementDetailPage({
 
           {/* Description */}
           {announcement.description && (
-            <Card>
+            <Card className="card-elevated ">
               <CardHeader>
-                <CardTitle>Description</CardTitle>
+                <CardTitle className="font-display text-2xl">Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">
+                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
                   {announcement.description}
                 </p>
               </CardContent>
@@ -182,26 +191,26 @@ export default async function PublicAnnouncementDetailPage({
 
           {/* Stats pour le propriétaire */}
           {isOwner && (
-            <Card>
+            <Card className="card-elevated bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20 ">
               <CardHeader>
-                <CardTitle>Statistiques</CardTitle>
+                <CardTitle className="font-display text-xl">Statistiques</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-background/60 rounded-lg">
                   <span className="text-sm text-muted-foreground">Vues</span>
-                  <span className="font-medium">{announcement.views_count || 0}</span>
+                  <span className="font-bold text-lg">{announcement.views_count || 0}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center p-3 bg-background/60 rounded-lg">
                   <span className="text-sm text-muted-foreground">
                     Demandes reçues
                   </span>
-                  <span className="font-medium">0</span>
+                  <span className="font-bold text-lg">0</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center p-3 bg-background/60 rounded-lg">
                   <span className="text-sm text-muted-foreground">
                     Poids réservé
                   </span>
-                  <span className="font-medium">
+                  <span className="font-bold text-lg">
                     {announcement.reserved_weight} / {announcement.available_kg} kg
                   </span>
                 </div>
@@ -217,19 +226,27 @@ export default async function PublicAnnouncementDetailPage({
               pricePerKg={announcement.price_per_kg}
             />
           ) : !user ? (
-            <Card>
-              <CardContent className="pt-6">
+            <Card className="card-elevated border-2 border-primary/20 ">
+              <CardContent className="pt-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <IconPackage className="h-6 w-6 text-primary" />
+                </div>
                 <p className="text-sm text-muted-foreground mb-4">
                   Connectez-vous pour réserver ce trajet
                 </p>
                 <Link href="/login">
-                  <Button className="w-full">Se connecter</Button>
+                  <Button className="w-full shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5">
+                    Se connecter
+                  </Button>
                 </Link>
               </CardContent>
             </Card>
           ) : isFeatureEnabled('KYC_ENABLED') && userKycStatus !== 'approved' ? (
-            <Card>
-              <CardContent className="pt-6">
+            <Card className="card-elevated border-2 border-yellow-200 dark:border-yellow-900 bg-yellow-50/50 dark:bg-yellow-950/20 ">
+              <CardContent className="pt-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center mx-auto mb-4">
+                  <IconCircleCheck className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
                 <p className="text-sm text-muted-foreground mb-4">
                   Vous devez avoir un KYC approuvé pour réserver
                 </p>
@@ -241,21 +258,25 @@ export default async function PublicAnnouncementDetailPage({
               </CardContent>
             </Card>
           ) : isOwner ? (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <IconPackage className="h-5 w-5" />
-                  <p className="text-sm">Vous ne pouvez pas réserver votre propre annonce</p>
+            <Card className="card-elevated border-2 border-muted ">
+              <CardContent className="pt-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                  <IconPackage className="h-6 w-6 text-muted-foreground" />
                 </div>
+                <p className="text-sm text-muted-foreground">
+                  Vous ne pouvez pas réserver votre propre annonce
+                </p>
               </CardContent>
             </Card>
           ) : (announcement.available_kg || 0) - (announcement.reserved_weight || 0) <= 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <IconPackage className="h-5 w-5" />
-                  <p className="text-sm">Capacité complète</p>
+            <Card className="card-elevated border-2 border-destructive/20 bg-destructive/5 ">
+              <CardContent className="pt-6 text-center">
+                <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+                  <IconPackage className="h-6 w-6 text-destructive" />
                 </div>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Capacité complète
+                </p>
               </CardContent>
             </Card>
           ) : null}

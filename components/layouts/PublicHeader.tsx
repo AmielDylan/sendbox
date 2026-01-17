@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { IconPackage, IconMenu2, IconX, IconSearch, IconLogin, IconLoader2 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
@@ -83,12 +84,20 @@ export function PublicHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
-      <div className="container flex h-16 items-center justify-between px-4">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/70 relative">
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+      <div className="container-wide flex h-16 items-center justify-between relative">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
-          <IconPackage className="h-6 w-6" />
-          <span className="text-xl">Sendbox</span>
+        <Link href="/" className="flex items-center gap-2 group">
+          <Image
+            src="/images/branding/logo.svg"
+            alt="Sendbox - Covalisage international Europe-Afrique"
+            width={145}
+            height={29}
+            priority
+            className="h-7 w-auto sm:h-8 transition-opacity group-hover:opacity-80"
+            style={{ maxWidth: '145px' }}
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -138,17 +147,18 @@ export function PublicHeader() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative h-9 w-9 rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    size="icon"
+                    className="relative rounded-full"
                     aria-label="Menu utilisateur"
                   >
-                    <Avatar className="h-9 w-9">
+                    <Avatar className="h-8 w-8">
                       {(profile as any)?.avatar_url && (
                         <AvatarImage
                           src={(profile as any).avatar_url}
                           alt={displayName}
                         />
                       )}
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
@@ -290,4 +300,3 @@ export function PublicHeader() {
     </header>
   )
 }
-

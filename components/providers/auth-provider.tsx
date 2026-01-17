@@ -12,8 +12,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const listenerSetup = useRef(false)
   const supabaseRef = useRef(createClient())
 
+
   useEffect(() => {
     const supabase = supabaseRef.current
+
+    const fetchProfileWithRetry = async (userId: string, retries = 3, delay = 2000) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const { data: profile, error } = await Promise.race([
+            supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', userId)
+              .single(),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Profile query timeout')), 10000)
+            )
+          ]) as any
+
+          if (error) throw error
+          return profile
+        } catch (err) {
+          if (i === retries - 1) throw err
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+      }
+    }
 
     // Initialisation: récupérer session et profil
     const initAuth = async () => {
@@ -23,26 +47,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           setUser(session.user)
 
-          // Récupérer le profil avec timeout de 10s
+          // Récupérer le profil avec retry
           try {
-            const { data: profile, error: profileError } = await Promise.race([
-              supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single(),
-              new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Profile query timeout')), 10000)
-              )
-            ]) as any
-
+            const profile = await fetchProfileWithRetry(session.user.id)
             if (profile) {
               setProfile(createProfile(profile))
-            } else if (profileError) {
-              console.error('[AuthProvider] Profile query error:', profileError)
             }
           } catch (profileFetchError) {
-            console.error('[AuthProvider] Profile fetch failed:', profileFetchError)
+            console.error('[AuthProvider] Profile fetch failed after retries:', profileFetchError)
           }
         } else {
           setUser(null)
@@ -69,26 +81,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (session?.user) {
               setUser(session.user)
 
-              // Récupérer profil à jour avec timeout de 10s
+              // Récupérer profil à jour avec retry
               try {
-                const { data: profile, error: profileError } = await Promise.race([
-                  supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single(),
-                  new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Profile query timeout')), 10000)
-                  )
-                ]) as any
-
+                const profile = await fetchProfileWithRetry(session.user.id)
                 if (profile) {
                   setProfile(createProfile(profile))
-                } else if (profileError) {
-                  console.error('[AuthProvider] Profile error:', profileError)
                 }
               } catch (profileFetchError) {
-                console.error('[AuthProvider] Profile fetch failed:', profileFetchError)
+                console.error('[AuthProvider] Profile fetch failed after retries:', profileFetchError)
               }
             }
 

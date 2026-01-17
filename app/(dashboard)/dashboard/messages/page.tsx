@@ -16,10 +16,13 @@ import { ConversationList } from '@/components/features/messages/ConversationLis
 import { ChatWindow } from '@/components/features/messages/ChatWindow'
 import { BookingRequestCard } from '@/components/features/bookings/BookingRequestCard'
 import { getPendingBookingRequests } from "@/lib/core/bookings/requests"
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconLoader2, IconBell, IconInbox, IconMessageCircle } from '@tabler/icons-react'
+import { IconLoader2, IconBell, IconInbox, IconMessageCircle, IconArrowRight } from '@tabler/icons-react'
 import { createClient } from "@/lib/shared/db/client"
 import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 function MessagesPageContent() {
   const searchParams = useSearchParams()
@@ -181,9 +184,8 @@ function MessagesPageContent() {
       setSelectedConversation({
         bookingId,
         otherUserId: conversation.other_user_id,
-        otherUserName: `${conversation.other_user_firstname || ''} ${
-          conversation.other_user_lastname || ''
-        }`.trim() || 'Utilisateur',
+        otherUserName: `${conversation.other_user_firstname || ''} ${conversation.other_user_lastname || ''
+          }`.trim() || 'Utilisateur',
         otherUserAvatar: conversation.other_user_avatar_url,
       })
     }
@@ -193,7 +195,7 @@ function MessagesPageContent() {
   const notifications = notificationsData || []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         title="Messages"
         description="Gérez vos demandes de réservation et conversations"
@@ -204,42 +206,47 @@ function MessagesPageContent() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="chat">
-            <IconMessageCircle className="mr-2 h-4 w-4" />
-            Chat
+        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="chat" className="gap-2">
+            <IconMessageCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Chat</span>
           </TabsTrigger>
-          <TabsTrigger value="requests">
-            <IconInbox className="mr-2 h-4 w-4" />
-            Demandes
+          <TabsTrigger value="requests" className="gap-2">
+            <IconInbox className="h-4 w-4" />
+            <span className="hidden sm:inline">Demandes</span>
             {bookings.length > 0 && (
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="ml-1 sm:ml-2 h-5 min-w-5 px-1.5 text-xs">
                 {bookings.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="notifications">
-            <IconBell className="mr-2 h-4 w-4" />
-            Notifications
+          <TabsTrigger value="notifications" className="gap-2">
+            <IconBell className="h-4 w-4" />
+            <span className="hidden sm:inline">Notifications</span>
             {unreadCount > 0 && (
-              <Badge variant="default" className="ml-2">
+              <Badge className="ml-1 sm:ml-2 h-5 min-w-5 px-1.5 text-xs bg-primary">
                 {unreadCount}
               </Badge>
             )}
           </TabsTrigger>
         </TabsList>
 
-        {/* Tab Chat */}
-        <TabsContent value="chat" className="space-y-0">
-          <div className="border rounded-lg h-[calc(100vh-300px)] flex">
-            {/* Sidebar gauche (30%) */}
-            <div className="w-[30%] border-r flex flex-col">
+        <TabsContent value="chat">
+          <div
+            className="w-full border flex overflow-hidden bg-background"
+            style={{ height: 'calc(100dvh - 280px)', minHeight: '500px' }}
+          >
+            {/* Sidebar: Liste conversations */}
+            <div className={`
+              ${selectedConversation ? 'hidden md:flex' : 'flex'}
+              w-full md:w-80 lg:w-96 border-r flex-col
+            `}>
               <div className="p-4 border-b">
-                <h3 className="font-semibold">Conversations</h3>
+                <h3 className="font-semibold text-lg">Conversations</h3>
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 overflow-y-auto">
                 {isLoadingConversations ? (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex items-center justify-center h-full min-h-[200px]">
                     <IconLoader2 className="h-6 w-6 animate-spin text-primary" />
                   </div>
                 ) : (
@@ -251,18 +258,33 @@ function MessagesPageContent() {
               </div>
             </div>
 
-            {/* Zone principale (70%) */}
-            <div className="flex-1 flex flex-col">
+            {/* Zone principale: Chat */}
+            <div className={`
+              ${selectedConversation ? 'flex' : 'hidden md:flex'}
+              flex-1 flex-col
+            `}>
               {selectedConversation ? (
                 <ChatWindow
                   bookingId={selectedConversation.bookingId}
                   otherUserId={selectedConversation.otherUserId}
                   otherUserName={selectedConversation.otherUserName}
                   otherUserAvatar={selectedConversation.otherUserAvatar}
+                  onBack={() => {
+                    setSelectedConversation(null)
+                    setSelectedBookingId(null)
+                  }}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  Sélectionnez une conversation pour commencer
+                <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                  <div className="text-center p-6">
+                    <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mb-4 mx-auto">
+                      <IconMessageCircle className="h-8 w-8 text-muted-foreground/50" />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1">Vos messages</h3>
+                    <p className="max-w-xs text-sm">
+                      Sélectionnez une conversation pour commencer
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -315,9 +337,8 @@ function MessagesPageContent() {
               {notifications.map((notification) => (
                 <Card
                   key={notification.id}
-                  className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-                    notification.read_at ? 'opacity-60' : ''
-                  }`}
+                  className={`cursor-pointer hover:bg-muted/50 transition-colors ${notification.read_at ? 'opacity-60' : ''
+                    }`}
                 >
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between">

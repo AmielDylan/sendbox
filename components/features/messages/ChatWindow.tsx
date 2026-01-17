@@ -12,11 +12,11 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { useMessages, type Message } from '@/hooks/use-messages'
 import { sendMessage, markMessagesAsRead } from "@/lib/core/messages/actions"
-import { generateInitials } from "@/lib/core/profile/utils"
 import { sanitizeMessageContent } from '@/lib/shared/security/xss-protection'
+import { generateInitials } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { IconSend, IconLoader2, IconPhoto } from '@tabler/icons-react'
+import { IconSend, IconLoader2, IconPhoto, IconArrowLeft } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { createClient } from "@/lib/shared/db/client"
 import Image from 'next/image'
@@ -28,6 +28,7 @@ interface ChatWindowProps {
   otherUserId: string | null
   otherUserName: string | null
   otherUserAvatar: string | null
+  onBack?: () => void
 }
 
 interface MessageItemProps {
@@ -44,29 +45,15 @@ const MessageItem = memo(({ message, currentUserId }: MessageItemProps) => {
   const senderName = isOwnMessage
     ? 'Vous'
     : `${message.sender?.firstname || ''} ${message.sender?.lastname || ''}`.trim() ||
-      'Utilisateur'
+    'Utilisateur'
 
   return (
     <div
       className={cn(
-        'flex gap-3',
-        isOwnMessage ? 'flex-row-reverse' : 'flex-row'
+        'flex',
+        isOwnMessage ? 'justify-end' : 'justify-start'
       )}
     >
-      {!isOwnMessage && (
-        <Avatar className="h-8 w-8 flex-shrink-0">
-          <AvatarImage
-            src={message.sender?.avatar_url || undefined}
-            alt={senderName}
-          />
-          <AvatarFallback>
-            {generateInitials(
-              message.sender?.firstname || null,
-              message.sender?.lastname || null
-            )}
-          </AvatarFallback>
-        </Avatar>
-      )}
       <div
         className={cn(
           'flex flex-col max-w-[70%]',
@@ -89,7 +76,7 @@ const MessageItem = memo(({ message, currentUserId }: MessageItemProps) => {
               {message.attachments.map((attachment, idx) => (
                 <div
                   key={idx}
-                  className="relative w-full max-w-xs rounded-md overflow-hidden"
+                  className="relative w-full max-w-[min(300px,calc(100vw-12rem))] sm:max-w-xs rounded-md overflow-hidden"
                 >
                   <Image
                     src={attachment}
@@ -126,6 +113,7 @@ export function ChatWindow({
   otherUserId,
   otherUserName,
   otherUserAvatar,
+  onBack,
 }: ChatWindowProps) {
   const router = useRouter()
   const { messages, isLoading, addOptimisticMessage, removeOptimisticMessage } = useMessages(bookingId)
@@ -230,8 +218,18 @@ export function ChatWindow({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="border-b p-4 flex items-center justify-between">
+      <div className="border-b p-4 flex items-center justify-between bg-card">
         <div className="flex items-center gap-3">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="mr-1 md:hidden"
+            >
+              <IconArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
           <Avatar>
             <AvatarImage src={otherUserAvatar || undefined} alt={otherUserName || ''} />
             <AvatarFallback>
@@ -278,37 +276,40 @@ export function ChatWindow({
       </ScrollArea>
 
       {/* Input */}
-      <div className="border-t p-4">
+      <div className="border-t p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <div className="flex gap-2">
           <Textarea
             value={messageContent}
             onChange={(e) => setMessageContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Tapez votre message... (Entrée pour envoyer)"
+            placeholder="Tapez votre message..."
             rows={3}
             maxLength={2000}
-            className="resize-none"
+            className="resize-none text-sm sm:text-base"
+            aria-label="Message à envoyer"
+            aria-describedby="message-counter"
           />
-          <div className="flex flex-col gap-2">
-            <Button
-              onClick={handleSendMessage}
-              disabled={!messageContent.trim() || isPending}
-              size="icon"
-            >
-              {isPending ? (
-                <IconLoader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <IconSend className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          <Button
+            onClick={handleSendMessage}
+            disabled={!messageContent.trim() || isPending}
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            aria-label="Envoyer le message"
+          >
+            {isPending ? (
+              <IconLoader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <IconSend className="h-4 w-4" />
+            )}
+          </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2 text-right">
-          {messageContent.length}/2000
-        </p>
+        <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+          <p>Shift + Entrée pour nouvelle ligne</p>
+          <p id="message-counter" className="tabular-nums" aria-live="polite">
+            {messageContent.length}/2000
+          </p>
+        </div>
       </div>
     </div>
   )
 }
-
-

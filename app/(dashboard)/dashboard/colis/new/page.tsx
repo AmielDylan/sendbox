@@ -383,7 +383,7 @@ function NewBookingPageContent() {
                     disabled={photos.length >= MAX_PHOTOS}
                   />
                   {photos.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
                       {photoPreviews.map((preview, index) => (
                         <div key={index} className="relative group">
                           <img
@@ -459,15 +459,16 @@ function NewBookingPageContent() {
             </Card>
 
             {/* Actions */}
-            <div className="flex justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
+                className="w-full sm:w-auto"
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
                 {isSubmitting ? (
                   <>
                     <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
