@@ -248,7 +248,7 @@ export async function refuseBooking(bookingId: string, reason: string) {
 }
 
 /**
- * Récupère les demandes en attente pour les annonces du voyageur
+ * Récupère les demandes actives pour les annonces du voyageur
  */
 export async function getPendingBookingRequests() {
   const supabase = await createClient()
@@ -277,7 +277,7 @@ export async function getPendingBookingRequests() {
 
   const announcementIds = announcements.map((a) => a.id)
 
-  // Récupérer les bookings en attente pour ces annonces
+  // Récupérer les bookings actifs pour ces annonces
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select(
@@ -298,7 +298,7 @@ export async function getPendingBookingRequests() {
       )
     `
     )
-    .eq('status', 'pending')
+    .in('status', ['pending', 'accepted', 'paid'])
     .in('announcement_id', announcementIds)
     .order('created_at', { ascending: false })
 
@@ -378,4 +378,3 @@ export async function getUnreadNotificationsCount() {
     count: data || 0,
   }
 }
-

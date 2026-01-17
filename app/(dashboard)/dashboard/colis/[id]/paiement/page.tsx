@@ -171,36 +171,6 @@ function PaymentPageContent() {
             </CardContent>
           </Card>
 
-          {/* Stripe Elements */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconLock className="h-5 w-5" />
-                Informations de paiement
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Elements
-                stripe={stripePromise}
-                options={{
-                  clientSecret,
-                  appearance: {
-                    theme: 'stripe',
-                  },
-                }}
-              >
-                <PaymentForm
-                  bookingId={bookingId}
-                  amount={amount}
-                  acceptedTerms={acceptedTerms}
-                  onSuccess={() => {
-                    router.push(`/dashboard/colis/${bookingId}?payment=success`)
-                  }}
-                />
-              </Elements>
-            </CardContent>
-          </Card>
-
           {/* Mentions légales */}
           <Card>
             <CardHeader>
@@ -249,6 +219,36 @@ function PaymentPageContent() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Stripe Elements */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IconLock className="h-5 w-5" />
+                Informations de paiement
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret,
+                  appearance: {
+                    theme: 'stripe',
+                  },
+                }}
+              >
+                <PaymentForm
+                  bookingId={bookingId}
+                  amount={amount}
+                  acceptedTerms={acceptedTerms}
+                  onSuccess={() => {
+                    router.push(`/dashboard/colis/${bookingId}?payment=success`)
+                  }}
+                />
+              </Elements>
             </CardContent>
           </Card>
         </div>
@@ -317,4 +317,3 @@ export default function PaymentPage() {
     </Suspense>
   )
 }
-

@@ -54,7 +54,7 @@ function MessagesPageContent() {
     },
   })
 
-  // Query pour les demandes en attente
+  // Query pour les demandes actives
   const {
     data: requestsData,
     isLoading: isLoadingRequests,
@@ -301,7 +301,7 @@ function MessagesPageContent() {
             <Card>
               <CardContent className="pt-6">
                 <p className="text-center text-muted-foreground">
-                  Aucune demande en attente
+                  Aucune demande active
                 </p>
               </CardContent>
             </Card>

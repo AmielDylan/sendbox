@@ -35,8 +35,11 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
+type BookingRequestStatus = 'pending' | 'accepted' | 'paid'
+
 interface BookingRequest {
   id: string
+  status: BookingRequestStatus
   kilos_requested?: number
   weight_kg?: number
   package_description?: string | null
@@ -71,6 +74,18 @@ const REFUSAL_REASONS = [
   { value: 'other', label: 'Autre' },
 ] as const
 
+const STATUS_LABELS: Record<BookingRequestStatus, string> = {
+  pending: 'En attente',
+  accepted: 'Accepté',
+  paid: 'Payé',
+}
+
+const STATUS_VARIANTS: Record<BookingRequestStatus, 'default' | 'secondary' | 'outline'> = {
+  pending: 'secondary',
+  accepted: 'default',
+  paid: 'default',
+}
+
 export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProps) {
   const router = useRouter()
   const [showAcceptModal, setShowAcceptModal] = useState(false)
@@ -89,6 +104,8 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
   // Support pour les deux colonnes: kilos_requested (nouveau) et weight_kg (ancien)
   const weightKg = booking.kilos_requested || 0
   const packageDescription = booking.package_description || booking.description || null
+  const statusLabel = STATUS_LABELS[booking.status]
+  const statusVariant = STATUS_VARIANTS[booking.status]
 
   const handleAccept = async () => {
     if (!acceptedTerms) {
@@ -171,11 +188,14 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
                 </div>
               </div>
             </div>
-            {isNew && (
-              <Badge variant="default" className="bg-green-500">
-                Nouveau
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {isNew && (
+                <Badge variant="default" className="bg-green-500">
+                  Nouveau
+                </Badge>
+              )}
+              <Badge variant={statusVariant}>{statusLabel}</Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -254,33 +274,60 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
           )}
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => setShowAcceptModal(true)}
-              className="flex-1"
-            >
-              <IconCircleCheck className="mr-2 h-4 w-4" />
-              Accepter
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setShowRefuseModal(true)}
-              className="flex-1"
-            >
-              <IconCircleX className="mr-2 h-4 w-4" />
-              Refuser
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/dashboard/messages?booking=${booking.id}`)}
-            >
-              <IconMessageCircle className="h-4 w-4" />
-            </Button>
-          </div>
+          {booking.status === 'pending' ? (
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setShowAcceptModal(true)}
+                className="flex-1"
+              >
+                <IconCircleCheck className="mr-2 h-4 w-4" />
+                Accepter
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowRefuseModal(true)}
+                className="flex-1"
+              >
+                <IconCircleX className="mr-2 h-4 w-4" />
+                Refuser
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/dashboard/messages?booking=${booking.id}`)}
+              >
+                <IconMessageCircle className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2 pt-2">
+              <div className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                {booking.status === 'accepted'
+                  ? 'Demande acceptée. En attente du paiement de l\'expéditeur.'
+                  : 'Paiement confirmé. Vous pouvez organiser la prise en charge.'}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => router.push(`/dashboard/colis/${booking.id}`)}
+                >
+                  Voir la réservation
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/messages?booking=${booking.id}`)}
+                >
+                  <IconMessageCircle className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -431,7 +478,6 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
     </>
   )
 }
-
 
 
 

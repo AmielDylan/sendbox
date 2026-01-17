@@ -179,7 +179,7 @@ export default function MyBookingsPage() {
       />
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BookingStatus | 'all')}>
-        <TabsList>
+        <TabsList className="flex w-full flex-wrap justify-start gap-2 sm:inline-flex sm:w-auto sm:flex-nowrap">
           <TabsTrigger value="all">Tous</TabsTrigger>
           <TabsTrigger value="pending">En attente</TabsTrigger>
           <TabsTrigger value="accepted">Confirmés</TabsTrigger>

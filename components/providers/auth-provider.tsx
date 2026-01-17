@@ -59,23 +59,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return null
     }
 
+    const applySession = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
+      if (session?.user) {
+        setUser(session.user)
+
+        const profile = await fetchProfileWithRetry(session.user.id)
+        if (profile) {
+          setProfile(createProfile(profile))
+        } else {
+          setProfile(null)
+        }
+      } else {
+        setUser(null)
+        setProfile(null)
+      }
+    }
+
+    const syncSession = async (retries = 0, delayMs = 300) => {
+      let session = null
+
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        const { data } = await supabase.auth.getSession()
+        session = data.session
+
+        if (session?.user || attempt === retries) {
+          break
+        }
+
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      }
+
+      await applySession(session)
+    }
+
     // Initialisation: récupérer session et profil
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-
-        if (session?.user) {
-          setUser(session.user)
-
-          // Récupérer le profil avec retry
-          const profile = await fetchProfileWithRetry(session.user.id)
-          if (profile) {
-            setProfile(createProfile(profile))
-          }
-        } else {
-          setUser(null)
-          setProfile(null)
-        }
+        await syncSession()
       } catch (error) {
         console.error('Auth initialization error:', error)
       } finally {
@@ -90,19 +110,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!listenerSetup.current) {
       listenerSetup.current = true
 
+      const handleAuthChange = async () => {
+        try {
+          await syncSession(2)
+          queryClient.invalidateQueries()
+        } catch (error) {
+          console.error('[AuthProvider] Auth change sync failed:', error)
+        }
+      }
+
+      if (typeof window !== 'undefined') {
+        window.addEventListener('auth-change', handleAuthChange)
+      }
+
       // Listener auth state changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
           if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-            if (session?.user) {
-              setUser(session.user)
-
-              // Récupérer profil à jour avec retry
-              const profile = await fetchProfileWithRetry(session.user.id)
-              if (profile) {
-                setProfile(createProfile(profile))
-              }
-            }
+            await applySession(session || null)
 
             // Invalider seulement les queries pertinentes (pas toutes!)
             // Évite boucle infinie avec onAuthStateChange
@@ -117,6 +142,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return () => {
         subscription.unsubscribe()
+        if (typeof window !== 'undefined') {
+          window.removeEventListener('auth-change', handleAuthChange)
+        }
         listenerSetup.current = false
       }
     }
