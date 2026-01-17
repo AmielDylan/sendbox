@@ -56,9 +56,11 @@ const steps = [
 
 export default function HomePage() {
   return (
-    <div className="bg-gradient-hero bg-noise">
-      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center">
-        <div className="container-wide grid gap-10 lg:grid-cols-2 lg:gap-12 items-center py-16 md:py-20">
+    <div className="bg-background">
+      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center overflow-hidden">
+        <div className="absolute inset-0 bg-hero-image opacity-20" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background" aria-hidden="true" />
+        <div className="container-wide relative z-10 grid gap-10 lg:grid-cols-2 lg:gap-12 items-center py-10 sm:py-14 md:py-20">
           <div className="space-y-6 text-center lg:text-left">
             <Badge
               variant="outline"
@@ -99,7 +101,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative order-first lg:order-last">
+          <div className="relative order-first lg:order-last hidden sm:block">
             <div className="relative w-full max-w-[220px] sm:max-w-[320px] md:max-w-sm mx-auto">
               <div className="aspect-square overflow-hidden rounded-md border border-border bg-muted/40">
                 <Image

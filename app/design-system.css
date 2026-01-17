@@ -151,6 +151,13 @@ button {
   background: hsl(var(--color-background));
 }
 
+.bg-hero-image {
+  background-image: url('/images/hero-background.jpg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
 .bg-noise {
   position: relative;
 }
