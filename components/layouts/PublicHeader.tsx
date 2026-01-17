@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { IconPackage, IconMenu2, IconX, IconSearch, IconLogin, IconLoader2 } from '@tabler/icons-react'
+import { IconPackage, IconMenu2, IconX, IconSearch, IconLogin, IconLoader2, IconLayoutDashboard } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -44,6 +44,9 @@ export function PublicHeader() {
     { label: 'Accueil', href: '/' },
     { label: 'Rechercher', href: '/recherche', icon: IconSearch },
   ]
+  if (user) {
+    navItems.push({ label: 'Dashboard', href: '/dashboard', icon: IconLayoutDashboard })
+  }
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
