@@ -141,11 +141,6 @@ export default function ProfilePage() {
       <PageHeader
         title="Mon profil"
         description="Gérez vos informations personnelles et votre photo de profil"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Réglages', href: '/dashboard/reglages' },
-          { label: 'Profil' },
-        ]}
       />
 
       {/* Vue d'ensemble */}

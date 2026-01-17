@@ -144,14 +144,9 @@ export default function AccountPage() {
 
   return (
       <div className="space-y-6">
-        <PageHeader
-          title="Paramètres du compte"
-          description="Gérez les paramètres de sécurité et votre compte"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Réglages', href: '/dashboard/reglages' },
-          { label: 'Compte' },
-        ]}
+      <PageHeader
+        title="Paramètres du compte"
+        description="Gérez les paramètres de sécurité et votre compte"
       />
 
       {/* Changement de mot de passe */}
@@ -475,6 +470,5 @@ export default function AccountPage() {
     </div>
   )
 }
-
 
 
