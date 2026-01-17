@@ -143,10 +143,10 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Paramètres du compte"
-        description="Gérez les paramètres de sécurité et votre compte"
+      <div className="space-y-6">
+        <PageHeader
+          title="Paramètres du compte"
+          description="Gérez les paramètres de sécurité et votre compte"
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Réglages', href: '/dashboard/reglages' },
@@ -155,20 +155,20 @@ export default function AccountPage() {
       />
 
       {/* Changement de mot de passe */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconLock className="h-5 w-5" />
+      <Card className="border-border/70 bg-background">
+        <CardHeader className="space-y-1.5">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <IconLock className="h-4 w-4 text-muted-foreground" />
             Mot de passe
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm">
             Changez votre mot de passe pour sécuriser votre compte
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form
             onSubmit={passwordForm.handleSubmit(onPasswordSubmit)}
-            className="space-y-4"
+            className="space-y-5"
           >
             {/* Mot de passe actuel */}
             <div className="space-y-2">
@@ -264,35 +264,37 @@ export default function AccountPage() {
               )}
             </div>
 
-            <Button type="submit" disabled={isChangingPassword}>
-              {isChangingPassword ? (
-                <>
-                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Modification...
-                </>
-              ) : (
-                'Changer le mot de passe'
-              )}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isChangingPassword}>
+                {isChangingPassword ? (
+                  <>
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Modification...
+                  </>
+                ) : (
+                  'Changer le mot de passe'
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
 
       {/* Changement d'email */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconMail className="h-5 w-5" />
+      <Card className="border-border/70 bg-background">
+        <CardHeader className="space-y-1.5">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <IconMail className="h-4 w-4 text-muted-foreground" />
             Adresse email
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm">
             Changez votre adresse email. Un email de confirmation sera envoyé.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form
             onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-            className="space-y-4"
+            className="space-y-5"
           >
             {/* Nouvel email */}
             <div className="space-y-2">
@@ -352,28 +354,30 @@ export default function AccountPage() {
               )}
             </div>
 
-            <Button type="submit" disabled={isChangingEmail}>
-              {isChangingEmail ? (
-                <>
-                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Modification...
-                </>
-              ) : (
-                "Changer l'email"
-              )}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isChangingEmail}>
+                {isChangingEmail ? (
+                  <>
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Modification...
+                  </>
+                ) : (
+                  "Changer l'email"
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
 
       {/* Zone de danger */}
-      <Card className="border-destructive">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <IconAlertTriangle className="h-5 w-5" />
+      <Card className="border-destructive/40 bg-destructive/5">
+        <CardHeader className="space-y-1.5">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold text-destructive">
+            <IconAlertTriangle className="h-4 w-4" />
             Zone de danger
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm">
             Actions irréversibles. Procédez avec prudence.
           </CardDescription>
         </CardHeader>
@@ -471,7 +475,6 @@ export default function AccountPage() {
     </div>
   )
 }
-
 
 
 

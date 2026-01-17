@@ -25,9 +25,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { IconLoader2, IconUpload, IconUser, IconStar, IconPackage } from '@tabler/icons-react'
+import { IconLoader2, IconUpload } from '@tabler/icons-react'
 import { generateInitials } from "@/lib/core/profile/utils"
 
 export default function ProfilePage() {
@@ -150,13 +149,13 @@ export default function ProfilePage() {
       />
 
       {/* Vue d'ensemble */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Vue d'ensemble</CardTitle>
+      <Card className="border-border/70 bg-background">
+        <CardHeader className="space-y-1.5">
+          <CardTitle className="text-base font-semibold">Vue d'ensemble</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-6">
-            <Avatar className="h-24 w-24">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <Avatar className="h-20 w-20">
               <AvatarImage src={avatarPreview || undefined} alt="Avatar" />
               <AvatarFallback className="text-2xl">
                 {generateInitials(
@@ -166,30 +165,20 @@ export default function ProfilePage() {
               </AvatarFallback>
             </Avatar>
             <div className="space-y-2 flex-1">
-              <h2 className="text-2xl font-bold">
+              <h2 className="text-xl font-semibold">
                 {profile?.firstname} {profile?.lastname}
               </h2>
               <p className="text-muted-foreground">{profile?.email}</p>
-              <div className="flex items-center gap-4 mt-4">
-                <Badge variant="secondary" className="gap-2">
-                  <IconStar className="h-4 w-4" />
-                  4.8/5
-                </Badge>
-                <Badge variant="secondary" className="gap-2">
-                  <IconPackage className="h-4 w-4" />
-                  12 services
-                </Badge>
-              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Formulaire de modification */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations personnelles</CardTitle>
-          <CardDescription>
+      <Card className="border-border/70 bg-background">
+        <CardHeader className="space-y-1.5">
+          <CardTitle className="text-base font-semibold">Informations personnelles</CardTitle>
+          <CardDescription className="text-sm">
             Mettez à jour vos informations personnelles
           </CardDescription>
         </CardHeader>
@@ -348,17 +337,18 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            {/* Bouton submit */}
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enregistrement...
-                </>
-              ) : (
-                'Enregistrer les modifications'
-              )}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  'Enregistrer les modifications'
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

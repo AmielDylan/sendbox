@@ -6,9 +6,8 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { IconUser, IconIdBadge2, IconShield, IconCircleCheck, IconClock, IconAlertCircle } from '@tabler/icons-react'
+import { IconUser, IconIdBadge2, IconShield, IconCircleCheck, IconAlertCircle } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 import { isFeatureEnabled } from "@/lib/shared/config/features"
 
@@ -53,56 +52,62 @@ export function SettingsNav({ kycStatus }: SettingsNavProps) {
   const getKYCBadge = () => {
     if (kycStatus === 'approved') {
       return (
-        <IconCircleCheck className="ml-auto h-4 w-4 text-green-600" />
+        <Badge variant="secondary" className="ml-auto bg-emerald-50 text-emerald-700">
+          <IconCircleCheck className="mr-1 h-3 w-3" />
+          Validé
+        </Badge>
       )
     }
     if (kycStatus === 'pending') {
       return (
-        <Badge variant="secondary" className="ml-auto bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+        <Badge variant="secondary" className="ml-auto bg-yellow-100 text-yellow-700">
           En attente
         </Badge>
       )
     }
     if (kycStatus === 'rejected') {
       return (
-        <IconAlertCircle className="ml-auto h-4 w-4 text-destructive" />
+        <Badge variant="destructive" className="ml-auto">
+          <IconAlertCircle className="mr-1 h-3 w-3" />
+          Rejeté
+        </Badge>
       )
     }
     return null
   }
 
   return (
-    <nav className="space-y-1">
+    <nav className="space-y-1 p-2">
       {navItems.map((item) => {
         const Icon = item.icon
         const isActive = pathname === item.href
         
         return (
-          <Link key={item.href} href={item.href} className="block">
-            <Button
-              variant={isActive ? 'secondary' : 'ghost'}
-              className={cn(
-                'w-full justify-start',
-                isActive && 'bg-secondary'
-              )}
-            >
-              <Icon className="mr-2 h-4 w-4" />
-              <div className="flex-1 text-left">
-                <div className="font-medium">{item.label}</div>
-                <div className="text-xs text-muted-foreground hidden sm:block">
-                  {item.description}
-                </div>
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'flex items-start gap-3 rounded-sm px-3 py-2 text-sm transition-colors',
+              isActive
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+            )}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            <Icon className="mt-0.5 h-4 w-4 text-current" />
+            <div className="flex-1 text-left">
+              <div className="font-medium">{item.label}</div>
+              <div className="text-xs text-muted-foreground hidden sm:block">
+                {item.description}
               </div>
-              {item.badge && getKYCBadge()}
-            </Button>
+            </div>
+            {item.badge && getKYCBadge()}
           </Link>
         )
       })}
     </nav>
   )
 }
-
-
 
 
 
