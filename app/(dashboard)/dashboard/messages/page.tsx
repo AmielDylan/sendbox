@@ -20,6 +20,18 @@ import { Card, CardContent } from '@/components/ui/card'
 import { IconLoader2, IconBell, IconInbox, IconMessageCircle } from '@tabler/icons-react'
 import { createClient } from "@/lib/shared/db/client"
 
+type ConversationSummary = {
+  booking_id: string
+  other_user_id: string
+  other_user_firstname: string | null
+  other_user_lastname: string | null
+  other_user_avatar_url: string | null
+  last_message_content: string
+  last_message_created_at: string
+  last_message_sender_id: string
+  unread_count: number
+}
+
 function MessagesPageContent() {
   const searchParams = useSearchParams()
   const bookingIdFromUrl = searchParams.get('booking')
@@ -32,6 +44,7 @@ function MessagesPageContent() {
     otherUserName: string
     otherUserAvatar: string | null
   } | null>(null)
+  const [pendingConversation, setPendingConversation] = useState<ConversationSummary | null>(null)
   const [activeTab, setActiveTab] = useState(bookingIdFromUrl ? 'chat' : 'chat')
 
   // Query pour les conversations
@@ -114,7 +127,7 @@ function MessagesPageContent() {
 
       const { data: booking } = await supabase
         .from('bookings')
-        .select('id, sender_id, traveler_id')
+        .select('id, sender_id, traveler_id, created_at')
         .eq('id', bookingIdFromUrl)
         .single()
 
@@ -138,12 +151,29 @@ function MessagesPageContent() {
             otherUserName: `${otherUserProfile.firstname || ''} ${otherUserProfile.lastname || ''}`.trim() || 'Utilisateur',
             otherUserAvatar: otherUserProfile.avatar_url,
           })
+          setPendingConversation({
+            booking_id: bookingIdFromUrl,
+            other_user_id: otherUserProfile.id,
+            other_user_firstname: otherUserProfile.firstname,
+            other_user_lastname: otherUserProfile.lastname,
+            other_user_avatar_url: otherUserProfile.avatar_url,
+            last_message_content: 'Nouvelle conversation',
+            last_message_created_at: booking.created_at || new Date().toISOString(),
+            last_message_sender_id: '',
+            unread_count: 0,
+          })
         }
       }
     }
 
     loadConversationFromBooking()
   }, [bookingIdFromUrl, conversationsData])
+
+  useEffect(() => {
+    if (pendingConversation && conversationsData?.some((c: any) => c.booking_id === pendingConversation.booking_id)) {
+      setPendingConversation(null)
+    }
+  }, [conversationsData, pendingConversation])
 
   // Récupérer le nombre de notifications non lues
   useEffect(() => {
@@ -200,6 +230,11 @@ function MessagesPageContent() {
   const bookings = requestsData || []
   const notifications = notificationsData || []
   const conversations = conversationsData || []
+  const mergedConversations =
+    pendingConversation && !conversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
+      ? [pendingConversation, ...conversations]
+      : conversations
+  const conversations = conversationsData || []
 
   return (
     <div className="space-y-8">
@@ -253,7 +288,7 @@ function MessagesPageContent() {
               </div>
               <div className="flex-1 overflow-y-auto">
                 <ConversationList
-                  conversations={conversations}
+                  conversations={mergedConversations}
                   isLoading={isLoadingConversations}
                   isError={isErrorConversations}
                   onRetry={refetchConversations}

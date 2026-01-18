@@ -22,11 +22,37 @@ import { isFeatureEnabled } from "@/lib/shared/config/features"
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { KYCStatus } from '@/types'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
+
+type DashboardStats = {
+  activeAnnouncements: number
+  unreadMessages: number
+  shipmentsCount: number
+  revenueTotal: number
+}
+
+type RecentNotification = {
+  id: string
+  title: string
+  content: string
+  created_at: string | null
+  booking_id: string | null
+  link: string | null
+}
 
 export default function DashboardPage() {
   const { user, profile } = useAuth()
   const [kycStatus, setKycStatus] = useState<KYCStatus | null>(null)
   const [kycRejectionReason, setKycRejectionReason] = useState<string | null>(null)
+  const [stats, setStats] = useState<DashboardStats>({
+    activeAnnouncements: 0,
+    unreadMessages: 0,
+    shipmentsCount: 0,
+    revenueTotal: 0,
+  })
+  const [recentNotifications, setRecentNotifications] = useState<RecentNotification[]>([])
+  const [isLoadingStats, setIsLoadingStats] = useState(true)
 
   useEffect(() => {
     // Gérer l'alert de vérification email
@@ -50,6 +76,69 @@ export default function DashboardPage() {
 
     loadKycStatus()
   }, [user?.id, profile])
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      if (!user?.id) {
+        return
+      }
+
+      setIsLoadingStats(true)
+      const supabase = createClient()
+
+      try {
+        const [announcementsResult, unreadResult, shipmentsResult, transactionsResult, notificationsResult] =
+          await Promise.all([
+            supabase
+              .from('announcements')
+              .select('id', { count: 'exact', head: true })
+              .eq('traveler_id', user.id)
+              .in('status', ['active', 'partially_booked', 'fully_booked']),
+            supabase
+              .from('messages')
+              .select('id', { count: 'exact', head: true })
+              .eq('receiver_id', user.id)
+              .eq('is_read', false),
+            supabase
+              .from('bookings')
+              .select('id', { count: 'exact', head: true })
+              .eq('sender_id', user.id),
+            supabase
+              .from('transactions')
+              .select('amount, type')
+              .eq('user_id', user.id)
+              .in('type', ['payment', 'payout']),
+            supabase
+              .from('notifications')
+              .select('id, title, content, created_at, booking_id, link')
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: false })
+              .limit(3),
+          ])
+
+        const revenueTotal = (transactionsResult.data || []).reduce(
+          (sum, transaction) => sum + (transaction.amount || 0),
+          0
+        )
+
+        setStats({
+          activeAnnouncements: announcementsResult.count || 0,
+          unreadMessages: unreadResult.count || 0,
+          shipmentsCount: shipmentsResult.count || 0,
+          revenueTotal,
+        })
+
+        setRecentNotifications((notificationsResult.data as RecentNotification[]) || [])
+      } catch (error) {
+        console.error('Dashboard data load error:', error)
+        toast.error('Erreur lors du chargement des statistiques')
+      } finally {
+        setIsLoadingStats(false)
+      }
+    }
+
+    loadDashboardData()
+  }, [user?.id])
 
   return (
     <div className="space-y-6">
@@ -128,9 +217,11 @@ export default function DashboardPage() {
             <IconPackage className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">
+              {isLoadingStats ? '—' : stats.activeAnnouncements}
+            </div>
             <p className="text-xs text-muted-foreground">
-              +2 depuis le mois dernier
+              {stats.activeAnnouncements > 1 ? 'annonces publiées' : 'annonce publiée'}
             </p>
           </CardContent>
         </Card>
@@ -141,8 +232,12 @@ export default function DashboardPage() {
             <IconMessage className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
-            <p className="text-xs text-muted-foreground">3 non lus</p>
+            <div className="text-2xl font-bold">
+              {isLoadingStats ? '—' : stats.unreadMessages}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {stats.unreadMessages > 1 ? 'messages non lus' : 'message non lu'}
+            </p>
           </CardContent>
         </Card>
 
@@ -152,8 +247,12 @@ export default function DashboardPage() {
             <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">156</div>
-            <p className="text-xs text-muted-foreground">+12% ce mois-ci</p>
+            <div className="text-2xl font-bold">
+              {isLoadingStats ? '—' : stats.shipmentsCount}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {stats.shipmentsCount > 1 ? 'réservations créées' : 'réservation créée'}
+            </p>
           </CardContent>
         </Card>
 
@@ -163,8 +262,12 @@ export default function DashboardPage() {
             <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">€2,450</div>
-            <p className="text-xs text-muted-foreground">+8% ce mois-ci</p>
+            <div className="text-2xl font-bold">
+              {isLoadingStats ? '—' : `€${stats.revenueTotal.toFixed(0)}`}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              total des transactions
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -178,28 +281,47 @@ export default function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium">
-                  Nouvelle réservation reçue
-                </p>
-                <p className="text-xs text-muted-foreground">Il y a 2 heures</p>
-              </div>
-              <Button variant="outline" size="sm">
-                Voir
-              </Button>
+          {isLoadingStats ? (
+            <div className="text-sm text-muted-foreground">Chargement des activités...</div>
+          ) : recentNotifications.length === 0 ? (
+            <div className="text-sm text-muted-foreground">
+              Aucune activité récente pour le moment.
             </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Message de Jean Dupont</p>
-                <p className="text-xs text-muted-foreground">Il y a 5 heures</p>
-              </div>
-              <Button variant="outline" size="sm">
-                Répondre
-              </Button>
+          ) : (
+            <div className="space-y-4">
+              {recentNotifications.map((notification) => (
+                <div key={notification.id} className="flex items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">
+                      {notification.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {notification.created_at
+                        ? formatDistanceToNow(new Date(notification.created_at), {
+                          addSuffix: true,
+                          locale: fr,
+                        })
+                        : 'À l’instant'}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!(notification.link || notification.booking_id)}
+                    asChild={!!(notification.link || notification.booking_id)}
+                  >
+                    {notification.link || notification.booking_id ? (
+                      <Link href={notification.link || `/dashboard/colis/${notification.booking_id}`}>
+                        Voir
+                      </Link>
+                    ) : (
+                      <span>Voir</span>
+                    )}
+                  </Button>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

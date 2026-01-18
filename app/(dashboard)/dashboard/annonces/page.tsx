@@ -66,7 +66,12 @@ export default function MyAnnouncementsPage() {
     queryFn: async () => {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
-      const effectiveUserId = user?.id || session?.user?.id
+      let effectiveUserId = user?.id || session?.user?.id
+
+      if (!effectiveUserId) {
+        const { data: refreshed } = await supabase.auth.refreshSession()
+        effectiveUserId = refreshed.session?.user?.id
+      }
 
       if (!effectiveUserId) return { data: null, error: null }
       return getUserAnnouncements(

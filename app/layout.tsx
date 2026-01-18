@@ -23,17 +23,18 @@ const siteDescription =
   "Plateforme de covalisage international entre l'Europe et l'Afrique. Actuellement disponible entre la France et le Bénin"
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sendbox-bj.vercel.app'),
+  metadataBase: new URL('https://www.gosendbox.com'),
   title: siteTitle,
   description: siteDescription,
   openGraph: {
-    url: 'https://sendbox-bj.vercel.app/',
+    url: 'https://www.gosendbox.com/',
     type: 'website',
+    siteName: 'Sendbox',
     title: siteTitle,
     description: siteDescription,
     images: [
       {
-        url: '/images/hero-background.jpg',
+        url: '/images/opengraph.png',
       },
     ],
   },
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteTitle,
     description: siteDescription,
-    images: ['/images/hero-background.jpg'],
+    images: ['/images/opengraph.png'],
   },
 }
 

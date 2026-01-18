@@ -59,7 +59,12 @@ export default function MyBookingsPage() {
     queryFn: async () => {
       const supabase = createClient()
       const { data: authData } = await supabase.auth.getSession()
-      const authUser = authData?.session?.user
+      let authUser = authData?.session?.user
+
+      if (!authUser) {
+        const { data: refreshed } = await supabase.auth.refreshSession()
+        authUser = refreshed.session?.user
+      }
 
       if (!authUser?.id) {
         return [] as Booking[]
@@ -98,7 +103,7 @@ export default function MyBookingsPage() {
       const { data: bookings, error } = await Promise.race([
         query,
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Bookings query timeout')), 8000)
+          setTimeout(() => reject(new Error('Bookings query timeout')), 12000)
         ),
       ]) as any
 
@@ -109,7 +114,7 @@ export default function MyBookingsPage() {
 
       return bookings as Booking[]
     },
-    retry: 1,
+    retry: 2,
   })
 
   const bookings = data || []
