@@ -64,9 +64,9 @@ export default function HomePage() {
           <div className="space-y-6 text-center lg:text-left">
             <Badge
               variant="outline"
-              className="gap-2 rounded px-3 py-1.5 text-xs border-foreground/20 bg-foreground/5 text-foreground dark:bg-foreground/10"
+              className="gap-2 rounded px-3 py-1.5 text-xs border-foreground/25 bg-background/90 text-foreground shadow-sm backdrop-blur dark:bg-background/50"
             >
-              <IconSparkles className="h-3.5 w-3.5" />
+              <IconSparkles className="h-3.5 w-3.5 text-primary" />
               Service sécurisé et vérifié
             </Badge>
 
@@ -169,9 +169,9 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start lg:items-center">
+          <div className="grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start">
             <div className="hidden sm:block">
-              <div className="max-w-sm mx-auto lg:mx-0">
+              <div className="max-w-sm mx-auto lg:ml-auto">
                 <div className="aspect-square overflow-hidden rounded-md border border-border bg-muted/40">
                   <Image
                     src="/images/illustrations/covoiturage.svg"
