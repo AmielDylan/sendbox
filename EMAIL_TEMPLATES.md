@@ -1,6 +1,15 @@
 # Templates d'emails Supabase pour Sendbox
 
-## 📧 Template: Confirm Signup (Vérification d'email)
+## 🎨 Couleurs de l'application
+
+- **Primary Teal**: `#0d9488` → `#14b8a6` (gradient)
+- **Teal Light**: `#f0fdfa` (backgrounds)
+- **Background**: `#f5f5f5`
+- **Text**: `#4a5568` (corps), `#1a1a1a` (titres)
+
+---
+
+## 📧 Template 1: Confirm Signup (Vérification d'email)
 
 ### Subject
 ```
@@ -28,7 +37,7 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
       background-color: #ffffff;
     }
     .header {
-      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
       padding: 40px 20px;
       text-align: center;
     }
@@ -59,18 +68,18 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
     .button {
       display: inline-block;
       padding: 16px 40px;
-      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
       color: #ffffff !important;
       text-decoration: none;
       border-radius: 8px;
       font-weight: 600;
       font-size: 16px;
-      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
       transition: transform 0.2s;
     }
     .button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+      box-shadow: 0 6px 16px rgba(13, 148, 136, 0.4);
     }
     .divider {
       height: 1px;
@@ -78,8 +87,8 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
       margin: 30px 0;
     }
     .security-notice {
-      background-color: #f7fafc;
-      border-left: 4px solid #FF6B35;
+      background-color: #f0fdfa;
+      border-left: 4px solid #14b8a6;
       padding: 15px 20px;
       margin: 20px 0;
       border-radius: 4px;
@@ -101,7 +110,7 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
       margin: 5px 0;
     }
     .footer-link {
-      color: #FF6B35;
+      color: #0d9488;
       text-decoration: none;
     }
     .social-links {
@@ -161,7 +170,7 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
 
       <p class="text" style="font-size: 14px; color: #718096; margin-top: 20px;">
         Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
-        <a href="{{ .ConfirmationURL }}" style="color: #FF6B35; word-break: break-all;">{{ .ConfirmationURL }}</a>
+        <a href="{{ .ConfirmationURL }}" style="color: #0d9488; word-break: break-all;">{{ .ConfirmationURL }}</a>
       </p>
     </div>
 
@@ -195,7 +204,7 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
 
 ---
 
-## 📧 Template: Magic Link (Connexion sans mot de passe)
+## 📧 Template 2: Magic Link (Connexion sans mot de passe)
 
 ### Subject
 ```
@@ -223,7 +232,7 @@ Votre lien de connexion Sendbox 🔑
       background-color: #ffffff;
     }
     .header {
-      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
       padding: 40px 20px;
       text-align: center;
     }
@@ -254,13 +263,13 @@ Votre lien de connexion Sendbox 🔑
     .button {
       display: inline-block;
       padding: 16px 40px;
-      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
       color: #ffffff !important;
       text-decoration: none;
       border-radius: 8px;
       font-weight: 600;
       font-size: 16px;
-      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
     }
     .security-notice {
       background-color: #fff5f5;
@@ -281,7 +290,7 @@ Votre lien de connexion Sendbox 🔑
       margin: 5px 0;
     }
     .footer-link {
-      color: #FF6B35;
+      color: #0d9488;
       text-decoration: none;
     }
   </style>
@@ -321,7 +330,7 @@ Votre lien de connexion Sendbox 🔑
 
       <p class="text" style="font-size: 14px; color: #718096; margin-top: 20px;">
         Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
-        <a href="{{ .ConfirmationURL }}" style="color: #FF6B35; word-break: break-all;">{{ .ConfirmationURL }}</a>
+        <a href="{{ .ConfirmationURL }}" style="color: #0d9488; word-break: break-all;">{{ .ConfirmationURL }}</a>
       </p>
     </div>
 
@@ -348,7 +357,7 @@ Votre lien de connexion Sendbox 🔑
 
 ---
 
-## 📧 Template: Reset Password (Réinitialisation)
+## 📧 Template 3: Reset Password (Réinitialisation)
 
 ### Subject
 ```
@@ -376,7 +385,7 @@ Réinitialisez votre mot de passe Sendbox 🔒
       background-color: #ffffff;
     }
     .header {
-      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
       padding: 40px 20px;
       text-align: center;
     }
@@ -407,13 +416,13 @@ Réinitialisez votre mot de passe Sendbox 🔒
     .button {
       display: inline-block;
       padding: 16px 40px;
-      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+      background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
       color: #ffffff !important;
       text-decoration: none;
       border-radius: 8px;
       font-weight: 600;
       font-size: 16px;
-      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
     }
     .security-notice {
       background-color: #fff5f5;
@@ -434,7 +443,7 @@ Réinitialisez votre mot de passe Sendbox 🔒
       margin: 5px 0;
     }
     .footer-link {
-      color: #FF6B35;
+      color: #0d9488;
       text-decoration: none;
     }
   </style>
@@ -478,7 +487,7 @@ Réinitialisez votre mot de passe Sendbox 🔒
 
       <p class="text" style="font-size: 14px; color: #718096; margin-top: 20px;">
         Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
-        <a href="{{ .ConfirmationURL }}" style="color: #FF6B35; word-break: break-all;">{{ .ConfirmationURL }}</a>
+        <a href="{{ .ConfirmationURL }}" style="color: #0d9488; word-break: break-all;">{{ .ConfirmationURL }}</a>
       </p>
     </div>
 
@@ -505,32 +514,6 @@ Réinitialisez votre mot de passe Sendbox 🔒
 
 ---
 
-## 🎨 Design Features
-
-### Couleurs de la marque
-- **Primary Orange**: `#FF6B35` → `#F7931E` (gradient)
-- **Background**: `#f5f5f5`
-- **Text**: `#4a5568` (corps), `#1a1a1a` (titres)
-
-### Éléments visuels
-- ✅ Logo Sendbox en haut
-- ✅ Gradient orange moderne
-- ✅ Boutons avec effet hover
-- ✅ Notices de sécurité colorées
-- ✅ Footer avec liens légaux
-- ✅ Design responsive (mobile-friendly)
-- ✅ Emojis pour une touche friendly
-
-### Best practices
-- ✅ Logo hébergé sur votre domaine
-- ✅ Lien de fallback en texte
-- ✅ Indication de la durée de validité
-- ✅ Notice de sécurité claire
-- ✅ Footer avec informations légales
-- ✅ HTML inline CSS (compatible tous clients email)
-
----
-
 ## 📝 Instructions d'utilisation
 
 1. Allez dans **Supabase Dashboard** → **Authentication** → **Email Templates**
@@ -540,4 +523,4 @@ Réinitialisez votre mot de passe Sendbox 🔒
 5. Configurez l'URL de confirmation appropriée
 6. Cliquez sur **Save**
 
-**Important** : Assurez-vous que votre logo est accessible publiquement à `https://www.gosendbox.com/images/branding/logo-white.svg`
+**Important** : Votre logo est déjà accessible à `https://www.gosendbox.com/images/branding/logo-white.svg`
