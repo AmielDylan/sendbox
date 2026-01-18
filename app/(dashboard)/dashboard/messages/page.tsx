@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ConversationList } from '@/components/features/messages/ConversationList'
 import { ChatWindow } from '@/components/features/messages/ChatWindow'
+import { ConnectionIndicator } from '@/components/features/messages/ConnectionIndicator'
 import { BookingRequestCard } from '@/components/features/bookings/BookingRequestCard'
 import { getPendingBookingRequests } from "@/lib/core/bookings/requests"
 import { Card, CardContent } from '@/components/ui/card'
@@ -278,18 +279,24 @@ function MessagesPageContent() {
 
         <TabsContent value="chat">
           <div
-            className="w-full border flex overflow-hidden bg-background"
+            className="w-full border flex flex-col overflow-hidden bg-background"
             style={{ height: 'calc(100dvh - 280px)', minHeight: '500px' }}
           >
-            {/* Sidebar: Liste conversations */}
-            <div className={`
-              ${selectedConversation ? 'hidden md:flex' : 'flex'}
-              w-full md:w-80 lg:w-96 border-r flex-col
-            `}>
-              <div className="p-4 border-b">
-                <h3 className="font-semibold text-lg">Conversations</h3>
-              </div>
-              <div className="flex-1 overflow-y-auto">
+            {/* Indicateur de connexion */}
+            <div className="border-b px-4 py-2">
+              <ConnectionIndicator />
+            </div>
+
+            <div className="flex flex-1 overflow-hidden">
+              {/* Sidebar: Liste conversations */}
+              <div className={`
+                ${selectedConversation ? 'hidden md:flex' : 'flex'}
+                w-full md:w-80 lg:w-96 border-r flex-col
+              `}>
+                <div className="p-4 border-b">
+                  <h3 className="font-semibold text-lg">Conversations</h3>
+                </div>
+                <div className="flex-1 overflow-y-auto">
                 <ConversationList
                   conversations={mergedConversations}
                   isLoading={isLoadingConversations}
@@ -298,15 +305,15 @@ function MessagesPageContent() {
                   selectedBookingId={selectedBookingId}
                   onSelectConversation={handleSelectConversation}
                 />
+                </div>
               </div>
-            </div>
 
-            {/* Zone principale: Chat */}
-            <div className={`
-              ${selectedConversation ? 'flex' : 'hidden md:flex'}
-              flex-1 flex-col
-            `}>
-              {selectedConversation ? (
+              {/* Zone principale: Chat */}
+              <div className={`
+                ${selectedConversation ? 'flex' : 'hidden md:flex'}
+                flex-1 flex-col
+              `}>
+                {selectedConversation ? (
                 <ChatWindow
                   bookingId={selectedConversation.bookingId}
                   otherUserId={selectedConversation.otherUserId}
@@ -317,19 +324,20 @@ function MessagesPageContent() {
                     setSelectedBookingId(null)
                   }}
                 />
-              ) : (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                  <div className="text-center p-6">
-                    <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mb-4 mx-auto">
-                      <IconMessageCircle className="h-8 w-8 text-muted-foreground/50" />
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                    <div className="text-center p-6">
+                      <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mb-4 mx-auto">
+                        <IconMessageCircle className="h-8 w-8 text-muted-foreground/50" />
+                      </div>
+                      <h3 className="font-semibold text-lg mb-1">Vos messages</h3>
+                      <p className="max-w-xs text-sm">
+                        Sélectionnez une conversation pour commencer
+                      </p>
                     </div>
-                    <h3 className="font-semibold text-lg mb-1">Vos messages</h3>
-                    <p className="max-w-xs text-sm">
-                      Sélectionnez une conversation pour commencer
-                    </p>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </TabsContent>

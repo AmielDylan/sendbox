@@ -1,11 +1,13 @@
 /**
  * Page "Mes colis" - Liste des réservations de l'utilisateur
+ * OPTIMISÉE avec useAuthenticatedQuery pour résoudre les timeouts et pertes de données
  */
 
 'use client'
 
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useAuthenticatedQuery, queryWithAbort } from '@/hooks/use-authenticated-query'
+import { QUERY_CONFIG } from '@/lib/shared/query/config'
 import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
@@ -20,6 +22,7 @@ import {
   IconCalendar,
   IconCurrencyEuro,
   IconEye,
+  IconAlertCircle,
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -53,23 +56,17 @@ interface Booking {
 export default function MyBookingsPage() {
   const [activeTab, setActiveTab] = useState<BookingStatus | 'all'>('all')
 
-  // Query pour récupérer les bookings
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['user-bookings', activeTab],
-    queryFn: async () => {
+  // Query OPTIMISÉE avec useAuthenticatedQuery
+  // ✅ Pas de double-fetch de session
+  // ✅ Timeout intelligent de 5s (au lieu de 12s)
+  // ✅ Retry automatique avec backoff
+  // ✅ Cache persistant (30s stale, 15min gc)
+  const { data, isLoading, isError, error, refetch } = useAuthenticatedQuery<Booking[]>(
+    ['user-bookings', activeTab] as unknown[],
+    async (userId, signal) => {
       const supabase = createClient()
-      const { data: authData } = await supabase.auth.getSession()
-      let authUser = authData?.session?.user
 
-      if (!authUser) {
-        const { data: refreshed } = await supabase.auth.refreshSession()
-        authUser = refreshed.session?.user
-      }
-
-      if (!authUser?.id) {
-        return [] as Booking[]
-      }
-
+      // Construire la requête
       let query = supabase
         .from('bookings')
         .select(
@@ -88,11 +85,11 @@ export default function MyBookingsPage() {
           )
         `
         )
-        .or(`sender_id.eq.${authUser.id},traveler_id.eq.${authUser.id}`)
+        .or(`sender_id.eq.${userId},traveler_id.eq.${userId}`)
         .order('created_at', { ascending: false })
 
+      // Filtrer par statut
       if (activeTab !== 'all') {
-        // "Confirmés" inclut accepted, paid et deposited
         if (activeTab === 'accepted') {
           query = query.in('status', ['accepted', 'paid', 'deposited'])
         } else {
@@ -100,22 +97,19 @@ export default function MyBookingsPage() {
         }
       }
 
-      const { data: bookings, error } = await Promise.race([
-        query,
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Bookings query timeout')), 12000)
-        ),
-      ]) as any
-
-      if (error) {
-        console.error('Get bookings error:', error)
-        throw error
-      }
-
-      return bookings as Booking[]
+      // Exécuter avec timeout via AbortSignal
+      return queryWithAbort<Booking[]>(query, signal)
     },
-    retry: 2,
-  })
+    {
+      // Timeout de 5 secondes (au lieu de 12)
+      timeout: 5000,
+
+      // Configuration optimisée pour les listes
+      staleTime: QUERY_CONFIG.LISTS.staleTime,
+      gcTime: QUERY_CONFIG.LISTS.gcTime,
+      refetchOnWindowFocus: false,
+    }
+  )
 
   const bookings = data || []
 
@@ -149,27 +143,52 @@ export default function MyBookingsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-8">
+        <PageHeader
+          title="Mes colis"
+          description="Gérez vos réservations et suivez vos colis"
+        />
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-3">
+            <IconLoader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-sm text-muted-foreground">
+              Chargement de vos réservations...
+            </p>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (isError) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-8">
         <PageHeader
           title="Mes colis"
           description="Gérez vos réservations et suivez vos colis"
         />
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Le chargement des colis prend trop de temps. Réessayez dans un instant.
-            </p>
-            <Button variant="outline" onClick={() => refetch()}>
-              Réessayer
-            </Button>
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <IconAlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div className="space-y-3 flex-1">
+                <div>
+                  <p className="font-semibold text-destructive mb-1">
+                    Erreur lors du chargement
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {error?.message || 'Une erreur est survenue lors du chargement de vos réservations.'}
+                  </p>
+                </div>
+                <Button
+                  onClick={() => refetch()}
+                  variant="outline"
+                  size="sm"
+                >
+                  Réessayer
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

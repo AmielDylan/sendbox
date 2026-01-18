@@ -166,8 +166,17 @@ export function useMessages(bookingId: string | null) {
     }
 
     // S'abonner aux nouveaux messages en temps réel
+    // Utilise postgres_changes pour les messages (garantie de livraison)
+    // et broadcast pour les événements temporaires (sera utilisé par use-presence)
     const channel = supabase
-      .channel(`messages:${bookingId}`)
+      .channel(`messages:${bookingId}`, {
+        config: {
+          broadcast: {
+            self: false, // Ne pas recevoir nos propres broadcasts
+            ack: false, // Pas besoin d'accusé de réception pour typing indicators
+          },
+        },
+      })
       .on(
         'postgres_changes',
         {

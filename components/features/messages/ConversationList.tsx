@@ -15,6 +15,7 @@ import { IconLoader2 } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 
 import { useAuth } from '@/hooks/use-auth'
+import { usePresence } from '@/hooks/use-presence'
 
 interface Conversation {
   booking_id: string
@@ -46,6 +47,9 @@ export function ConversationList({
   onSelectConversation,
 }: ConversationListProps) {
   const { user } = useAuth()
+
+  // Hook de présence global pour voir qui est en ligne dans toutes les conversations
+  const { isUserOnline } = usePresence('conversations-presence', user?.id || null)
 
   if (isLoading) {
     return (
@@ -107,13 +111,22 @@ export function ConversationList({
               aria-label={`Conversation avec ${otherUserName}, ${hasUnread ? `${conversation.unread_count} message(s) non lu(s)` : 'aucun nouveau message'}`}
               aria-current={isSelected ? 'true' : 'false'}
             >
-              <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border-2 border-background">
-                <AvatarImage
-                  src={conversation.other_user_avatar_url || undefined}
-                  alt={otherUserName}
-                />
-                <AvatarFallback>{otherUserInitials}</AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border-2 border-background">
+                  <AvatarImage
+                    src={conversation.other_user_avatar_url || undefined}
+                    alt={otherUserName}
+                  />
+                  <AvatarFallback>{otherUserInitials}</AvatarFallback>
+                </Avatar>
+                {/* Indicateur de présence en ligne */}
+                {isUserOnline(conversation.other_user_id) && (
+                  <div
+                    className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background"
+                    aria-label="En ligne"
+                  />
+                )}
+              </div>
               <div className="flex-1 min-w-0 space-y-0.5">
                 <div className="flex items-center justify-between gap-2">
                   <p

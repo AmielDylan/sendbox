@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { useMessages, type Message } from '@/hooks/use-messages'
+import { usePresence } from '@/hooks/use-presence'
 import { sendMessage, markMessagesAsRead } from "@/lib/core/messages/actions"
 import { sanitizeMessageContent } from '@/lib/shared/security/xss-protection'
 import { generateInitials } from "@/lib/core/profile/utils"
@@ -123,6 +124,14 @@ export function ChatWindow({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
+  // Hook de présence pour le statut en ligne et typing indicators
+  const {
+    isUserOnline,
+    isUserTyping,
+    sendTypingStatus,
+    stopTyping,
+  } = usePresence(bookingId ? `messages:${bookingId}` : '', currentUserId)
+
   // Marquer les messages comme lus quand la conversation est ouverte
   useEffect(() => {
     if (bookingId) {
@@ -147,6 +156,9 @@ export function ChatWindow({
     const tempId = `temp-${crypto.randomUUID()}`
 
     setMessageContent('')
+
+    // Arrêter le statut "typing" lors de l'envoi
+    stopTyping()
 
     // Récupérer les infos sender depuis les messages existants OU créer un objet minimal
     const senderInfo = messages.find(m => m.sender_id === currentUserId)?.sender || {
@@ -196,6 +208,19 @@ export function ChatWindow({
     }
   }
 
+  // Gérer l'indicateur "en train d'écrire"
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value
+    setMessageContent(newValue)
+
+    // Envoyer le statut "typing" si l'utilisateur tape
+    if (newValue.length > 0 && newValue.trim().length > 0) {
+      sendTypingStatus()
+    } else {
+      stopTyping()
+    }
+  }
+
   useEffect(() => {
     const getCurrentUser = async () => {
       const supabase = createClient()
@@ -241,12 +266,25 @@ export function ChatWindow({
           </Avatar>
           <div>
             <h3 className="font-semibold">{otherUserName || 'Utilisateur'}</h3>
-            <Link
-              href={`/dashboard/colis/${bookingId}`}
-              className="text-sm text-muted-foreground hover:underline"
-            >
-              Voir la réservation
-            </Link>
+            <div className="flex items-center gap-2">
+              {otherUserId && isUserTyping(otherUserId) ? (
+                <span className="text-xs text-primary animate-pulse">
+                  est en train d&apos;écrire...
+                </span>
+              ) : otherUserId && isUserOnline(otherUserId) ? (
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="text-xs text-muted-foreground">En ligne</span>
+                </div>
+              ) : (
+                <Link
+                  href={`/dashboard/colis/${bookingId}`}
+                  className="text-sm text-muted-foreground hover:underline"
+                >
+                  Voir la réservation
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -280,7 +318,7 @@ export function ChatWindow({
         <div className="flex gap-2">
           <Textarea
             value={messageContent}
-            onChange={(e) => setMessageContent(e.target.value)}
+            onChange={handleMessageChange}
             onKeyDown={handleKeyDown}
             placeholder="Tapez votre message..."
             rows={3}

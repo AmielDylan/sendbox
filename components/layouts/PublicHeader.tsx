@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { IconMenu2, IconSearch, IconLogin, IconLoader2, IconLayoutDashboard } from '@tabler/icons-react'
+import { IconMenu2, IconSearch, IconLoader2, IconLayoutDashboard } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -27,6 +27,9 @@ export function PublicHeader() {
   const pathname = usePathname()
   const router = useRouter()
   const { user, profile, loading, signOut: authSignOut } = useAuth()
+  const isLogin = pathname.startsWith('/login')
+  const isRegister = pathname.startsWith('/register')
+  const authPrimary = isLogin ? 'login' : isRegister ? 'register' : 'register'
 
   // Debug: logger l'état de l'utilisateur et du profil
   useEffect(() => {
@@ -144,14 +147,15 @@ export function PublicHeader() {
           }>
             {!user ? (
               <>
-                <Button asChild variant="ghost">
+                <Button asChild variant={authPrimary === 'login' ? 'default' : 'outline'}>
                   <Link href="/login">
-                    <IconLogin className="mr-2 h-4 w-4" />
-                    Connexion
+                    Se connecter
                   </Link>
                 </Button>
-                <Button asChild>
-                  <Link href="/register">S'inscrire</Link>
+                <Button asChild variant={authPrimary === 'register' ? 'default' : 'outline'}>
+                  <Link href="/register">
+                    S'inscrire
+                  </Link>
                 </Button>
               </>
             ) : (
@@ -247,13 +251,20 @@ export function PublicHeader() {
                   }>
                     {!user ? (
                       <>
-                        <Button asChild variant="outline" className="w-full">
+                        <Button
+                          asChild
+                          variant={authPrimary === 'login' ? 'default' : 'outline'}
+                          className="w-full"
+                        >
                           <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                            <IconLogin className="mr-2 h-4 w-4" />
-                            Connexion
+                            Se connecter
                           </Link>
                         </Button>
-                        <Button asChild className="w-full">
+                        <Button
+                          asChild
+                          variant={authPrimary === 'register' ? 'default' : 'outline'}
+                          className="w-full"
+                        >
                           <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
                             S'inscrire
                           </Link>

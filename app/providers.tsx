@@ -1,41 +1,19 @@
 /**
  * Providers pour l'application
+ * Mis à jour avec la configuration optimisée pour la cohérence des données
  */
 
 'use client'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
-import { useEffect, useState } from 'react'
-import { AuthProvider } from '@/components/providers/auth-provider'
+import { useState } from 'react'
+import { createQueryClient } from '@/lib/shared/query/config'
+import { OptimizedAuthProvider } from '@/components/providers/optimized-auth-provider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 10 * 1000, // 10 secondes (réduit de 60s pour éviter données obsolètes)
-            refetchOnWindowFocus: true, // Activer le refetch au focus pour améliorer la réactivité
-            gcTime: 5 * 60 * 1000, // 5 minutes
-          },
-        },
-      })
-  )
-
-  // Écouter l'événement auth-change globalement
-  useEffect(() => {
-    const handleAuthChange = () => {
-      console.log('Global auth change - invalidating all queries')
-      // Invalider toutes les queries pour forcer le rafraîchissement
-      queryClient.invalidateQueries()
-    }
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('auth-change', handleAuthChange)
-      return () => window.removeEventListener('auth-change', handleAuthChange)
-    }
-  }, [queryClient])
+  // Utiliser la configuration optimisée
+  const [queryClient] = useState(() => createQueryClient())
 
   return (
     <ThemeProvider
@@ -45,7 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>{children}</AuthProvider>
+        <OptimizedAuthProvider>
+          {children}
+        </OptimizedAuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   )

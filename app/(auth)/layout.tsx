@@ -23,14 +23,17 @@ export default function AuthLayout({
             aria-hidden="true"
           />
           <div className="container-wide relative py-10 sm:py-14 lg:py-20">
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] items-center">
-              <aside className="hidden lg:flex flex-col gap-6 rounded-md border border-border/70 bg-muted/30 p-8">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start">
+              <div className="flex justify-center lg:justify-start">
+                {children}
+              </div>
+              <aside className="hidden lg:flex flex-col gap-6 border-l border-border/50 pl-6 pr-4 py-4 bg-muted/20 w-full">
                 <Badge variant="outline" className="w-fit gap-2 rounded px-3 py-1 text-xs">
                   <IconSparkles className="h-3.5 w-3.5 text-primary" />
                   Accès sécurisé
                 </Badge>
                 <div className="space-y-3">
-                  <h1 className="font-display text-3xl text-balance">
+                  <h1 className="font-display text-2xl text-balance">
                     Votre espace Sendbox
                   </h1>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -51,14 +54,33 @@ export default function AuthLayout({
                     Support actif et profils de confiance
                   </div>
                 </div>
-                <div className="rounded-md border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
+                <div className="space-y-3">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Ils nous font confiance
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="border border-border/60 bg-background/80 px-4 py-3">
+                      <p className="text-sm italic text-foreground">
+                        "Réservation rapide, suivi clair et échange facile."
+                      </p>
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        Aïcha · Expéditrice
+                      </p>
+                    </div>
+                    <div className="border border-border/60 bg-background/80 px-4 py-3">
+                      <p className="text-sm italic text-foreground">
+                        "Interface simple et profils rassurants."
+                      </p>
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        Marc · Voyageur
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
                   Vos informations restent privées et protégées à chaque étape.
                 </div>
               </aside>
-
-              <div className="flex justify-center lg:justify-end">
-                {children}
-              </div>
             </div>
           </div>
         </div>
