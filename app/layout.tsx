@@ -47,6 +47,13 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: ['https://www.gosendbox.com/images/opengraph.jpg'],
   },
+  icons: {
+    icon: [
+      { url: '/images/web.png', media: '(prefers-color-scheme: light)' },
+      { url: '/images/web-white.png', media: '(prefers-color-scheme: dark)' },
+    ],
+    apple: '/images/web.png',
+  },
 }
 
 export default function RootLayout({

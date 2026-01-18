@@ -13,7 +13,7 @@ export function PublicFooter() {
 
   return (
     <footer className="border-t bg-background">
-      <div className="container-wide py-12">
+      <div className="container mx-auto px-8 sm:px-16 lg:px-24 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {/* À propos */}
           <div className="space-y-4">

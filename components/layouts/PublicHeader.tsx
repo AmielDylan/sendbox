@@ -92,7 +92,7 @@ export function PublicHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/70 relative">
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-      <div className="container-wide flex h-16 items-center justify-between relative">
+      <div className="container mx-auto px-8 sm:px-16 lg:px-24 flex h-16 items-center justify-between relative">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <Image
@@ -115,99 +115,98 @@ export function PublicHeader() {
           />
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            return (
+        {/* Desktop Navigation & Actions */}
+        <div className="hidden md:flex items-center gap-6">
+          <nav className="flex items-center gap-6">
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary',
+                  'text-sm font-medium transition-colors hover:text-primary',
                   isActive(item.href)
                     ? 'text-foreground'
                     : 'text-muted-foreground'
                 )}
               >
-                {Icon && <Icon className="h-4 w-4" />}
                 {item.label}
               </Link>
-            )
-          })}
-        </nav>
+            ))}
+          </nav>
 
-        {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-2">
-          <ClientOnly fallback={
-            <Button variant="ghost" disabled>
-              <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-              Chargement...
-            </Button>
-          }>
-            {!user ? (
-              <>
-                <Button asChild variant={authPrimary === 'login' ? 'default' : 'outline'}>
-                  <Link href="/login">
-                    Se connecter
-                  </Link>
-                </Button>
-                <Button asChild variant={authPrimary === 'register' ? 'default' : 'outline'}>
-                  <Link href="/register">
-                    S'inscrire
-                  </Link>
-                </Button>
-              </>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative rounded-full"
-                    aria-label="Menu utilisateur"
-                  >
-                    <Avatar className="h-8 w-8">
-                      {(profile as any)?.avatar_url && (
-                        <AvatarImage
-                          src={(profile as any).avatar_url}
-                          alt={displayName}
-                        />
-                      )}
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
+          <div className="h-5 w-[1.5px] bg-border dark:bg-white/30" />
+
+          <div className="flex items-center gap-2">
+            <ClientOnly fallback={
+              <Button variant="ghost" disabled>
+                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                Chargement...
+              </Button>
+            }>
+              {!user ? (
+                <>
+                  <Button asChild variant={authPrimary === 'login' ? 'default' : 'outline'}>
+                    <Link href="/login">
+                      Se connecter
+                    </Link>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{displayName}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email || 'email@example.com'}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard">Tableau de bord</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profil">Mon profil</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={handleLogout}
-                    className="text-red-600 focus:text-red-600"
-                  >
-                    Se déconnecter
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </ClientOnly>
-          <ThemeToggle />
+                  <Button asChild variant={authPrimary === 'register' ? 'default' : 'outline'}>
+                    <Link href="/register">
+                      S'inscrire
+                    </Link>
+                  </Button>
+                </>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="relative rounded-full"
+                      aria-label="Menu utilisateur"
+                    >
+                      <Avatar className="h-8 w-8">
+                        {(profile as any)?.avatar_url && (
+                          <AvatarImage
+                            src={(profile as any).avatar_url}
+                            alt={displayName}
+                          />
+                        )}
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user?.email || 'email@example.com'}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard">Tableau de bord</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profil">Mon profil</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      Se déconnecter
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </ClientOnly>
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -286,33 +285,33 @@ export function PublicHeader() {
                           </Avatar>
                           <div className="flex flex-col">
                             <p className="text-sm font-medium">{displayName}</p>
-                          <p className="text-xs text-muted-foreground">{user?.email}</p>
+                            <p className="text-xs text-muted-foreground">{user?.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Button asChild variant="ghost" className="w-full justify-start">
+                            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                              Tableau de bord
+                            </Link>
+                          </Button>
+                          <Button asChild variant="ghost" className="w-full justify-start">
+                            <Link href="/profil" onClick={() => setMobileMenuOpen(false)}>
+                              Mon profil
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => {
+                              handleLogout()
+                              setMobileMenuOpen(false)
+                            }}
+                          >
+                            Se déconnecter
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <Button asChild variant="ghost" className="w-full justify-start">
-                          <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                            Tableau de bord
-                          </Link>
-                        </Button>
-                        <Button asChild variant="ghost" className="w-full justify-start">
-                          <Link href="/profil" onClick={() => setMobileMenuOpen(false)}>
-                            Mon profil
-                          </Link>
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
-                          onClick={() => {
-                            handleLogout()
-                            setMobileMenuOpen(false)
-                          }}
-                        >
-                          Se déconnecter
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                    )}
                   </ClientOnly>
                 </div>
               </div>
