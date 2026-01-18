@@ -213,8 +213,12 @@ function MessagesPageContent() {
     setSelectedBookingId(bookingId)
 
     // Récupérer les détails de la conversation
-    const conversations = conversationsData || []
-    const conversation = conversations.find((c: any) => c.booking_id === bookingId)
+    const baseConversations = conversationsData || []
+    const conversationList =
+      pendingConversation && !baseConversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
+        ? [pendingConversation, ...baseConversations]
+        : baseConversations
+    const conversation = conversationList.find((c: any) => c.booking_id === bookingId)
 
     if (conversation) {
       setSelectedConversation({
@@ -234,7 +238,6 @@ function MessagesPageContent() {
     pendingConversation && !conversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
       ? [pendingConversation, ...conversations]
       : conversations
-  const conversations = conversationsData || []
 
   return (
     <div className="space-y-8">
