@@ -16,6 +16,8 @@ import { createClient } from '@/lib/shared/db/client'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Session, User } from '@supabase/supabase-js'
 import { QUERY_KEYS, invalidateAuthQueries } from '@/lib/shared/query/config'
+import { useAuthStore } from '@/lib/stores/auth-store'
+import { createProfile } from '@/types'
 
 export interface Profile {
   id: string
@@ -72,6 +74,11 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   const queryClient = useQueryClient()
   const supabase = createClient()
 
+  // Accéder au store Zustand pour synchronisation
+  const setStoreUser = useAuthStore((state) => state.setUser)
+  const setStoreProfile = useAuthStore((state) => state.setProfile)
+  const setStoreLoading = useAuthStore((state) => state.setLoading)
+
   // Ref pour éviter les double-fetches
   const isFetchingProfile = useRef(false)
   const lastUserId = useRef<string | null>(null)
@@ -111,8 +118,11 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
           setError(new Error('Failed to load profile'))
         }
       } else {
-        setProfile(data as Profile)
+        const profileData = data as Profile
+        setProfile(profileData)
         setError(null)
+        // ✅ Synchroniser avec Zustand store (les deux interfaces sont compatibles)
+        setStoreProfile(profileData as any)
       }
     } catch (err) {
       console.error('[Auth] Unexpected error fetching profile:', err)
@@ -120,7 +130,7 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
     } finally {
       isFetchingProfile.current = false
     }
-  }, [supabase, profile])
+  }, [supabase, profile, setStoreProfile])
 
   /**
    * Fonction publique pour refetch le profil
@@ -260,6 +270,22 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
       channel.close()
     }
   }, [supabase])
+
+  /**
+   * ✅ Synchronisation avec Zustand store
+   * Permet aux composants utilisant useAuth() (ancien hook) de fonctionner
+   */
+  useEffect(() => {
+    setStoreUser(user)
+  }, [user, setStoreUser])
+
+  useEffect(() => {
+    setStoreProfile(profile as any)
+  }, [profile, setStoreProfile])
+
+  useEffect(() => {
+    setStoreLoading(isLoading)
+  }, [isLoading, setStoreLoading])
 
   const value: AuthContextType = {
     session,
