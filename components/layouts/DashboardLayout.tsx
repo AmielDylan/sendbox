@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { redirect } from 'next/navigation'
 import {
   IconLayoutDashboard,
   IconMessage,
@@ -85,6 +86,29 @@ const navItems: NavItem[] = [
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const { user, loading } = useAuth()
+
+  // Redirection vers /login si non authentifié
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login')
+    }
+  }, [user, loading, router])
+
+  // Afficher un loader pendant la vérification de l'auth
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  // Si pas d'utilisateur après le chargement, ne rien afficher (redirection en cours)
+  if (!user) {
+    return null
+  }
 
   return (
     <div className="min-h-screen bg-background">
