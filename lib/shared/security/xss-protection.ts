@@ -2,27 +2,30 @@
  * Protection contre les attaques XSS
  */
 
-import DOMPurify from 'isomorphic-dompurify'
+const escapeMap: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+}
+
+function escapeHTML(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => escapeMap[char] || char)
+}
 
 /**
  * Nettoie du HTML pour prévenir les attaques XSS
  */
 export function sanitizeHTML(dirty: string): string {
-  return DOMPurify.sanitize(dirty, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a'],
-    ALLOWED_ATTR: ['href', 'target', 'rel'],
-    ALLOW_DATA_ATTR: false,
-  })
+  return escapeHTML(dirty)
 }
 
 /**
  * Nettoie du texte pour affichage sécurisé
  */
 export function sanitizeText(text: string): string {
-  return DOMPurify.sanitize(text, {
-    ALLOWED_TAGS: [],
-    ALLOWED_ATTR: [],
-  })
+  return escapeHTML(text)
 }
 
 /**
@@ -46,12 +49,8 @@ export function sanitizeURL(url: string): string | null {
  * Utilisé côté client ET serveur pour garantir la cohérence
  */
 export function sanitizeMessageContent(text: string): string {
-  return text
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .trim()
+  return escapeHTML(text).trim()
 }
-
 
 
 

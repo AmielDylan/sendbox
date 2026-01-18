@@ -62,18 +62,28 @@ export default function MyAnnouncementsPage() {
 
   // Query pour récupérer les annonces
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['user-announcements', user?.id, activeTab],
+    queryKey: ['user-announcements', activeTab],
     queryFn: async () => {
-      if (!user?.id) return { data: null, error: null }
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      const effectiveUserId = user?.id || session?.user?.id
+
+      if (!effectiveUserId) return { data: null, error: null }
       return getUserAnnouncements(
-        user.id,
+        effectiveUserId,
         activeTab === 'all' ? undefined : activeTab
       )
     },
-    enabled: !!user?.id,
   })
 
   const announcements = data?.data || []
+  const emptyTitle = activeTab === 'draft'
+    ? 'Aucun brouillon'
+    : activeTab === 'completed'
+      ? 'Aucune annonce terminée'
+      : activeTab === 'active'
+        ? 'Aucune annonce publiée'
+        : 'Aucune annonce'
 
   // Gérer le rafraîchissement après création (Safari)
   useEffect(() => {
@@ -85,6 +95,12 @@ export default function MyAnnouncementsPage() {
       }
     }
   }, [refetch])
+
+  useEffect(() => {
+    if (user?.id) {
+      refetch()
+    }
+  }, [user?.id, refetch])
 
   const handleDelete = async () => {
     if (!announcementToDelete) return
@@ -180,7 +196,7 @@ export default function MyAnnouncementsPage() {
                     </div>
                     <div className="space-y-2">
                       <p className="font-display text-lg text-foreground">
-                        Aucune annonce {activeTab === 'all' ? '' : activeTab}
+                        {emptyTitle}
                       </p>
                       <p className="text-sm text-muted-foreground max-w-sm">
                         Créez votre première annonce pour proposer un trajet
@@ -366,4 +382,3 @@ export default function MyAnnouncementsPage() {
     </div>
   )
 }
-

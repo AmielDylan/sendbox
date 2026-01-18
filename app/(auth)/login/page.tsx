@@ -78,13 +78,13 @@ function LoginForm() {
   // Afficher un indicateur de chargement pendant la vérification d'authentification
   if (!authCheckComplete) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1 text-center">
+      <div className="w-full max-w-md">
+        <Card className="border-border/70 shadow-sm rounded-md">
+          <CardHeader className="space-y-2 text-center">
             <div className="flex justify-center mb-4">
               <IconPackage className="h-12 w-12 text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-2xl font-bold">
+            <CardTitle className="text-2xl font-display">
               Vérification de la connexion...
             </CardTitle>
           </CardHeader>
@@ -135,16 +135,18 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <IconPackage className="h-12 w-12 text-primary" />
+    <div className="w-full max-w-md">
+      <Card className="border-border/70 shadow-sm rounded-md">
+        <CardHeader className="space-y-2 text-center">
+          <div className="flex justify-center">
+            <IconPackage className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Connexion</CardTitle>
-          <CardDescription>
-            Connectez-vous à votre compte Sendbox
-          </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-display">Connexion</CardTitle>
+            <CardDescription>
+              Connectez-vous à votre compte Sendbox
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -258,18 +260,16 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader className="space-y-1 text-center">
-              <div className="flex justify-center mb-4">
-                <IconPackage className="h-12 w-12 text-primary animate-pulse" />
-              </div>
-              <CardTitle className="text-2xl font-bold">
-                Chargement...
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
+        <Card className="w-full max-w-md border-border/70 shadow-sm rounded-md">
+          <CardHeader className="space-y-2 text-center">
+            <div className="flex justify-center mb-4">
+              <IconPackage className="h-12 w-12 text-primary animate-pulse" />
+            </div>
+            <CardTitle className="text-2xl font-display">
+              Chargement...
+            </CardTitle>
+          </CardHeader>
+        </Card>
       }
     >
       <LoginForm />

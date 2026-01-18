@@ -16,13 +16,9 @@ import { ConversationList } from '@/components/features/messages/ConversationLis
 import { ChatWindow } from '@/components/features/messages/ChatWindow'
 import { BookingRequestCard } from '@/components/features/bookings/BookingRequestCard'
 import { getPendingBookingRequests } from "@/lib/core/bookings/requests"
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconLoader2, IconBell, IconInbox, IconMessageCircle, IconArrowRight } from '@tabler/icons-react'
+import { IconLoader2, IconBell, IconInbox, IconMessageCircle } from '@tabler/icons-react'
 import { createClient } from "@/lib/shared/db/client"
-import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 function MessagesPageContent() {
   const searchParams = useSearchParams()
@@ -42,6 +38,7 @@ function MessagesPageContent() {
   const {
     data: conversationsData,
     isLoading: isLoadingConversations,
+    isError: isErrorConversations,
     refetch: refetchConversations,
   } = useQuery({
     queryKey: ['conversations'],
@@ -52,7 +49,16 @@ function MessagesPageContent() {
       }
       return result.conversations || []
     },
+    retry: 1,
   })
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchConversations()
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [refetchConversations])
 
   // Query pour les demandes actives
   const {
@@ -193,6 +199,7 @@ function MessagesPageContent() {
 
   const bookings = requestsData || []
   const notifications = notificationsData || []
+  const conversations = conversationsData || []
 
   return (
     <div className="space-y-8">
@@ -245,16 +252,14 @@ function MessagesPageContent() {
                 <h3 className="font-semibold text-lg">Conversations</h3>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {isLoadingConversations ? (
-                  <div className="flex items-center justify-center h-full min-h-[200px]">
-                    <IconLoader2 className="h-6 w-6 animate-spin text-primary" />
-                  </div>
-                ) : (
-                  <ConversationList
-                    selectedBookingId={selectedBookingId}
-                    onSelectConversation={handleSelectConversation}
-                  />
-                )}
+                <ConversationList
+                  conversations={conversations}
+                  isLoading={isLoadingConversations}
+                  isError={isErrorConversations}
+                  onRetry={refetchConversations}
+                  selectedBookingId={selectedBookingId}
+                  onSelectConversation={handleSelectConversation}
+                />
               </div>
             </div>
 

@@ -4,12 +4,10 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { getUserConversations } from "@/lib/core/messages/actions"
+import { Button } from '@/components/ui/button'
 import { generateInitials } from "@/lib/core/profile/utils"
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -31,45 +29,39 @@ interface Conversation {
 }
 
 interface ConversationListProps {
+  conversations: Conversation[]
+  isLoading?: boolean
+  isError?: boolean
+  onRetry?: () => void
   selectedBookingId: string | null
   onSelectConversation: (bookingId: string) => void
 }
 
 export function ConversationList({
+  conversations,
+  isLoading,
+  isError,
+  onRetry,
   selectedBookingId,
   onSelectConversation,
 }: ConversationListProps) {
   const { user } = useAuth()
-  const {
-    data: conversationsData,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['conversations'],
-    queryFn: async () => {
-      const result = await getUserConversations()
-      if (result.error) {
-        throw new Error(result.error)
-      }
-      return result.conversations || []
-    },
-  })
-
-  // Refetch périodiquement pour mettre à jour les conversations
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetch()
-    }, 30000) // Toutes les 30 secondes
-
-    return () => clearInterval(interval)
-  }, [refetch])
-
-  const conversations = (conversationsData || []) as Conversation[]
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <IconLoader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-sm text-muted-foreground">
+        <p>Impossible de charger les conversations.</p>
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          Réessayer
+        </Button>
       </div>
     )
   }
@@ -177,9 +169,6 @@ export function ConversationList({
     </ScrollArea>
   )
 }
-
-
-
 
 
 

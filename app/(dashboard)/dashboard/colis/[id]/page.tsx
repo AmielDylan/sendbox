@@ -345,241 +345,234 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         }
       />
 
-      {/* Statut et Informations principales */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>Statut de la réservation</CardTitle>
-            <BookingStatusBadge status={booking.status} />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {booking.tracking_number && (
-            <div>
-              <p className="text-sm text-muted-foreground">Numéro de suivi</p>
-              <p className="font-mono font-medium break-all">{booking.tracking_number}</p>
-            </div>
-          )}
-
-          <Separator />
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex items-center gap-2">
-              <IconWeight className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Poids</p>
-                <p className="font-medium">{booking.kilos_requested} kg</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Prix total</p>
-                <p className="font-medium">
-                  {booking.total_price ? `${booking.total_price}€` : 'Non calculé'}
-                </p>
-              </div>
-            </div>
-
-            {booking.insurance_opted && (
-              <div className="flex items-center gap-2">
-                <IconShield className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Assurance</p>
-                  <p className="font-medium">
-                    Souscrite ({booking.package_value}€)
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-start">
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg">Résumé de la réservation</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {booking.tracking_number
+                      ? `Suivi : ${booking.tracking_number}`
+                      : `Réservation #${booking.id.slice(0, 8)}`}
                   </p>
                 </div>
+                <BookingStatusBadge status={booking.status} />
               </div>
-            )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded border border-border/60 bg-muted/30 p-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <IconWeight className="h-4 w-4" />
+                    <span>Poids</span>
+                  </div>
+                  <p className="mt-1 font-semibold">{booking.kilos_requested} kg</p>
+                </div>
 
-            <div className="flex items-center gap-2">
-              <IconCalendar className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Créée le</p>
-                <p className="font-medium">
-                  {format(new Date(booking.created_at), 'dd MMMM yyyy', { locale: fr })}
-                </p>
-              </div>
-            </div>
-          </div>
+                <div className="rounded border border-border/60 bg-muted/30 p-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <IconCurrencyEuro className="h-4 w-4" />
+                    <span>Prix total</span>
+                  </div>
+                  <p className="mt-1 font-semibold">
+                    {booking.total_price ? `${booking.total_price}€` : 'Non calculé'}
+                  </p>
+                </div>
 
-          {booking.package_description && (
-            <>
-              <Separator />
-              <div>
-                <p className="text-sm font-medium">Description du colis</p>
-                <p className="mt-1 text-sm text-muted-foreground">{booking.package_description}</p>
+                <div className="rounded border border-border/60 bg-muted/30 p-3">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <IconCalendar className="h-4 w-4" />
+                    <span>Créée le</span>
+                  </div>
+                  <p className="mt-1 font-semibold">
+                    {format(new Date(booking.created_at), 'dd MMMM yyyy', { locale: fr })}
+                  </p>
+                </div>
+
+                {booking.insurance_opted && (
+                  <div className="rounded border border-border/60 bg-muted/30 p-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <IconShield className="h-4 w-4" />
+                      <span>Assurance</span>
+                    </div>
+                    <p className="mt-1 font-semibold">
+                      Souscrite ({booking.package_value}€)
+                    </p>
+                  </div>
+                )}
               </div>
-            </>
+
+              {booking.package_description && (
+                <div className="rounded border border-border/60 bg-background/60 p-3">
+                  <p className="text-sm font-medium">Description du colis</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{booking.package_description}</p>
+                </div>
+              )}
+
+              {booking.refused_reason && (
+                <div className="rounded border border-destructive/30 bg-destructive/10 p-3">
+                  <p className="text-sm font-medium text-destructive">Raison du refus</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{booking.refused_reason}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Trajet</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <BookingTimeline
+                originCountry={booking.announcement.departure_country}
+                originCity={booking.announcement.departure_city}
+                destinationCountry={booking.announcement.arrival_country}
+                destinationCity={booking.announcement.arrival_city}
+                departureDate={booking.announcement.departure_date}
+                arrivalDate={booking.announcement.arrival_date || undefined}
+              />
+            </CardContent>
+          </Card>
+
+          {booking.package_photos && booking.package_photos.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Photos du colis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PackagePhotosGallery photos={booking.package_photos} />
+              </CardContent>
+            </Card>
           )}
+        </div>
 
-          {booking.refused_reason && (
-            <>
-              <Separator />
-              <div className="rounded-md bg-destructive/10 p-3">
-                <p className="text-sm font-medium text-destructive">Raison du refus</p>
-                <p className="mt-1 text-sm text-muted-foreground">{booking.refused_reason}</p>
+        <div className="space-y-6 lg:sticky lg:top-24">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Participants</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded border border-border/60 p-4">
+                <ParticipantCard
+                  role="sender"
+                  profile={booking.sender}
+                  showContactButton={isTraveler && booking.status !== 'cancelled'}
+                  bookingId={booking.id}
+                />
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+              <Separator />
+              <div className="rounded border border-border/60 p-4">
+                <ParticipantCard
+                  role="traveler"
+                  profile={booking.traveler}
+                  showContactButton={isSender && booking.status !== 'cancelled'}
+                  bookingId={booking.id}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Timeline du trajet */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Trajet</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BookingTimeline
-            originCountry={booking.announcement.departure_country}
-            originCity={booking.announcement.departure_city}
-            destinationCountry={booking.announcement.arrival_country}
-            destinationCity={booking.announcement.arrival_city}
-            departureDate={booking.announcement.departure_date}
-            arrivalDate={booking.announcement.arrival_date || undefined}
-          />
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                {/* Actions Expéditeur */}
+                {isSender && booking.status === 'accepted' && (
+                  <>
+                    <Button asChild className="w-full">
+                      <Link href={`/dashboard/colis/${booking.id}/paiement`}>
+                        <IconCreditCard className="mr-2 h-4 w-4" />
+                        Payer maintenant
+                      </Link>
+                    </Button>
+                    <CancelBookingDialog bookingId={booking.id} />
+                  </>
+                )}
 
-      {/* Participants */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardContent className="pt-6">
-            <ParticipantCard
-              role="sender"
-              profile={booking.sender}
-              showContactButton={isTraveler && booking.status !== 'cancelled'}
-              bookingId={booking.id}
-            />
-          </CardContent>
-        </Card>
+                {isSender && (booking.status === 'paid' || booking.status === 'deposited') && (
+                  <>
+                    <Button variant="outline" asChild className="w-full">
+                      <Link href={`/dashboard/colis/${booking.id}/contrat`}>
+                        <IconFileText className="mr-2 h-4 w-4" />
+                        Voir le contrat
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild className="w-full">
+                      <Link href={`/dashboard/colis/${booking.id}/qr`}>
+                        <IconQrcode className="mr-2 h-4 w-4" />
+                        QR Code
+                      </Link>
+                    </Button>
+                  </>
+                )}
 
-        <Card>
-          <CardContent className="pt-6">
-            <ParticipantCard
-              role="traveler"
-              profile={booking.traveler}
-              showContactButton={isSender && booking.status !== 'cancelled'}
-              bookingId={booking.id}
-            />
-          </CardContent>
-        </Card>
+                {isSender && booking.status === 'delivered' && (
+                  <Button asChild className="w-full">
+                    <Link href={`/dashboard/colis/${booking.id}/noter`}>
+                      <IconStar className="mr-2 h-4 w-4" />
+                      Noter le voyageur
+                    </Link>
+                  </Button>
+                )}
+
+                {/* Actions Voyageur */}
+                {isTraveler && booking.status === 'pending' && (
+                  <>
+                    <Button
+                      className="w-full"
+                      onClick={handleAcceptBooking}
+                      disabled={isAccepting}
+                    >
+                      {isAccepting ? (
+                        <>
+                          <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Acceptation...
+                        </>
+                      ) : (
+                        <>
+                          <IconCircleCheck className="mr-2 h-4 w-4" />
+                          Accepter
+                        </>
+                      )}
+                    </Button>
+                    <RefuseBookingDialog bookingId={booking.id} />
+                  </>
+                )}
+
+                {isTraveler && (booking.status === 'paid' || booking.status === 'deposited') && (
+                  <>
+                    <Button variant="outline" asChild className="w-full">
+                      <Link href={`/dashboard/colis/${booking.id}/contrat`}>
+                        <IconFileText className="mr-2 h-4 w-4" />
+                        Voir le contrat
+                      </Link>
+                    </Button>
+                    <Button asChild className="w-full">
+                      <Link href={`/dashboard/scan/depot/${booking.id}`}>
+                        <IconPackage className="mr-2 h-4 w-4" />
+                        Scanner QR dépôt
+                      </Link>
+                    </Button>
+                  </>
+                )}
+
+                {isTraveler && booking.status === 'in_transit' && (
+                  <Button asChild className="w-full">
+                    <Link href={`/dashboard/scan/livraison/${booking.id}`}>
+                      <IconPackage className="mr-2 h-4 w-4" />
+                      Scanner QR livraison
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {/* Photos du colis */}
-      {booking.package_photos && booking.package_photos.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Photos du colis</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PackagePhotosGallery photos={booking.package_photos} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Actions disponibles</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {/* Actions Expéditeur */}
-            {isSender && booking.status === 'accepted' && (
-              <>
-                <Button asChild className="w-full">
-                  <Link href={`/dashboard/colis/${booking.id}/paiement`}>
-                    <IconCreditCard className="mr-2 h-4 w-4" />
-                    Payer maintenant
-                  </Link>
-                </Button>
-                <CancelBookingDialog bookingId={booking.id} />
-              </>
-            )}
-
-            {isSender && (booking.status === 'paid' || booking.status === 'deposited') && (
-              <>
-                <Button variant="outline" asChild className="w-full">
-                  <Link href={`/dashboard/colis/${booking.id}/contrat`}>
-                    <IconFileText className="mr-2 h-4 w-4" />
-                    Voir le contrat
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild className="w-full">
-                  <Link href={`/dashboard/colis/${booking.id}/qr`}>
-                    <IconQrcode className="mr-2 h-4 w-4" />
-                    QR Code
-                  </Link>
-                </Button>
-              </>
-            )}
-
-            {isSender && booking.status === 'delivered' && (
-              <Button asChild className="w-full">
-                <Link href={`/dashboard/colis/${booking.id}/noter`}>
-                  <IconStar className="mr-2 h-4 w-4" />
-                  Noter le voyageur
-                </Link>
-              </Button>
-            )}
-
-            {/* Actions Voyageur */}
-            {isTraveler && booking.status === 'pending' && (
-              <>
-                <Button 
-                  className="w-full" 
-                  onClick={handleAcceptBooking}
-                  disabled={isAccepting}
-                >
-                  {isAccepting ? (
-                    <>
-                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Acceptation...
-                    </>
-                  ) : (
-                    <>
-                      <IconCircleCheck className="mr-2 h-4 w-4" />
-                      Accepter
-                    </>
-                  )}
-                </Button>
-                <RefuseBookingDialog bookingId={booking.id} />
-              </>
-            )}
-
-            {isTraveler && (booking.status === 'paid' || booking.status === 'deposited') && (
-              <>
-                <Button variant="outline" asChild className="w-full">
-                  <Link href={`/dashboard/colis/${booking.id}/contrat`}>
-                    <IconFileText className="mr-2 h-4 w-4" />
-                    Voir le contrat
-                  </Link>
-                </Button>
-                <Button asChild className="w-full">
-                  <Link href={`/dashboard/scan/depot/${booking.id}`}>
-                    <IconPackage className="mr-2 h-4 w-4" />
-                    Scanner QR dépôt
-                  </Link>
-                </Button>
-              </>
-            )}
-
-            {isTraveler && booking.status === 'in_transit' && (
-              <Button asChild className="w-full">
-                <Link href={`/dashboard/scan/livraison/${booking.id}`}>
-                  <IconPackage className="mr-2 h-4 w-4" />
-                  Scanner QR livraison
-                </Link>
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
-

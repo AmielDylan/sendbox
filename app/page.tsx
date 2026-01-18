@@ -89,14 +89,14 @@ export default function HomePage() {
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <Button asChild>
+              <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
+                <Button asChild className="flex-1 min-w-[160px] sm:flex-none">
                   <Link href="/register">
-                    Commencer gratuitement
+                    S'inscrire gratuitement
                     <IconArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" className="flex-1 min-w-[160px] sm:flex-none">
                   <Link href="/recherche">
                     <IconMapPin className="h-4 w-4" />
                     Rechercher un trajet

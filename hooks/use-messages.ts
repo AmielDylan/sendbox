@@ -121,6 +121,7 @@ export function useMessages(bookingId: string | null) {
       setError(null)
 
       try {
+        await supabase.auth.getSession()
         const { data, error: fetchError } = await (supabase as any)
           .from('messages')
           .select(
@@ -325,4 +326,3 @@ export function useMessages(bookingId: string | null) {
     removeOptimisticMessage,
   }
 }
-

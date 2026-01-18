@@ -26,7 +26,7 @@ import {
 import { toast } from 'sonner'
 import { IconLoader2, IconPackage } from '@tabler/icons-react'
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
@@ -69,13 +69,13 @@ export default function RegisterPage() {
   // Afficher un indicateur de chargement pendant la vérification d'authentification
   if (!authCheckComplete) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1 text-center">
+      <div className="w-full max-w-xl">
+        <Card className="border-border/70 shadow-sm rounded-md">
+          <CardHeader className="space-y-2 text-center">
             <div className="flex justify-center mb-4">
               <IconPackage className="h-12 w-12 text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-2xl font-bold">
+            <CardTitle className="text-2xl font-display">
               Vérification de la connexion...
             </CardTitle>
           </CardHeader>
@@ -106,16 +106,18 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <IconPackage className="h-12 w-12 text-primary" />
+    <div className="w-full max-w-xl">
+      <Card className="border-border/70 shadow-sm rounded-md">
+        <CardHeader className="space-y-2 text-center">
+          <div className="flex justify-center">
+            <IconPackage className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Créer un compte</CardTitle>
-          <CardDescription>
-            Rejoignez Sendbox pour commencer à envoyer et recevoir des colis
-          </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-display">Créer un compte</CardTitle>
+            <CardDescription>
+              Rejoignez Sendbox pour commencer à envoyer et recevoir des colis
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -335,4 +337,8 @@ export default function RegisterPage() {
       </Card>
     </div>
   )
+}
+
+export default function RegisterPage() {
+  return <RegisterForm />
 }
