@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [
       {
-        url: 'https://www.gosendbox.com/images/opengraph.png',
+        url: 'https://www.gosendbox.com/images/opengraph.jpg',
         width: 1200,
         height: 630,
         alt: 'Sendbox - Covalisage Europe Afrique',
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteTitle,
     description: siteDescription,
-    images: ['https://www.gosendbox.com/images/opengraph.png'],
+    images: ['https://www.gosendbox.com/images/opengraph.jpg'],
   },
 }
 
