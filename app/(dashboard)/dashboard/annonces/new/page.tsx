@@ -161,6 +161,12 @@ export default function NewAnnouncementPage() {
     console.log('[NewAnnouncement] onSubmit called - currentStep:', currentStep)
     console.log('[NewAnnouncement] Form data:', data)
 
+    // Protection : ne soumettre que si on est à l'étape 3
+    if (currentStep !== 3) {
+      console.log('[NewAnnouncement] Submit blocked - not on step 3')
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const result = await createAnnouncement(data)
@@ -258,7 +264,16 @@ export default function NewAnnouncementPage() {
       </Card>
 
       {/* Formulaire */}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={(e) => {
+          // Bloquer Enter sauf si on est à l'étape 3 et qu'on est sur le bouton submit
+          if (e.key === 'Enter' && currentStep !== 3) {
+            e.preventDefault()
+            console.log('[NewAnnouncement] Enter key blocked - not on final step')
+          }
+        }}
+      >
         <Card>
           <CardHeader>
             <CardTitle>

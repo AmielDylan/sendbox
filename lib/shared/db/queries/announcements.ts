@@ -31,6 +31,7 @@ export interface AnnouncementResult {
   arrival_country: string
   arrival_city: string
   departure_date: string
+  arrival_date: string
   available_kg: number
   price_per_kg: number
   description: string | null

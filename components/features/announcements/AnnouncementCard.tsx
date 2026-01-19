@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { IconStar, IconMapPin, IconCalendar, IconPackage, IconCurrencyEuro, IconArrowRight } from '@tabler/icons-react'
+import { IconStar, IconMapPin, IconCalendar, IconPackage, IconCurrencyEuro, IconArrowRight, IconArrowNarrowRight } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { AnnouncementResult } from "@/lib/shared/db/queries/announcements"
@@ -30,112 +30,89 @@ export function AnnouncementCard({
   )
 
   return (
-    <Card className="card-elevated hover:shadow-xl transition-all hover:-translate-y-1 h-full flex flex-col group">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 ring-2 ring-primary/10 transition-all group-hover:ring-primary/30">
-              <AvatarImage
-                src={announcement.traveler_avatar_url || undefined}
-                alt={travelerName}
-              />
-              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 font-display">
-                {travelerInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="font-display font-semibold text-base sm:text-lg leading-tight">{travelerName}</h3>
-              <div className="flex items-center gap-2 mt-1.5">
-                <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-950/30 px-2 py-0.5 rounded-md">
-                  <IconStar className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
-                    {announcement.traveler_rating.toFixed(1)}
-                  </span>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {announcement.traveler_services_count} service{announcement.traveler_services_count > 1 ? 's' : ''}
+    <Link href={`/annonces/${announcement.id}`} className="block h-full cursor-pointer">
+      <Card className="h-full flex flex-col justify-between rounded-xl border border-border/60 shadow-none hover:border-primary/40 hover:bg-muted/30 transition-all duration-300 group relative overflow-hidden">
+        {/* Hover Highlight Line */}
+        <div className="absolute top-0 left-0 w-1 h-full bg-primary/0 group-hover:bg-primary transition-all duration-300" />
+
+        <CardContent className="p-4 sm:p-5 flex-1">
+          {/* Top Row: Country Route & Price */}
+
+
+          {/* Main Row: Cities & Badges */}
+          {/* Main Row: Cities & Badges */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-start gap-4">
+              <h3 className="font-display font-bold text-lg sm:text-2xl text-foreground leading-tight group-hover:text-primary transition-colors flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span className="flex items-center gap-2">
+                  {announcement.departure_city}
+                  <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/50" stroke={1} />
+                  {announcement.arrival_city}
                 </span>
+              </h3>
+              <div className="text-right leading-none shrink-0">
+                <span className="font-display font-bold text-xl text-primary">{announcement.price_per_kg} €</span>
+                <span className="text-[10px] text-muted-foreground font-medium uppercase ml-1">/kg</span>
+              </div>
+            </div>
+
+            {/* Tags Grid - Fills horizontal space */}
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <Badge variant="secondary" className="flex-1 justify-start items-start flex-col bg-muted/50 text-foreground hover:bg-muted border-0 font-sans px-3 py-2 h-auto whitespace-nowrap">
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-1">Dates du voyage</span>
+                <div className="flex items-center font-bold text-sm">
+                  <IconCalendar className="h-3.5 w-3.5 mr-1.5 opacity-70" stroke={1.5} />
+                  {format(new Date(announcement.departure_date), 'd MMMM', { locale: fr })}
+                  <IconArrowNarrowRight className="h-3.5 w-3.5 mx-1.5 text-muted-foreground/70" stroke={1} />
+                  {announcement.arrival_date ? format(new Date(announcement.arrival_date), 'd MMMM', { locale: fr }) : '?'}
+                </div>
+              </Badge>
+
+              <div className="flex gap-2 flex-1 sm:flex-none">
+                <Badge variant="secondary" className="flex-1 sm:flex-none justify-start items-start flex-col bg-primary/5 text-primary hover:bg-primary/10 border-0 font-sans px-3 py-2 h-auto whitespace-nowrap min-w-[100px]">
+                  <span className="text-[10px] text-primary/70 font-medium uppercase tracking-wider mb-1">Disponible</span>
+                  <div className="flex items-center font-bold text-sm">
+                    <IconPackage className="h-3.5 w-3.5 mr-1.5 opacity-70" stroke={1.5} />
+                    {announcement.available_kg} kg
+                  </div>
+                </Badge>
+
+                {showMatchScore && announcement.match_score > 0 && (
+                  <Badge variant="outline" className="flex-1 sm:flex-none justify-start items-start flex-col text-emerald-600 border-emerald-500/20 bg-emerald-500/5 font-sans px-3 py-2 h-auto whitespace-nowrap">
+                    <span className="text-[10px] text-emerald-600/70 font-medium uppercase tracking-wider mb-1">Match</span>
+                    <div className="font-bold text-sm">
+                      {announcement.match_score}%
+                    </div>
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
-          {showMatchScore && announcement.match_score > 0 && (
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white w-fit self-start sm:self-auto border-0 shadow-sm">
-              Match {announcement.match_score}%
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4 flex-1">
-        {/* Trajet */}
-        <div className="flex items-start gap-3 bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 p-3 rounded-xl border border-primary/10">
-          <IconMapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <span className="font-display font-semibold text-sm sm:text-base leading-tight block">
-              {announcement.departure_city}
-              <span className="mx-2 text-primary">→</span>
-              {announcement.arrival_city}
-            </span>
-            <span className="text-xs text-muted-foreground mt-1 block">
-              {getCountryName(announcement.departure_country)} → {getCountryName(announcement.arrival_country)}
-            </span>
-          </div>
-        </div>
+        </CardContent>
 
-        {/* Dates */}
-        <div className="flex items-center gap-2.5 bg-muted/40 px-3 py-2 rounded-lg">
-          <IconCalendar className="h-4 w-4 text-primary flex-shrink-0" />
-          <span className="text-sm font-medium">
-            {format(new Date(announcement.departure_date), 'd MMMM yyyy', {
-              locale: fr,
-            })}
-          </span>
-        </div>
-
-        {/* Capacité et Prix */}
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
-          <div className="flex items-center gap-2.5 bg-primary/5 border border-primary/20 px-4 py-2.5 rounded-lg flex-1">
-            <IconPackage className="h-5 w-5 text-primary shrink-0" />
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">Disponible</span>
-              <span className="text-sm font-bold">{announcement.available_kg} kg</span>
+        <CardFooter className="p-4 sm:p-5 pt-2 mt-auto border-t border-border/30 bg-muted/20">
+          {/* Traveler Info */}
+          <div className="flex items-center gap-3 w-full">
+            <Avatar className="h-8 w-8 ring-1 ring-border/50">
+              <AvatarImage src={announcement.traveler_avatar_url || undefined} alt={travelerName} />
+              <AvatarFallback className="bg-background text-[10px]">{travelerInitials}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate leading-none mb-1">{travelerName}</p>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
+                  <IconStar className="h-3 w-3 fill-amber-500" />
+                  {announcement.traveler_rating.toFixed(1)}
+                </div>
+                <span className="text-[10px] text-muted-foreground truncate">
+                  • {announcement.traveler_services_count} voyages
+                </span>
+              </div>
             </div>
+            <IconArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
           </div>
-          <div className="flex items-center gap-2.5 bg-gradient-to-br from-primary to-primary/80 text-white px-4 py-2.5 rounded-lg shadow-warm flex-1">
-            <IconCurrencyEuro className="h-5 w-5 shrink-0" />
-            <div className="flex flex-col">
-              <span className="text-xs opacity-90">Prix/kg</span>
-              <span className="text-lg font-bold">{announcement.price_per_kg} €</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Description */}
-        {announcement.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-            {announcement.description}
-          </p>
-        )}
-      </CardContent>
-      <CardFooter className="pt-0">
-        <Link href={`/annonces/${announcement.id}`} className="w-full">
-          <Button className="w-full h-12 text-base shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5 font-display" variant="default">
-            Voir les détails
-            <IconArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+    </Link>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
