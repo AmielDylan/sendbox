@@ -129,7 +129,7 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
   <div class="email-container">
     <!-- Header avec logo -->
     <div class="header">
-      <img src="https://www.gosendbox.com/images/branding/logo-white.svg" alt="Sendbox" class="logo">
+      <img src="https://www.gosendbox.com/images/branding/logo-white.png" alt="Sendbox" class="logo">
     </div>
 
     <!-- Contenu principal -->
@@ -293,7 +293,7 @@ Votre lien de connexion Sendbox 🔑
 <body>
   <div class="email-container">
     <div class="header">
-      <img src="https://www.gosendbox.com/images/branding/logo-white.svg" alt="Sendbox" class="logo">
+      <img src="https://www.gosendbox.com/images/branding/logo-white.png" alt="Sendbox" class="logo">
     </div>
 
     <div class="content">
@@ -441,7 +441,7 @@ Réinitialisez votre mot de passe Sendbox 🔒
 <body>
   <div class="email-container">
     <div class="header">
-      <img src="https://www.gosendbox.com/images/branding/logo-white.svg" alt="Sendbox" class="logo">
+      <img src="https://www.gosendbox.com/images/branding/logo-white.png" alt="Sendbox" class="logo">
     </div>
 
     <div class="content">
@@ -509,7 +509,7 @@ Réinitialisez votre mot de passe Sendbox 🔒
 
 **Important** :
 - Les templates utilisent `{{ .SiteURL }}`, `{{ .TokenHash }}` et le paramètre `next` pour la redirection finale
-- Votre logo est accessible à `https://www.gosendbox.com/images/branding/logo-white.svg`
+- Votre logo est accessible à `https://www.gosendbox.com/images/branding/logo-white.png`
 - Le paramètre `next` permet de rediriger vers `/dashboard?verified=true` après confirmation
 
 **Note** : Il n'y a PAS de champ "Confirmation URL" à configurer séparément dans Supabase. Tout est dans le HTML du template.
