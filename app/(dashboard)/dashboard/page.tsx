@@ -58,10 +58,16 @@ export default function DashboardPage() {
     // Gérer l'alert de vérification email
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
-      if (params.get('verified') === 'true') {
-        toast.success('Compte vérifié avec succès!', {
-          description: 'Vous pouvez maintenant utiliser toutes les fonctionnalités'
+      const verified = params.get('verified')
+      console.log('[Dashboard] Checking verified param:', verified)
+
+      if (verified === 'true') {
+        console.log('[Dashboard] Showing verification success toast')
+        toast.success('Inscription réussie !', {
+          description: 'Votre email a été vérifié avec succès. Bienvenue sur Sendbox !',
+          duration: 5000,
         })
+        // Supprimer le paramètre de l'URL
         window.history.replaceState({}, '', '/dashboard')
       }
     }

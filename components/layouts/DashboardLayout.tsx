@@ -207,11 +207,6 @@ function SidebarContent({
           )
         })}
       </nav>
-
-      {/* User Section */}
-      <div className="border-t p-4">
-        <UserMenu />
-      </div>
     </div>
   )
 }
