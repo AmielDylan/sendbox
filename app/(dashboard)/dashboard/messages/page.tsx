@@ -17,6 +17,7 @@ import { ChatWindow } from '@/components/features/messages/ChatWindow'
 import { ConnectionIndicator } from '@/components/features/messages/ConnectionIndicator'
 import { BookingRequestCard } from '@/components/features/bookings/BookingRequestCard'
 import { getPendingBookingRequests } from "@/lib/core/bookings/requests"
+import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
 import { Card, CardContent } from '@/components/ui/card'
 import { IconLoader2, IconBell, IconInbox, IconMessageCircle } from '@tabler/icons-react'
 import { createClient } from "@/lib/shared/db/client"
@@ -138,32 +139,32 @@ function MessagesPageContent() {
         const otherUserId = isUserSender ? booking.traveler_id : booking.sender_id
 
         // Récupérer les infos de l'autre utilisateur
-        const { data: otherUserProfile } = await supabase
-          .from('profiles')
-          .select('id, firstname, lastname, avatar_url')
-          .eq('id', otherUserId)
-          .single()
+        const { data: publicProfiles } = await getPublicProfiles(supabase, [
+          otherUserId,
+        ])
+        const otherUserProfile = publicProfiles?.[0] || null
+        const otherUserName = otherUserProfile
+          ? `${otherUserProfile.firstname || ''} ${otherUserProfile.lastname || ''}`.trim() || 'Utilisateur'
+          : 'Utilisateur'
 
-        if (otherUserProfile) {
-          setSelectedBookingId(bookingIdFromUrl)
-          setSelectedConversation({
-            bookingId: bookingIdFromUrl,
-            otherUserId: otherUserProfile.id,
-            otherUserName: `${otherUserProfile.firstname || ''} ${otherUserProfile.lastname || ''}`.trim() || 'Utilisateur',
-            otherUserAvatar: otherUserProfile.avatar_url,
-          })
-          setPendingConversation({
-            booking_id: bookingIdFromUrl,
-            other_user_id: otherUserProfile.id,
-            other_user_firstname: otherUserProfile.firstname,
-            other_user_lastname: otherUserProfile.lastname,
-            other_user_avatar_url: otherUserProfile.avatar_url,
-            last_message_content: 'Nouvelle conversation',
-            last_message_created_at: booking.created_at || new Date().toISOString(),
-            last_message_sender_id: '',
-            unread_count: 0,
-          })
-        }
+        setSelectedBookingId(bookingIdFromUrl)
+        setSelectedConversation({
+          bookingId: bookingIdFromUrl,
+          otherUserId,
+          otherUserName,
+          otherUserAvatar: otherUserProfile?.avatar_url || null,
+        })
+        setPendingConversation({
+          booking_id: bookingIdFromUrl,
+          other_user_id: otherUserId,
+          other_user_firstname: otherUserProfile?.firstname || null,
+          other_user_lastname: otherUserProfile?.lastname || null,
+          other_user_avatar_url: otherUserProfile?.avatar_url || null,
+          last_message_content: 'Nouvelle conversation',
+          last_message_created_at: booking.created_at || new Date().toISOString(),
+          last_message_sender_id: '',
+          unread_count: 0,
+        })
       }
     }
 

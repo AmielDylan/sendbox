@@ -23,10 +23,10 @@ export function AnnouncementCard({
   announcement,
   showMatchScore = false,
 }: AnnouncementCardProps) {
-  const travelerName = `${announcement.traveler_firstname || ''} ${announcement.traveler_lastname || ''}`.trim() || 'Voyageur'
+  const travelerName = `${announcement.traveler_first_name || ''} ${announcement.traveler_last_name || ''}`.trim() || 'Voyageur'
   const travelerInitials = generateInitials(
-    announcement.traveler_firstname,
-    announcement.traveler_lastname
+    announcement.traveler_first_name,
+    announcement.traveler_last_name
   )
 
   return (
@@ -45,9 +45,9 @@ export function AnnouncementCard({
             <div className="flex justify-between items-start gap-4">
               <h3 className="font-display font-bold text-lg sm:text-2xl text-foreground leading-tight group-hover:text-primary transition-colors flex flex-wrap items-center gap-x-3 gap-y-2">
                 <span className="flex items-center gap-2">
-                  {announcement.departure_city}
+                  {announcement.origin_city}
                   <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/50" stroke={1} />
-                  {announcement.arrival_city}
+                  {announcement.destination_city}
                 </span>
               </h3>
               <div className="text-right leading-none shrink-0">
@@ -73,7 +73,7 @@ export function AnnouncementCard({
                   <span className="text-[10px] text-primary/70 font-medium uppercase tracking-wider mb-1">Disponible</span>
                   <div className="flex items-center font-bold text-sm">
                     <IconPackage className="h-3.5 w-3.5 mr-1.5 opacity-70" stroke={1.5} />
-                    {announcement.available_kg} kg
+                    {announcement.max_weight_kg} kg
                   </div>
                 </Badge>
 

@@ -3,6 +3,10 @@
  */
 
 import { createClient } from "@/lib/shared/db/client"
+import {
+  getPublicProfiles,
+  mapPublicProfilesById,
+} from "@/lib/shared/db/queries/public-profiles"
 
 export interface AnnouncementDetail {
   id: string
@@ -25,7 +29,7 @@ export interface AnnouncementDetail {
   traveler_rating: number
   traveler_services_count: number
   traveler_member_since: string | null
-  traveler_kyc_status: 'pending' | 'approved' | 'rejected' | null
+  traveler_kyc_status: 'pending' | 'approved' | 'rejected' | 'incomplete' | null
   reserved_weight: number
 }
 
@@ -54,18 +58,7 @@ export async function getAnnouncementDetail(
   // Utiliser la relation explicite pour éviter l'ambiguïté entre traveler_id et user_id
   const { data: announcement, error: announcementError } = await supabase
     .from('announcements')
-    .select(
-      `
-      *,
-      profiles!announcements_traveler_id_fkey (
-        firstname,
-        lastname,
-        avatar_url,
-        kyc_status,
-        created_at
-      )
-    `
-    )
+    .select('*')
     .eq('id', announcementId)
     .single()
 
@@ -100,7 +93,10 @@ export async function getAnnouncementDetail(
     .eq('announcement_id', announcementId)
     .eq('status', 'delivered')
 
-  const profile = announcement.profiles as any
+  const { data: publicProfiles } = await getPublicProfiles(supabase, [
+    announcement.traveler_id,
+  ])
+  const profile = publicProfiles?.[0] || null
   const announcementData = announcement as any
 
   return {
@@ -153,11 +149,7 @@ export async function getTravelerReviews(
       rating,
       comment,
       created_at,
-      rater:rater_id (
-        firstname,
-        lastname,
-        avatar_url
-      )
+      rater_id
     `
     )
     .eq('rated_user_id', travelerId)
@@ -168,17 +160,23 @@ export async function getTravelerReviews(
     return { data: null, error }
   }
 
+  const raterIds = data?.map((rating: any) => rating.rater_id) || []
+  const { data: raterProfiles } = await getPublicProfiles(supabase, raterIds)
+  const raterById = mapPublicProfilesById(raterProfiles)
+
   const reviews: Review[] =
-    data?.map((rating: any) => ({
-      id: rating.id,
-      rater_firstname: rating.rater?.firstname || null,
-      rater_lastname: rating.rater?.lastname || null,
-      rater_avatar_url: rating.rater?.avatar_url || null,
-      rating: rating.rating,
-      comment: rating.comment,
-      created_at: rating.created_at,
-    })) || []
+    data?.map((rating: any) => {
+      const rater = raterById[rating.rater_id]
+      return {
+        id: rating.id,
+        rater_firstname: rater?.firstname || null,
+        rater_lastname: rater?.lastname || null,
+        rater_avatar_url: rater?.avatar_url || null,
+        rating: rating.rating,
+        comment: rating.comment,
+        created_at: rating.created_at,
+      }
+    }) || []
 
   return { data: reviews, error: null }
 }
-

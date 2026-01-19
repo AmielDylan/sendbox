@@ -18,7 +18,7 @@ import { CapacityProgress } from '@/components/features/announcements/CapacityPr
 import { ReviewsSection } from '@/components/features/announcements/ReviewsSection'
 import { BookingForm } from '@/components/features/announcements/BookingForm'
 import { ViewTracker } from '@/components/features/announcements/ViewTracker'
-import { IconPackage, IconEdit, IconTrash, IconCircleCheck } from '@tabler/icons-react'
+import { IconPackage, IconEdit, IconTrash, IconCircleCheck, IconArrowNarrowRight, IconCalendar } from '@tabler/icons-react'
 import Link from 'next/link'
 import {
   deleteAnnouncement,
@@ -89,31 +89,30 @@ export default async function PublicAnnouncementDetailPage({
 
   return (
     <>
-      {/* Tracker de vues - composant client qui incrémente les vues après le montage */}
       <ViewTracker announcementId={id} />
 
-      <div className="space-y-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="space-y-2">
-              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-                {announcement.departure_city}
-                <span className="text-primary mx-3">→</span>
-                {announcement.arrival_city}
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Départ le {new Date(announcement.departure_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
-            </div>
+      <div className="container mx-auto px-8 sm:px-16 lg:px-24 py-8 space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col gap-4 border-b border-border/40 pb-6">
+          <div className="flex flex-col gap-2">
+            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground flex flex-wrap items-center gap-x-3">
+              <span>{announcement.departure_city}</span>
+              <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/40" stroke={1} />
+              <span>{announcement.arrival_city}</span>
+            </h1>
+            <p className="text-base text-muted-foreground font-medium flex items-center gap-2">
+              <IconCalendar className="h-4 w-4" />
+              Départ le {new Date(announcement.departure_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
           </div>
+
           {isOwner && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {announcement.status === 'active' && (
                 <Link href={`/dashboard/annonces/${id}/edit`}>
-                  <Button variant="outline" size="default" className="hover:bg-primary/5 hover:border-primary/30 transition-all">
+                  <Button variant="outline" className="hover:bg-primary/5 hover:border-primary/30 h-9 px-4 rounded-lg font-medium">
                     <IconEdit className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Éditer</span>
-                    <span className="sm:hidden">Éditer l'annonce</span>
+                    Éditer mon annonce
                   </Button>
                 </Link>
               )}
@@ -121,167 +120,151 @@ export default async function PublicAnnouncementDetailPage({
           )}
         </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-        {/* Colonne principale */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Timeline */}
-          <Card className="card-elevated">
-            <CardHeader>
-              <CardTitle className="font-display text-2xl">Détails du trajet</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TripTimeline
-                originCity={announcement.departure_city}
-                originCountry={announcement.departure_country}
-                destinationCity={announcement.arrival_city}
-                destinationCountry={announcement.arrival_country}
-                departureDate={announcement.departure_date}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Main Content (8 cols) */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Timeline */}
+            <section className="space-y-3">
+              <h2 className="font-display text-xl font-bold">Détails du voyage</h2>
+              <div className="rounded-xl border border-border/60 bg-card/30 p-6">
+                <TripTimeline
+                  originCity={announcement.departure_city}
+                  originCountry={announcement.departure_country}
+                  destinationCity={announcement.arrival_city}
+                  destinationCountry={announcement.arrival_country}
+                  departureDate={announcement.departure_date}
+                />
+              </div>
+            </section>
+
+            {/* Capacity & Pricing */}
+            <section className="space-y-3">
+              <h2 className="font-display text-xl font-bold">Capacité & Prix</h2>
+              <div className="rounded-xl border border-border/60 bg-card/30 p-6">
+                <CapacityProgress
+                  maxWeight={announcement.available_kg || 0}
+                  reservedWeight={announcement.reserved_weight || 0}
+                  pricePerKg={announcement.price_per_kg || 0}
+                />
+              </div>
+            </section>
+
+            {/* Description */}
+            {announcement.description && (
+              <section className="space-y-3">
+                <h2 className="font-display text-xl font-bold">À propos</h2>
+                <div className="rounded-xl border border-border/60 bg-card/30 p-6">
+                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {announcement.description}
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {/* Reviews */}
+            <section className="space-y-3 pt-4 border-t border-border/40">
+              <ReviewsSection
+                reviews={reviews || []}
+                travelerId={announcement.traveler_id}
               />
-            </CardContent>
-          </Card>
+            </section>
+          </div>
 
-          {/* Capacité */}
-          <Card className="card-elevated ">
-            <CardHeader>
-              <CardTitle className="font-display text-2xl">Capacité et tarification</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CapacityProgress
-                maxWeight={announcement.available_kg || 0}
-                reservedWeight={announcement.reserved_weight || 0}
-                pricePerKg={announcement.price_per_kg || 0}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Description */}
-          {announcement.description && (
-            <Card className="card-elevated ">
-              <CardHeader>
-                <CardTitle className="font-display text-2xl">Description</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                  {announcement.description}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Avis */}
-          <ReviewsSection
-            reviews={reviews || []}
-            travelerId={announcement.traveler_id}
-          />
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Section Voyageur */}
-          <TravelerSection
-            travelerId={announcement.traveler_id}
-            firstName={announcement.traveler_firstname}
-            lastName={announcement.traveler_lastname}
-            avatarUrl={announcement.traveler_avatar_url}
-            rating={announcement.traveler_rating}
-            servicesCount={announcement.traveler_services_count}
-            memberSince={announcement.traveler_member_since || undefined}
-            kycStatus={announcement.traveler_kyc_status || undefined}
-          />
-
-          {/* Stats pour le propriétaire */}
-          {isOwner && (
-            <Card className="card-elevated bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20 ">
-              <CardHeader>
-                <CardTitle className="font-display text-xl">Statistiques</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-background/60 rounded-lg">
-                  <span className="text-sm text-muted-foreground">Vues</span>
-                  <span className="font-bold text-lg">{announcement.views_count || 0}</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-background/60 rounded-lg">
-                  <span className="text-sm text-muted-foreground">
-                    Demandes reçues
-                  </span>
-                  <span className="font-bold text-lg">0</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-background/60 rounded-lg">
-                  <span className="text-sm text-muted-foreground">
-                    Poids réservé
-                  </span>
-                  <span className="font-bold text-lg">
-                    {announcement.reserved_weight} / {announcement.available_kg} kg
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Formulaire de réservation */}
-          {canBook ? (
-            <BookingForm
-              announcementId={announcement.id}
-              maxWeight={availableWeight}
-              pricePerKg={announcement.price_per_kg}
+          {/* Sidebar (4 cols) */}
+          <div className="lg:col-span-4 space-y-6 h-fit lg:sticky lg:top-24">
+            {/* Traveler Card */}
+            <TravelerSection
+              travelerId={announcement.traveler_id}
+              firstName={announcement.traveler_firstname}
+              lastName={announcement.traveler_lastname}
+              avatarUrl={announcement.traveler_avatar_url}
+              rating={announcement.traveler_rating}
+              servicesCount={announcement.traveler_services_count}
+              memberSince={announcement.traveler_member_since || undefined}
+              kycStatus={announcement.traveler_kyc_status || undefined}
             />
-          ) : !user ? (
-            <Card className="card-elevated border-2 border-primary/20 ">
-              <CardContent className="pt-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <IconPackage className="h-6 w-6 text-primary" />
+
+            {/* Owner Stats */}
+            {isOwner && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
+                <h3 className="font-display text-base font-bold text-primary">Vos Statistiques</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                    <span className="text-sm text-muted-foreground font-medium">Vues totales</span>
+                    <span className="font-bold text-base">{announcement.views_count || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                    <span className="text-sm text-muted-foreground font-medium">Réservations</span>
+                    <span className="font-bold text-base">0</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
+                    <span className="text-sm text-muted-foreground font-medium">Poids restant</span>
+                    <span className="font-bold text-base">
+                      {availableWeight} <span className="text-xs text-muted-foreground font-normal">/ {announcement.available_kg} kg</span>
+                    </span>
+                  </div>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Connectez-vous pour réserver ce trajet
-                </p>
-                <Link href="/login">
-                  <Button className="w-full shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5">
-                    Se connecter
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : isFeatureEnabled('KYC_ENABLED') && userKycStatus !== 'approved' ? (
-            <Card className="card-elevated border-2 border-yellow-200 dark:border-yellow-900 bg-yellow-50/50 dark:bg-yellow-950/20 ">
-              <CardContent className="pt-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center mx-auto mb-4">
-                  <IconCircleCheck className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
+            )}
+
+            {/* Booking / CTA Box */}
+            <div className="rounded-xl border border-border/60 shadow-lg bg-card overflow-hidden">
+              {canBook ? (
+                <div className="p-1">
+                  <BookingForm
+                    announcementId={announcement.id}
+                    maxWeight={availableWeight}
+                    pricePerKg={announcement.price_per_kg}
+                  />
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Vous devez avoir un KYC approuvé pour réserver
-                </p>
-                <Link href="/dashboard/reglages/kyc">
-                  <Button className="w-full" variant="outline">
-                    Compléter mon KYC
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ) : isOwner ? (
-            <Card className="card-elevated border-2 border-muted ">
-              <CardContent className="pt-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                  <IconPackage className="h-6 w-6 text-muted-foreground" />
+              ) : !user ? (
+                <div className="p-6 text-center space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    <IconPackage className="h-6 w-6 text-primary" stroke={1.5} />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-display text-lg font-bold">Réserver ce trajet</h3>
+                    <p className="text-sm text-muted-foreground">Connectez-vous pour envoyer une demande de transport.</p>
+                  </div>
+                  <Link href="/login" className="block w-full">
+                    <Button className="w-full h-11 rounded-lg shadow-warm hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                      Se connecter
+                    </Button>
+                  </Link>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Vous ne pouvez pas réserver votre propre annonce
-                </p>
-              </CardContent>
-            </Card>
-          ) : (announcement.available_kg || 0) - (announcement.reserved_weight || 0) <= 0 ? (
-            <Card className="card-elevated border-2 border-destructive/20 bg-destructive/5 ">
-              <CardContent className="pt-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-                  <IconPackage className="h-6 w-6 text-destructive" />
+              ) : isFeatureEnabled('KYC_ENABLED') && userKycStatus !== 'approved' ? (
+                <div className="p-5 bg-amber-50/50 dark:bg-amber-900/10 space-y-3 text-center">
+                  <div className="inline-flex p-2.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                    <IconCircleCheck className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-amber-900 dark:text-amber-100">Vérification requise</h4>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">Votre profil doit être vérifié pour effectuer une réservation.</p>
+                  </div>
+                  <Link href="/dashboard/reglages/kyc" className="block">
+                    <Button variant="outline" size="sm" className="w-full border-amber-200 hover:bg-amber-100 text-amber-800">
+                      Vérifier mon profil
+                    </Button>
+                  </Link>
                 </div>
-                <p className="text-sm text-muted-foreground font-medium">
-                  Capacité complète
-                </p>
-              </CardContent>
-            </Card>
-          ) : null}
+              ) : isOwner ? (
+                <div className="p-6 text-center">
+                  <p className="text-sm font-medium text-muted-foreground bg-muted/50 py-2.5 rounded-lg">
+                    Ceci est votre annonce
+                  </p>
+                </div>
+              ) : availableWeight <= 0 ? (
+                <div className="p-6 text-center space-y-3 bg-muted/30">
+                  <IconPackage className="h-8 w-8 text-muted-foreground/40 mx-auto" />
+                  <div>
+                    <h3 className="font-bold text-base">Complet</h3>
+                    <p className="text-sm text-muted-foreground">Plus de kilos disponibles pour ce trajet.</p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
         </div>
-      </div>
       </div>
     </>
   )

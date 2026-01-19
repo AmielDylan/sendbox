@@ -6,6 +6,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
+import {
+  getPublicProfiles,
+  mapPublicProfilesById,
+} from "@/lib/shared/db/queries/public-profiles"
 
 /**
  * Accepte une demande de réservation
@@ -290,11 +294,6 @@ export async function getPendingBookingRequests() {
         arrival_country,
         departure_date,
         price_per_kg
-      ),
-      sender:sender_id (
-        firstname,
-        lastname,
-        avatar_url
       )
     `
     )
@@ -309,8 +308,18 @@ export async function getPendingBookingRequests() {
     }
   }
 
+  const senderIds = (bookings || []).map((booking: any) => booking.sender_id)
+  const { data: publicProfiles } = await getPublicProfiles(supabase, senderIds)
+  const profileById = mapPublicProfilesById(publicProfiles || [])
+
+  const enrichedBookings =
+    (bookings || []).map((booking: any) => ({
+      ...booking,
+      sender: profileById[booking.sender_id] || null,
+    })) || []
+
   return {
-    bookings: bookings || [],
+    bookings: enrichedBookings,
   }
 }
 

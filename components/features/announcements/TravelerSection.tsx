@@ -20,7 +20,7 @@ interface TravelerSectionProps {
   rating: number
   servicesCount: number
   memberSince?: string
-  kycStatus?: 'pending' | 'approved' | 'rejected'
+  kycStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete'
 }
 
 export function TravelerSection({
@@ -94,7 +94,6 @@ export function TravelerSection({
     </Card>
   )
 }
-
 
 
 

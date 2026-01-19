@@ -7,6 +7,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/server"
+import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
 import {
   createBookingSchema,
   type CreateBookingInput,
@@ -352,13 +353,16 @@ export async function getAnnouncementForBooking(announcementId: string) {
     .from('announcements')
     .select(
       `
-      *,
-      profiles!announcements_traveler_id_fkey (
-        firstname,
-        lastname,
-        avatar_url,
-        kyc_status
-      )
+      id,
+      traveler_id,
+      departure_city,
+      departure_country,
+      arrival_city,
+      arrival_country,
+      departure_date,
+      price_per_kg,
+      available_kg,
+      status
     `
     )
     .eq('id', announcementId)
@@ -396,7 +400,10 @@ export async function getAnnouncementForBooking(announcementId: string) {
   const maxWeight = (announcement as any).available_kg || 0
   const availableWeight = Math.max(0, maxWeight - reservedWeight)
 
-  const profile = announcement.profiles as any
+  const { data: publicProfiles } = await getPublicProfiles(supabase, [
+    announcement.traveler_id,
+  ])
+  const profile = publicProfiles?.[0] || null
 
   return {
     announcement: {
@@ -415,4 +422,3 @@ export async function getAnnouncementForBooking(announcementId: string) {
     },
   }
 }
-

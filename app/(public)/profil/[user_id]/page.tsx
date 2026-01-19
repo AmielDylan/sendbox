@@ -5,6 +5,7 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/server"
+import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
 import { getUserRatings, getUserRatingStats } from "@/lib/core/ratings/actions"
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,11 +29,11 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
   const supabase = await createClient()
 
   // Récupérer le profil
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user_id)
-    .single()
+  const { data: publicProfiles, error: profileError } = await getPublicProfiles(
+    supabase,
+    [user_id]
+  )
+  const profile = publicProfiles?.[0] || null
 
   if (profileError || !profile) {
     notFound()
@@ -220,4 +221,3 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     </Suspense>
   )
 }
-

@@ -34,6 +34,11 @@ import { PackagePhotosGallery } from '@/components/features/bookings/PackagePhot
 import { RefuseBookingDialog } from '@/components/features/bookings/RefuseBookingDialog'
 import { CancelBookingDialog } from '@/components/features/bookings/CancelBookingDialog'
 import { acceptBooking } from "@/lib/core/bookings/requests"
+import {
+  getPublicProfiles,
+  mapPublicProfilesById,
+} from "@/lib/shared/db/queries/public-profiles"
+import type { PublicProfile } from "@/lib/shared/db/queries/public-profiles"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -58,22 +63,8 @@ interface BookingDetail {
   delivered_at: string | null
   sender_id: string
   traveler_id: string
-  sender: {
-    id: string
-    firstname: string | null
-    lastname: string | null
-    avatar_url: string | null
-    rating: number | null
-    completed_services: number | null
-  }
-  traveler: {
-    id: string
-    firstname: string | null
-    lastname: string | null
-    avatar_url: string | null
-    rating: number | null
-    completed_services: number | null
-  }
+  sender: PublicProfile | null
+  traveler: PublicProfile | null
   announcement: {
     departure_country: string
     departure_city: string
@@ -129,22 +120,6 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         .from('bookings')
         .select(`
           *,
-          sender:sender_id (
-            id,
-            firstname,
-            lastname,
-            avatar_url,
-            rating,
-            completed_services
-          ),
-          traveler:traveler_id (
-            id,
-            firstname,
-            lastname,
-            avatar_url,
-            rating,
-            completed_services
-          ),
           announcement:announcement_id (
             departure_country,
             departure_city,
@@ -189,7 +164,17 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         return
       }
 
-      setBooking(data as unknown as BookingDetail)
+      const { data: publicProfiles } = await getPublicProfiles(supabase, [
+        data.sender_id,
+        data.traveler_id,
+      ])
+      const profileById = mapPublicProfilesById(publicProfiles || [])
+
+      setBooking({
+        ...(data as BookingDetail),
+        sender: profileById[data.sender_id] || null,
+        traveler: profileById[data.traveler_id] || null,
+      })
       setError(null)
     } catch (error) {
       console.error('Unexpected error loading booking:', error)

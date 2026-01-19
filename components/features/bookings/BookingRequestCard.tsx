@@ -59,7 +59,7 @@ interface BookingRequest {
     firstname: string | null
     lastname: string | null
     avatar_url: string | null
-  }
+  } | null
 }
 
 interface BookingRequestCardProps {
@@ -96,8 +96,11 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
 
-  const senderName = `${booking.sender.firstname || ''} ${booking.sender.lastname || ''}`.trim() || 'Expéditeur'
-  const senderInitials = generateInitials(booking.sender.firstname, booking.sender.lastname)
+  const senderFirstName = booking.sender?.firstname ?? null
+  const senderLastName = booking.sender?.lastname ?? null
+  const senderName = `${senderFirstName || ''} ${senderLastName || ''}`.trim() || 'Expéditeur'
+  const senderInitials = generateInitials(senderFirstName, senderLastName)
+  const senderAvatarUrl = booking.sender?.avatar_url ?? null
   const isNew = new Date(booking.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
   const announcement = booking.announcements
 
@@ -175,7 +178,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarImage
-                  src={booking.sender.avatar_url || undefined}
+                  src={senderAvatarUrl || undefined}
                   alt={senderName}
                 />
                 <AvatarFallback>{senderInitials}</AvatarFallback>
@@ -478,7 +481,6 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
     </>
   )
 }
-
 
 
 

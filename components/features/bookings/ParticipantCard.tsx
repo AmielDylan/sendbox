@@ -11,14 +11,17 @@ import { generateInitials } from "@/lib/core/profile/utils"
 
 interface ParticipantCardProps {
   role: 'sender' | 'traveler'
-  profile: {
+  profile:
+    | {
     id: string
     firstname: string | null
     lastname: string | null
     avatar_url: string | null
     rating: number | null
     completed_services: number | null
-  }
+      }
+    | null
+    | undefined
   showContactButton?: boolean
   bookingId?: string
 }
@@ -29,8 +32,16 @@ export function ParticipantCard({
   showContactButton = false,
   bookingId,
 }: ParticipantCardProps) {
-  const displayName = `${profile.firstname || ''} ${profile.lastname || ''}`.trim() || 'Utilisateur'
-  const initials = generateInitials(profile.firstname, profile.lastname)
+  const displayName = profile
+    ? `${profile.firstname || ''} ${profile.lastname || ''}`.trim() || 'Utilisateur'
+    : 'Utilisateur'
+  const initials = generateInitials(
+    profile?.firstname ?? null,
+    profile?.lastname ?? null
+  )
+  const profileId = profile?.id
+  const profileRating = profile?.rating ?? null
+  const completedServices = profile?.completed_services ?? null
 
   return (
     <div className="space-y-4">
@@ -46,26 +57,30 @@ export function ParticipantCard({
 
       <div className="flex items-center gap-3">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
+          <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
 
         <div className="flex-1">
-          <Link
-            href={`/profil/${profile.id}`}
-            className="font-medium hover:underline"
-          >
-            {displayName}
-          </Link>
+          {profileId ? (
+            <Link
+              href={`/profil/${profileId}`}
+              className="font-medium hover:underline"
+            >
+              {displayName}
+            </Link>
+          ) : (
+            <span className="font-medium">{displayName}</span>
+          )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {profile.rating !== null && (
+            {profileRating !== null && (
               <div className="flex items-center gap-1">
                 <IconStar className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                <span>{profile.rating.toFixed(1)}</span>
+                <span>{profileRating.toFixed(1)}</span>
               </div>
             )}
-            {profile.completed_services !== null && (
-              <span>• {profile.completed_services} service{profile.completed_services > 1 ? 's' : ''}</span>
+            {completedServices !== null && (
+              <span>• {completedServices} service{completedServices > 1 ? 's' : ''}</span>
             )}
           </div>
         </div>
@@ -82,7 +97,6 @@ export function ParticipantCard({
     </div>
   )
 }
-
 
 
 

@@ -3,6 +3,7 @@
  */
 
 import { createClient } from "@/lib/shared/db/client"
+import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
 
 /**
  * Formate une date en YYYY-MM-DD sans décalage de fuseau horaire
@@ -26,20 +27,20 @@ export interface SearchFilters {
 export interface AnnouncementResult {
   id: string
   traveler_id: string
-  departure_country: string
-  departure_city: string
-  arrival_country: string
-  arrival_city: string
+  origin_country: string
+  origin_city: string
+  destination_country: string
+  destination_city: string
   departure_date: string
   arrival_date: string
-  available_kg: number
+  max_weight_kg: number
   price_per_kg: number
   description: string | null
   status: string
   created_at: string
   updated_at: string
-  traveler_firstname: string | null
-  traveler_lastname: string | null
+  traveler_first_name: string | null
+  traveler_last_name: string | null
   traveler_avatar_url: string | null
   traveler_rating: number
   traveler_services_count: number
@@ -145,17 +146,7 @@ export async function getAnnouncementById(announcementId: string) {
 
   const { data, error } = await supabase
     .from('announcements')
-    .select(
-      `
-      *,
-      profiles!announcements_traveler_id_fkey (
-        firstname,
-        lastname,
-        avatar_url,
-        kyc_status
-      )
-    `
-    )
+    .select('*')
     .eq('id', announcementId)
     .single()
 
@@ -164,6 +155,16 @@ export async function getAnnouncementById(announcementId: string) {
     return { data: null, error }
   }
 
-  return { data, error: null }
-}
+  const { data: publicProfiles } = await getPublicProfiles(supabase, [
+    data.traveler_id,
+  ])
+  const profile = publicProfiles?.[0] || null
 
+  return {
+    data: {
+      ...data,
+      profiles: profile,
+    },
+    error: null,
+  }
+}

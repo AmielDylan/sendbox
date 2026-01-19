@@ -29,7 +29,7 @@ import { IconLoader2, IconPackage } from '@tabler/icons-react'
 function LoginForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user, loading, refetch } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [authCheckComplete, setAuthCheckComplete] = useState(false)
 
@@ -96,9 +96,12 @@ function LoginForm() {
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true)
     try {
+      console.log('[Login] Attempting sign in...')
       const result = await signIn(data)
+      console.log('[Login] Sign in result:', result)
 
       if (result?.error) {
+        console.error('[Login] Sign in error:', result.error)
         toast.error(result.error)
         if (result.requiresVerification) {
           // Rediriger vers la page de vérification
@@ -107,27 +110,23 @@ function LoginForm() {
         return
       }
 
-      // Si succès, attendre que la session soit mise à jour avant de rediriger
+      // Si succès, rediriger immédiatement
+      // Le AuthProvider va gérer la mise à jour de la session via onAuthStateChange
       if (result?.success) {
-        // Attendre un peu pour que Supabase mette à jour la session
-        await new Promise(resolve => setTimeout(resolve, 500))
-
-        // Déclencher un événement personnalisé pour forcer la mise à jour des données
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('auth-change'))
-        }
-
-        // Rediriger vers le dashboard
+        console.log('[Login] Sign in successful, redirecting...')
         const redirectUrl = result.redirectTo || '/dashboard'
-        router.push(redirectUrl)
 
-        // Forcer le refresh après la redirection
-        setTimeout(() => {
-          router.refresh()
-        }, 100)
+        // Petit délai pour laisser Supabase persister la session
+        await new Promise(resolve => setTimeout(resolve, 300))
+
+        // Synchroniser le store côté client après un login serveur
+        await refetch()
+
+        // Utiliser replace pour éviter de garder /login dans l'historique
+        router.replace(redirectUrl)
       }
     } catch (error) {
-      console.error('Login error:', error)
+      console.error('[Login] Unexpected error:', error)
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsLoading(false)

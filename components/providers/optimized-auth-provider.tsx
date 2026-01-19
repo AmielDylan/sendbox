@@ -11,7 +11,7 @@
 
 'use client'
 
-import {  createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/shared/db/client'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Session, User } from '@supabase/supabase-js'
@@ -53,7 +53,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   isAuthenticated: false,
   error: null,
-  refetchProfile: async () => {},
+  refetchProfile: async () => { },
 })
 
 export function useAuth() {
@@ -101,11 +101,23 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
     lastUserId.current = userId
 
     try {
-      const { data, error: profileError } = await supabase
+      console.log('[Auth] Fetching profile for user:', userId)
+
+      // Add a timeout to prevent hanging forever (réduit à 5s)
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout after 5s')), 5000)
+      })
+
+      const fetchPromise = supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
+
+      const result = await Promise.race([fetchPromise, timeoutPromise])
+      const { data, error: profileError } = result
+
+      console.log('[Auth] Profile query result:', { data: !!data, error: !!profileError })
 
       if (profileError) {
         // Si le profil n'existe pas, ce n'est pas une erreur critique
@@ -115,9 +127,16 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
           setError(null)
         } else {
           console.error('[Auth] Error fetching profile:', profileError)
+          console.error('[Auth] Profile error details:', {
+            code: profileError.code,
+            message: profileError.message,
+            details: profileError.details,
+            hint: profileError.hint,
+          })
           setError(new Error('Failed to load profile'))
         }
       } else {
+        console.log('[Auth] Profile loaded successfully:', { id: data?.id, firstname: data?.firstname })
         const profileData = data as Profile
         setProfile(profileData)
         setError(null)
@@ -128,6 +147,7 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
       console.error('[Auth] Unexpected error fetching profile:', err)
       setError(err as Error)
     } finally {
+      console.log('[Auth] Finished fetching profile, setting isFetchingProfile to false')
       isFetchingProfile.current = false
     }
   }, [supabase, profile, setStoreProfile])

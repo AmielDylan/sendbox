@@ -8,6 +8,10 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
 import { ratingSchema, type RatingInput } from "@/lib/core/ratings/validations"
 import { notifyUser } from '@/lib/core/notifications/actions'
+import {
+  getPublicProfiles,
+  mapPublicProfilesById,
+} from "@/lib/shared/db/queries/public-profiles"
 
 /**
  * Soumet un rating pour un service terminé
@@ -166,12 +170,7 @@ export async function getUserRatings(
       rating,
       comment,
       created_at,
-      rater:rater_id (
-        id,
-        firstname,
-        lastname,
-        avatar_url
-      )
+      rater_id
     `
     )
     .eq('rated_id', userId)
@@ -196,8 +195,18 @@ export async function getUserRatings(
     console.error('Error counting ratings:', countError)
   }
 
+  const raterIds = ratings?.map((rating: any) => rating.rater_id) || []
+  const { data: raterProfiles } = await getPublicProfiles(supabase, raterIds)
+  const raterById = mapPublicProfilesById(raterProfiles || [])
+
+  const enrichedRatings =
+    ratings?.map((rating: any) => ({
+      ...rating,
+      rater: raterById[rating.rater_id] || null,
+    })) || []
+
   return {
-    ratings: ratings || [],
+    ratings: enrichedRatings,
     total: count || 0,
     page,
     limit,
@@ -212,17 +221,16 @@ export async function getUserRatingStats(userId: string) {
   const supabase = await createClient()
 
   // Récupérer le rating moyen et le nombre total
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('completed_services')
-    .eq('id', userId)
-    .single()
+  const { data: publicProfiles, error: profileError } = await getPublicProfiles(
+    supabase,
+    [userId]
+  )
 
   if (profileError) {
     console.error('Error fetching profile:', profileError)
   }
 
-  const profileData = profile as any
+  const profileData = publicProfiles?.[0] || null
 
   // Récupérer la distribution des ratings
   const { data: distribution } = await supabase
@@ -307,11 +315,8 @@ export async function canRateBooking(bookingId: string) {
     user.id === booking.sender_id ? booking.traveler_id : booking.sender_id
 
   // Récupérer le nom de la personne à noter
-  const { data: ratedUser } = await supabase
-    .from('profiles')
-    .select('firstname, lastname')
-    .eq('id', ratedId)
-    .single()
+  const { data: ratedProfiles } = await getPublicProfiles(supabase, [ratedId])
+  const ratedUser = ratedProfiles?.[0] || null
 
   return {
     canRate: true,
@@ -321,4 +326,3 @@ export async function canRateBooking(bookingId: string) {
       : 'Utilisateur',
   }
 }
-

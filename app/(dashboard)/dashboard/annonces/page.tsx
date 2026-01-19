@@ -37,6 +37,7 @@ import {
   IconCheck,
   IconEye,
   IconMessage,
+  IconArrowNarrowRight,
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -219,126 +220,130 @@ export default function MyAnnouncementsPage() {
             ) : (
               <div className="grid gap-4">
                 {announcements.map((announcement) => (
-                  <Card key={announcement.id} className="card-elevated hover:shadow-xl transition-all">
-                    <CardHeader>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-                            <span className="text-base sm:text-lg truncate">
-                              {getCountryName(announcement.departure_country)} ({announcement.departure_city}) →{' '}
-                              {getCountryName(announcement.arrival_country)} ({announcement.arrival_city})
-                            </span>
-                            <Badge
-                              variant={
-                                announcement.status === 'active' || announcement.status === 'partially_booked'
-                                  ? 'default'
-                                  : announcement.status === 'fully_booked'
-                                    ? 'secondary'
-                                    : announcement.status === 'completed'
-                                      ? 'secondary'
-                                      : announcement.status === 'cancelled'
-                                        ? 'destructive'
-                                        : 'outline'
-                              }
-                              className="w-fit self-start whitespace-nowrap"
-                            >
-                              {announcement.status === 'active'
-                                ? 'Publiée'
-                                : announcement.status === 'partially_booked'
-                                  ? 'Partiellement réservée'
-                                  : announcement.status === 'fully_booked'
-                                    ? 'Complète'
-                                    : announcement.status === 'completed'
-                                      ? 'Terminée'
-                                      : announcement.status === 'draft'
-                                        ? 'Brouillon'
-                                        : announcement.status === 'cancelled'
-                                          ? 'Annulée'
-                                          : announcement.status}
-                            </Badge>
-                          </CardTitle>
+                  <Card key={announcement.id} className="rounded-xl border border-border/60 shadow-none hover:border-primary/40 hover:bg-muted/30 transition-all duration-300 group overflow-hidden flex flex-col">
+                    <CardHeader className="p-5 pb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <h3 className="font-display font-bold text-xl sm:text-2xl text-foreground flex flex-wrap items-center gap-2 group-hover:text-primary transition-colors">
+                            <span>{announcement.departure_city}</span>
+                            <span className="text-muted-foreground font-normal text-base mx-1">({getCountryName(announcement.departure_country)})</span>
+                            <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/50" stroke={1} />
+                            <span>{announcement.arrival_city}</span>
+                            <span className="text-muted-foreground font-normal text-base mx-1">({getCountryName(announcement.arrival_country)})</span>
+                          </h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span className="font-medium text-primary">{announcement.price_per_kg} €</span> / kg
+                            <span>•</span>
+                            <span>{announcement.available_kg} kg disponibles</span>
+                          </div>
                         </div>
+
+                        <Badge
+                          variant={
+                            announcement.status === 'active' || announcement.status === 'partially_booked'
+                              ? 'default'
+                              : announcement.status === 'fully_booked' || announcement.status === 'completed'
+                                ? 'secondary'
+                                : announcement.status === 'cancelled'
+                                  ? 'destructive'
+                                  : 'outline'
+                          }
+                          className="w-fit whitespace-nowrap px-3 py-1 text-xs font-medium"
+                        >
+                          {announcement.status === 'active'
+                            ? 'Publiée'
+                            : announcement.status === 'partially_booked'
+                              ? 'Partiellement réservée'
+                              : announcement.status === 'fully_booked'
+                                ? 'Complète'
+                                : announcement.status === 'completed'
+                                  ? 'Terminée'
+                                  : announcement.status === 'draft'
+                                    ? 'Brouillon'
+                                    : announcement.status === 'cancelled'
+                                      ? 'Annulée'
+                                      : announcement.status}
+                        </Badge>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4">
-                        <div className="flex items-center gap-2.5 bg-muted/40 px-3 py-2 rounded-lg">
-                          <IconCalendar className="h-4 w-4 text-primary shrink-0" />
-                          <span className="text-sm font-medium truncate">
-                            {format(
-                              new Date(announcement.departure_date),
-                              'd MMM yyyy',
-                              { locale: fr }
-                            )}
-                          </span>
+
+                    <CardContent className="p-5 py-2 flex-1 space-y-4">
+                      {/* Data Badges Grid */}
+                      <div className="flex flex-wrap gap-2 w-full">
+                        {/* Date Badge */}
+                        <div className="flex flex-col items-start justify-center px-3 py-2 rounded-lg bg-background/50 border border-border/50 min-w-[120px]">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Départ</span>
+                          <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
+                            <IconCalendar className="h-3.5 w-3.5 text-primary/70" />
+                            {format(new Date(announcement.departure_date), 'd MMM yyyy', { locale: fr })}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2.5 bg-muted/40 px-3 py-2 rounded-lg">
-                          <IconPackage className="h-4 w-4 text-primary shrink-0" />
-                          <span className="text-sm font-medium">
-                            {announcement.available_kg} kg dispos
-                          </span>
+
+                        {/* Arrival Date if exists (simulated or real) */}
+                        <div className="flex flex-col items-start justify-center px-3 py-2 rounded-lg bg-background/50 border border-border/50 min-w-[120px]">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Arrivée</span>
+                          <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
+                            <IconCalendar className="h-3.5 w-3.5 text-primary/70" />
+                            {announcement.arrival_date
+                              ? format(new Date(announcement.arrival_date), 'd MMM yyyy', { locale: fr })
+                              : '-'
+                            }
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2.5 bg-muted/40 px-3 py-2 rounded-lg">
-                          <IconCurrencyEuro className="h-4 w-4 text-primary shrink-0" />
-                          <span className="text-sm font-semibold">
-                            {announcement.price_per_kg} €/kg
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2.5 bg-muted/40 px-3 py-2 rounded-lg">
-                          <IconEye className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="text-sm text-muted-foreground">0 vues</span>
+
+                        {/* Views Badge */}
+                        <div className="flex flex-col items-start justify-center px-3 py-2 rounded-lg bg-background/50 border border-border/50 min-w-[80px]">
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Vues</span>
+                          <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
+                            <IconEye className="h-3.5 w-3.5 text-muted-foreground" />
+                            {announcement.views_count || 0}
+                          </div>
                         </div>
                       </div>
 
                       {announcement.description && (
-                        <p className="text-sm text-muted-foreground mb-6 line-clamp-2 leading-relaxed">
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed pl-1 border-l-2 border-primary/20">
                           {announcement.description}
                         </p>
                       )}
-
-                      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
-                        {announcement.status === 'active' && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full sm:w-auto sm:flex-1 sm:min-w-[140px] hover:bg-green-50 dark:hover:bg-green-950/30 hover:border-green-300 dark:hover:border-green-800 transition-all"
-                              onClick={() =>
-                                handleMarkCompleted(announcement.id)
-                              }
-                            >
-                              <IconCheck className="mr-2 h-4 w-4" />
-                              Marquer terminée
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full sm:w-auto sm:flex-1 sm:min-w-[100px] hover:bg-primary/5 hover:border-primary/30 transition-all"
-                              onClick={() =>
-                                router.push(
-                                  `/dashboard/annonces/${announcement.id}/edit`
-                                )
-                              }
-                            >
-                              <IconEdit className="mr-2 h-4 w-4" />
-                              Éditer
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="w-full sm:w-auto sm:flex-1 sm:min-w-[120px] hover:shadow-md transition-all"
-                          onClick={() => {
-                            setAnnouncementToDelete(announcement.id)
-                            setDeleteDialogOpen(true)
-                          }}
-                        >
-                          <IconTrash className="mr-2 h-4 w-4" />
-                          Supprimer
-                        </Button>
-                      </div>
                     </CardContent>
+
+                    <div className="p-4 sm:p-5 mt-auto border-t border-border/30 bg-muted/20 flex flex-col sm:flex-row gap-2 sm:items-center justify-end">
+                      {announcement.status === 'active' && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 hover:bg-green-50 dark:hover:bg-green-950/30 hover:text-green-600 hover:border-green-200 transition-all font-medium"
+                            onClick={() => handleMarkCompleted(announcement.id)}
+                          >
+                            <IconCheck className="mr-2 h-3.5 w-3.5" />
+                            Terminée
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all font-medium"
+                            onClick={() => router.push(`/dashboard/annonces/${announcement.id}/edit`)}
+                          >
+                            <IconEdit className="mr-2 h-3.5 w-3.5" />
+                            Modifier
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all font-medium"
+                        onClick={() => {
+                          setAnnouncementToDelete(announcement.id)
+                          setDeleteDialogOpen(true)
+                        }}
+                      >
+                        <IconTrash className="mr-2 h-3.5 w-3.5" />
+                        Supprimer
+                      </Button>
+                    </div>
                   </Card>
                 ))}
               </div>
