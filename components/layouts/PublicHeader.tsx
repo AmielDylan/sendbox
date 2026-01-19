@@ -21,6 +21,8 @@ import {
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import { ClientOnly } from '@/components/ui/client-only'
+import { getAvatarUrl } from "@/lib/core/profile/utils"
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -63,6 +65,13 @@ export function PublicHeader() {
   const initials = profile
     ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() || 'U'
     : 'U'
+  const avatarUrl = getAvatarUrl(
+    (profile as any)?.avatar_url || null,
+    (profile as any)?.id || user?.id || displayName
+  )
+  const profileId = (profile as any)?.id || user?.id
+  const profileLink = profileId ? `/profil/${profileId}` : '/dashboard/reglages/profil'
+  const showKycLink = isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status !== 'approved'
 
   const handleLogout = async () => {
     try {
@@ -166,12 +175,7 @@ export function PublicHeader() {
                       aria-label="Menu utilisateur"
                     >
                       <Avatar className="h-8 w-8">
-                        {(profile as any)?.avatar_url && (
-                          <AvatarImage
-                            src={(profile as any).avatar_url}
-                            alt={displayName}
-                          />
-                        )}
+                        <AvatarImage src={avatarUrl} alt={displayName} />
                         <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                           {initials}
                         </AvatarFallback>
@@ -192,7 +196,21 @@ export function PublicHeader() {
                       <Link href="/dashboard">Tableau de bord</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profil">Mon profil</Link>
+                      <Link href={profileLink}>Mon profil</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {showKycLink && (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard/reglages/kyc">
+                            Vérifier mon identité
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/reglages">Paramètres</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -273,12 +291,7 @@ export function PublicHeader() {
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-3 px-3 py-2">
                           <Avatar className="h-8 w-8">
-                            {(profile as any)?.avatar_url && (
-                              <AvatarImage
-                                src={(profile as any).avatar_url}
-                                alt={displayName}
-                              />
-                            )}
+                            <AvatarImage src={avatarUrl} alt={displayName} />
                             <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
                               {initials}
                             </AvatarFallback>
@@ -295,8 +308,20 @@ export function PublicHeader() {
                             </Link>
                           </Button>
                           <Button asChild variant="ghost" className="w-full justify-start">
-                            <Link href="/profil" onClick={() => setMobileMenuOpen(false)}>
+                            <Link href={profileLink} onClick={() => setMobileMenuOpen(false)}>
                               Mon profil
+                            </Link>
+                          </Button>
+                          {showKycLink && (
+                            <Button asChild variant="ghost" className="w-full justify-start">
+                              <Link href="/dashboard/reglages/kyc" onClick={() => setMobileMenuOpen(false)}>
+                                Vérifier mon identité
+                              </Link>
+                            </Button>
+                          )}
+                          <Button asChild variant="ghost" className="w-full justify-start">
+                            <Link href="/dashboard/reglages" onClick={() => setMobileMenuOpen(false)}>
+                              Paramètres
                             </Link>
                           </Button>
                           <Button

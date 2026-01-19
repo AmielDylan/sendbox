@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { IconStar } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 
 interface Review {
   id: string
@@ -52,12 +52,13 @@ export function ReviewsSection({ reviews, travelerId }: ReviewsSectionProps) {
             review.rater_firstname,
             review.rater_lastname
           )
+          const raterAvatar = getAvatarUrl(review.rater_avatar_url, raterName)
 
           return (
             <div key={review.id} className="flex gap-4 pb-4 border-b last:border-0">
               <Avatar>
                 <AvatarImage
-                  src={review.rater_avatar_url || undefined}
+                  src={raterAvatar}
                   alt={raterName}
                 />
                 <AvatarFallback>{raterInitials}</AvatarFallback>
@@ -90,7 +91,6 @@ export function ReviewsSection({ reviews, travelerId }: ReviewsSectionProps) {
     </Card>
   )
 }
-
 
 
 

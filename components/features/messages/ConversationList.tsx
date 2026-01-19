@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { IconLoader2 } from '@tabler/icons-react'
@@ -88,6 +88,10 @@ export function ConversationList({
             conversation.other_user_firstname,
             conversation.other_user_lastname
           )
+          const otherUserAvatar = getAvatarUrl(
+            conversation.other_user_avatar_url,
+            conversation.other_user_id || otherUserName
+          )
           const isSelected = selectedBookingId === conversation.booking_id
 
           // Logic: Show unread only if count > 0 AND (we don't know who sent it OR it wasn't us)
@@ -114,7 +118,7 @@ export function ConversationList({
               <div className="relative">
                 <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border-2 border-background">
                   <AvatarImage
-                    src={conversation.other_user_avatar_url || undefined}
+                    src={otherUserAvatar}
                     alt={otherUserName}
                   />
                   <AvatarFallback>{otherUserInitials}</AvatarFallback>
@@ -182,7 +186,6 @@ export function ConversationList({
     </ScrollArea>
   )
 }
-
 
 
 

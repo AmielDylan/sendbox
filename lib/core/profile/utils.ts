@@ -5,6 +5,7 @@
 
 const MAX_FILE_SIZE = 2_000_000 // 2 MB
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const DICEBEAR_BASE_URL = 'https://api.dicebear.com/9.x/thumbs/svg'
 
 /**
  * Valide un fichier avatar (côté client)
@@ -36,6 +37,21 @@ export function validateAvatarFile(file: File): {
 export function generateAvatarFileName(userId: string): string {
   const timestamp = Date.now()
   return `${userId}/avatar_${timestamp}.jpg`
+}
+
+/**
+ * Retourne une URL d'avatar valide (ou un fallback Dicebear)
+ */
+export function getAvatarUrl(
+  avatarUrl: string | null | undefined,
+  seed: string | null | undefined
+): string {
+  if (avatarUrl && avatarUrl.trim().length > 0) {
+    return avatarUrl
+  }
+
+  const safeSeed = (seed || '').trim() || 'user'
+  return `${DICEBEAR_BASE_URL}?seed=${encodeURIComponent(safeSeed)}`
 }
 
 /**

@@ -21,6 +21,7 @@ import {
   IconClock,
   IconAlertCircle,
   IconLogout,
+  IconUser,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from "@/lib/utils"
@@ -42,6 +43,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
+import { getAvatarUrl } from "@/lib/core/profile/utils"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -317,6 +319,12 @@ function UserMenu() {
   const initials = profile
     ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() || 'U'
     : 'U'
+  const avatarUrl = getAvatarUrl(
+    (profile as any)?.avatar_url || null,
+    (profile as any)?.id || user?.id || displayName
+  )
+  const profileId = (profile as any)?.id || user?.id
+  const profileLink = profileId ? `/profil/${profileId}` : '/dashboard/reglages/profil'
 
   return (
     <DropdownMenu>
@@ -327,9 +335,9 @@ function UserMenu() {
           aria-label="Menu utilisateur"
         >
           <Avatar className="h-9 w-9">
-            {!avatarError && (profile as any)?.avatar_url && (
+            {!avatarError && (
               <AvatarImage
-                src={(profile as any).avatar_url}
+                src={avatarUrl}
                 alt={displayName}
                 onError={() => setAvatarError(true)}
               />
@@ -368,6 +376,19 @@ function UserMenu() {
             )}
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard" className="cursor-pointer">
+            <IconLayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Tableau de bord</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={profileLink} className="cursor-pointer">
+            <IconUser className="mr-2 h-4 w-4" />
+            <span>Mon profil</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {/* Lien rapide vers KYC si non approuvé - SEULEMENT si feature activée */}
         {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status !== 'approved' && (

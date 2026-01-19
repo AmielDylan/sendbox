@@ -14,7 +14,7 @@ import { useMessages, type Message } from '@/hooks/use-messages'
 import { usePresence } from '@/hooks/use-presence'
 import { sendMessage, markMessagesAsRead } from "@/lib/core/messages/actions"
 import { sanitizeMessageContent } from '@/lib/shared/security/xss-protection'
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { IconSend, IconLoader2, IconPhoto, IconArrowLeft } from '@tabler/icons-react'
@@ -123,6 +123,7 @@ export function ChatWindow({
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const otherAvatar = getAvatarUrl(otherUserAvatar, otherUserId || otherUserName)
 
   // Hook de présence pour le statut en ligne et typing indicators
   const {
@@ -256,7 +257,7 @@ export function ChatWindow({
             </Button>
           )}
           <Avatar>
-            <AvatarImage src={otherUserAvatar || undefined} alt={otherUserName || ''} />
+            <AvatarImage src={otherAvatar} alt={otherUserName || ''} />
             <AvatarFallback>
               {generateInitials(
                 otherUserName?.split(' ')[0] || null,

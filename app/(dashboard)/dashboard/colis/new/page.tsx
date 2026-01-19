@@ -50,7 +50,7 @@ import {
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 import { MAX_PHOTOS, MAX_FILE_SIZE, validatePackagePhoto } from "@/lib/core/bookings/photos"
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
@@ -228,6 +228,10 @@ function NewBookingPageContent() {
   }
 
   const travelerName = `${announcement.traveler_firstname || ''} ${announcement.traveler_lastname || ''}`.trim() || 'Voyageur'
+  const travelerAvatar = getAvatarUrl(
+    announcement.traveler_avatar_url,
+    announcement.traveler_id || travelerName
+  )
 
   return (
     <div className="space-y-6">
@@ -261,7 +265,7 @@ function NewBookingPageContent() {
               <div className="flex items-center gap-3 pt-4 border-t">
                 <Avatar>
                   <AvatarImage
-                    src={announcement.traveler_avatar_url || undefined}
+                    src={travelerAvatar}
                     alt={travelerName}
                   />
                   <AvatarFallback>
@@ -502,4 +506,3 @@ export default function NewBookingPage() {
     </Suspense>
   )
 }
-

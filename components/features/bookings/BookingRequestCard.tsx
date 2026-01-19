@@ -28,7 +28,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { IconStar, IconPackage, IconCurrencyEuro, IconCalendar, IconMapPin, IconCircleCheck, IconCircleX, IconMessageCircle, IconPhoto } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 import { formatPrice } from "@/lib/core/bookings/calculations"
 import { acceptBooking, refuseBooking } from "@/lib/core/bookings/requests"
 import { toast } from 'sonner'
@@ -101,6 +101,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
   const senderName = `${senderFirstName || ''} ${senderLastName || ''}`.trim() || 'Expéditeur'
   const senderInitials = generateInitials(senderFirstName, senderLastName)
   const senderAvatarUrl = booking.sender?.avatar_url ?? null
+  const senderAvatar = getAvatarUrl(senderAvatarUrl, senderName)
   const isNew = new Date(booking.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
   const announcement = booking.announcements
 
@@ -178,7 +179,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarImage
-                  src={senderAvatarUrl || undefined}
+                  src={senderAvatar}
                   alt={senderName}
                 />
                 <AvatarFallback>{senderInitials}</AvatarFallback>
@@ -481,7 +482,6 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
     </>
   )
 }
-
 
 
 

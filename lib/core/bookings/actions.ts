@@ -408,6 +408,7 @@ export async function getAnnouncementForBooking(announcementId: string) {
   return {
     announcement: {
       id: announcement.id,
+      traveler_id: announcement.traveler_id,
       departure_city: announcement.departure_city,
       departure_country: announcement.departure_country,
       arrival_city: announcement.arrival_city,

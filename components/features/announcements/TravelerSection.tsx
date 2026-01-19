@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { IconStar, IconCircleCheck, IconBriefcase, IconCalendar } from '@tabler/icons-react'
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -35,13 +35,14 @@ export function TravelerSection({
 }: TravelerSectionProps) {
   const fullName = `${firstName || ''} ${lastName || ''}`.trim() || 'Voyageur'
   const initials = generateInitials(firstName, lastName)
+  const avatarSource = getAvatarUrl(avatarUrl, travelerId || fullName)
 
   return (
     <Card>
       <CardContent className="pt-6">
         <div className="flex items-start gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={avatarUrl || undefined} alt={fullName} />
+            <AvatarImage src={avatarSource} alt={fullName} />
             <AvatarFallback className="text-lg">{initials}</AvatarFallback>
           </Avatar>
 
@@ -83,7 +84,7 @@ export function TravelerSection({
               )}
             </div>
 
-            <Link href={`/profiles/${travelerId}`}>
+            <Link href={`/profil/${travelerId}`}>
               <Button variant="outline" size="sm">
                 Voir profil
               </Button>
@@ -94,8 +95,6 @@ export function TravelerSection({
     </Card>
   )
 }
-
-
 
 
 

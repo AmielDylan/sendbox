@@ -16,7 +16,7 @@ import {
   type ChangeEmailInput,
   type DeleteAccountInput,
 } from "@/lib/core/profile/validations"
-import { generateAvatarFileName, validateAvatarFile } from "@/lib/core/profile/utils"
+import { generateAvatarFileName, validateAvatarFile, getAvatarUrl } from "@/lib/core/profile/utils"
 import { sensitiveActionRateLimit, uploadRateLimit } from "@/lib/shared/security/rate-limit"
 import { validateImageUpload } from "@/lib/shared/security/upload-validation"
 import sharp from 'sharp'
@@ -190,6 +190,81 @@ export async function updateProfile(
     }
   } catch (error) {
     console.error('Update profile error:', error)
+    return {
+      error: 'Une erreur est survenue. Veuillez réessayer.',
+    }
+  }
+}
+
+/**
+ * Supprime l'avatar utilisateur et revient à l'avatar par défaut
+ */
+export async function removeAvatar() {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      error: 'Vous devez être connecté',
+    }
+  }
+
+  try {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) {
+      console.error('Fetch profile error:', profileError)
+    }
+
+    const avatarUrl = profile?.avatar_url || null
+    const storagePrefix = '/storage/v1/object/public/avatars/'
+    const prefixIndex = avatarUrl?.indexOf(storagePrefix) ?? -1
+
+    if (prefixIndex !== -1 && avatarUrl) {
+      const filePath = avatarUrl.slice(prefixIndex + storagePrefix.length)
+      const cleanPath = filePath.split('?')[0]
+      if (cleanPath) {
+        const { error: deleteError } = await supabase.storage
+          .from('avatars')
+          .remove([cleanPath])
+        if (deleteError) {
+          console.warn('Avatar delete error:', deleteError)
+        }
+      }
+    }
+
+    const defaultAvatarUrl = getAvatarUrl(null, user.id)
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        avatar_url: defaultAvatarUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id)
+
+    if (updateError) {
+      console.error('Remove avatar error:', updateError)
+      return {
+        error: "Erreur lors de la suppression de l'avatar",
+      }
+    }
+
+    revalidatePath('/dashboard/reglages/profil')
+    return {
+      success: true,
+      message: 'Avatar supprimé avec succès',
+    }
+  } catch (error) {
+    console.error('Remove avatar error:', error)
     return {
       error: 'Une erreur est survenue. Veuillez réessayer.',
     }

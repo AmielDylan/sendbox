@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { IconStar, IconMessageCircle, IconUser } from '@tabler/icons-react'
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 
 interface ParticipantCardProps {
   role: 'sender' | 'traveler'
@@ -42,6 +42,7 @@ export function ParticipantCard({
   const profileId = profile?.id
   const profileRating = profile?.rating ?? null
   const completedServices = profile?.completed_services ?? null
+  const avatarUrl = getAvatarUrl(profile?.avatar_url ?? null, profileId || displayName)
 
   return (
     <div className="space-y-4">
@@ -57,7 +58,7 @@ export function ParticipantCard({
 
       <div className="flex items-center gap-3">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+          <AvatarImage src={avatarUrl} alt={displayName} />
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
 
@@ -97,7 +98,6 @@ export function ParticipantCard({
     </div>
   )
 }
-
 
 
 

@@ -11,7 +11,7 @@ import {
   updateProfileSchema,
   type UpdateProfileInput,
 } from "@/lib/core/profile/validations"
-import { updateProfile, getCurrentProfile } from "@/lib/core/profile/actions"
+import { updateProfile, getCurrentProfile, removeAvatar } from "@/lib/core/profile/actions"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,12 +27,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import { IconLoader2, IconUpload } from '@tabler/icons-react'
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
+import { useAuth } from '@/hooks/use-auth'
 
 export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [profile, setProfile] = useState<{
+    id: string
     firstname: string | null
     lastname: string | null
     phone: string | null
@@ -42,13 +44,15 @@ export default function ProfilePage() {
     email: string | null
   } | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { refetch } = useAuth()
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
     reset,
   } = useForm<UpdateProfileInput & { avatar?: File }>({
     resolver: zodResolver(updateProfileSchema),
@@ -69,6 +73,7 @@ export default function ProfilePage() {
 
       if (result.profile) {
         setProfile({
+          id: (result.profile as any).id,
           firstname: (result.profile as any).firstname || '',
           lastname: (result.profile as any).lastname || '',
           phone: (result.profile as any).phone || '',
@@ -78,6 +83,7 @@ export default function ProfilePage() {
           email: (result.profile as any).email || null,
         })
         setAvatarPreview((result.profile as any).avatar_url)
+        setAvatarFile(null)
         reset({
           firstname: (result.profile as any).firstname || '',
           lastname: (result.profile as any).lastname || '',
@@ -104,13 +110,13 @@ export default function ProfilePage() {
     }
     reader.readAsDataURL(file)
 
-    setValue('avatar', file)
+    setAvatarFile(file)
   }
 
-  const onSubmit = async (data: UpdateProfileInput & { avatar?: File }) => {
-    setIsSubmitting(true)
+  const handleRemoveAvatar = async () => {
+    setIsRemovingAvatar(true)
     try {
-      const result = await updateProfile(data)
+      const result = await removeAvatar()
 
       if (result.error) {
         toast.error(result.error)
@@ -119,7 +125,34 @@ export default function ProfilePage() {
 
       if (result.success) {
         toast.success(result.message)
-        await loadProfile()
+        setAvatarPreview(null)
+        setAvatarFile(null)
+        await Promise.all([loadProfile(), refetch()])
+      }
+    } catch (error) {
+      toast.error('Une erreur est survenue. Veuillez réessayer.')
+    } finally {
+      setIsRemovingAvatar(false)
+    }
+  }
+
+  const onSubmit = async (data: UpdateProfileInput & { avatar?: File }) => {
+    setIsSubmitting(true)
+    try {
+      const result = await updateProfile({
+        ...data,
+        avatar: avatarFile || undefined,
+      })
+
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      if (result.success) {
+        toast.success(result.message)
+        await Promise.all([loadProfile(), refetch()])
+        setAvatarFile(null)
       }
     } catch (error) {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
@@ -136,6 +169,11 @@ export default function ProfilePage() {
     )
   }
 
+  const avatarSource = getAvatarUrl(
+    avatarPreview || profile?.avatar_url || null,
+    profile?.id || profile?.email || 'user'
+  )
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -151,7 +189,7 @@ export default function ProfilePage() {
         <CardContent>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={avatarPreview || undefined} alt="Avatar" />
+              <AvatarImage src={avatarSource} alt="Avatar" />
               <AvatarFallback className="text-2xl">
                 {generateInitials(
                   profile?.firstname || null,
@@ -184,7 +222,7 @@ export default function ProfilePage() {
               <Label>Photo de profil</Label>
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={avatarPreview || undefined} alt="Avatar" />
+                  <AvatarImage src={avatarSource} alt="Avatar" />
                   <AvatarFallback>
                     {generateInitials(
                       profile?.firstname || null,
@@ -205,9 +243,19 @@ export default function ProfilePage() {
                     type="button"
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
+                    disabled={isSubmitting || isRemovingAvatar}
                   >
                     <IconUpload className="mr-2 h-4 w-4" />
                     Changer la photo
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleRemoveAvatar}
+                    disabled={isSubmitting || isRemovingAvatar}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Supprimer l&apos;avatar
                   </Button>
                   <p className="text-xs text-muted-foreground">
                     JPEG, PNG ou WebP (maximum 2 MB). L'image sera

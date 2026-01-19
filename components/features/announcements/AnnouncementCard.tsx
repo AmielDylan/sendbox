@@ -11,7 +11,7 @@ import { IconStar, IconMapPin, IconCalendar, IconPackage, IconCurrencyEuro, Icon
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { AnnouncementResult } from "@/lib/shared/db/queries/announcements"
-import { generateInitials } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 import { getCountryName } from "@/lib/utils/countries"
 
 interface AnnouncementCardProps {
@@ -27,6 +27,10 @@ export function AnnouncementCard({
   const travelerInitials = generateInitials(
     announcement.traveler_first_name,
     announcement.traveler_last_name
+  )
+  const travelerAvatar = getAvatarUrl(
+    announcement.traveler_avatar_url,
+    announcement.traveler_id || travelerName
   )
 
   return (
@@ -94,7 +98,7 @@ export function AnnouncementCard({
           {/* Traveler Info */}
           <div className="flex items-center gap-3 w-full">
             <Avatar className="h-8 w-8 ring-1 ring-border/50">
-              <AvatarImage src={announcement.traveler_avatar_url || undefined} alt={travelerName} />
+              <AvatarImage src={travelerAvatar} alt={travelerName} />
               <AvatarFallback className="bg-background text-[10px]">{travelerInitials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">

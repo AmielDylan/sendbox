@@ -7,18 +7,23 @@ import { notFound } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/server"
 import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
 import { getUserRatings, getUserRatingStats } from "@/lib/core/ratings/actions"
-import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { StarRating } from '@/components/features/ratings/StarRating'
 import { RatingDistribution } from '@/components/features/ratings/RatingDistribution'
-import { IconStar, IconCircleCheck, IconBriefcase, IconAward, IconLoader2 } from '@tabler/icons-react'
+import {
+  IconStar,
+  IconCircleCheck,
+  IconBriefcase,
+  IconAward,
+  IconLoader2,
+  IconChevronLeft,
+  IconChevronRight,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials } from "@/lib/core/profile/utils"
-import Link from 'next/link'
+import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 
 interface ProfilePageProps {
   params: Promise<{ user_id: string }>
@@ -60,150 +65,231 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
     badges.push('Vérifié')
   }
 
+  const profileAvatar = getAvatarUrl(profile.avatar_url, profile.id || user_id)
+  const memberSince = profile.created_at
+    ? format(new Date(profile.created_at), 'MMMM yyyy', { locale: fr })
+    : null
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={`Profil de ${profile.firstname} ${profile.lastname}`}
-        description="Informations et réputation"
-        breadcrumbs={[
-          { label: 'Accueil', href: '/' },
-          { label: 'Profil' },
-        ]}
-      />
-
-      {/* Informations utilisateur */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={profile.avatar_url || undefined} />
-              <AvatarFallback className="text-2xl">
-                {generateInitials(profile.firstname, profile.lastname)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 text-center md:text-left">
-              <h2 className="text-2xl font-bold">
-                {profile.firstname} {profile.lastname}
-              </h2>
-              {profile.bio && (
-                <p className="text-muted-foreground mt-2">{profile.bio}</p>
-              )}
-              <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-                {badges.map((badge) => (
-                  <Badge key={badge} variant="secondary">
-                    {badge === '5 étoiles' && <IconAward className="h-3 w-3 mr-1" />}
-                    {badge === 'Vérifié' && <IconCircleCheck className="h-3 w-3 mr-1" />}
-                    {badge === 'Expert' && <IconBriefcase className="h-3 w-3 mr-1" />}
-                    {badge}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Section Réputation */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Réputation</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Rating moyen */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <IconStar className="h-8 w-8 fill-yellow-400 text-yellow-400" />
-              <span className="text-4xl font-bold">
-                {stats.averageRating.toFixed(1)}
-              </span>
-              <span className="text-2xl text-muted-foreground">/ 5.0</span>
-            </div>
-            <p className="text-muted-foreground">
-              {stats.totalRatings} avis • {stats.completedServices} services complétés
+    <div className="container mx-auto px-8 sm:px-16 lg:px-24 py-8 space-y-8">
+      <div className="space-y-2">
+        <nav
+          aria-label="Fil d'Ariane"
+          className="flex items-center space-x-2 text-sm text-muted-foreground"
+        >
+          <span>Accueil</span>
+          <span>/</span>
+          <span className="text-foreground font-medium">Profil</span>
+        </nav>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+              Profil de {profile.firstname} {profile.lastname}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Informations et réputation
             </p>
           </div>
+        </div>
+      </div>
 
-          {/* Distribution des ratings */}
-          {stats.totalRatings > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-4">Distribution des avis</h3>
-              <RatingDistribution
-                distribution={stats.distribution}
-                totalRatings={stats.totalRatings}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Liste des avis */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Avis ({stats.totalRatings})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {ratingsData.ratings.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Aucun avis pour le moment
-            </p>
-          ) : (
-            <div className="space-y-6">
-              {ratingsData.ratings.map((rating: any) => (
-                <div key={rating.id} className="flex items-start gap-4 pb-6 border-b last:border-0">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src={rating.rater?.avatar_url || undefined}
-                      alt={`${rating.rater?.firstname} ${rating.rater?.lastname}`}
-                    />
-                    <AvatarFallback>
-                      {generateInitials(
-                        rating.rater?.firstname,
-                        rating.rater?.lastname
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-semibold">
-                          {rating.rater?.firstname} {rating.rater?.lastname}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(rating.created_at), 'PP', { locale: fr })}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-semibold">{rating.rating}</span>
-                      </div>
-                    </div>
-                    {rating.comment && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {rating.comment}
-                      </p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4 space-y-6">
+          {/* Informations utilisateur */}
+          <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
+            <CardContent className="p-5">
+              <div className="flex items-start gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={profileAvatar} />
+                  <AvatarFallback className="text-lg">
+                    {generateInitials(profile.firstname, profile.lastname)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-2">
+                  <div className="space-y-1">
+                    <h2 className="text-lg font-semibold">
+                      {profile.firstname} {profile.lastname}
+                    </h2>
+                    {profile.bio && (
+                      <p className="text-sm text-muted-foreground">{profile.bio}</p>
                     )}
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                    {badges.map((badge) => (
+                      <Badge key={badge} variant="secondary" className="text-xs">
+                        {badge === '5 étoiles' && <IconAward className="h-3 w-3 mr-1" />}
+                        {badge === 'Vérifié' && <IconCircleCheck className="h-3 w-3 mr-1" />}
+                        {badge === 'Expert' && <IconBriefcase className="h-3 w-3 mr-1" />}
+                        {badge}
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 rounded-md border border-border/50 bg-background/60 px-2 py-1">
+                      <IconStar className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      {stats.averageRating.toFixed(1)}
+                    </span>
+                    <span className="inline-flex items-center rounded-md border border-border/50 bg-background/60 px-2 py-1">
+                      {stats.totalRatings} avis
+                    </span>
+                    <span className="inline-flex items-center rounded-md border border-border/50 bg-background/60 px-2 py-1">
+                      {stats.completedServices} services
+                    </span>
+                  </div>
                 </div>
-              ))}
+              </div>
+            </CardContent>
+          </Card>
 
-              {/* Pagination */}
-              {ratingsData.totalPages && ratingsData.totalPages > 1 && (
-                <div className="flex justify-center gap-2 pt-4">
-                  <Button variant="outline" disabled>
-                    Précédent
-                  </Button>
-                  <span className="flex items-center px-4 text-sm text-muted-foreground">
-                    Page 1 sur {ratingsData.totalPages || 1}
+          {/* Résumé */}
+          <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
+            <CardHeader className="p-5 pb-2">
+              <CardTitle className="text-sm font-semibold">Résumé</CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              <div className="space-y-3 text-sm text-muted-foreground">
+                {memberSince && (
+                  <div className="flex items-center justify-between gap-4">
+                    <span>Membre depuis</span>
+                    <span className="font-medium text-foreground">{memberSince}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between gap-4">
+                  <span>Note moyenne</span>
+                  <span className="font-medium text-foreground">
+                    {stats.averageRating.toFixed(1)} / 5
                   </span>
-                  <Button variant="outline" disabled>
-                    Suivant
-                  </Button>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Services complétés</span>
+                  <span className="font-medium text-foreground">
+                    {stats.completedServices}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-8 space-y-6">
+          {/* Section Réputation */}
+          <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
+            <CardHeader className="p-5 pb-2">
+              <CardTitle className="text-sm font-semibold">Réputation</CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 pt-0 space-y-5">
+              {/* Rating moyen */}
+              <div className="rounded-xl border border-border/50 bg-background/70 px-4 py-4 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <IconStar className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                  <span className="text-3xl font-semibold">
+                    {stats.averageRating.toFixed(1)}
+                  </span>
+                  <span className="text-base text-muted-foreground">/ 5.0</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stats.totalRatings} avis • {stats.completedServices} services complétés
+                </p>
+              </div>
+
+              {/* Distribution des ratings */}
+              {stats.totalRatings > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Distribution des avis
+                  </h3>
+                  <RatingDistribution
+                    distribution={stats.distribution}
+                    totalRatings={stats.totalRatings}
+                  />
                 </div>
               )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+
+          {/* Liste des avis */}
+          <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
+            <CardHeader className="p-5 pb-2">
+              <CardTitle className="text-sm font-semibold">Avis ({stats.totalRatings})</CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 pt-0">
+              {ratingsData.ratings.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-muted bg-muted/5 py-10 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Aucun avis pour le moment
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {ratingsData.ratings.map((rating: any) => {
+                    const raterName = `${rating.rater?.firstname || ''} ${rating.rater?.lastname || ''}`.trim() || 'Utilisateur'
+                    const raterAvatar = getAvatarUrl(
+                      rating.rater?.avatar_url || null,
+                      rating.rater?.id || raterName
+                    )
+
+                    return (
+                      <div
+                        key={rating.id}
+                        className="rounded-xl border border-border/50 bg-background/70 p-4 flex items-start gap-3"
+                      >
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage
+                            src={raterAvatar}
+                            alt={raterName}
+                          />
+                          <AvatarFallback>
+                            {generateInitials(
+                              rating.rater?.firstname,
+                              rating.rater?.lastname
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-semibold">
+                                {rating.rater?.firstname} {rating.rater?.lastname}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(rating.created_at), 'PP', { locale: fr })}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm font-semibold">
+                              <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              {rating.rating}
+                            </div>
+                          </div>
+                          {rating.comment && (
+                            <p className="text-sm text-muted-foreground">
+                              {rating.comment}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {/* Pagination */}
+                  {ratingsData.totalPages && ratingsData.totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 rounded-xl border bg-card/40 px-4 py-3">
+                      <Button variant="outline" disabled className="h-8 w-8 p-0">
+                        <IconChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm text-muted-foreground font-medium">
+                        Page 1 sur {ratingsData.totalPages || 1}
+                      </span>
+                      <Button variant="outline" disabled className="h-8 w-8 p-0">
+                        <IconChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
