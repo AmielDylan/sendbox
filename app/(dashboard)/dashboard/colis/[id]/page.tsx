@@ -172,10 +172,10 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
       const profileById = mapPublicProfilesById(publicProfiles || [])
 
       setBooking({
-        ...(data as BookingDetail),
+        ...data,
         sender: profileById[data.sender_id] || null,
         traveler: profileById[data.traveler_id] || null,
-      })
+      } as BookingDetail)
       setError(null)
     } catch (error) {
       console.error('Unexpected error loading booking:', error)
