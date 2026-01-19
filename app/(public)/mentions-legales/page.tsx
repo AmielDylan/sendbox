@@ -1,14 +1,10 @@
-/**
- * Page Mentions Légales - Placeholder
- */
-
 export default function MentionsLegalesPage() {
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
       <h1 className="text-4xl font-bold mb-8">Mentions Légales</h1>
       <div className="prose prose-gray dark:prose-invert max-w-none space-y-6">
         <p className="text-lg text-muted-foreground">
-          Cette page sera complétée prochainement avec les mentions légales de Sendbox.
+          Les présentes mentions légales concernent le service Sendbox accessible sur www.gosendbox.com.
         </p>
 
         <div className="bg-muted/50 p-6 rounded-lg space-y-4">
@@ -16,15 +12,23 @@ export default function MentionsLegalesPage() {
             <h2 className="text-xl font-semibold mb-2">Éditeur du site</h2>
             <p className="text-muted-foreground">
               Sendbox<br />
-              Plateforme de covalisage international entre l'Europe et l'Afrique<br />
-              <span className="text-sm">(Actuellement disponible entre la France et le Bénin)</span>
+              Exploitant : AMIEL DYLAN ADJOVI<br />
+              Statut : Auto-entrepreneur<br />
+              SIRET : 84296324100026
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-2">TVA</h2>
+            <p className="text-muted-foreground">
+              TVA non applicable - art. 293B du CGI
             </p>
           </div>
 
           <div>
             <h2 className="text-xl font-semibold mb-2">Contact</h2>
             <p className="text-muted-foreground">
-              Email : contact@sendbox.fr
+              Email : contact@gosendbox.com
             </p>
           </div>
         </div>
@@ -34,7 +38,7 @@ export default function MentionsLegalesPage() {
             Pour toute question concernant les mentions légales, contactez-nous :
           </p>
           <p className="font-medium mt-2">
-            contact@sendbox.fr
+            contact@gosendbox.com
           </p>
         </div>
 

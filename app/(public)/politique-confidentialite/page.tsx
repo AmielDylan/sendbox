@@ -22,7 +22,7 @@ export default function PolitiqueConfidentialitePage() {
             Pour toute question concernant la confidentialité de vos données, contactez-nous :
           </p>
           <p className="font-medium mt-2">
-            contact@sendbox.fr
+            contact@gosendbox.com
           </p>
         </div>
         <p className="text-sm text-muted-foreground">
