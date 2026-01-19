@@ -9,18 +9,21 @@ import type { NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
+  const token_hash = requestUrl.searchParams.get('token_hash')
+  const type = requestUrl.searchParams.get('type') as 'signup' | 'email' | 'recovery' | 'magiclink' | null
   const next = requestUrl.searchParams.get('next') ?? '/dashboard?verified=true'
 
-  if (code) {
+  if (token_hash && type) {
     const supabase = await createClient()
 
-    // Échanger le code contre une session
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    // Vérifier le token OTP (utilisé par les emails Supabase)
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash,
+      type,
+    })
 
     if (error) {
-      console.error('[Auth Callback] Error exchanging code for session:', error)
-      // Rediriger vers login avec message d'erreur
+      console.error('[Auth Callback] Error verifying OTP:', error)
       return NextResponse.redirect(
         new URL(`/login?error=${encodeURIComponent(error.message)}`, requestUrl.origin)
       )
@@ -30,6 +33,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(next, requestUrl.origin))
   }
 
-  // Si pas de code, rediriger vers login
-  return NextResponse.redirect(new URL('/login', requestUrl.origin))
+  // Si pas de token_hash, rediriger vers login
+  return NextResponse.redirect(new URL('/login?error=missing_token', requestUrl.origin))
 }
