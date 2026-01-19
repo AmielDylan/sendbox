@@ -127,6 +127,8 @@ export default function NewAnnouncementPage() {
   }, [debouncedArrivalCity, arrivalCountry])
 
   const handleNext = async () => {
+    console.log('[NewAnnouncement] handleNext called - currentStep:', currentStep)
+
     let fieldsToValidate: (keyof CreateAnnouncementInput)[] = []
 
     if (currentStep === 1) {
@@ -143,8 +145,11 @@ export default function NewAnnouncementPage() {
     }
 
     const isValid = await trigger(fieldsToValidate)
+    console.log('[NewAnnouncement] Validation result:', isValid)
     if (isValid) {
-      setCurrentStep(prev => Math.min(prev + 1, 3))
+      const newStep = Math.min(currentStep + 1, 3)
+      console.log('[NewAnnouncement] Moving to step:', newStep)
+      setCurrentStep(newStep)
     }
   }
 
@@ -153,6 +158,9 @@ export default function NewAnnouncementPage() {
   }
 
   const onSubmit = async (data: CreateAnnouncementInput) => {
+    console.log('[NewAnnouncement] onSubmit called - currentStep:', currentStep)
+    console.log('[NewAnnouncement] Form data:', data)
+
     setIsSubmitting(true)
     try {
       const result = await createAnnouncement(data)
