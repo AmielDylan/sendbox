@@ -102,7 +102,7 @@ export function PublicFooter() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
-                  href="/cgu"
+                  href="/terms"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Conditions générales
