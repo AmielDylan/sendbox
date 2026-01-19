@@ -12,10 +12,10 @@ https://www.gosendbox.com
 #### Redirect URLs (ajouter toutes ces URLs)
 ```
 https://www.gosendbox.com/**
-https://www.gosendbox.com/auth/callback
+https://www.gosendbox.com/auth/confirm
 https://www.gosendbox.com/dashboard
 http://localhost:3000/**
-http://localhost:3000/auth/callback
+http://localhost:3000/auth/confirm
 http://localhost:3000/dashboard
 ```
 
@@ -27,10 +27,12 @@ http://localhost:3000/dashboard
 
 #### ⚠️ IMPORTANT - Comment configurer les templates
 
-**Dans le HTML du template** : Gardez TOUJOURS `{{ .ConfirmationURL }}` tel quel
-**Dans le champ "Confirmation URL"** : Configurez l'URL de base vers `/auth/callback`
+**Il n'y a PAS de champ "Confirmation URL" séparé dans Supabase.**
 
-Supabase génère automatiquement l'URL complète avec tous les paramètres de sécurité (token_hash, type, etc.).
+Tout est configuré directement dans le HTML du template en utilisant les variables Supabase :
+- `{{ .SiteURL }}` : L'URL de votre site (https://www.gosendbox.com)
+- `{{ .TokenHash }}` : Le token de vérification généré automatiquement
+- Paramètre `next` : Pour rediriger l'utilisateur après vérification
 
 #### Confirm signup (Vérification d'email)
 
@@ -38,16 +40,13 @@ Supabase génère automatiquement l'URL complète avec tous les paramètres de s
 
 **Subject**: `Bienvenue sur Sendbox - Confirmez votre email 📦`
 
-**Confirmation URL** (Cherchez ce champ en bas du formulaire) :
-```
-{{ .SiteURL }}/auth/callback
-```
+**Body (HTML)** : Copiez le template complet de [EMAIL_TEMPLATES.md](./EMAIL_TEMPLATES.md#template-1-confirm-signup)
 
-**Body (HTML)** : Utilisez le template professionnel de [EMAIL_TEMPLATES.md](./EMAIL_TEMPLATES.md#template-1-confirm-signup)
-
-**IMPORTANT** : Dans le HTML, le lien doit rester :
+**Structure du lien** : Le template utilise automatiquement :
 ```html
-<a href="{{ .ConfirmationURL }}">Confirmer mon email</a>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard?verified=true">
+  Confirmer mon email
+</a>
 ```
 
 #### Magic Link
@@ -56,25 +55,29 @@ Supabase génère automatiquement l'URL complète avec tous les paramètres de s
 
 **Subject**: `Votre lien de connexion Sendbox 🔑`
 
-**Confirmation URL** :
-```
-{{ .SiteURL }}/auth/callback
-```
+**Body (HTML)** : Copiez le template de [EMAIL_TEMPLATES.md](./EMAIL_TEMPLATES.md#template-2-magic-link)
 
-**Body (HTML)** : Utilisez le template de [EMAIL_TEMPLATES.md](./EMAIL_TEMPLATES.md#template-2-magic-link)
+**Structure du lien** :
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard">
+  Se connecter à Sendbox
+</a>
+```
 
 #### Reset Password
 
-**Dans Supabase Dashboard → Authentication → Email Templates → Recovery (Change password) :**
+**Dans Supabase Dashboard → Authentication → Email Templates → Change Email :**
 
 **Subject**: `Réinitialisez votre mot de passe Sendbox 🔒`
 
-**Confirmation URL** :
-```
-{{ .SiteURL }}/auth/callback
-```
+**Body (HTML)** : Copiez le template de [EMAIL_TEMPLATES.md](./EMAIL_TEMPLATES.md#template-3-reset-password)
 
-**Body (HTML)** : Utilisez le template de [EMAIL_TEMPLATES.md](./EMAIL_TEMPLATES.md#template-3-reset-password)
+**Structure du lien** :
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">
+  Réinitialiser mon mot de passe
+</a>
+```
 
 ---
 
@@ -141,20 +144,11 @@ NEXT_PUBLIC_APP_URL=https://www.gosendbox.com  # Production
 
 ## 🐛 Dépannage
 
-### Erreur: "both auth code and code verifier should be non-empty"
-
-**Cause**: Vous avez remplacé `{{ .ConfirmationURL }}` par une URL manuelle dans le HTML du template.
-
-**Solution**:
-1. Dans le HTML du template, gardez `{{ .ConfirmationURL }}`
-2. Configurez uniquement le champ "Confirmation URL" avec `{{ .SiteURL }}/auth/callback`
-3. Supabase générera automatiquement l'URL complète avec tous les paramètres PKCE
-
 ### Erreur: "requested path is invalid"
 
 **Cause**: L'URL de redirection n'est pas dans la liste des Redirect URLs autorisées.
 
-**Solution**: Vérifier que toutes les URLs sont bien ajoutées dans **Authentication > URL Configuration > Redirect URLs**.
+**Solution**: Vérifier que `/auth/confirm` est bien ajouté dans **Authentication > URL Configuration > Redirect URLs**.
 
 ### Erreur: "Invalid redirect URL"
 
@@ -164,17 +158,24 @@ NEXT_PUBLIC_APP_URL=https://www.gosendbox.com  # Production
 
 ### L'email de vérification ne redirige pas correctement
 
-**Cause**: Le template d'email utilise la mauvaise configuration.
+**Cause**: Le template d'email n'utilise pas la bonne structure d'URL.
 
-**Solution**:
-1. Dans le HTML : utilisez `{{ .ConfirmationURL }}`
-2. Dans le champ "Confirmation URL" : utilisez `{{ .SiteURL }}/auth/callback`
+**Solution**: Le template doit utiliser :
+```html
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard?verified=true
+```
 
 ### La session n'est pas créée après clic sur le lien
 
-**Cause**: La route `/auth/callback` ne traite pas correctement le token.
+**Cause**: La route `/auth/confirm` ne traite pas correctement le token.
 
-**Solution**: Vérifier que le fichier `app/auth/callback/route.ts` utilise bien `verifyOtp` pour les tokens d'email.
+**Solution**: Vérifier que le fichier `app/auth/confirm/route.ts` utilise bien `verifyOtp` avec `token_hash` et `type`.
+
+### Le paramètre `verified=true` n'apparaît pas dans l'URL
+
+**Cause**: Le paramètre `next` dans le template n'inclut pas `?verified=true`.
+
+**Solution**: Vérifier que le template utilise bien `next=/dashboard?verified=true` pour la vérification d'email.
 
 ---
 

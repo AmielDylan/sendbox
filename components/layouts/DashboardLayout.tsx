@@ -21,7 +21,6 @@ import {
   IconClock,
   IconAlertCircle,
   IconLogout,
-  IconSpeakerphone,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from "@/lib/utils"
@@ -70,7 +69,7 @@ const navItems: NavItem[] = [
   {
     title: 'Annonces',
     href: '/dashboard/annonces',
-    icon: IconSpeakerphone,
+    icon: IconPackage,
   },
   {
     title: 'Colis',

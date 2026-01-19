@@ -150,7 +150,7 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
 
       <!-- Bouton CTA -->
       <div class="button-container">
-        <a href="{{ .ConfirmationURL }}" class="button">
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard?verified=true" class="button">
           Confirmer mon email
         </a>
       </div>
@@ -170,7 +170,7 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
 
       <p class="text" style="font-size: 14px; color: #718096; margin-top: 20px;">
         Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
-        <a href="{{ .ConfirmationURL }}" style="color: #0d9488; word-break: break-all;">{{ .ConfirmationURL }}</a>
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard?verified=true" style="color: #0d9488; word-break: break-all;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard?verified=true</a>
       </p>
     </div>
 
@@ -195,11 +195,6 @@ Bienvenue sur Sendbox - Confirmez votre email 📦
   </div>
 </body>
 </html>
-```
-
-### Confirmation URL (dans Supabase)
-```
-{{ .SiteURL }}/auth/callback?code={{ .Token }}&next=/dashboard?verified=true
 ```
 
 ---
@@ -313,7 +308,7 @@ Votre lien de connexion Sendbox 🔑
       </p>
 
       <div class="button-container">
-        <a href="{{ .ConfirmationURL }}" class="button">
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard" class="button">
           Se connecter à Sendbox
         </a>
       </div>
@@ -330,7 +325,7 @@ Votre lien de connexion Sendbox 🔑
 
       <p class="text" style="font-size: 14px; color: #718096; margin-top: 20px;">
         Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
-        <a href="{{ .ConfirmationURL }}" style="color: #0d9488; word-break: break-all;">{{ .ConfirmationURL }}</a>
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard" style="color: #0d9488; word-break: break-all;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard</a>
       </p>
     </div>
 
@@ -348,11 +343,6 @@ Votre lien de connexion Sendbox 🔑
   </div>
 </body>
 </html>
-```
-
-### Magic Link URL
-```
-{{ .SiteURL }}/auth/callback?code={{ .Token }}&next=/dashboard
 ```
 
 ---
@@ -470,7 +460,7 @@ Réinitialisez votre mot de passe Sendbox 🔒
       </p>
 
       <div class="button-container">
-        <a href="{{ .ConfirmationURL }}" class="button">
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password" class="button">
           Réinitialiser mon mot de passe
         </a>
       </div>
@@ -487,7 +477,7 @@ Réinitialisez votre mot de passe Sendbox 🔒
 
       <p class="text" style="font-size: 14px; color: #718096; margin-top: 20px;">
         Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
-        <a href="{{ .ConfirmationURL }}" style="color: #0d9488; word-break: break-all;">{{ .ConfirmationURL }}</a>
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password" style="color: #0d9488; word-break: break-all;">{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password</a>
       </p>
     </div>
 
@@ -507,20 +497,19 @@ Réinitialisez votre mot de passe Sendbox 🔒
 </html>
 ```
 
-### Reset Password URL
-```
-{{ .SiteURL }}/reset-password?code={{ .Token }}
-```
-
 ---
 
 ## 📝 Instructions d'utilisation
 
 1. Allez dans **Supabase Dashboard** → **Authentication** → **Email Templates**
-2. Sélectionnez le template à modifier (Confirm signup, Magic Link, ou Reset Password)
+2. Sélectionnez le template à modifier (Confirm signup, Magic Link, ou Change Email)
 3. Copiez-collez le HTML ci-dessus dans le champ **Message (Body)**
 4. Mettez à jour le **Subject**
-5. Configurez l'URL de confirmation appropriée
-6. Cliquez sur **Save**
+5. Cliquez sur **Save**
 
-**Important** : Votre logo est déjà accessible à `https://www.gosendbox.com/images/branding/logo-white.svg`
+**Important** :
+- Les templates utilisent `{{ .SiteURL }}`, `{{ .TokenHash }}` et le paramètre `next` pour la redirection finale
+- Votre logo est accessible à `https://www.gosendbox.com/images/branding/logo-white.svg`
+- Le paramètre `next` permet de rediriger vers `/dashboard?verified=true` après confirmation
+
+**Note** : Il n'y a PAS de champ "Confirmation URL" à configurer séparément dans Supabase. Tout est dans le HTML du template.

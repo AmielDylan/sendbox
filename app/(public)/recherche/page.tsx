@@ -44,8 +44,11 @@ import {
   IconChevronRight,
   IconCalendar,
   IconSparkles,
+  IconShieldCheck,
+  IconClock,
+  IconCurrencyEuro,
+  IconPackage,
   IconMapPin,
-  IconFilter,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -131,44 +134,106 @@ export default function SearchPage() {
           : `${totalCount} annonce${totalCount > 1 ? 's' : ''} disponible${totalCount > 1 ? 's' : ''}`
 
   return (
-    <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-8 sm:px-16 lg:px-24 space-y-8 py-10 sm:py-12">
-        {/* Simplified Header Section */}
-        <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-background via-muted/30 to-primary/5 px-6 py-8 sm:px-10">
-          <div className="absolute inset-0 bg-map-grid opacity-[0.03]" />
-          <div className="absolute -top-20 -right-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-
-          <div className="relative z-10 space-y-4">
-            <Badge variant="outline" className="w-fit gap-2 rounded-md px-3 py-1 text-xs border-primary/20 text-primary bg-primary/5">
-              <IconSparkles className="h-3.5 w-3.5" />
+    <div className="bg-gradient-to-b from-background via-muted/30 to-background">
+      <div className="container-wide space-y-10 py-8 sm:py-12 lg:py-16">
+        <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-background via-muted/30 to-primary/10 px-6 py-10 sm:px-10">
+          <div className="absolute inset-0 bg-map-grid opacity-60" />
+          <div className="absolute -top-20 -right-16 h-56 w-56 rounded-full bg-primary/20 blur-3xl" />
+          <div className="absolute -bottom-24 -left-12 h-64 w-64 rounded-full bg-secondary/20 blur-3xl" />
+          <div className="relative z-10 space-y-8">
+            <Badge className="w-fit gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary">
+              <IconSparkles className="h-4 w-4" />
               Recherche intelligente
             </Badge>
 
-            <div className="max-w-3xl space-y-3">
-              <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-tight">
-                Rechercher un trajet
-              </h1>
-              <p className="text-sm text-muted-foreground sm:text-base max-w-xl leading-relaxed">
-                Trouvez un voyageur vérifié entre la France et le Bénin pour transporter votre colis.
-              </p>
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl space-y-4">
+                <h1 className="font-display text-4xl text-balance sm:text-5xl lg:text-6xl">
+                  Recherchez un trajet fiable pour votre colis
+                </h1>
+                <p className="text-lg text-muted-foreground sm:text-xl">
+                  Filtrez par pays, date et poids pour trouver un voyageur vérifié entre la France et le Bénin.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                {user ? (
+                  <Button asChild size="lg" className="h-12 rounded-2xl">
+                    <Link href="/dashboard/annonces/new">
+                      <IconPackage className="mr-2 h-4 w-4" />
+                      Créer une annonce
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button asChild size="lg" className="h-12 rounded-2xl">
+                    <Link href="/register">
+                      <IconPackage className="mr-2 h-4 w-4" />
+                      Créer un compte
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild variant="outline" size="lg" className="h-12 rounded-2xl">
+                  <Link href="/">Découvrir Sendbox</Link>
+                </Button>
+              </div>
             </div>
-            {/* Cards and Buttons removed as requested */}
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="surface-glass rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <IconClock className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold">Réponse rapide</p>
+                    <p className="text-sm text-muted-foreground">
+                      Alertes en temps réel dès qu'une annonce correspond.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="surface-glass rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
+                    <IconShieldCheck className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold">Voyageurs vérifiés</p>
+                    <p className="text-sm text-muted-foreground">
+                      Profils notés, identités vérifiées et support actif.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="surface-glass rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/20 text-accent">
+                    <IconCurrencyEuro className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold">Tarifs transparents</p>
+                    <p className="text-sm text-muted-foreground">
+                      Comparez les prix au kilo et économisez.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
-          <aside className="space-y-6 lg:sticky lg:top-24 h-fit">
-            <Card className="rounded-xl border-border/60 shadow-none">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <IconSearch className="h-4 w-4 text-primary" />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2.4fr)]">
+          <aside className="space-y-4 lg:sticky lg:top-24">
+            <Card className="card-elevated border-primary/10 bg-card/80 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <IconSearch className="h-5 w-5 text-primary" />
                   Filtres
                 </CardTitle>
-                {/* Removed description for cleaner look */}
+                <CardDescription>Affinez votre recherche en quelques clics</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-5">
+              <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="departure_country" className="text-xs font-medium">Pays de départ</Label>
+                  <Label htmlFor="departure_country">Pays de départ</Label>
                   <Select
                     value={filters.departureCountry || undefined}
                     onValueChange={(value) =>
@@ -178,18 +243,18 @@ export default function SearchPage() {
                       }))
                     }
                   >
-                    <SelectTrigger id="departure_country" className="h-9 text-sm font-display">
+                    <SelectTrigger id="departure_country">
                       <SelectValue placeholder="Tous les pays" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FR" className="font-display">France</SelectItem>
-                      <SelectItem value="BJ" className="font-display">Bénin</SelectItem>
+                      <SelectItem value="FR">France</SelectItem>
+                      <SelectItem value="BJ">Bénin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="arrival_country" className="text-xs font-medium">Pays d'arrivée</Label>
+                  <Label htmlFor="arrival_country">Pays d'arrivée</Label>
                   <Select
                     value={filters.arrivalCountry || undefined}
                     onValueChange={(value) =>
@@ -199,25 +264,25 @@ export default function SearchPage() {
                       }))
                     }
                   >
-                    <SelectTrigger id="arrival_country" className="h-9 text-sm font-display">
+                    <SelectTrigger id="arrival_country">
                       <SelectValue placeholder="Tous les pays" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FR" className="font-display">France</SelectItem>
-                      <SelectItem value="BJ" className="font-display">Bénin</SelectItem>
+                      <SelectItem value="FR">France</SelectItem>
+                      <SelectItem value="BJ">Bénin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium">Date de départ (±3 jours)</Label>
+                  <Label>Date de départ (±3 jours)</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal h-9 text-sm font-display"
+                        className="w-full justify-start text-left font-normal"
                       >
-                        <IconCalendar className="mr-2 h-3.5 w-3.5" />
+                        <IconCalendar className="mr-2 h-4 w-4" />
                         {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
                       </Button>
                     </PopoverTrigger>
@@ -238,11 +303,10 @@ export default function SearchPage() {
                   </Popover>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="min_kg" className="text-xs font-medium">Poids min.</Label>
-                    <span className="text-xs font-medium text-muted-foreground font-display">{filters.minKg || 1} kg</span>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="min_kg">
+                    Poids minimum : {filters.minKg || 1} kg
+                  </Label>
                   <Slider
                     id="min_kg"
                     min={1}
@@ -252,54 +316,54 @@ export default function SearchPage() {
                     onValueChange={([value]) =>
                       setFilters((prev) => ({ ...prev, minKg: value }))
                     }
-                    className="w-full py-2"
+                    className="w-full"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="sort_by" className="text-xs font-medium">Trier par</Label>
+                  <Label htmlFor="sort_by">Trier par</Label>
                   <Select
                     value={filters.sortBy || 'date'}
                     onValueChange={(value: 'date' | 'price' | 'rating') =>
                       setFilters((prev) => ({ ...prev, sortBy: value }))
                     }
                   >
-                    <SelectTrigger id="sort_by" className="h-9 text-sm font-display">
+                    <SelectTrigger id="sort_by">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="date" className="font-display">Date proche</SelectItem>
-                      <SelectItem value="price" className="font-display">Prix croissant</SelectItem>
-                      <SelectItem value="rating" className="font-display">Note voyageur</SelectItem>
+                      <SelectItem value="date">Date proche</SelectItem>
+                      <SelectItem value="price">Prix croissant</SelectItem>
+                      <SelectItem value="rating">Note voyageur</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <Button onClick={handleSearch} className="h-10 w-full text-sm font-medium rounded-md font-display tracking-tight">
+                <Button onClick={handleSearch} className="h-12 w-full text-base">
                   <IconSearch className="mr-2 h-4 w-4" />
                   Rechercher
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="rounded-xl border-secondary/10 bg-secondary/5 shadow-none">
-              <CardContent className="space-y-3 pt-5">
-                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <Card className="border-secondary/10 bg-gradient-to-br from-secondary/10 via-background to-background">
+              <CardContent className="space-y-4 pt-6">
+                <div className="flex items-center gap-2 text-sm font-semibold">
                   <IconMapPin className="h-4 w-4 text-secondary" />
                   Conseils rapides
                 </div>
-                <div className="space-y-2.5 text-xs text-muted-foreground">
+                <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-secondary flex-shrink-0" />
+                    <span className="mt-2 h-2 w-2 rounded-full bg-secondary" />
                     <span>Ajoutez une date pour améliorer le matching.</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-secondary flex-shrink-0" />
+                    <span className="mt-2 h-2 w-2 rounded-full bg-secondary" />
                     <span>Augmentez le poids minimum pour filtrer les petits colis.</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-secondary flex-shrink-0" />
-                    <span>Comparez les prix au kilo.</span>
+                    <span className="mt-2 h-2 w-2 rounded-full bg-secondary" />
+                    <span>Comparez les prix au kilo avant de contacter.</span>
                   </div>
                 </div>
               </CardContent>
@@ -307,16 +371,16 @@ export default function SearchPage() {
           </aside>
 
           <section className="space-y-6">
-            <div className="rounded-xl border bg-card/40 p-5 px-6">
+            <div className="rounded-3xl border bg-card/70 p-5 shadow-sm sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <h2 className="text-lg font-semibold tracking-tight">Annonces disponibles</h2>
+                  <h2 className="text-lg font-semibold">Annonces disponibles</h2>
                   <p className="text-sm text-muted-foreground">{resultsSummary}</p>
                 </div>
                 {hasSearched && activeFilters.length > 0 && (
                   <div className="flex flex-wrap items-center gap-2">
                     {activeFilters.map((item) => (
-                      <Badge key={item} variant="secondary" className="rounded-md border border-border/50 bg-background/50 px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                      <Badge key={item} variant="secondary" className="rounded-full border border-border/70 bg-background/80">
                         {item}
                       </Badge>
                     ))}
@@ -326,15 +390,15 @@ export default function SearchPage() {
             </div>
 
             {!hasSearched ? (
-              <Card className="rounded-xl border-dashed border-2 border-muted shadow-none bg-muted/5">
-                <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground/70">
+              <Card className="surface-glass rounded-2xl border-primary/10">
+                <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <IconSearch className="h-6 w-6" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-base font-medium">Lancez votre première recherche</p>
-                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                      Utilisez les filtres à gauche pour découvrir les annonces disponibles.
+                    <p className="text-base font-semibold">Lancez votre première recherche</p>
+                    <p className="text-sm text-muted-foreground">
+                      Utilisez les filtres pour découvrir les annonces disponibles.
                     </p>
                   </div>
                 </CardContent>
@@ -344,17 +408,17 @@ export default function SearchPage() {
                 <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : error ? (
-              <Card className="border-destructive/30 bg-destructive/5 shadow-none rounded-xl">
+              <Card className="border-destructive/30 bg-destructive/5">
                 <CardContent className="pt-6">
-                  <p className="text-destructive text-sm text-center">
+                  <p className="text-destructive">
                     Erreur lors de la recherche. Veuillez réessayer.
                   </p>
                 </CardContent>
               </Card>
             ) : announcements.length === 0 ? (
-              <Card className="rounded-xl border-dashed border-2 border-muted shadow-none bg-muted/5">
-                <CardContent className="py-16">
-                  <p className="text-center text-muted-foreground text-sm">
+              <Card className="surface-glass rounded-2xl border-primary/10">
+                <CardContent className="py-10">
+                  <p className="text-center text-muted-foreground">
                     Aucune annonce trouvée. Modifiez vos critères de recherche.
                   </p>
                 </CardContent>
@@ -378,25 +442,23 @@ export default function SearchPage() {
             )}
 
             {totalPages > 1 && announcements.length > 0 && (
-              <div className="flex items-center justify-center gap-2 rounded-xl border bg-card/40 px-4 py-3">
+              <div className="flex items-center justify-center gap-2 rounded-2xl border bg-card/70 px-4 py-3">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(filters.page! - 1)}
                   disabled={filters.page === 1}
-                  className="h-8 w-8 p-0"
                 >
                   <IconChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm text-muted-foreground font-medium">
-                  Page {filters.page} / {totalPages}
+                <span className="text-sm text-muted-foreground">
+                  Page {filters.page} sur {totalPages}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handlePageChange(filters.page! + 1)}
                   disabled={filters.page === totalPages}
-                  className="h-8 w-8 p-0"
                 >
                   <IconChevronRight className="h-4 w-4" />
                 </Button>
