@@ -2,6 +2,10 @@
 -- Created: 2026-01-19
 -- Description: Ajout de arrival_date à la fonction search_announcements
 
+-- Drop the old function first
+DROP FUNCTION IF EXISTS search_announcements(TEXT, TEXT, DATE, INTEGER, TEXT, INTEGER, INTEGER);
+
+-- Create the new version with arrival_date
 CREATE OR REPLACE FUNCTION search_announcements(
   p_departure_country TEXT DEFAULT NULL,
   p_arrival_country TEXT DEFAULT NULL,
