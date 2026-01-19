@@ -104,6 +104,94 @@ export async function cancelBooking(bookingId: string) {
 }
 
 /**
+ * Supprime une réservation annulée (expéditeur ou voyageur)
+ */
+export async function deleteCancelledBooking(bookingId: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      error: 'Vous devez être connecté',
+    }
+  }
+
+  const { data: booking, error: bookingError } = await supabase
+    .from('bookings')
+    .select('id, status, sender_id, traveler_id, package_photos, refused_at')
+    .eq('id', bookingId)
+    .single()
+
+  if (bookingError || !booking) {
+    return {
+      error: 'Réservation introuvable',
+    }
+  }
+
+  if (booking.sender_id !== user.id && booking.traveler_id !== user.id) {
+    return {
+      error: 'Vous n\'êtes pas autorisé à supprimer cette réservation',
+    }
+  }
+
+  if (booking.status !== 'cancelled' || !booking.refused_at) {
+    return {
+      error: 'Cette réservation ne peut pas être supprimée',
+    }
+  }
+
+  try {
+    // Nettoyer les photos du colis si présentes
+    const photos = (booking.package_photos || []) as string[]
+    const storagePrefix = '/storage/v1/object/public/package-photos/'
+    const filePaths = photos
+      .map((url) => {
+        const index = url?.indexOf(storagePrefix) ?? -1
+        if (index === -1) return null
+        const path = url.slice(index + storagePrefix.length)
+        return path.split('?')[0]
+      })
+      .filter((path): path is string => Boolean(path))
+
+    if (filePaths.length > 0) {
+      const { error: deletePhotosError } = await supabase.storage
+        .from('package-photos')
+        .remove(filePaths)
+      if (deletePhotosError) {
+        console.warn('Error deleting package photos:', deletePhotosError)
+      }
+    }
+
+    const { error: deleteError } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', bookingId)
+
+    if (deleteError) {
+      console.error('Delete booking error:', deleteError)
+      return {
+        error: 'Erreur lors de la suppression de la réservation',
+      }
+    }
+
+    revalidatePath('/dashboard/colis')
+    return {
+      success: true,
+      message: 'Réservation supprimée',
+    }
+  } catch (error) {
+    console.error('Delete booking error:', error)
+    return {
+      error: 'Une erreur est survenue. Veuillez réessayer.',
+    }
+  }
+}
+
+/**
  * Voyageur scanne le QR code de dépôt et marque le colis en transit
  */
 export async function markAsInTransit(
@@ -319,7 +407,6 @@ export async function markAsDelivered(
     }
   }
 }
-
 
 
 

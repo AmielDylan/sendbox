@@ -50,12 +50,12 @@ export async function updateAnnouncement(
     }
   }
 
-  // Vérifier qu'il n'y a pas de bookings actifs
+  // Vérifier les bookings déjà acceptés/en cours pour fixer la limite minimale
   const { data: bookings, error: bookingsError } = await supabase
     .from('bookings')
-    .select('id')
+    .select('kilos_requested, weight_kg, status')
     .eq('announcement_id', announcementId)
-    .in('status', ['accepted', 'in_transit'])
+    .in('status', ['accepted', 'paid', 'deposited', 'in_transit', 'delivered'])
 
   if (bookingsError) {
     return {
@@ -63,12 +63,8 @@ export async function updateAnnouncement(
     }
   }
 
-  if (bookings && bookings.length > 0) {
-    return {
-      error:
-        'Impossible de modifier cette annonce car elle a des réservations confirmées ou en cours',
-    }
-  }
+  const acceptedWeight =
+    bookings?.reduce((sum: number, booking: any) => sum + ((booking.kilos_requested || booking.weight_kg) || 0), 0) || 0
 
   // Validation Zod (sans contrainte de date future pour les mises à jour)
   const validation = updateAnnouncementSchema.safeParse(formData)
@@ -76,6 +72,13 @@ export async function updateAnnouncement(
     return {
       error: validation.error.issues[0]?.message || 'Données invalides',
       field: String(validation.error.issues[0]?.path[0] || 'unknown'),
+    }
+  }
+
+  if (validation.data.available_kg < acceptedWeight) {
+    return {
+      error: `Le poids disponible ne peut pas être inférieur aux réservations déjà acceptées (${acceptedWeight.toFixed(1)} kg).`,
+      field: 'available_kg',
     }
   }
 
@@ -194,7 +197,7 @@ export async function deleteAnnouncement(announcementId: string) {
     .from('bookings')
     .select('id, status')
     .eq('announcement_id', announcementId)
-    .in('status', ['pending', 'accepted', 'in_transit'])
+    .in('status', ['pending', 'accepted', 'paid', 'deposited', 'in_transit', 'delivered'])
 
   if (bookingsError) {
     console.error('Erreur lors de la vérification des réservations:', bookingsError)
@@ -204,9 +207,26 @@ export async function deleteAnnouncement(announcementId: string) {
   }
 
   if (bookings && bookings.length > 0) {
+    const hasPending = bookings.some((booking) => booking.status === 'pending')
+    const hasAccepted = bookings.some((booking) =>
+      ['accepted', 'paid', 'deposited', 'in_transit', 'delivered'].includes(booking.status)
+    )
+
+    if (hasAccepted) {
+      return {
+        error: "Impossible de supprimer cette annonce car elle a des demandes acceptées ou en cours.",
+      }
+    }
+
+    if (hasPending) {
+      return {
+        error: 'Veuillez refuser les demandes en attente avant de supprimer cette annonce.',
+      }
+    }
+
     const bookingStatuses = bookings.map(b => b.status).join(', ')
     return {
-      error: `Impossible de supprimer cette annonce car elle a ${bookings.length} réservation(s) active(s) (statut: ${bookingStatuses})`,
+      error: `Impossible de supprimer cette annonce car elle a des réservations actives (statut: ${bookingStatuses})`,
     }
   }
 

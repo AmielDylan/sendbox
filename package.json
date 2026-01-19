@@ -69,6 +69,7 @@
     "react-dom": "19.2.1",
     "react-hook-form": "^7.68.0",
     "react-signature-canvas": "^1.1.0-alpha.2",
+    "recharts": "^2.15.4",
     "resend": "^6.6.0",
     "shadcn": "^3.6.2",
     "sharp": "^0.34.5",

@@ -33,6 +33,7 @@ import { ParticipantCard } from '@/components/features/bookings/ParticipantCard'
 import { PackagePhotosGallery } from '@/components/features/bookings/PackagePhotosGallery'
 import { RefuseBookingDialog } from '@/components/features/bookings/RefuseBookingDialog'
 import { CancelBookingDialog } from '@/components/features/bookings/CancelBookingDialog'
+import { DeleteBookingDialog } from '@/components/features/bookings/DeleteBookingDialog'
 import { acceptBooking } from "@/lib/core/bookings/requests"
 import {
   getPublicProfiles,
@@ -552,6 +553,10 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                       Scanner QR livraison
                     </Link>
                   </Button>
+                )}
+
+                {(isSender || isTraveler) && booking.status === 'cancelled' && (
+                  <DeleteBookingDialog bookingId={booking.id} />
                 )}
               </div>
             </CardContent>

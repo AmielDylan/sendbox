@@ -24,12 +24,34 @@ import { useAuth } from '@/hooks/use-auth'
 import type { KYCStatus } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { Bar, BarChart, XAxis } from 'recharts'
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+
+type BookingStatus =
+  | 'pending'
+  | 'accepted'
+  | 'paid'
+  | 'deposited'
+  | 'in_transit'
+  | 'delivered'
+  | 'cancelled'
+
+type StatusCounts = Record<BookingStatus, number>
+
+type BookingRow = {
+  id: string
+  status: BookingStatus
+  sender_id: string
+  traveler_id: string
+}
 
 type DashboardStats = {
   activeAnnouncements: number
   unreadMessages: number
-  shipmentsCount: number
   revenueTotal: number
+  sentStatus: StatusCounts
+  receivedStatus: StatusCounts
+  packagesStatus: StatusCounts
 }
 
 type RecentNotification = {
@@ -41,6 +63,29 @@ type RecentNotification = {
   link: string | null
 }
 
+const createEmptyStatusCounts = (): StatusCounts => ({
+  pending: 0,
+  accepted: 0,
+  paid: 0,
+  deposited: 0,
+  in_transit: 0,
+  delivered: 0,
+  cancelled: 0,
+})
+
+const countByStatus = (bookings: BookingRow[]) => {
+  const counts = createEmptyStatusCounts()
+  bookings.forEach((booking) => {
+    if (counts[booking.status] !== undefined) {
+      counts[booking.status] += 1
+    }
+  })
+  return counts
+}
+
+const sumCounts = (counts: StatusCounts) =>
+  Object.values(counts).reduce((sum, value) => sum + value, 0)
+
 export default function DashboardPage() {
   const { user, profile } = useAuth()
   const [kycStatus, setKycStatus] = useState<KYCStatus | null>(null)
@@ -48,8 +93,10 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     activeAnnouncements: 0,
     unreadMessages: 0,
-    shipmentsCount: 0,
     revenueTotal: 0,
+    sentStatus: createEmptyStatusCounts(),
+    receivedStatus: createEmptyStatusCounts(),
+    packagesStatus: createEmptyStatusCounts(),
   })
   const [recentNotifications, setRecentNotifications] = useState<RecentNotification[]>([])
   const [isLoadingStats, setIsLoadingStats] = useState(true)
@@ -93,7 +140,7 @@ export default function DashboardPage() {
       const supabase = createClient()
 
       try {
-        const [announcementsResult, unreadResult, shipmentsResult, transactionsResult, notificationsResult] =
+        const [announcementsResult, unreadResult, bookingsResult, transactionsResult, notificationsResult] =
           await Promise.all([
             supabase
               .from('announcements')
@@ -107,8 +154,8 @@ export default function DashboardPage() {
               .eq('is_read', false),
             supabase
               .from('bookings')
-              .select('id', { count: 'exact', head: true })
-              .eq('sender_id', user.id),
+              .select('id, status, sender_id, traveler_id')
+              .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`),
             supabase
               .from('transactions')
               .select('amount, type')
@@ -127,11 +174,19 @@ export default function DashboardPage() {
           0
         )
 
+        const bookings = (bookingsResult.data as BookingRow[]) || []
+        const sentBookings = bookings.filter((booking) => booking.sender_id === user.id)
+        const receivedBookings = bookings.filter((booking) => booking.traveler_id === user.id)
+        const sentStatus = countByStatus(sentBookings)
+        const receivedStatus = countByStatus(receivedBookings)
+
         setStats({
           activeAnnouncements: announcementsResult.count || 0,
           unreadMessages: unreadResult.count || 0,
-          shipmentsCount: shipmentsResult.count || 0,
           revenueTotal,
+          sentStatus,
+          receivedStatus,
+          packagesStatus: sentStatus,
         })
 
         setRecentNotifications((notificationsResult.data as RecentNotification[]) || [])
@@ -145,6 +200,63 @@ export default function DashboardPage() {
 
     loadDashboardData()
   }, [user?.id])
+
+  const sentAcceptedTotal =
+    stats.sentStatus.accepted +
+    stats.sentStatus.paid +
+    stats.sentStatus.deposited +
+    stats.sentStatus.in_transit +
+    stats.sentStatus.delivered
+  const receivedAcceptedTotal =
+    stats.receivedStatus.accepted +
+    stats.receivedStatus.paid +
+    stats.receivedStatus.deposited +
+    stats.receivedStatus.in_transit +
+    stats.receivedStatus.delivered
+
+  // Configuration des charts pour EvilCharts
+  const sentRequestChartData = [
+    { status: 'En attente', value: stats.sentStatus.pending, fill: 'var(--chart-1)' },
+    { status: 'Acceptées', value: sentAcceptedTotal, fill: 'var(--chart-2)' },
+    { status: 'Annulées', value: stats.sentStatus.cancelled, fill: 'var(--chart-5)' },
+  ]
+
+  const sentRequestChartConfig = {
+    value: { label: 'Demandes' },
+    pending: { label: 'En attente', color: 'var(--chart-1)' },
+    accepted: { label: 'Acceptées', color: 'var(--chart-2)' },
+    cancelled: { label: 'Annulées', color: 'var(--chart-5)' },
+  } satisfies ChartConfig
+
+  const receivedRequestChartData = [
+    { status: 'En attente', value: stats.receivedStatus.pending, fill: 'var(--chart-1)' },
+    { status: 'Acceptées', value: receivedAcceptedTotal, fill: 'var(--chart-2)' },
+    { status: 'Annulées', value: stats.receivedStatus.cancelled, fill: 'var(--chart-5)' },
+  ]
+
+  const receivedRequestChartConfig = {
+    value: { label: 'Demandes' },
+    pending: { label: 'En attente', color: 'var(--chart-1)' },
+    accepted: { label: 'Acceptées', color: 'var(--chart-2)' },
+    cancelled: { label: 'Annulées', color: 'var(--chart-5)' },
+  } satisfies ChartConfig
+
+  const packagesChartData = [
+    { status: 'À payer', value: stats.packagesStatus.accepted, fill: 'var(--chart-1)' },
+    { status: 'Envoyés', value: stats.packagesStatus.paid + stats.packagesStatus.deposited, fill: 'var(--chart-2)' },
+    { status: 'En transit', value: stats.packagesStatus.in_transit, fill: 'var(--chart-3)' },
+    { status: 'Livrés', value: stats.packagesStatus.delivered, fill: 'var(--chart-4)' },
+    { status: 'Annulés', value: stats.packagesStatus.cancelled, fill: 'var(--chart-5)' },
+  ]
+
+  const packagesChartConfig = {
+    value: { label: 'Colis' },
+    accepted: { label: 'À payer', color: 'var(--chart-1)' },
+    sent: { label: 'Envoyés', color: 'var(--chart-2)' },
+    in_transit: { label: 'En transit', color: 'var(--chart-3)' },
+    delivered: { label: 'Livrés', color: 'var(--chart-4)' },
+    cancelled: { label: 'Annulés', color: 'var(--chart-5)' },
+  } satisfies ChartConfig
 
   return (
     <div className="space-y-6">
@@ -171,10 +283,10 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="flex flex-wrap gap-4">
         {/* Card KYC Status - SEULEMENT si feature activée */}
         {isFeatureEnabled('KYC_ENABLED') && (
-          <Card>
+          <Card className="flex-1 min-w-[200px]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Vérification d'identité
@@ -215,7 +327,7 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        <Card>
+        <Card className="flex-1 min-w-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Annonces actives
@@ -232,7 +344,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="flex-1 min-w-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Messages</CardTitle>
             <IconMessage className="h-4 w-4 text-muted-foreground" />
@@ -247,22 +359,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Colis envoyés</CardTitle>
-            <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {isLoadingStats ? '—' : stats.shipmentsCount}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {stats.shipmentsCount > 1 ? 'réservations créées' : 'réservation créée'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
+        <Card className="flex-1 min-w-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Revenus</CardTitle>
             <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -274,6 +371,107 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground">
               total des transactions
             </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex flex-wrap gap-4">
+        <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
+          <CardHeader className="p-5 pb-3 space-y-1">
+            <CardTitle className="text-sm font-semibold">Demandes envoyées</CardTitle>
+            <CardDescription className="text-xs">
+              Demandes créées sur les annonces
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-5 pt-0 space-y-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Total</span>
+              <span className="font-semibold text-foreground">
+                {isLoadingStats ? '—' : sumCounts(stats.sentStatus)}
+              </span>
+            </div>
+            <ChartContainer config={sentRequestChartConfig} className="h-[200px] w-full">
+              <BarChart accessibilityLayer data={sentRequestChartData}>
+                <XAxis
+                  dataKey="status"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="value" radius={4} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
+          <CardHeader className="p-5 pb-3 space-y-1">
+            <CardTitle className="text-sm font-semibold">Demandes reçues</CardTitle>
+            <CardDescription className="text-xs">
+              Demandes sur vos annonces publiées
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-5 pt-0 space-y-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Total</span>
+              <span className="font-semibold text-foreground">
+                {isLoadingStats ? '—' : sumCounts(stats.receivedStatus)}
+              </span>
+            </div>
+            <ChartContainer config={receivedRequestChartConfig} className="h-[200px] w-full">
+              <BarChart accessibilityLayer data={receivedRequestChartData}>
+                <XAxis
+                  dataKey="status"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="value" radius={4} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
+          <CardHeader className="p-5 pb-3 space-y-1">
+            <CardTitle className="text-sm font-semibold">Colis</CardTitle>
+            <CardDescription className="text-xs">
+              Suivi après acceptation et paiement
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-5 pt-0 space-y-4">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Total suivis</span>
+              <span className="font-semibold text-foreground">
+                {isLoadingStats ? '—' : packagesChartData.reduce((sum, item) => sum + item.value, 0)}
+              </span>
+            </div>
+            <ChartContainer config={packagesChartConfig} className="h-[200px] w-full">
+              <BarChart accessibilityLayer data={packagesChartData} layout="horizontal">
+                <XAxis
+                  dataKey="status"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="value" radius={4} />
+              </BarChart>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
