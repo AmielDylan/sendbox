@@ -4,9 +4,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { IconCurrencyEuro, IconShield, IconPackage } from '@tabler/icons-react'
+import { IconShield, IconPackage } from '@tabler/icons-react'
 import type { BookingCalculation } from "@/lib/core/bookings/calculations"
 import { formatPrice } from "@/lib/core/bookings/calculations"
+import { MAX_INSURANCE_COVERAGE } from "@/lib/core/bookings/validations"
 
 interface PriceCalculationProps {
   calculation: BookingCalculation
@@ -55,23 +56,24 @@ export function PriceCalculation({
           <span className="font-semibold">{formatPrice(calculation.subtotal)}</span>
         </div>
 
-        {/* Assurance */}
-        {calculation.insurancePremium && (
+        {/* Protection du colis */}
+        {calculation.insurancePremium !== null && (
           <>
             <Separator />
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <IconShield className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Assurance</span>
+                  <span className="text-sm font-medium">Protection du colis</span>
                 </div>
                 <span className="font-medium">
                   {formatPrice(calculation.insurancePremium)}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground ml-6">
-                Couverture jusqu'à {formatPrice(calculation.insuranceCoverage || 0)}
-                {packageValue < 500 && ` (valeur déclarée : ${formatPrice(packageValue)})`}
+                Plafond : {formatPrice(calculation.insuranceCoverage || 0)}
+                {packageValue < MAX_INSURANCE_COVERAGE &&
+                  ` (valeur déclarée : ${formatPrice(packageValue)})`}
               </p>
             </div>
           </>
@@ -87,22 +89,17 @@ export function PriceCalculation({
           </span>
         </div>
 
-        {calculation.insurancePremium && (
+        {calculation.insurancePremium !== null && (
           <p className="text-xs text-muted-foreground text-center">
             Dont {formatPrice(calculation.commission)} commission
-            {calculation.insurancePremium && ` et ${formatPrice(calculation.insurancePremium)} assurance`}
+            {calculation.insurancePremium !== null &&
+              ` et ${formatPrice(calculation.insurancePremium)} protection`}
           </p>
         )}
       </CardContent>
     </Card>
   )
 }
-
-
-
-
-
-
 
 
 

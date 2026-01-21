@@ -6,6 +6,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
+import { createAdminClient } from "@/lib/shared/db/admin"
 import { sendEmail } from "@/lib/shared/services/email/client"
 
 export type NotificationType =
@@ -35,45 +36,142 @@ interface NotifyUserParams {
  */
 export async function notifyUser(params: NotifyUserParams) {
   const supabase = await createClient()
+  let notificationId: string | null = null
+  let notificationError: unknown = null
 
   try {
-    // Créer la notification dans la base de données
-    const { data, error } = await (supabase.rpc as any)('create_notification', {
-      p_user_id: params.user_id,
-      p_type: params.type,
-      p_title: params.title,
-      p_content: params.content,
-      p_booking_id: params.booking_id || null,
-      p_announcement_id: params.announcement_id || null,
-    })
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const adminClient = createAdminClient()
+        const { data: insertedNotification, error: insertError } = await adminClient
+          .from('notifications')
+          .insert({
+            user_id: params.user_id,
+            type: params.type,
+            title: params.title,
+            content: params.content,
+            booking_id: params.booking_id || null,
+            announcement_id: params.announcement_id || null,
+          })
+          .select('id')
+          .single()
 
-    if (error) {
-      console.error('Error creating notification:', error)
-      return {
-        error: 'Erreur lors de la création de la notification',
+        if (insertError) {
+          notificationError = insertError
+          console.error('Error inserting notification (admin):', insertError)
+        } else {
+          notificationId = insertedNotification?.id || null
+          notificationError = null
+        }
+      } catch (adminInsertError) {
+        notificationError = adminInsertError
+        console.warn('Admin notification insert failed:', adminInsertError)
+      }
+    }
+
+    if (!notificationId) {
+      const { data, error } = await (supabase.rpc as any)('create_notification', {
+        p_user_id: params.user_id,
+        p_type: params.type,
+        p_title: params.title,
+        p_content: params.content,
+        p_booking_id: params.booking_id || null,
+        p_announcement_id: params.announcement_id || null,
+      })
+
+      if (error) {
+        notificationError = error
+        console.error('Error creating notification:', error)
+      } else {
+        notificationId = data || null
+        notificationError = null
       }
     }
 
     // Envoyer email si demandé
     if (params.sendEmail) {
       try {
-        // Récupérer l'email de l'utilisateur
-        // Note: params.user_id est déjà l'ID du profil (qui correspond à auth.uid())
-        const { data: authUser } = await supabase.auth.admin.getUserById(params.user_id)
+        let recipientEmail: string | null = null
 
-        if (authUser?.user?.email) {
+        if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+          try {
+            const adminClient = createAdminClient()
+            const { data: authUser, error: adminError } = await adminClient.auth.admin.getUserById(
+              params.user_id
+            )
+            if (adminError) {
+              console.warn('Admin email lookup failed:', adminError)
+            } else {
+              recipientEmail = authUser?.user?.email || null
+            }
+          } catch (adminClientError) {
+            console.warn('Admin client not available:', adminClientError)
+          }
+        }
+
+        if (!recipientEmail) {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', params.user_id)
+            .single()
+
+          if (profileError) {
+            console.warn('Profile email lookup failed:', profileError)
+          } else {
+            recipientEmail = profileData?.email || null
+          }
+        }
+
+        if (recipientEmail) {
+          let emailData: Record<string, any> = {
+            title: params.title,
+            content: params.content,
+            type: params.type,
+            booking_id: params.booking_id,
+            announcement_id: params.announcement_id,
+          }
+
+          // Enrichir les données pour booking_request
+          if (params.type === 'booking_request' && params.booking_id) {
+            const { data: bookingData } = await supabase
+              .from('bookings')
+              .select(`
+                kilos_requested,
+                total_price,
+                package_description,
+                announcements:announcement_id (
+                  departure_city,
+                  arrival_city
+                )
+              `)
+              .eq('id', params.booking_id)
+              .single()
+
+            if (bookingData) {
+              emailData = {
+                ...emailData,
+                // Variables en MAJUSCULES pour les templates Resend
+                KILOS_REQUESTED: bookingData.kilos_requested,
+                TOTAL_PRICE: bookingData.total_price?.toFixed(2) || '0.00',
+                PACKAGE_DESCRIPTION: bookingData.package_description || 'Non précisée',
+                DEPARTURE_CITY: (bookingData.announcements as any)?.departure_city || 'Ville de départ',
+                ARRIVAL_CITY: (bookingData.announcements as any)?.arrival_city || 'Ville d’arrivée',
+                BOOKING_ID: params.booking_id || 'inconnu',
+                APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+              }
+            }
+          }
+
           await sendEmail({
-            to: authUser.user.email,
+            to: recipientEmail,
             subject: params.title,
-            template: 'notification',
-            data: {
-              title: params.title,
-              content: params.content,
-              type: params.type,
-              booking_id: params.booking_id,
-              announcement_id: params.announcement_id,
-            },
+            template: params.type === 'booking_request' ? 'booking_request' : 'notification',
+            data: emailData,
+            useResendTemplate: true, // Utilise les templates Resend pour booking_request
           })
+        } else {
+          console.warn('No recipient email found for user:', params.user_id)
         }
       } catch (emailError) {
         // Ne pas bloquer si l'email échoue
@@ -82,9 +180,14 @@ export async function notifyUser(params: NotifyUserParams) {
     }
 
     revalidatePath('/dashboard/notifications')
+    if (notificationError) {
+      return {
+        error: 'Erreur lors de la création de la notification',
+      }
+    }
     return {
       success: true,
-      notificationId: data,
+      notificationId,
     }
   } catch (error) {
     console.error('Error notifying user:', error)
@@ -205,7 +308,3 @@ export async function getNotifications(
     }
   }
 }
-
-
-
-

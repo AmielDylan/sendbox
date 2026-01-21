@@ -6,8 +6,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from "@/lib/shared/db/server"
 import { stripe } from "@/lib/shared/services/stripe/config"
 import { calculateBookingAmounts, toStripeAmount } from "@/lib/core/payments/calculations"
+import { getPaymentsMode } from "@/lib/shared/config/features"
 
 export async function POST(req: NextRequest) {
+  if (getPaymentsMode() !== 'stripe') {
+    return NextResponse.json(
+      { error: 'Paiements Stripe indisponibles (mode simulation)' },
+      { status: 503 }
+    )
+  }
+
   try {
     const supabase = await createClient()
 
@@ -81,16 +89,6 @@ export async function POST(req: NextRequest) {
       booking.insurance_opted || false
     )
 
-    // Mettre à jour le booking avec les montants calculés
-    await supabase
-      .from('bookings')
-      .update({
-        total_price: amounts.totalPrice,
-        commission_amount: amounts.commissionAmount,
-        insurance_premium: amounts.insurancePremium,
-      })
-      .eq('id', booking_id)
-
     // Créer le Payment Intent Stripe
     const paymentIntent = await stripe.paymentIntents.create({
       amount: toStripeAmount(amounts.totalAmount),
@@ -128,11 +126,6 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-
-
-
-
-
 
 
 

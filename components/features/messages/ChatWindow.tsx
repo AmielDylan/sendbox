@@ -30,6 +30,7 @@ interface ChatWindowProps {
   otherUserName: string | null
   otherUserAvatar: string | null
   onBack?: () => void
+  onMessagesRead?: () => void
 }
 
 interface MessageItemProps {
@@ -115,6 +116,7 @@ export function ChatWindow({
   otherUserName,
   otherUserAvatar,
   onBack,
+  onMessagesRead,
 }: ChatWindowProps) {
   const router = useRouter()
   const { messages, isLoading, addOptimisticMessage, removeOptimisticMessage } = useMessages(bookingId)
@@ -131,14 +133,16 @@ export function ChatWindow({
     isUserTyping,
     sendTypingStatus,
     stopTyping,
-  } = usePresence(bookingId ? `messages:${bookingId}` : '', currentUserId)
+  } = usePresence(bookingId ? `presence:${bookingId}` : '', currentUserId)
 
   // Marquer les messages comme lus quand la conversation est ouverte
   useEffect(() => {
     if (bookingId) {
-      markMessagesAsRead(bookingId)
+      markMessagesAsRead(bookingId).then(() => {
+        onMessagesRead?.()
+      })
     }
-  }, [bookingId])
+  }, [bookingId, onMessagesRead])
 
   // Scroll automatique vers le bas quand de nouveaux messages arrivent
   useEffect(() => {

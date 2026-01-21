@@ -34,6 +34,7 @@ import { acceptBooking, refuseBooking } from "@/lib/core/bookings/requests"
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 
 type BookingRequestStatus = 'pending' | 'accepted' | 'paid'
 
@@ -301,9 +302,11 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push(`/dashboard/messages?booking=${booking.id}`)}
+                asChild
               >
-                <IconMessageCircle className="h-4 w-4" />
+                <Link href={`/dashboard/messages?booking=${booking.id}`}>
+                  <IconMessageCircle className="h-4 w-4" />
+                </Link>
               </Button>
             </div>
           ) : (
@@ -325,9 +328,11 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => router.push(`/dashboard/messages?booking=${booking.id}`)}
+                  asChild
                 >
-                  <IconMessageCircle className="h-4 w-4" />
+                  <Link href={`/dashboard/messages?booking=${booking.id}`}>
+                    <IconMessageCircle className="h-4 w-4" />
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -482,9 +487,6 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
     </>
   )
 }
-
-
-
 
 
 

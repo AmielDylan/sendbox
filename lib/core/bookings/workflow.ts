@@ -6,14 +6,22 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
+import { createAdminClient } from "@/lib/shared/db/admin"
 
 /**
- * Expéditeur annule une réservation (avant acceptation)
+ * Annule une réservation avec raison (acceptée non payée par les deux parties,
+ * ou payée par le voyageur avec malus de réputation).
  */
-export async function cancelBooking(bookingId: string) {
+export async function cancelBookingWithReason(bookingId: string, reason: string) {
   const supabase = await createClient()
+  const normalizedReason = reason.trim()
 
-  // Vérifier l'authentification
+  if (normalizedReason.length < 5) {
+    return {
+      error: 'Veuillez fournir une raison (minimum 5 caractères)',
+    }
+  }
+
   const {
     data: { user },
     error: authError,
@@ -25,10 +33,9 @@ export async function cancelBooking(bookingId: string) {
     }
   }
 
-  // Récupérer le booking
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
-    .select('*')
+    .select('id, status, paid_at, sender_id, traveler_id, announcement_id')
     .eq('id', bookingId)
     .single()
 
@@ -38,28 +45,39 @@ export async function cancelBooking(bookingId: string) {
     }
   }
 
-  // Vérifier que l'utilisateur est l'expéditeur
-  if (booking.sender_id !== user.id) {
+  const isSender = booking.sender_id === user.id
+  const isTraveler = booking.traveler_id === user.id
+
+  if (!isSender && !isTraveler) {
     return {
       error: 'Vous n\'êtes pas autorisé à annuler cette réservation',
     }
   }
 
-  // Vérifier que le booking n'est pas déjà livré ou en transit
-  if (booking.status === 'delivered' || booking.status === 'in_transit') {
+  const isPaid = booking.status === 'paid' || Boolean(booking.paid_at)
+
+  if (booking.status === 'accepted' && !isPaid) {
+    // Autorisé pour expéditeur et voyageur
+  } else if (isPaid && isTraveler) {
+    // Autorisé pour le voyageur (annonceur) avec malus
+  } else {
     return {
-      error: 'Cette réservation ne peut plus être annulée',
+      error: 'Cette réservation ne peut pas être annulée à ce stade',
     }
   }
 
+  const cancelledAt = new Date().toISOString()
+
   try {
-    // Mettre à jour le statut
     const { error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'cancelled',
-        refused_reason: 'Annulé par l\'expéditeur',
-        refused_at: new Date().toISOString(),
+        refused_reason: normalizedReason,
+        refused_at: cancelledAt,
+        cancelled_reason: normalizedReason,
+        cancelled_at: cancelledAt,
+        cancelled_by: user.id,
       })
       .eq('id', bookingId)
 
@@ -70,30 +88,56 @@ export async function cancelBooking(bookingId: string) {
       }
     }
 
-    // Si la réservation était acceptée et payée, initier un remboursement
-    if (booking.status === 'accepted' && booking.paid_at) {
-      // TODO: Implémenter logique de remboursement Stripe
-      console.log('TODO: Initiate refund for booking', bookingId)
+    if (isPaid && isTraveler) {
+      const REPUTATION_PENALTY = 0.3
+      try {
+        const profileClient =
+          process.env.SUPABASE_SERVICE_ROLE_KEY ? createAdminClient() : supabase
+        const { data: profile } = await profileClient
+          .from('profiles')
+          .select('rating')
+          .eq('id', user.id)
+          .single()
+
+        const currentRating = Number(profile?.rating || 0)
+        const nextRating = Math.max(0, currentRating - REPUTATION_PENALTY)
+
+        const { error: ratingError } = await profileClient
+          .from('profiles')
+          .update({ rating: nextRating })
+          .eq('id', user.id)
+
+        if (ratingError) {
+          console.warn('Reputation penalty update failed:', ratingError)
+        }
+      } catch (ratingError) {
+        console.warn('Reputation penalty update failed:', ratingError)
+      }
     }
 
-    // Notifier le voyageur si la réservation était acceptée
-    if (booking.status === 'accepted') {
+    const otherUserId = isSender ? booking.traveler_id : booking.sender_id
+    const cancelerLabel = isSender ? 'L\'expéditeur' : 'Le voyageur'
+
+    try {
       await (supabase.rpc as any)('create_notification', {
-        p_user_id: booking.traveler_id,
+        p_user_id: otherUserId,
         p_type: 'booking_cancelled',
         p_title: 'Réservation annulée',
-        p_content: 'Une réservation a été annulée par l\'expéditeur',
+        p_content: `${cancelerLabel} a annulé la réservation. Raison : ${normalizedReason}`,
         p_booking_id: bookingId,
         p_announcement_id: booking.announcement_id,
       })
+    } catch (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
     }
 
     revalidatePath('/dashboard/colis')
     revalidatePath(`/dashboard/colis/${bookingId}`)
+    revalidatePath('/dashboard/messages')
 
     return {
       success: true,
-      message: 'Réservation annulée avec succès',
+      message: 'Réservation annulée',
     }
   } catch (error) {
     console.error('Error cancelling booking:', error)
@@ -407,7 +451,5 @@ export async function markAsDelivered(
     }
   }
 }
-
-
 
 

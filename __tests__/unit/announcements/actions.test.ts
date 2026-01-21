@@ -56,13 +56,20 @@ describe('Announcements Actions', () => {
   })
 
   describe('createAnnouncement', () => {
+    const daysFromNow = (days: number) => {
+      const date = new Date()
+      date.setHours(0, 0, 0, 0)
+      date.setDate(date.getDate() + days)
+      return date
+    }
+
     const validAnnouncementData: CreateAnnouncementInput = {
-      departure_country: 'France',
+      departure_country: 'FR',
       departure_city: 'Paris',
-      arrival_country: 'Bénin',
+      arrival_country: 'BJ',
       arrival_city: 'Cotonou',
-      departure_date: new Date('2025-03-01'),
-      arrival_date: new Date('2025-03-02'),
+      departure_date: daysFromNow(10),
+      arrival_date: daysFromNow(12),
       available_kg: 20,
       price_per_kg: 10,
       description: 'Test announcement',
@@ -305,8 +312,8 @@ describe('Announcements Actions', () => {
 
       const invalidData = {
         ...validAnnouncementData,
-        departure_date: new Date('2025-03-02'),
-        arrival_date: new Date('2025-03-01'), // Before departure
+        departure_date: daysFromNow(10),
+        arrival_date: daysFromNow(9), // Before departure
       }
 
       const result = await createAnnouncement(invalidData)

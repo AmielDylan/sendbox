@@ -39,6 +39,10 @@ Scripts utilitaires généraux.
 - `clear-all-caches.sh` - Vide tous les caches
 - `reload-postgrest-schema.ts` - Recharge le schéma PostgREST
 
+### Scripts à la racine
+
+- `create-resend-templates.ts` - Créer/mettre à jour/supprimer les templates d'emails Resend (API)
+
 ## Utilisation
 
 Pour exécuter un script TypeScript:
@@ -49,6 +53,24 @@ npx tsx scripts/path/to/script.ts
 Pour exécuter un script shell:
 ```bash
 bash scripts/path/to/script.sh
+```
+
+### Templates Resend
+
+Exemples d'utilisation du script Resend:
+
+```bash
+# Met à jour les templates existants ou les crée si nécessaire
+npx tsx scripts/create-resend-templates.ts --action=upsert
+
+# Met à jour uniquement un template précis
+npx tsx scripts/create-resend-templates.ts --action=update --only=booking_request
+
+# Supprime un template (confirmation explicite)
+npx tsx scripts/create-resend-templates.ts --action=delete --only=booking_request --confirm-delete
+
+# Supprime tous les templates puis recrée ceux du script
+npx tsx scripts/create-resend-templates.ts --action=reset --confirm-delete
 ```
 
 ## Contribution

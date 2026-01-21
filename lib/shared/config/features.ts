@@ -18,7 +18,12 @@ export const FEATURES = {
   /**
    * Paiements Stripe
    */
-  STRIPE_PAYMENTS: true,
+  STRIPE_PAYMENTS: false,
+
+  /**
+   * Paiements simulés (flow complet sans Stripe)
+   */
+  PAYMENTS_SIMULATION: true,
 
   /**
    * Dashboard Admin
@@ -28,6 +33,8 @@ export const FEATURES = {
 
 export type FeatureFlag = keyof typeof FEATURES
 
+export type PaymentsMode = 'stripe' | 'simulation' | 'disabled'
+
 /**
  * Vérifie si une feature est activée
  */
@@ -35,3 +42,16 @@ export function isFeatureEnabled(feature: FeatureFlag): boolean {
   return FEATURES[feature]
 }
 
+export function getPaymentsMode(): PaymentsMode {
+  if (FEATURES.STRIPE_PAYMENTS) {
+    return 'stripe'
+  }
+  if (FEATURES.PAYMENTS_SIMULATION) {
+    return 'simulation'
+  }
+  return 'disabled'
+}
+
+export function arePaymentsEnabled(): boolean {
+  return getPaymentsMode() !== 'disabled'
+}

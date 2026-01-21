@@ -12,6 +12,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   createBookingSchema,
   type CreateBookingInput,
+  MAX_INSURANCE_COVERAGE,
 } from "@/lib/core/bookings/validations"
 import {
   createBooking,
@@ -41,15 +42,11 @@ import { TripTimeline } from '@/components/features/announcements/TripTimeline'
 import { toast } from 'sonner'
 import {
   IconLoader2,
-  IconUpload,
   IconX,
   IconStar,
-  IconPackage,
-  IconCurrencyEuro,
   IconShield,
+  IconInfoCircle,
 } from '@tabler/icons-react'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 import { MAX_PHOTOS, MAX_FILE_SIZE, validatePackagePhoto } from "@/lib/core/bookings/photos"
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
@@ -68,6 +65,8 @@ function NewBookingPageContent() {
   const [announcement, setAnnouncement] = useState<any>(null)
   const [photos, setPhotos] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
+  const protectionTooltip =
+    'Cette option ne constitue pas un contrat d\'assurance et n\'implique aucune indemnisation automatique.'
 
   const {
     register,
@@ -206,7 +205,7 @@ function NewBookingPageContent() {
         queryClient.invalidateQueries({ queryKey: ['user-bookings'] })
         queryClient.invalidateQueries({ queryKey: ['user-announcements'] })
 
-        router.push(`/dashboard/colis/${result.bookingId}/paiement`)
+        router.push(`/dashboard/colis/${result.bookingId}`)
       }
     } catch (error) {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
@@ -413,15 +412,15 @@ function NewBookingPageContent() {
               </CardContent>
             </Card>
 
-            {/* Assurance */}
+            {/* Protection du colis */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <IconShield className="h-5 w-5" />
-                  Assurance
+                  Protection du colis
                 </CardTitle>
                 <CardDescription>
-                  Protégez votre colis pendant le transport
+                  Assistance limitée en cas de litige
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -436,26 +435,30 @@ function NewBookingPageContent() {
                   <div className="flex-1 space-y-2">
                     <Label
                       htmlFor="insurance_opted"
-                      className="font-medium cursor-pointer"
+                      className="flex items-center gap-1 font-medium cursor-pointer"
                     >
-                      Souscrire une assurance
+                      Activer la protection du colis
+                      <IconInfoCircle
+                        className="h-3.5 w-3.5 text-muted-foreground"
+                        title={protectionTooltip}
+                        aria-label="Conditions de protection du colis"
+                      />
                     </Label>
                     {insuranceOpted && (
                       <div className="p-4 bg-muted rounded-lg space-y-2">
                         <p className="text-sm">
-                          Prime : {formatPrice(calculation.insurancePremium || 0)}
+                          Frais : {formatPrice(calculation.insurancePremium || 0)}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Couverture jusqu'à{' '}
+                          Plafond :{' '}
                           {formatPrice(calculation.insuranceCoverage || 0)}
-                          {packageValue < 500 &&
+                          {packageValue < MAX_INSURANCE_COVERAGE &&
                             ` (valeur déclarée : ${formatPrice(packageValue)})`}
                         </p>
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Protection contre la perte et les dommages pendant le
-                      transport
+                      Option sans assurance automatique. Consultez l'info-bulle pour les conditions.
                     </p>
                   </div>
                 </div>
@@ -479,7 +482,7 @@ function NewBookingPageContent() {
                     Création...
                   </>
                 ) : (
-                  'Confirmer et payer'
+                  'Envoyer la demande'
                 )}
               </Button>
             </div>

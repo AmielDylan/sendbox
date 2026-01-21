@@ -116,7 +116,7 @@ export async function acceptBooking(bookingId: string) {
         p_user_id: booking.sender_id,
         p_type: 'booking_accepted',
         p_title: 'Demande acceptée',
-        p_content: `Votre demande de réservation a été acceptée. Veuillez procéder au paiement.`,
+        p_content: 'Votre demande de réservation a été acceptée. Veuillez procéder au paiement.',
         p_booking_id: bookingId,
         p_announcement_id: announcement.id,
       })

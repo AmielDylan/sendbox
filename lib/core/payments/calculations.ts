@@ -23,7 +23,7 @@ export function calculateBookingAmounts(
   // Commission Sendbox (12%)
   const commissionAmount = totalPrice * COMMISSION_RATE
 
-  // Assurance (si souscrite)
+  // Protection du colis (si activée)
   const insurancePremium = insuranceOpted
     ? packageValue * INSURANCE_RATE + INSURANCE_BASE_FEE
     : 0
@@ -52,7 +52,6 @@ export function toStripeAmount(amount: number): number {
 export function fromStripeAmount(amount: number): number {
   return amount / 100
 }
-
 
 
 

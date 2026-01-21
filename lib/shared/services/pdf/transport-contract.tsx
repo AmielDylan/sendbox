@@ -11,6 +11,7 @@ import {
   Font,
 } from '@react-pdf/renderer'
 import { getCountryName } from '@/lib/utils/countries'
+import { MAX_INSURANCE_COVERAGE } from "@/lib/core/bookings/validations"
 
 // Enregistrer les polices (optionnel, utilise Helvetica par défaut)
 Font.register({
@@ -38,12 +39,12 @@ interface BookingWithRelations {
     firstname: string | null
     lastname: string | null
     email?: string | null
-  }
+  } | null
   traveler: {
     firstname: string | null
     lastname: string | null
     email?: string | null
-  }
+  } | null
   announcement: {
     departure_city: string
     departure_country: string
@@ -67,13 +68,24 @@ export function TransportContract({ booking }: TransportContractProps) {
     })
   }
 
+  const getDisplayName = (
+    person: { firstname: string | null; lastname: string | null } | null,
+    fallback: string
+  ) => {
+    const name = `${person?.firstname ?? ''} ${person?.lastname ?? ''}`.trim()
+    return name || fallback
+  }
+
+  const senderName = getDisplayName(booking.sender, 'Expéditeur')
+  const travelerName = getDisplayName(booking.traveler, 'Voyageur')
+
   const totalAmount =
     (booking.total_price || 0) +
     (booking.commission_amount || 0) +
     (booking.insurance_opted ? booking.insurance_premium || 0 : 0)
 
   const insuranceCoverage = booking.insurance_opted
-    ? Math.min(booking.package_value || 0, 500)
+    ? Math.min(booking.package_value || 0, MAX_INSURANCE_COVERAGE)
     : 0
 
   return (
@@ -90,20 +102,16 @@ export function TransportContract({ booking }: TransportContractProps) {
           <Text style={styles.sectionTitle}>ENTRE LES PARTIES</Text>
 
           <Text style={styles.label}>L'EXPÉDITEUR :</Text>
-          <Text style={styles.text}>
-            {booking.sender.firstname} {booking.sender.lastname}
-          </Text>
-          {booking.sender.email && (
+          <Text style={styles.text}>{senderName}</Text>
+          {booking.sender?.email && (
             <Text style={styles.text}>{booking.sender.email}</Text>
           )}
 
           <View style={styles.spacer} />
 
           <Text style={styles.label}>LE VOYAGEUR :</Text>
-          <Text style={styles.text}>
-            {booking.traveler.firstname} {booking.traveler.lastname}
-          </Text>
-          {booking.traveler.email && (
+          <Text style={styles.text}>{travelerName}</Text>
+          {booking.traveler?.email && (
             <Text style={styles.text}>{booking.traveler.email}</Text>
           )}
         </View>
@@ -155,10 +163,10 @@ export function TransportContract({ booking }: TransportContractProps) {
           {booking.insurance_opted && (
             <>
               <Text style={styles.text}>
-                Assurance : {booking.insurance_premium || 0} EUR
+                Protection du colis : {booking.insurance_premium || 0} EUR
               </Text>
               <Text style={styles.text}>
-                Couverture : jusqu'à {insuranceCoverage} EUR
+                Plafond : {insuranceCoverage} EUR
               </Text>
             </>
           )}
@@ -280,10 +288,6 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
-
-
-
 
 
 

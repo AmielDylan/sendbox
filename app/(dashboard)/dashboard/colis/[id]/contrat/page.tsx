@@ -14,9 +14,10 @@ import Link from 'next/link'
 
 interface ContractPageProps {
   params: Promise<{ id: string }>
+  searchParams?: { refresh?: string }
 }
 
-async function ContractPageContent({ params }: ContractPageProps) {
+async function ContractPageContent({ params, searchParams }: ContractPageProps) {
   const { id: bookingId } = await params
   const supabase = await createClient()
 
@@ -43,14 +44,17 @@ async function ContractPageContent({ params }: ContractPageProps) {
     notFound()
   }
 
+  const shouldRefresh = searchParams?.refresh === '1'
+
   // Générer le contrat s'il n'existe pas encore
   let contractResult = await getContractUrl(bookingId, 'contract')
-  if (contractResult.error && booking.paid_at) {
+  if (booking.paid_at && (shouldRefresh || contractResult.error)) {
     // Générer le contrat si le paiement est confirmé
     contractResult = await generateTransportContract(bookingId)
   }
 
   const contractUrl = contractResult.url
+  const contractError = contractResult.error
 
   return (
     <div className="space-y-6">
@@ -68,9 +72,11 @@ async function ContractPageContent({ params }: ContractPageProps) {
         <Card>
           <CardContent className="pt-6">
             <p className="text-center text-muted-foreground">
-              {booking.paid_at
-                ? 'Génération du contrat en cours...'
-                : 'Le contrat sera disponible après le paiement'}
+              {contractError
+                ? `Erreur lors de la génération du contrat : ${contractError}`
+                : booking.paid_at
+                  ? 'Génération du contrat en cours...'
+                  : 'Le contrat sera disponible après le paiement'}
             </p>
           </CardContent>
         </Card>
@@ -90,6 +96,13 @@ async function ContractPageContent({ params }: ContractPageProps) {
                   Ouvrir dans nouvel onglet
                 </a>
               </Button>
+              {booking.paid_at && (
+                <Button asChild variant="outline">
+                  <Link href={`/dashboard/colis/${bookingId}/contrat?refresh=1`}>
+                    Regénérer
+                  </Link>
+                </Button>
+              )}
             </div>
             <Button variant="outline" asChild>
               <Link href={`/dashboard/colis/${bookingId}`}>Retour</Link>
@@ -111,7 +124,7 @@ async function ContractPageContent({ params }: ContractPageProps) {
   )
 }
 
-export default function ContractPage({ params }: ContractPageProps) {
+export default function ContractPage({ params, searchParams }: ContractPageProps) {
   return (
     <Suspense
       fallback={
@@ -120,12 +133,7 @@ export default function ContractPage({ params }: ContractPageProps) {
         </div>
       }
     >
-      <ContractPageContent params={params} />
+      <ContractPageContent params={params} searchParams={searchParams} />
     </Suspense>
   )
 }
-
-
-
-
-

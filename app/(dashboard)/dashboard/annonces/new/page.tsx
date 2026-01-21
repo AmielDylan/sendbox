@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
@@ -77,6 +77,7 @@ export default function NewAnnouncementPage() {
   const [showDepartureSuggestions, setShowDepartureSuggestions] =
     useState(false)
   const [showArrivalSuggestions, setShowArrivalSuggestions] = useState(false)
+  const submitIntentRef = useRef(false)
 
   const {
     register,
@@ -167,6 +168,12 @@ export default function NewAnnouncementPage() {
       return
     }
 
+    if (!submitIntentRef.current) {
+      console.log('[NewAnnouncement] Submit blocked - no explicit confirmation')
+      return
+    }
+
+    submitIntentRef.current = false
     setIsSubmitting(true)
     try {
       const result = await createAnnouncement(data)
@@ -193,6 +200,11 @@ export default function NewAnnouncementPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handlePublishClick = () => {
+    submitIntentRef.current = true
+    void handleSubmit(onSubmit)()
   }
 
   const selectCity = (
@@ -667,7 +679,7 @@ export default function NewAnnouncementPage() {
                   <IconArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="button" onClick={handlePublishClick} disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -688,7 +700,5 @@ export default function NewAnnouncementPage() {
     </div>
   )
 }
-
-
 
 

@@ -25,9 +25,16 @@ import { IconLoader2, IconTrash } from '@tabler/icons-react'
 interface DeleteBookingDialogProps {
   bookingId: string
   trigger?: React.ReactNode
+  onDeleted?: () => void
+  redirectAfterDelete?: boolean
 }
 
-export function DeleteBookingDialog({ bookingId, trigger }: DeleteBookingDialogProps) {
+export function DeleteBookingDialog({
+  bookingId,
+  trigger,
+  onDeleted,
+  redirectAfterDelete = true
+}: DeleteBookingDialogProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -45,8 +52,17 @@ export function DeleteBookingDialog({ bookingId, trigger }: DeleteBookingDialogP
 
       toast.success(result.message || 'Réservation supprimée')
       setIsOpen(false)
-      router.push('/dashboard/colis')
-      router.refresh()
+
+      // Appeler le callback si fourni
+      if (onDeleted) {
+        onDeleted()
+      }
+
+      // Rediriger seulement si demandé (par défaut oui, pour compatibilité)
+      if (redirectAfterDelete) {
+        router.push('/dashboard/colis')
+        router.refresh()
+      }
     } catch (error) {
       console.error('Error deleting booking:', error)
       toast.error('Une erreur est survenue')

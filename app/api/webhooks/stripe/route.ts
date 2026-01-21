@@ -11,8 +11,13 @@ import { generateTransportContract } from "@/lib/shared/services/pdf/generation"
 import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
 import { sendEmail } from "@/lib/shared/services/email/client"
 import Stripe from 'stripe'
+import { getPaymentsMode } from '@/lib/shared/config/features'
 
 export async function POST(req: NextRequest) {
+  if (getPaymentsMode() !== 'stripe') {
+    return NextResponse.json({ received: true, disabled: true })
+  }
+
   const body = await req.text()
   const headersList = await headers()
   const signature = headersList.get('stripe-signature')
@@ -337,4 +342,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-

@@ -49,6 +49,12 @@ function MessagesPageContent() {
   const [pendingConversation, setPendingConversation] = useState<ConversationSummary | null>(null)
   const [activeTab, setActiveTab] = useState(bookingIdFromUrl ? 'chat' : 'chat')
 
+  useEffect(() => {
+    if (bookingIdFromUrl) {
+      setActiveTab('chat')
+    }
+  }, [bookingIdFromUrl])
+
   // Query pour les conversations
   const {
     data: conversationsData,
@@ -179,36 +185,171 @@ function MessagesPageContent() {
 
   // Récupérer le nombre de notifications non lues
   useEffect(() => {
+    let isActive = true
+
     const loadUnreadCount = async () => {
       const result = await getUnreadNotificationsCount()
-      setUnreadCount(result.count)
+      if (isActive) {
+        setUnreadCount(result.count)
+      }
     }
     loadUnreadCount()
 
     // Écouter les nouvelles notifications en temps réel
     const supabase = createClient()
-    const channel = supabase
-      .channel('notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-        },
-        () => {
-          loadUnreadCount()
-          refetchRequests()
-          refetchConversations()
-          refetchNotifications() // Rafraîchir aussi les notifications!
-        }
-      )
-      .subscribe()
+    const getChannelName = (userId: string) => {
+      const suffix =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2)
+      return `notifications:messages:${userId}:${suffix}`
+    }
+
+    // Obtenir l'userId pour filtrer correctement
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !isActive) return
+
+      const channel = supabase
+        .channel(getChannelName(user.id))
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            loadUnreadCount()
+            refetchRequests()
+            refetchConversations()
+            refetchNotifications() // Rafraîchir aussi les notifications!
+          }
+        )
+        .subscribe()
+
+      return channel
+    }
+
+    let channelPromise = setupRealtimeSubscription()
 
     return () => {
-      supabase.removeChannel(channel)
+      isActive = false
+      channelPromise.then(channel => {
+        if (channel) {
+          supabase.removeChannel(channel)
+        }
+      })
     }
   }, [refetchRequests, refetchConversations, refetchNotifications])
+
+  // Rafraîchir les demandes en temps réel (bookings)
+  useEffect(() => {
+    const supabase = createClient()
+    let isActive = true
+    let channel: any = null
+
+    const getChannelName = (userId: string) => {
+      const suffix =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2)
+      return `bookings:messages:${userId}:${suffix}`
+    }
+
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !isActive) return
+
+      const filter = `or=(sender_id.eq.${user.id},traveler_id.eq.${user.id})`
+      channel = supabase
+        .channel(getChannelName(user.id))
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter,
+          },
+          () => {
+            refetchRequests()
+            refetchConversations()
+            refetchNotifications()
+          }
+        )
+        .subscribe()
+    }
+
+    setupRealtimeSubscription()
+
+    return () => {
+      isActive = false
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [refetchRequests, refetchConversations, refetchNotifications])
+
+  // Rafraîchir les conversations en temps réel (messages reçus/envoyés)
+  useEffect(() => {
+    const supabase = createClient()
+    let isActive = true
+    let channel: any = null
+
+    const getChannelName = (userId: string) => {
+      const suffix =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2)
+      return `messages:inbox:${userId}:${suffix}`
+    }
+
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !isActive) return
+
+      const filter = `or=(sender_id.eq.${user.id},receiver_id.eq.${user.id})`
+      channel = supabase
+        .channel(getChannelName(user.id))
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter,
+          },
+          () => {
+            refetchConversations()
+            refetchNotifications()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter,
+          },
+          () => {
+            refetchConversations()
+          }
+        )
+        .subscribe()
+    }
+
+    setupRealtimeSubscription()
+
+    return () => {
+      isActive = false
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [refetchConversations, refetchNotifications])
 
   // Mettre à jour la conversation sélectionnée quand on clique sur une conversation
   const handleSelectConversation = async (bookingId: string) => {
@@ -258,11 +399,11 @@ function MessagesPageContent() {
             <IconMessageCircle className="h-4 w-4" />
             <span className="hidden sm:inline">Chat</span>
           </TabsTrigger>
-          <TabsTrigger value="requests" className="gap-2">
+          <TabsTrigger value="requests" className="gap-1 sm:gap-2 flex items-center justify-center">
             <IconInbox className="h-4 w-4" />
             <span className="hidden sm:inline">Demandes</span>
             {bookings.length > 0 && (
-              <Badge variant="secondary" className="ml-1 sm:ml-2 h-5 min-w-5 px-1.5 text-xs">
+              <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-xs sm:ml-2">
                 {bookings.length}
               </Badge>
             )}
@@ -320,6 +461,7 @@ function MessagesPageContent() {
                   otherUserId={selectedConversation.otherUserId}
                   otherUserName={selectedConversation.otherUserName}
                   otherUserAvatar={selectedConversation.otherUserAvatar}
+                  onMessagesRead={refetchConversations}
                   onBack={() => {
                     setSelectedConversation(null)
                     setSelectedBookingId(null)
@@ -363,7 +505,11 @@ function MessagesPageContent() {
                 <BookingRequestCard
                   key={booking.id}
                   booking={booking}
-                  onUpdate={refetchRequests}
+                  onUpdate={() => {
+                    refetchRequests()
+                    refetchConversations()
+                    refetchNotifications()
+                  }}
                 />
               ))}
             </div>

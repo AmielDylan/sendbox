@@ -5,13 +5,14 @@
 'use client'
 
 import { use, useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
   SignatureCanvas,
@@ -28,19 +29,29 @@ interface ScanDepositPageProps {
 export default function ScanDepositPage({ params }: ScanDepositPageProps) {
   const { booking_id } = use(params)
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [booking, setBooking] = useState<any>(null)
   const [scannedCode, setScannedCode] = useState('')
+  const [isDecodingQr, setIsDecodingQr] = useState(false)
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string>('')
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const qrFileInputRef = useRef<HTMLInputElement | null>(null)
   const signatureRef = useRef<SignatureCanvasRef>(null)
 
   useEffect(() => {
     loadBooking()
     getCurrentLocation()
   }, [booking_id])
+
+  useEffect(() => {
+    const codeFromQuery = searchParams.get('code')
+    if (codeFromQuery) {
+      setScannedCode(codeFromQuery)
+    }
+  }, [searchParams])
 
   const loadBooking = async () => {
     try {
@@ -119,6 +130,50 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
     }
   }
 
+  const updateScannedCode = (code: string) => {
+    const trimmed = code.trim()
+    setScannedCode(trimmed)
+    if (trimmed) {
+      const params = new URLSearchParams(window.location.search)
+      params.set('code', trimmed)
+      router.replace(`/dashboard/scan/depot/${booking_id}?${params.toString()}`)
+    }
+  }
+
+  const handleQrImageScan = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file) {
+      return
+    }
+
+    if (!('BarcodeDetector' in window)) {
+      toast.error('Scanner QR non supporté sur cet appareil')
+      return
+    }
+
+    setIsDecodingQr(true)
+
+    try {
+      const bitmap = await createImageBitmap(file)
+      const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] })
+      const codes = await detector.detect(bitmap)
+
+      if (!codes.length) {
+        toast.error('QR code non détecté')
+        return
+      }
+
+      updateScannedCode(codes[0].rawValue || '')
+    } catch (error) {
+      console.error('QR scan error:', error)
+      toast.error('Impossible de lire le QR code')
+    } finally {
+      setIsDecodingQr(false)
+    }
+  }
+
   const uploadFile = async (file: File | Blob, path: string): Promise<string | null> => {
     try {
       const supabase = createClient()
@@ -151,7 +206,10 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
       return
     }
 
-    if (scannedCode.trim().toUpperCase() !== booking.qr_code?.trim().toUpperCase()) {
+    const isQrValid =
+      scannedCode.trim().toUpperCase() === booking.qr_code?.trim().toUpperCase()
+
+    if (!isQrValid) {
       toast.error('QR code invalide')
       return
     }
@@ -184,13 +242,11 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
       }
 
       // Upload signature
-      const signatureDataUrl = signatureRef.current.getSignatureDataURL()
-      if (!signatureDataUrl) {
+      const signatureBlob = await signatureRef.current.getSignatureBlob()
+      if (!signatureBlob) {
         toast.error('Signature invalide')
         return
       }
-
-      const signatureBlob = await fetch(signatureDataUrl).then((res) => res.blob())
       const signaturePath = `deposits/${booking_id}/signature_${Date.now()}.png`
       const signatureUrl = await uploadFile(signatureBlob, signaturePath)
 
@@ -235,6 +291,14 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
     return null
   }
 
+  const normalizedExpected = booking.qr_code?.trim().toUpperCase() || ''
+  const normalizedScanned = scannedCode.trim().toUpperCase()
+  const qrStatus = normalizedScanned
+    ? normalizedScanned === normalizedExpected
+      ? 'valid'
+      : 'invalid'
+    : 'idle'
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -251,16 +315,42 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="qr-code">Code QR *</Label>
-              <Input
-                id="qr-code"
-                placeholder="Scannez ou saisissez le code"
-                value={scannedCode}
-                onChange={(e) => setScannedCode(e.target.value)}
-                disabled={isSubmitting}
+              <div className="flex items-center gap-2">
+                <Input
+                  id="qr-code"
+                  placeholder="Scannez ou saisissez le code"
+                  value={scannedCode}
+                  onChange={(e) => setScannedCode(e.target.value)}
+                  disabled={isSubmitting}
+                  className="flex-1"
+                />
+                {qrStatus !== 'idle' && (
+                  <Badge variant={qrStatus === 'valid' ? 'default' : 'destructive'}>
+                    {qrStatus === 'valid' ? 'Valide' : 'Incorrect'}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                ref={qrFileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleQrImageScan}
+                className="hidden"
+                disabled={isSubmitting || isDecodingQr}
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Code attendu : {booking.qr_code}
-              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => qrFileInputRef.current?.click()}
+                disabled={isSubmitting || isDecodingQr}
+              >
+                <IconCamera className="mr-2 h-4 w-4" />
+                {isDecodingQr ? 'Analyse...' : 'Scanner avec l’appareil'}
+              </Button>
             </div>
           </CardContent>
         </Card>

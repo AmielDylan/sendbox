@@ -41,14 +41,14 @@ export function calculateBookingPrice(
   // Sous-total
   const subtotal = transportPrice + commission
 
-  // Assurance (si souscrite)
+  // Protection du colis (si activée)
   let insurancePremium: number | null = null
   let insuranceCoverage: number | null = null
 
   if (insuranceOpted) {
-    // Prime = 1.5% de la valeur + 2 EUR de base
+    // Prime = % de la valeur déclarée
     insurancePremium = safePackageValue * INSURANCE_RATE + INSURANCE_BASE_FEE
-    // Couverture : jusqu'à 500 EUR ou valeur déclarée si < 500
+    // Plafond : jusqu'à MAX_INSURANCE_COVERAGE ou valeur déclarée si < plafond
     insuranceCoverage = Math.min(safePackageValue, MAX_INSURANCE_COVERAGE)
   }
 
@@ -71,7 +71,6 @@ export function calculateBookingPrice(
 export function formatPrice(amount: number): string {
   return `${amount.toFixed(2)} €`
 }
-
 
 
 

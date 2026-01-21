@@ -5,13 +5,14 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthenticatedQuery, queryWithAbort } from '@/hooks/use-authenticated-query'
 import { QUERY_CONFIG } from '@/lib/shared/query/config'
 import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -23,11 +24,13 @@ import {
   IconCurrencyEuro,
   IconEye,
   IconAlertCircle,
+  IconTrash,
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { getCountryName } from '@/lib/utils/countries'
+import { DeleteBookingDialog } from '@/components/features/bookings/DeleteBookingDialog'
 
 type BookingStatus =
   | 'pending'
@@ -112,6 +115,53 @@ export default function MyBookingsPage() {
   )
 
   const bookings = data || []
+  const showCreateButton = bookings.length > 0
+
+  // Rafraîchir les bookings en temps réel (insert/update/delete)
+  useEffect(() => {
+    const supabase = createClient()
+    let isActive = true
+    let channel: any = null
+
+    const getChannelName = (userId: string) => {
+      const suffix =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2)
+      return `bookings:colis:${userId}:${suffix}`
+    }
+
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !isActive) return
+
+      const filter = `or=(sender_id.eq.${user.id},traveler_id.eq.${user.id})`
+      channel = supabase
+        .channel(getChannelName(user.id))
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter,
+          },
+          () => {
+            refetch()
+          }
+        )
+        .subscribe()
+    }
+
+    setupRealtimeSubscription()
+
+    return () => {
+      isActive = false
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [refetch])
 
   const getStatusBadge = (status: BookingStatus) => {
     const variants: Record<BookingStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -200,10 +250,43 @@ export default function MyBookingsPage() {
       <PageHeader
         title="Mes colis"
         description="Gérez vos réservations et suivez vos colis"
+        actions={
+          showCreateButton ? (
+            <Button asChild>
+              <Link href="/dashboard/colis/new">
+                <IconPlus className="mr-2 h-4 w-4" />
+                Créer une réservation
+              </Link>
+            </Button>
+          ) : undefined
+        }
       />
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BookingStatus | 'all')}>
-        <TabsList className="flex w-full flex-wrap justify-start gap-2 sm:inline-flex sm:w-auto sm:flex-nowrap">
+      {/* Dropdown sur mobile, Tabs sur tablet/desktop */}
+      <div className="md:hidden">
+        <div className="flex items-center gap-3">
+          <label htmlFor="booking-status-filter" className="text-sm font-medium whitespace-nowrap">
+            Statut:
+          </label>
+          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as BookingStatus | 'all')}>
+            <SelectTrigger id="booking-status-filter" className="w-full">
+              <SelectValue placeholder="Sélectionner un statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous</SelectItem>
+              <SelectItem value="pending">En attente</SelectItem>
+              <SelectItem value="accepted">Confirmés</SelectItem>
+              <SelectItem value="in_transit">En transit</SelectItem>
+              <SelectItem value="delivered">Livrés</SelectItem>
+              <SelectItem value="cancelled">Annulés</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Tabs sur tablet/desktop */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BookingStatus | 'all')} className="hidden md:block">
+        <TabsList className="flex w-full flex-wrap justify-start gap-2 md:inline-flex md:w-auto md:flex-nowrap">
           <TabsTrigger value="all">Tous</TabsTrigger>
           <TabsTrigger value="pending">En attente</TabsTrigger>
           <TabsTrigger value="accepted">Confirmés</TabsTrigger>
@@ -211,9 +294,10 @@ export default function MyBookingsPage() {
           <TabsTrigger value="delivered">Livrés</TabsTrigger>
           <TabsTrigger value="cancelled">Annulés</TabsTrigger>
         </TabsList>
+      </Tabs>
 
-        <TabsContent value={activeTab} className="space-y-4">
-          {bookings.length === 0 ? (
+      <div className="space-y-4 mt-6">
+        {bookings.length === 0 ? (
             <Card className="border-2 border-dashed">
               <CardContent className="pt-12 pb-12">
                 <div className="flex flex-col items-center gap-4 text-center">
@@ -319,7 +403,20 @@ export default function MyBookingsPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t flex justify-end">
+                      <div className="mt-4 pt-4 border-t flex justify-end gap-2">
+                        {booking.status === 'cancelled' && (
+                          <DeleteBookingDialog
+                            bookingId={booking.id}
+                            redirectAfterDelete={false}
+                            onDeleted={refetch}
+                            trigger={
+                              <Button variant="destructive" size="sm" className="w-full sm:w-auto">
+                                <IconTrash className="mr-2 h-4 w-4" />
+                                Supprimer
+                              </Button>
+                            }
+                          />
+                        )}
                         <Button variant="outline" size="sm" className="w-full sm:w-auto" asChild>
                           <Link href={`/dashboard/colis/${booking.id}`}>
                             <IconEye className="mr-2 h-4 w-4" />
@@ -333,8 +430,7 @@ export default function MyBookingsPage() {
               })}
             </div>
           )}
-        </TabsContent>
-      </Tabs>
+      </div>
     </div>
   )
 }

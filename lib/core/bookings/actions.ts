@@ -19,6 +19,7 @@ import {
 import { validateImageUpload } from "@/lib/shared/security/upload-validation"
 import { uploadRateLimit } from "@/lib/shared/security/rate-limit"
 import { isFeatureEnabled } from "@/lib/shared/config/features"
+import { notifyUser } from "@/lib/core/notifications/actions"
 import sharp from 'sharp'
 
 /**
@@ -298,19 +299,20 @@ export async function createBooking(formData: CreateBookingInput & {
         .eq('id', booking.id)
     }
 
-    // Créer notification pour le voyageur (ne pas bloquer si ça échoue)
+    // Créer notification et envoyer email au voyageur (ne pas bloquer si ça échoue)
     try {
-      await (supabase.rpc as any)('create_notification', {
-        p_user_id: announcement.traveler_id,
-        p_type: 'booking_request',
-        p_title: 'Nouvelle demande de réservation',
-        p_content: `Une nouvelle demande de réservation a été créée pour votre trajet ${announcement.departure_city} → ${announcement.arrival_city}`,
-        p_booking_id: booking.id,
-        p_announcement_id: announcement.id,
+      await notifyUser({
+        user_id: announcement.traveler_id,
+        type: 'booking_request',
+        title: 'Nouvelle demande de réservation',
+        content: `Une nouvelle demande de réservation a été créée pour votre trajet ${announcement.departure_city} → ${announcement.arrival_city}`,
+        booking_id: booking.id,
+        announcement_id: announcement.id,
+        sendEmail: true,
       })
     } catch (notifError) {
-      console.error('Notification creation failed (non-blocking):', notifError)
-      // Ne pas bloquer la création de la réservation si la notification échoue
+      console.error('Notification/Email failed (non-blocking):', notifError)
+      // Ne pas bloquer la création de la réservation si la notification ou l'email échoue
     }
 
     revalidatePath('/dashboard/colis')

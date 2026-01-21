@@ -50,10 +50,6 @@ export function ParticipantCard({
         <h3 className="font-semibold">
           {role === 'sender' ? 'Expéditeur' : 'Voyageur'}
         </h3>
-        <Badge variant="outline">
-          <IconUser className="mr-1 h-3 w-3" />
-          {role === 'sender' ? 'Envoi' : 'Transport'}
-        </Badge>
       </div>
 
       <div className="flex items-center gap-3">

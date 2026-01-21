@@ -36,8 +36,9 @@ function checkEmailRateLimit(userId: string): boolean {
 interface SendEmailParams {
   to: string
   subject: string
-  template: 'notification' | 'booking_confirmed' | 'payment_received' | 'payment_receipt' | 'delivery_reminder'
+  template: 'notification' | 'booking_request' | 'booking_confirmed' | 'payment_received' | 'payment_receipt' | 'delivery_reminder'
   data: Record<string, any>
+  useResendTemplate?: boolean // Si true, utilise un template Resend au lieu de HTML embarqué
 }
 
 /**
@@ -62,14 +63,31 @@ export async function sendEmail(params: SendEmailParams) {
       }
     }
 
-    const html = getEmailTemplate(params.template, params.data)
-
-    const { data, error } = await resend.emails.send({
+    // Choisir entre template Resend ou HTML embarqué
+    let emailPayload: any = {
       from: FROM_EMAIL,
       to: params.to,
-      subject: params.subject,
-      html,
-    })
+    }
+
+    if (params.useResendTemplate) {
+      const templateId = getResendTemplateId(params.template)
+
+      if (isResendTemplateId(templateId)) {
+        emailPayload.template = {
+          id: templateId,
+          variables: params.data,
+        }
+      } else {
+        emailPayload.subject = params.subject
+        emailPayload.html = getEmailTemplate(params.template, params.data)
+      }
+    } else {
+      // Utiliser HTML embarqué (par défaut)
+      emailPayload.subject = params.subject
+      emailPayload.html = getEmailTemplate(params.template, params.data)
+    }
+
+    const { data, error } = await resend.emails.send(emailPayload)
 
     if (error) {
       console.error('Error sending email:', error)
@@ -93,17 +111,112 @@ export async function sendEmail(params: SendEmailParams) {
 }
 
 /**
+ * Retourne l'ID du template Resend selon le type
+ * Les templates doivent être créés dans le Resend Dashboard
+ */
+function getResendTemplateId(template: string): string {
+  const templateIds: Record<string, string> = {
+    booking_request: '8ab5906a-6465-4e58-8f32-038abcfb51ae',
+    notification: 'notification',
+    booking_confirmed: 'booking_confirmed',
+    payment_received: 'payment_received',
+    payment_receipt: 'payment_receipt',
+    delivery_reminder: 'delivery_reminder',
+  }
+
+  return templateIds[template] || template
+}
+
+function isResendTemplateId(value: string): boolean {
+  return /^[0-9a-f-]{36}$/i.test(value)
+}
+
+/**
  * Génère le template HTML pour un email
  */
 function getEmailTemplate(template: string, data: Record<string, any>): string {
   const baseStyles = `
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-      .header { background: #2563eb; color: white; padding: 20px; text-align: center; }
-      .content { padding: 20px; background: #f9fafb; }
-      .footer { padding: 20px; text-align: center; color: #6b7280; font-size: 12px; }
-      .button { display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; margin-top: 20px; }
+      body {
+        font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #1F2937;
+        background-color: #F9FAFB;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      }
+      .header {
+        background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+        color: white;
+        padding: 40px 32px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .content {
+        padding: 40px 32px;
+        background: #ffffff;
+      }
+      .content h2 {
+        color: #1a1a1a;
+        font-size: 22px;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 20px;
+        letter-spacing: -0.01em;
+      }
+      .content p {
+        color: #4a5568;
+        margin: 14px 0;
+        font-size: 16px;
+        line-height: 1.6;
+      }
+      .footer {
+        padding: 32px;
+        text-align: center;
+        color: #718096;
+        font-size: 14px;
+        background: #f7fafc;
+        border-top: 1px solid #e2e8f0;
+      }
+      .footer p {
+        margin: 8px 0;
+      }
+      .footer strong {
+        color: #4a5568;
+        font-weight: 600;
+      }
+      .button {
+        display: inline-block;
+        padding: 16px 40px;
+        background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+        color: white !important;
+        text-decoration: none;
+        border-radius: 8px;
+        margin-top: 24px;
+        font-weight: 600;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+      }
+      .button:hover {
+        box-shadow: 0 6px 16px rgba(13, 148, 136, 0.4);
+      }
     </style>
   `
 
@@ -129,6 +242,47 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
               <div class="footer">
                 <p>Sendbox - Covoiturage France ↔ Bénin</p>
                 <p>Vous recevez cet email car vous avez une notification sur Sendbox.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `
+
+    case 'booking_request':
+      return `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            ${baseStyles}
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Nouvelle Demande de Réservation</h1>
+              </div>
+              <div class="content">
+                <h2>Vous avez reçu une nouvelle demande</h2>
+                <p>Bonjour,</p>
+                <p>Un expéditeur souhaite réserver <strong>${data.KILOS_REQUESTED || data.kilos_requested} kg</strong> sur votre trajet.</p>
+
+                <div style="margin: 28px 0; padding: 24px; background: #f0fdfa; border-radius: 8px; border-left: 4px solid #14b8a6;">
+                  <h3 style="margin-top: 0; margin-bottom: 16px; color: #1a1a1a; font-size: 18px; font-weight: 600; letter-spacing: -0.01em;">Détails du trajet</h3>
+                  <p style="margin: 10px 0; color: #4a5568; font-size: 16px;"><strong style="color: #1a1a1a; font-weight: 600;">Itinéraire:</strong> ${data.DEPARTURE_CITY || data.departure_city} → ${data.ARRIVAL_CITY || data.arrival_city}</p>
+                  <p style="margin: 10px 0; color: #4a5568; font-size: 16px;"><strong style="color: #1a1a1a; font-weight: 600;">Poids demandé:</strong> ${data.KILOS_REQUESTED || data.kilos_requested} kg</p>
+                  <p style="margin: 10px 0; color: #4a5568; font-size: 16px;"><strong style="color: #1a1a1a; font-weight: 600;">Description:</strong> ${data.PACKAGE_DESCRIPTION || data.package_description || 'Non spécifiée'}</p>
+                  <p style="margin: 10px 0; color: #4a5568; font-size: 16px;"><strong style="color: #1a1a1a; font-weight: 600;">Prix estimé:</strong> ${data.TOTAL_PRICE || data.total_price || '0.00'}€</p>
+                </div>
+
+                <div style="background: #f0fdfa; border: 1px solid #99f6e4; padding: 18px; border-radius: 8px; margin: 28px 0;">
+                  <p style="margin: 0; color: #0d9488; font-weight: 500; font-size: 16px;"><strong>Action requise:</strong> Acceptez ou refusez cette demande dans les 48h.</p>
+                </div>
+
+                <a href="${data.APP_URL || process.env.NEXT_PUBLIC_APP_URL}/dashboard/messages?booking=${data.BOOKING_ID || data.booking_id}" class="button">Voir la demande</a>
+              </div>
+              <div class="footer">
+                <p><strong>Sendbox</strong> - Covoiturage de colis France ↔ Bénin</p>
+                <p>Vous recevez cet email car quelqu'un a créé une réservation sur votre trajet.</p>
               </div>
             </div>
           </body>
@@ -235,8 +389,6 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
       `
   }
 }
-
-
 
 
 

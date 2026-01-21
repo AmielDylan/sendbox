@@ -5,6 +5,7 @@
 'use server'
 
 import { createClient } from "@/lib/shared/db/server"
+import { createAdminClient } from "@/lib/shared/db/admin"
 import { pdf } from '@react-pdf/renderer'
 import { TransportContract } from '@/lib/shared/services/pdf/transport-contract'
 import { DepositProof } from '@/lib/shared/services/pdf/deposit-proof'
@@ -12,15 +13,31 @@ import { DeliveryProof } from '@/lib/shared/services/pdf/delivery-proof'
 import QRCode from 'qrcode'
 import React from 'react'
 
+const getAdminClient = () => {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return null
+  }
+
+  try {
+    return createAdminClient()
+  } catch (error) {
+    console.warn('Admin storage client unavailable:', error)
+    return null
+  }
+}
+
 /**
  * Génère le contrat de transport PDF
  */
 export async function generateTransportContract(bookingId: string) {
   const supabase = await createClient()
+  const adminClient = getAdminClient()
+  const dataClient = adminClient ?? supabase
+  const storageClient = adminClient ?? supabase
 
   try {
     // Récupérer les données du booking
-    const { data: booking, error: bookingError } = await supabase
+    const { data: booking, error: bookingError } = await dataClient
       .from('bookings')
       .select(
         `
@@ -88,7 +105,7 @@ export async function generateTransportContract(bookingId: string) {
     const fileName = `contract-${booking.qr_code}.pdf`
     const filePath = `${bookingId}/${fileName}`
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await storageClient.storage
       .from('contracts')
       .upload(filePath, blob, {
         contentType: 'application/pdf',
@@ -103,7 +120,7 @@ export async function generateTransportContract(bookingId: string) {
     }
 
     // Générer URL signée (expire 7 jours)
-    const { data: urlData, error: urlError } = await supabase.storage
+    const { data: urlData, error: urlError } = await storageClient.storage
       .from('contracts')
       .createSignedUrl(filePath, 604800) // 7 jours
 
@@ -132,10 +149,13 @@ export async function generateTransportContract(bookingId: string) {
  */
 export async function generateDepositProof(bookingId: string) {
   const supabase = await createClient()
+  const adminClient = getAdminClient()
+  const dataClient = adminClient ?? supabase
+  const storageClient = adminClient ?? supabase
 
   try {
     // Récupérer les données du booking
-    const { data: booking, error: bookingError } = await supabase
+    const { data: booking, error: bookingError } = await dataClient
       .from('bookings')
       .select(
         `
@@ -192,7 +212,7 @@ export async function generateDepositProof(bookingId: string) {
     const fileName = `deposit-proof-${booking.qr_code}.pdf`
     const filePath = `${bookingId}/${fileName}`
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await storageClient.storage
       .from('contracts')
       .upload(filePath, blob, {
         contentType: 'application/pdf',
@@ -207,7 +227,7 @@ export async function generateDepositProof(bookingId: string) {
     }
 
     // Générer URL signée (expire 7 jours)
-    const { data: urlData, error: urlError } = await supabase.storage
+    const { data: urlData, error: urlError } = await storageClient.storage
       .from('contracts')
       .createSignedUrl(filePath, 604800)
 
@@ -235,10 +255,13 @@ export async function generateDepositProof(bookingId: string) {
  */
 export async function generateDeliveryProof(bookingId: string) {
   const supabase = await createClient()
+  const adminClient = getAdminClient()
+  const dataClient = adminClient ?? supabase
+  const storageClient = adminClient ?? supabase
 
   try {
     // Récupérer les données du booking
-    const { data: booking, error: bookingError } = await supabase
+    const { data: booking, error: bookingError } = await dataClient
       .from('bookings')
       .select(
         `
@@ -296,7 +319,7 @@ export async function generateDeliveryProof(bookingId: string) {
     const fileName = `delivery-proof-${booking.qr_code}.pdf`
     const filePath = `${bookingId}/${fileName}`
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await storageClient.storage
       .from('contracts')
       .upload(filePath, blob, {
         contentType: 'application/pdf',
@@ -311,7 +334,7 @@ export async function generateDeliveryProof(bookingId: string) {
     }
 
     // Générer URL signée (expire 7 jours)
-    const { data: urlData, error: urlError } = await supabase.storage
+    const { data: urlData, error: urlError } = await storageClient.storage
       .from('contracts')
       .createSignedUrl(filePath, 604800)
 
@@ -339,6 +362,8 @@ export async function generateDeliveryProof(bookingId: string) {
  */
 export async function getContractUrl(bookingId: string, type: 'contract' | 'deposit' | 'delivery' = 'contract') {
   const supabase = await createClient()
+  const adminClient = getAdminClient()
+  const storageClient = adminClient ?? supabase
 
   const {
     data: { user },
@@ -382,7 +407,7 @@ export async function getContractUrl(bookingId: string, type: 'contract' | 'depo
   const filePath = `${bookingId}/${fileName}`
 
   // Générer URL signée
-  const { data: urlData, error } = await supabase.storage
+  const { data: urlData, error } = await storageClient.storage
     .from('contracts')
     .createSignedUrl(filePath, 604800)
 
@@ -396,4 +421,3 @@ export async function getContractUrl(bookingId: string, type: 'contract' | 'depo
     url: urlData.signedUrl,
   }
 }
-

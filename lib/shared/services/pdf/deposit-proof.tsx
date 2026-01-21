@@ -24,11 +24,11 @@ interface DepositProofProps {
     sender: {
       firstname: string | null
       lastname: string | null
-    }
+    } | null
     traveler: {
       firstname: string | null
       lastname: string | null
-    }
+    } | null
     announcement: {
       departure_city: string
       departure_country: string
@@ -50,6 +50,17 @@ export function DepositProof({ booking }: DepositProofProps) {
     })
   }
 
+  const getDisplayName = (
+    person: { firstname: string | null; lastname: string | null } | null,
+    fallback: string
+  ) => {
+    const name = `${person?.firstname ?? ''} ${person?.lastname ?? ''}`.trim()
+    return name || fallback
+  }
+
+  const senderName = getDisplayName(booking.sender, 'Expéditeur')
+  const travelerName = getDisplayName(booking.traveler, 'Voyageur')
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -66,10 +77,10 @@ export function DepositProof({ booking }: DepositProofProps) {
             Date et heure du dépôt : {formatDateTime(booking.deposited_at)}
           </Text>
           <Text style={styles.text}>
-            Expéditeur : {booking.sender.firstname} {booking.sender.lastname}
+            Expéditeur : {senderName}
           </Text>
           <Text style={styles.text}>
-            Voyageur : {booking.traveler.firstname} {booking.traveler.lastname}
+            Voyageur : {travelerName}
           </Text>
           <Text style={styles.text}>
             Trajet : {booking.announcement.departure_city} →{' '}
@@ -204,7 +215,6 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
 
 
 

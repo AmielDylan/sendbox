@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from "@/lib/shared/db/client"
 import type { RealtimeChannel } from '@supabase/supabase-js'
+import { markMessagesAsRead } from '@/lib/core/messages/actions'
 
 export interface Message {
   id: string
@@ -114,6 +115,15 @@ export function useMessages(bookingId: string | null) {
     }
 
     const supabase = createClient()
+    let isActive = true
+
+    const getChannelName = (id: string) => {
+      const suffix =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2)
+      return `messages:${id}:realtime:${suffix}`
+    }
 
     // Charger les messages existants
     const loadMessages = async () => {
@@ -148,12 +158,18 @@ export function useMessages(bookingId: string | null) {
           return
         }
 
-        setMessages((data as unknown as Message[]) || [])
+        if (isActive) {
+          setMessages((data as unknown as Message[]) || [])
+        }
       } catch (err) {
         console.error('Error loading messages:', err)
-        setError('Une erreur est survenue')
+        if (isActive) {
+          setError('Une erreur est survenue')
+        }
       } finally {
-        setIsLoading(false)
+        if (isActive) {
+          setIsLoading(false)
+        }
       }
     }
 
@@ -169,7 +185,7 @@ export function useMessages(bookingId: string | null) {
     // Utilise postgres_changes pour les messages (garantie de livraison)
     // et broadcast pour les événements temporaires (sera utilisé par use-presence)
     const channel = supabase
-      .channel(`messages:${bookingId}`, {
+      .channel(getChannelName(bookingId), {
         config: {
           broadcast: {
             self: false, // Ne pas recevoir nos propres broadcasts
@@ -185,7 +201,7 @@ export function useMessages(bookingId: string | null) {
           table: 'messages',
           filter: `booking_id=eq.${bookingId}`,
         },
-        (payload) => {
+        async (payload) => {
           const newMessageData = payload.new as any
 
           setMessages((prev) => {
@@ -293,6 +309,12 @@ export function useMessages(bookingId: string | null) {
             }, 100)
             return [...prev, newMessageData as Message]
           })
+
+          // Marquer automatiquement comme lu si on reçoit un message dans cette conversation
+          // (car la conversation est ouverte)
+          if (newMessageData.id && bookingId) {
+            await markMessagesAsRead(bookingId)
+          }
         }
       )
       .on(
@@ -318,6 +340,7 @@ export function useMessages(bookingId: string | null) {
     channelRef.current = channel
 
     return () => {
+      isActive = false
       // Cleanup proper avec removeChannel (recommandé par Supabase)
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)

@@ -4,7 +4,7 @@
 
 'use client'
 
-import { use, useEffect, useState } from 'react'
+import { use, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from "@/lib/shared/db/client"
@@ -42,6 +42,7 @@ import {
 import type { PublicProfile } from "@/lib/shared/db/queries/public-profiles"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { arePaymentsEnabled } from '@/lib/shared/config/features'
 
 type BookingStatus = 'pending' | 'accepted' | 'paid' | 'deposited' | 'in_transit' | 'delivered' | 'cancelled'
 
@@ -50,6 +51,7 @@ interface BookingDetail {
   status: BookingStatus
   kilos_requested: number
   total_price: number | null
+  price_per_kg: number | null
   package_description: string | null
   tracking_number: string | null
   package_photos: string[] | null
@@ -83,23 +85,70 @@ interface BookingDetailPageProps {
 export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   const { id } = use(params)
   const router = useRouter()
+  const paymentsEnabled = arePaymentsEnabled()
   const [booking, setBooking] = useState<BookingDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [isAccepting, setIsAccepting] = useState(false)
   const [isCheckingPayment, setIsCheckingPayment] = useState(false)
+  const paymentConfirmedRef = useRef(false)
 
   useEffect(() => {
     loadBookingDetails()
   }, [id])
 
   useEffect(() => {
+    if (!paymentsEnabled) {
+      return
+    }
+
     const searchParams = new URLSearchParams(window.location.search)
     if (searchParams.get('payment') === 'success' && !isCheckingPayment) {
-      handlePaymentSuccess()
+      void handlePaymentSuccess()
     }
-  }, [id, isCheckingPayment])
+  }, [id, isCheckingPayment, paymentsEnabled])
+
+  useEffect(() => {
+    if (!id) {
+      return
+    }
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`booking-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings',
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+          const updated = payload.new as BookingDetail
+
+          setBooking((prev) => {
+            if (!prev) {
+              return prev
+            }
+            return { ...prev, ...updated }
+          })
+
+          if (paymentsEnabled && (updated.status === 'paid' || updated.paid_at) && !paymentConfirmedRef.current) {
+            paymentConfirmedRef.current = true
+            setIsCheckingPayment(false)
+            toast.success('Paiement confirmé ! Vous pouvez maintenant accéder au contrat et au QR code.')
+            window.history.replaceState({}, '', `/dashboard/colis/${id}`)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id])
 
   const loadBookingDetails = async () => {
     try {
@@ -189,12 +238,16 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   }
 
   const handlePaymentSuccess = async () => {
+    if (!paymentsEnabled) {
+      return
+    }
+
     setIsCheckingPayment(true)
     toast.info('Vérification du paiement en cours...')
 
     let attempts = 0
-    const maxAttempts = 5
-    const pollInterval = 2000 // 2 secondes
+    const maxAttempts = 20
+    const pollInterval = 3000 // 3 secondes
 
     const checkPayment = async (): Promise<void> => {
       attempts++
@@ -211,7 +264,10 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
         if (data.status === 'paid' || data.paid_at) {
           // Paiement confirmé
-          toast.success('Paiement confirmé ! Vous pouvez maintenant accéder au contrat et au QR code.')
+          if (!paymentConfirmedRef.current) {
+            paymentConfirmedRef.current = true
+            toast.success('Paiement confirmé ! Vous pouvez maintenant accéder au contrat et au QR code.')
+          }
           setIsCheckingPayment(false)
 
           // Nettoyer l'URL
@@ -226,9 +282,9 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
           // Continuer le polling
           setTimeout(() => checkPayment(), pollInterval)
         } else {
-          // Timeout atteint
-          toast.warning(
-            'Le paiement est en cours de traitement. Veuillez actualiser la page dans quelques instants.',
+          // Timeout atteint, on laisse la page se mettre à jour via le realtime
+          toast.info(
+            'Le paiement est en cours de confirmation. La page se mettra à jour automatiquement.',
             { duration: 5000 }
           )
           setIsCheckingPayment(false)
@@ -246,13 +302,10 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     await checkPayment()
   }
 
-  if (isLoading || isCheckingPayment) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center flex-col gap-4">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
-        {isCheckingPayment && (
-          <p className="text-sm text-muted-foreground">Vérification du paiement en cours...</p>
-        )}
       </div>
     )
   }
@@ -295,6 +348,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
   const isSender = booking.sender_id === currentUserId
   const isTraveler = booking.traveler_id === currentUserId
+  const fallbackTotalPrice = booking.total_price ?? booking.kilos_requested * (booking.price_per_kg || 0)
 
   const handleAcceptBooking = async () => {
     setIsAccepting(true)
@@ -331,6 +385,24 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         }
       />
 
+      {paymentsEnabled && isCheckingPayment && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="pt-4">
+            <div className="flex items-start gap-3">
+              <IconLoader2 className="h-5 w-5 animate-spin text-primary mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">
+                  Paiement en cours de confirmation
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  La page se mettra à jour automatiquement dès validation.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-start">
         <div className="space-y-6">
           <Card>
@@ -360,12 +432,14 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                 <div className="rounded border border-border/60 bg-muted/30 p-3">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <IconCurrencyEuro className="h-4 w-4" />
-                    <span>Prix total</span>
-                  </div>
-                  <p className="mt-1 font-semibold">
-                    {booking.total_price ? `${booking.total_price}€` : 'Non calculé'}
-                  </p>
+                  <span>Prix total</span>
                 </div>
+                <p className="mt-1 font-semibold">
+                    {fallbackTotalPrice > 0
+                      ? `${fallbackTotalPrice.toFixed(2)}€`
+                      : 'Non calculé'}
+                </p>
+              </div>
 
                 <div className="rounded border border-border/60 bg-muted/30 p-3">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -381,7 +455,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                   <div className="rounded border border-border/60 bg-muted/30 p-3">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <IconShield className="h-4 w-4" />
-                      <span>Assurance</span>
+                      <span>Protection du colis</span>
                     </div>
                     <p className="mt-1 font-semibold">
                       Souscrite ({booking.package_value}€)
@@ -469,13 +543,18 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                 {/* Actions Expéditeur */}
                 {isSender && booking.status === 'accepted' && (
                   <>
-                    <Button asChild className="w-full">
-                      <Link href={`/dashboard/colis/${booking.id}/paiement`}>
-                        <IconCreditCard className="mr-2 h-4 w-4" />
-                        Payer maintenant
-                      </Link>
-                    </Button>
-                    <CancelBookingDialog bookingId={booking.id} />
+                    {paymentsEnabled && (
+                      <Button asChild className="w-full">
+                        <Link href={`/dashboard/colis/${booking.id}/paiement`}>
+                          <IconCreditCard className="mr-2 h-4 w-4" />
+                          Payer maintenant
+                        </Link>
+                      </Button>
+                    )}
+                    <CancelBookingDialog
+                      bookingId={booking.id}
+                      description="La réservation est acceptée mais pas encore payée. Vous pouvez l'annuler en indiquant une raison."
+                    />
                   </>
                 )}
 
@@ -529,6 +608,13 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                   </>
                 )}
 
+                {isTraveler && booking.status === 'accepted' && (
+                  <CancelBookingDialog
+                    bookingId={booking.id}
+                    description="La réservation est acceptée mais pas encore payée. Vous pouvez l'annuler en indiquant une raison."
+                  />
+                )}
+
                 {isTraveler && (booking.status === 'paid' || booking.status === 'deposited') && (
                   <>
                     <Button variant="outline" asChild className="w-full">
@@ -544,6 +630,15 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                       </Link>
                     </Button>
                   </>
+                )}
+
+                {isTraveler && booking.status === 'paid' && (
+                  <CancelBookingDialog
+                    bookingId={booking.id}
+                    description="Cette réservation est payée. L'annulation entraînera un malus de réputation."
+                    penaltyNotice="Un malus sera appliqué à votre réputation."
+                    confirmLabel="Annuler la réservation (malus)"
+                  />
                 )}
 
                 {isTraveler && booking.status === 'in_transit' && (

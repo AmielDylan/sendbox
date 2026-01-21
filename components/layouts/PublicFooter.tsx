@@ -136,7 +136,7 @@ export function PublicFooter() {
             © {currentYear} Sendbox. Tous droits réservés.
           </p>
 
-          {/* Social links - icônes sans liens pour V1 */}
+          {/* Social links - icônes sans liens pour l'instant */}
           <div className="flex items-center gap-4">
             <div className="p-2 rounded-full hover:bg-muted transition-colors cursor-not-allowed opacity-50">
               <IconBrandFacebook className="h-5 w-5 text-muted-foreground" />

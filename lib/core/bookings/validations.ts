@@ -30,7 +30,6 @@ export type CreateBookingInput = z.infer<typeof createBookingSchema>
 
 // Constantes pour les calculs
 export const COMMISSION_RATE = 0.12 // 12%
-export const INSURANCE_RATE = 0.015 // 1.5%
-export const INSURANCE_BASE_FEE = 2 // 2 EUR
-export const MAX_INSURANCE_COVERAGE = 500 // EUR
-
+export const INSURANCE_RATE = 0.03 // 3% (protection du colis)
+export const INSURANCE_BASE_FEE = 0 // EUR
+export const MAX_INSURANCE_COVERAGE = 500 // EUR (plafond)

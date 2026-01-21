@@ -16,6 +16,7 @@ interface SignatureCanvasProps {
 
 export interface SignatureCanvasRef {
   getSignatureDataURL: () => string | null
+  getSignatureBlob: () => Promise<Blob | null>
   clear: () => void
   isEmpty: () => boolean
 }
@@ -24,12 +25,43 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
   ({ onSignatureChange }, ref) => {
     const signaturePad = useRef<SignatureCanvasLib>(null)
 
+    const dataUrlToBlob = (dataUrl: string) => {
+      const [meta, base64] = dataUrl.split(',')
+      if (!meta || !base64) return null
+      const match = /data:(.*);base64/.exec(meta)
+      const mime = match?.[1] || 'image/png'
+      const binary = atob(base64)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i += 1) {
+        bytes[i] = binary.charCodeAt(i)
+      }
+      return new Blob([bytes], { type: mime })
+    }
+
     useImperativeHandle(ref, () => ({
       getSignatureDataURL: () => {
         if (!signaturePad.current || signaturePad.current.isEmpty()) {
           return null
         }
         return signaturePad.current.toDataURL('image/png')
+      },
+      getSignatureBlob: () => {
+        if (!signaturePad.current || signaturePad.current.isEmpty()) {
+          return Promise.resolve(null)
+        }
+        const canvas = signaturePad.current.getTrimmedCanvas()
+        return new Promise((resolve) => {
+          if (!canvas.toBlob) {
+            return resolve(dataUrlToBlob(canvas.toDataURL('image/png')))
+          }
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(blob)
+              return
+            }
+            resolve(dataUrlToBlob(canvas.toDataURL('image/png')))
+          }, 'image/png')
+        })
       },
       clear: () => {
         signaturePad.current?.clear()
@@ -84,7 +116,6 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
 )
 
 SignatureCanvas.displayName = 'SignatureCanvas'
-
 
 
 

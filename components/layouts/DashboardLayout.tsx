@@ -22,6 +22,7 @@ import {
   IconAlertCircle,
   IconLogout,
   IconUser,
+  IconSearch,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from "@/lib/utils"
@@ -216,6 +217,12 @@ function SidebarContent({
 function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm" asChild>
+        <Link href="/recherche">
+          <IconSearch className="mr-2 h-4 w-4" />
+          Recherche
+        </Link>
+      </Button>
       <ClientOnly>
         <ThemeToggle />
       </ClientOnly>
