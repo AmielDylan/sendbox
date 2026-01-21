@@ -33,25 +33,15 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [booking, setBooking] = useState<any>(null)
-  const [scannedCode, setScannedCode] = useState('')
-  const [isDecodingQr, setIsDecodingQr] = useState(false)
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string>('')
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const qrFileInputRef = useRef<HTMLInputElement | null>(null)
   const signatureRef = useRef<SignatureCanvasRef>(null)
 
   useEffect(() => {
     loadBooking()
     getCurrentLocation()
   }, [booking_id])
-
-  useEffect(() => {
-    const codeFromQuery = searchParams.get('code')
-    if (codeFromQuery) {
-      setScannedCode(codeFromQuery)
-    }
-  }, [searchParams])
 
   const loadBooking = async () => {
     try {
@@ -130,50 +120,6 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
     }
   }
 
-  const updateScannedCode = (code: string) => {
-    const trimmed = code.trim()
-    setScannedCode(trimmed)
-    if (trimmed) {
-      const params = new URLSearchParams(window.location.search)
-      params.set('code', trimmed)
-      router.replace(`/dashboard/scan/livraison/${booking_id}?${params.toString()}`)
-    }
-  }
-
-  const handleQrImageScan = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-
-    if (!file) {
-      return
-    }
-
-    if (!('BarcodeDetector' in window)) {
-      toast.error('Scanner QR non supporté sur cet appareil')
-      return
-    }
-
-    setIsDecodingQr(true)
-
-    try {
-      const bitmap = await createImageBitmap(file)
-      const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] })
-      const codes = await detector.detect(bitmap)
-
-      if (!codes.length) {
-        toast.error('QR code non détecté')
-        return
-      }
-
-      updateScannedCode(codes[0].rawValue || '')
-    } catch (error) {
-      console.error('QR scan error:', error)
-      toast.error('Impossible de lire le QR code')
-    } finally {
-      setIsDecodingQr(false)
-    }
-  }
-
   const uploadFile = async (file: File | Blob, path: string): Promise<string | null> => {
     try {
       const supabase = createClient()
@@ -201,19 +147,6 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   }
 
   const handleSubmit = async () => {
-    if (!scannedCode) {
-      toast.error('Veuillez scanner ou saisir le QR code')
-      return
-    }
-
-    const isQrValid =
-      scannedCode.trim().toUpperCase() === booking.qr_code?.trim().toUpperCase()
-
-    if (!isQrValid) {
-      toast.error('QR code invalide')
-      return
-    }
-
     if (!photo) {
       toast.error('Veuillez prendre une photo de la livraison')
       return
@@ -258,7 +191,6 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
       // Marquer comme livré
       const result = await markAsDelivered(
         booking_id,
-        scannedCode,
         photoUrl,
         signatureUrl,
         location
@@ -291,74 +223,18 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
     return null
   }
 
-  const normalizedExpected = booking.qr_code?.trim().toUpperCase() || ''
-  const normalizedScanned = scannedCode.trim().toUpperCase()
-  const qrStatus = normalizedScanned
-    ? normalizedScanned === normalizedExpected
-      ? 'valid'
-      : 'invalid'
-    : 'idle'
-
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Scan QR Livraison"
-        description="Scanner le QR code et prendre les preuves de livraison"
+        title="Confirmation de Livraison"
+        description="Prendre les preuves de livraison (photo + signature)"
       />
 
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* QR Code */}
-        <Card>
-          <CardHeader>
-            <CardTitle>1. Scanner le QR Code</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="qr-code">Code QR *</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="qr-code"
-                  placeholder="Scannez ou saisissez le code"
-                  value={scannedCode}
-                  onChange={(e) => setScannedCode(e.target.value)}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                />
-                {qrStatus !== 'idle' && (
-                  <Badge variant={qrStatus === 'valid' ? 'default' : 'destructive'}>
-                    {qrStatus === 'valid' ? 'Valide' : 'Incorrect'}
-                  </Badge>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                ref={qrFileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleQrImageScan}
-                className="hidden"
-                disabled={isSubmitting || isDecodingQr}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => qrFileInputRef.current?.click()}
-                disabled={isSubmitting || isDecodingQr}
-              >
-                <IconCamera className="mr-2 h-4 w-4" />
-                {isDecodingQr ? 'Analyse...' : 'Scanner avec l’appareil'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Photo */}
         <Card>
           <CardHeader>
-            <CardTitle>2. Photo de la Livraison</CardTitle>
+            <CardTitle>1. Photo de la Livraison</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -387,7 +263,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
         {/* Signature */}
         <Card>
           <CardHeader>
-            <CardTitle>3. Signature du Destinataire</CardTitle>
+            <CardTitle>2. Signature du Destinataire</CardTitle>
           </CardHeader>
           <CardContent>
             <SignatureCanvas ref={signatureRef} />
@@ -397,7 +273,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
         {/* Géolocalisation */}
         <Card>
           <CardHeader>
-            <CardTitle>4. Géolocalisation</CardTitle>
+            <CardTitle>3. Géolocalisation</CardTitle>
           </CardHeader>
           <CardContent>
             {location ? (

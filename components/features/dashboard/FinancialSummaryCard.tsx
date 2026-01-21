@@ -1,0 +1,161 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/shared/db/client'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { IconTrendingUp, IconChevronDown, IconChevronUp, IconLoader2 } from '@tabler/icons-react'
+import {
+  calculateTravelerFinancials,
+  calculateRequesterFinancials,
+  type TravelerFinancials,
+  type RequesterFinancials,
+} from '@/lib/core/bookings/financial-calculations'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import type { Database } from '@/types/database.types'
+
+type Booking = Database['public']['Tables']['bookings']['Row']
+
+interface Props {
+  userId: string
+  role: 'traveler' | 'requester'
+}
+
+export function FinancialSummaryCard({ userId, role }: Props) {
+  const [financials, setFinancials] = useState<TravelerFinancials | RequesterFinancials | null>(
+    null
+  )
+  const [isLoading, setIsLoading] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    loadFinancials()
+  }, [userId, role])
+
+  async function loadFinancials() {
+    const supabase = createClient()
+
+    const query =
+      role === 'traveler'
+        ? supabase.from('bookings').select('*').eq('traveler_id', userId)
+        : supabase.from('bookings').select('*').eq('sender_id', userId)
+
+    const { data, error } = await query
+
+    if (!error && data) {
+      const calculated =
+        role === 'traveler'
+          ? calculateTravelerFinancials(data as Booking[])
+          : calculateRequesterFinancials(data as Booking[])
+
+      setFinancials(calculated)
+    }
+
+    setIsLoading(false)
+  }
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center h-48">
+          <IconLoader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!financials || financials.bookings.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">
+            {role === 'traveler' ? 'À recevoir' : 'Montants bloqués'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Aucun colis pour le moment</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const isTravelerFinancials = (f: any): f is TravelerFinancials => role === 'traveler'
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <IconTrendingUp className="h-5 w-5" />
+          {role === 'traveler' ? 'À recevoir' : 'Montants bloqués'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <p className="text-3xl font-bold">
+              {(isTravelerFinancials(financials)
+                ? financials.totalToReceive
+                : financials.totalBlocked
+              ).toFixed(2)}{' '}
+              €
+            </p>
+            {isTravelerFinancials(financials) && financials.pendingAmount > 0 && (
+              <p className="text-sm text-muted-foreground mt-1">
+                dont {financials.pendingAmount.toFixed(2)} € en transit
+              </p>
+            )}
+            {!isTravelerFinancials(financials) && (
+              <p className="text-sm text-muted-foreground mt-1">
+                {financials.bookings.length} colis en attente
+              </p>
+            )}
+          </div>
+
+          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
+              Voir le détail ({financials.bookings.length})
+              {isOpen ? (
+                <IconChevronUp className="h-4 w-4" />
+              ) : (
+                <IconChevronDown className="h-4 w-4" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-4 space-y-3">
+              {financials.bookings.map((booking) => (
+                <div key={booking.bookingId} className="rounded border p-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">
+                      {booking.trackingNumber || `#${booking.bookingId.slice(0, 8)}`}
+                    </span>
+                    <span className="text-sm font-bold">{booking.totalPrice.toFixed(2)} €</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <div className="flex justify-between">
+                      <span>Transport</span>
+                      <span>{booking.transportPrice.toFixed(2)} €</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Commission</span>
+                      <span>-{booking.commission.toFixed(2)} €</span>
+                    </div>
+                    {booking.insurance > 0 && (
+                      <div className="flex justify-between">
+                        <span>Assurance</span>
+                        <span>{booking.insurance.toFixed(2)} €</span>
+                      </div>
+                    )}
+                    {role === 'traveler' && (
+                      <div className="flex justify-between font-medium text-foreground pt-1 border-t">
+                        <span>Vous recevrez</span>
+                        <span>{(booking.transportPrice - booking.commission).toFixed(2)} €</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

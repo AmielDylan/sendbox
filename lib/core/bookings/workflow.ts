@@ -340,11 +340,10 @@ export async function markAsInTransit(
 }
 
 /**
- * Voyageur scanne le QR code de livraison et marque le colis livré
+ * Voyageur marque le colis livré (photo + signature + géolocalisation)
  */
 export async function markAsDelivered(
   bookingId: string,
-  qrCode: string,
   deliveryPhotoUrl: string,
   deliverySignatureUrl: string,
   location: { lat: number; lng: number }
@@ -387,13 +386,6 @@ export async function markAsDelivered(
   if (booking.status !== 'in_transit') {
     return {
       error: 'Le colis doit être en transit',
-    }
-  }
-
-  // Vérifier le QR code
-  if (booking.qr_code !== qrCode) {
-    return {
-      error: 'QR code invalide',
     }
   }
 

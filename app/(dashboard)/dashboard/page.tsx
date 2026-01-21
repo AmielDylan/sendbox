@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { IconPackage, IconMessage, IconTrendingUp, IconShield, IconCheck, IconClock } from '@tabler/icons-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
+import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialSummaryCard'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
@@ -374,6 +375,14 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Financial Summary Widgets */}
+      {user?.id && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <FinancialSummaryCard userId={user.id} role="traveler" />
+          <FinancialSummaryCard userId={user.id} role="requester" />
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-4">
         <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
