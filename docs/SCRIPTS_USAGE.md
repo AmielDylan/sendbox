@@ -42,6 +42,8 @@ Scripts utilitaires généraux.
 ### Scripts à la racine
 
 - `create-resend-templates.ts` - Créer/mettre à jour/supprimer les templates d'emails Resend (API)
+- `clean-database.ts` - Nettoyer toutes les données de la base sauf les utilisateurs
+- `clean-database.sql` - Script SQL pour nettoyer la base de données directement
 
 ## Utilisation
 
@@ -54,6 +56,29 @@ Pour exécuter un script shell:
 ```bash
 bash scripts/path/to/script.sh
 ```
+
+### Nettoyage de la base de données
+
+⚠️ **ATTENTION**: Ces scripts suppriment définitivement les données. Faites toujours un backup avant.
+
+```bash
+# Voir ce qui serait supprimé (simulation)
+npx tsx scripts/clean-database.ts --dry-run
+
+# Nettoyer avec confirmation interactive
+npx tsx scripts/clean-database.ts
+
+# Nettoyer sans confirmation
+npx tsx scripts/clean-database.ts --confirm
+
+# Nettoyer avec les fichiers du storage
+npx tsx scripts/clean-database.ts --confirm --include-storage
+```
+
+**Tables supprimées**: announcements, bookings, transactions, ratings, messages, notifications
+**Tables conservées**: profiles (utilisateurs), auth.users
+
+**Alternative SQL**: Pour exécuter directement dans Supabase SQL Editor, utilisez `scripts/clean-database.sql`
 
 ### Templates Resend
 

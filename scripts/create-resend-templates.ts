@@ -19,7 +19,7 @@
  *   3. Affiche les instructions pour mettre à jour le code
  */
 
-import { Resend, type CreateTemplateOptions } from 'resend'
+import { Resend } from 'resend'
 import * as dotenv from 'dotenv'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -215,6 +215,18 @@ interface TemplateConfig {
   variables: TemplateVariableConfig[]
 }
 
+// Type for Resend API template creation payload
+interface ResendTemplatePayload {
+  name: string
+  subject: string
+  html: string
+  from: string
+  alias?: string
+  text?: string
+  replyTo?: string | string[]
+  variables?: TemplateVariableConfig[]
+}
+
 interface TemplateListItem {
   id: string
   name: string
@@ -261,12 +273,12 @@ function matchesOnlyFilter(config: TemplateConfig): boolean {
   return normalizedKeys.some((key) => onlyKeys.includes(key))
 }
 
-function mapTemplateVariables(config: TemplateConfig): CreateTemplateOptions['variables'] {
+function mapTemplateVariables(config: TemplateConfig): TemplateVariableConfig[] {
   return config.variables.map((variable) => ({ ...variable }))
 }
 
-function buildTemplatePayload(config: TemplateConfig): CreateTemplateOptions {
-  const payload: CreateTemplateOptions = {
+function buildTemplatePayload(config: TemplateConfig): ResendTemplatePayload {
+  const payload: ResendTemplatePayload = {
     name: config.name,
     subject: config.subject,
     html: config.html,
