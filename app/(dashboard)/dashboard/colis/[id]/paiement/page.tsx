@@ -357,24 +357,30 @@ function PaymentPageContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Elements
-                  stripe={stripePromise}
-                  options={{
-                    clientSecret,
-                    appearance: {
-                      theme: 'stripe',
-                    },
-                  }}
-                >
-                  <PaymentForm
-                    bookingId={bookingId}
-                    amount={totalAmount}
-                    acceptedTerms={acceptedTerms}
-                    onSuccess={() => {
-                      router.push(`/dashboard/colis/${bookingId}?payment=success`)
+                {clientSecret ? (
+                  <Elements
+                    stripe={stripePromise}
+                    options={{
+                      clientSecret,
+                      appearance: {
+                        theme: 'stripe',
+                      },
                     }}
-                  />
-                </Elements>
+                  >
+                    <PaymentForm
+                      bookingId={bookingId}
+                      amount={totalAmount}
+                      acceptedTerms={acceptedTerms}
+                      onSuccess={() => {
+                        router.push(`/dashboard/colis/${bookingId}?payment=success`)
+                      }}
+                    />
+                  </Elements>
+                ) : (
+                  <div className="flex items-center justify-center p-8">
+                    <IconLoader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
