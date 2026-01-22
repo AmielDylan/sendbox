@@ -45,7 +45,7 @@ export function AnnouncementCard({
           {/* Main Row: Cities & Badges */}
           <div className="space-y-4">
             <div className="flex justify-between items-start gap-4">
-              <h3 className="font-display font-bold text-lg sm:text-2xl text-foreground leading-tight group-hover:text-primary transition-colors flex flex-wrap items-center gap-x-3 gap-y-2">
+              <h3 className="font-bold text-lg sm:text-2xl text-foreground leading-tight group-hover:text-primary transition-colors flex flex-wrap items-center gap-x-3 gap-y-2">
                 <span className="flex items-center gap-2">
                   {announcement.origin_city}
                   <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/50" stroke={1} />
@@ -53,7 +53,7 @@ export function AnnouncementCard({
                 </span>
               </h3>
               <div className="text-right leading-none shrink-0">
-                <span className="font-display font-bold text-xl text-primary">{announcement.price_per_kg} €</span>
+                <span className="font-bold text-xl text-primary">{announcement.price_per_kg} €</span>
                 <span className="text-[10px] text-muted-foreground font-medium uppercase ml-1">/kg</span>
               </div>
             </div>

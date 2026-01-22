@@ -33,7 +33,7 @@ export default function AuthLayout({
                   Accès sécurisé
                 </Badge>
                 <div className="space-y-3">
-                  <h1 className="font-display text-2xl text-balance">
+                  <h1 className="text-2xl text-balance">
                     Votre espace Sendbox
                   </h1>
                   <p className="text-sm text-muted-foreground leading-relaxed">
