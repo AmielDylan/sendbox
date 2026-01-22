@@ -207,6 +207,8 @@ export type Database = {
           commission_amount: number | null
           commission_rate: number | null
           created_at: string | null
+          delivery_confirmed_at: string | null
+          delivery_confirmed_by: string | null
           delivered_at: string | null
           delivery_location_lat: number | null
           delivery_location_lng: number | null
@@ -255,6 +257,8 @@ export type Database = {
           commission_amount?: number | null
           commission_rate?: number | null
           created_at?: string | null
+          delivery_confirmed_at?: string | null
+          delivery_confirmed_by?: string | null
           delivered_at?: string | null
           delivery_location_lat?: number | null
           delivery_location_lng?: number | null
@@ -303,6 +307,8 @@ export type Database = {
           commission_amount?: number | null
           commission_rate?: number | null
           created_at?: string | null
+          delivery_confirmed_at?: string | null
+          delivery_confirmed_by?: string | null
           delivered_at?: string | null
           delivery_location_lat?: number | null
           delivery_location_lng?: number | null
@@ -1008,6 +1014,7 @@ export type Database = {
         | "deposit_reminder"
         | "transit_started"
         | "delivery_reminder"
+        | "delivery_confirmed"
         | "rating_request"
         | "admin_message"
         | "system_alert"
@@ -1175,6 +1182,7 @@ export const Constants = {
         "deposit_reminder",
         "transit_started",
         "delivery_reminder",
+        "delivery_confirmed",
         "rating_request",
         "admin_message",
         "system_alert",

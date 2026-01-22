@@ -31,6 +31,7 @@ const NOTIFICATION_TYPES = [
   { value: 'deposit_reminder', label: 'Rappels dépôt' },
   { value: 'transit_started', label: 'En transit' },
   { value: 'delivery_reminder', label: 'Rappels livraison' },
+  { value: 'delivery_confirmed', label: 'Livraison confirmée' },
   { value: 'rating_request', label: 'Demandes de notation' },
   { value: 'admin_message', label: 'Messages admin' },
   { value: 'system_alert', label: 'Alertes système' },
@@ -159,4 +160,3 @@ export default function NotificationsPage() {
     </div>
   )
 }
-

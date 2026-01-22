@@ -69,7 +69,7 @@ export function BookingStatusBadge({ status, className }: BookingStatusBadgeProp
       label: 'Confirmé',
       variant: 'default',
       icon: IconCircleCheck,
-      className: 'bg-blue-100 text-blue-800 hover:bg-blue-100',
+      className: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-100',
     },
     in_transit: {
       label: 'En transit',
@@ -113,7 +113,6 @@ export function BookingStatusBadge({ status, className }: BookingStatusBadgeProp
     </Badge>
   )
 }
-
 
 
 

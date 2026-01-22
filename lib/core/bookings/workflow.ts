@@ -451,3 +451,91 @@ export async function markAsDelivered(
     }
   }
 }
+
+/**
+ * Expéditeur confirme la livraison (débloque les fonds côté plateforme)
+ */
+export async function confirmDeliveryReceipt(bookingId: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      error: 'Vous devez être connecté',
+    }
+  }
+
+  const { data: booking, error: bookingError } = await supabase
+    .from('bookings')
+    .select('id, status, sender_id, traveler_id, delivery_confirmed_at, announcement_id')
+    .eq('id', bookingId)
+    .single()
+
+  if (bookingError || !booking) {
+    return {
+      error: 'Réservation introuvable',
+    }
+  }
+
+  if (booking.sender_id !== user.id) {
+    return {
+      error: 'Vous n\'êtes pas autorisé à confirmer cette livraison',
+    }
+  }
+
+  if (booking.status !== 'delivered') {
+    return {
+      error: 'La livraison doit être marquée comme livrée avant confirmation',
+    }
+  }
+
+  if (booking.delivery_confirmed_at) {
+    return {
+      error: 'La livraison est déjà confirmée',
+    }
+  }
+
+  const confirmedAt = new Date().toISOString()
+
+  const { error: updateError } = await supabase
+    .from('bookings')
+    .update({
+      delivery_confirmed_at: confirmedAt,
+      delivery_confirmed_by: user.id,
+    })
+    .eq('id', bookingId)
+
+  if (updateError) {
+    console.error('Error confirming delivery:', updateError)
+    return {
+      error: 'Erreur lors de la confirmation',
+    }
+  }
+
+  const { error: notifError } = await createSystemNotification({
+    userId: booking.traveler_id,
+    type: 'delivery_confirmed',
+    title: 'Livraison confirmée',
+    content:
+      'Le client a confirmé la remise. Les fonds sont débloqués pour vous.',
+    bookingId,
+    announcementId: booking.announcement_id,
+  })
+
+  if (notifError) {
+    console.error('Notification creation failed (non-blocking):', notifError)
+  }
+
+  revalidatePath('/dashboard/colis')
+  revalidatePath(`/dashboard/colis/${bookingId}`)
+  revalidatePath('/dashboard/notifications')
+
+  return {
+    success: true,
+    message: 'Livraison confirmée',
+  }
+}

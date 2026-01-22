@@ -45,7 +45,7 @@ export async function submitRating(data: RatingInput) {
     // 1. Vérifier que le booking est delivered
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
-      .select('id, status, sender_id, traveler_id')
+      .select('id, status, sender_id, traveler_id, delivery_confirmed_at')
       .eq('id', booking_id)
       .single()
 
@@ -55,7 +55,7 @@ export async function submitRating(data: RatingInput) {
       }
     }
 
-    if (booking.status !== 'delivered') {
+    if (booking.status !== 'delivered' && !booking.delivery_confirmed_at) {
       return {
         error: 'Le service doit être terminé pour pouvoir noter',
       }
@@ -276,7 +276,7 @@ export async function canRateBooking(bookingId: string) {
 
   const { data: booking } = await supabase
     .from('bookings')
-    .select('id, status, sender_id, traveler_id')
+    .select('id, status, sender_id, traveler_id, delivery_confirmed_at')
     .eq('id', bookingId)
     .single()
 
@@ -287,7 +287,7 @@ export async function canRateBooking(bookingId: string) {
     }
   }
 
-  if (booking.status !== 'delivered') {
+  if (booking.status !== 'delivered' && !booking.delivery_confirmed_at) {
     return {
       canRate: false,
       error: 'Le service doit être terminé',

@@ -17,6 +17,7 @@ export type NotificationType =
   | 'deposit_reminder'
   | 'transit_started'
   | 'delivery_reminder'
+  | 'delivery_confirmed'
   | 'rating_request'
   | 'admin_message'
   | 'system_alert'

@@ -117,7 +117,7 @@ export function FinancialSummaryCard({ userId, role }: Props) {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
-            {role === 'traveler' ? 'À recevoir' : 'Montants bloqués'}
+            {role === 'traveler' ? 'Fonds disponibles' : 'Montants bloqués'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -134,35 +134,68 @@ export function FinancialSummaryCard({ userId, role }: Props) {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <IconTrendingUp className="h-5 w-5" />
-          {role === 'traveler' ? 'À recevoir' : 'Montants bloqués'}
+          {role === 'traveler' ? 'Fonds voyageur' : 'Fonds client'}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div>
-            <p className="text-3xl font-bold">
-              {(isTravelerFinancials(financials)
-                ? financials.totalToReceive
-                : financials.totalBlocked
-              ).toFixed(2)}{' '}
-              €
-            </p>
-            {isTravelerFinancials(financials) && financials.inTransitAmount > 0 && (
-              <p className="text-sm text-muted-foreground mt-1">
-                dont {financials.inTransitAmount.toFixed(2)} € en transit
-              </p>
-            )}
-            {isTravelerFinancials(financials) && financials.awaitingPickupAmount > 0 && (
-              <p className="text-sm text-muted-foreground mt-1">
-                dont {financials.awaitingPickupAmount.toFixed(2)} € en attente de dépôt
-              </p>
-            )}
-            {!isTravelerFinancials(financials) && (
-              <p className="text-sm text-muted-foreground mt-1">
-                {financials.bookings.length} colis en attente
-              </p>
-            )}
-          </div>
+          {isTravelerFinancials(financials) ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Disponible maintenant
+                </p>
+                <p className="text-3xl font-bold">
+                  {financials.availableAmount.toFixed(2)} €
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Débloqué après confirmation de livraison.
+                </p>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background p-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  En attente de confirmation
+                </p>
+                <p className="text-2xl font-semibold">
+                  {financials.pendingAmount.toFixed(2)} €
+                </p>
+                <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                  {financials.inTransitAmount > 0 && (
+                    <div>• {financials.inTransitAmount.toFixed(2)} € en transit</div>
+                  )}
+                  {financials.awaitingPickupAmount > 0 && (
+                    <div>• {financials.awaitingPickupAmount.toFixed(2)} € en attente de dépôt</div>
+                  )}
+                  {financials.pendingAmount === 0 && <div>Aucun montant en attente.</div>}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Bloqué chez Sendbox
+                </p>
+                <p className="text-3xl font-bold">
+                  {financials.totalBlocked.toFixed(2)} €
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Libéré après confirmation de livraison.
+                </p>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background p-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Total payé
+                </p>
+                <p className="text-2xl font-semibold">
+                  {financials.totalPaid.toFixed(2)} €
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {financials.bookings.length} colis concernés.
+                </p>
+              </div>
+            </div>
+          )}
 
           <Collapsible open={isOpen} onOpenChange={setIsOpen}>
             <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
@@ -187,6 +220,11 @@ export function FinancialSummaryCard({ userId, role }: Props) {
                       €
                     </span>
                   </div>
+                  {role === 'traveler' && (
+                    <div className="text-[10px] text-muted-foreground">
+                      {booking.deliveryConfirmedAt ? 'Confirmé' : 'En attente de confirmation'}
+                    </div>
+                  )}
                   <div className="text-xs text-muted-foreground space-y-1">
                     <div className="flex justify-between">
                       <span>Transport</span>
