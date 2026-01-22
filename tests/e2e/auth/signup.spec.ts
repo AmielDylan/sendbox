@@ -3,7 +3,7 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { createTestUser, expectUserLoggedIn } from '../helpers/auth'
+import { createTestUser } from '../helpers/auth'
 import { TEST_USERS, TEST_DATA } from '../helpers/fixtures'
 
 test.describe('User Registration Flow', () => {
@@ -52,9 +52,6 @@ test.describe('User Registration Flow', () => {
     // Note: Ce test nécessite un utilisateur de test pré-configuré
     
     // Se connecter (ou créer un utilisateur)
-    const timestamp = Date.now()
-    const email = `kyc${timestamp}@test.com`
-    
     // Pour ce test, on suppose qu'un utilisateur existe déjà
     // Dans un vrai scénario, vous créeriez l'utilisateur via API ou seed
     
@@ -121,7 +118,6 @@ test.describe('User Registration Flow', () => {
     ).toBeVisible()
   })
 })
-
 
 
 

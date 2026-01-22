@@ -38,15 +38,12 @@ function RegisterForm() {
     handleSubmit,
     control,
     formState: { errors },
-    watch,
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       terms: false,
     },
   })
-
-  const password = watch('password')
 
   // Vérification d'authentification avec timeout
   useEffect(() => {
@@ -98,7 +95,7 @@ function RegisterForm() {
         toast.success(result.message)
         router.push('/verify-email')
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsLoading(false)

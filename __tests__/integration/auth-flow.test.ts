@@ -8,8 +8,6 @@ import { createTestUser, deleteTestUser, supabaseAdmin } from '../setup/supabase
 
 describe('Authentication Flow Integration', () => {
   let testUserId: string
-  let testUserEmail: string
-  let testUserPassword: string
 
   describe('Complete User Journey', () => {
     test('signup → verify → login → logout flow works correctly', async () => {
@@ -28,8 +26,6 @@ describe('Authentication Flow Integration', () => {
       expect(authData.user?.email).toBe(email)
 
       testUserId = authData.user!.id
-      testUserEmail = email
-      testUserPassword = password
 
       // Step 2: Verify profile was created
       const { data: profile, error: profileError } = await supabaseAdmin
@@ -91,7 +87,7 @@ describe('Authentication Flow Integration', () => {
     })
 
     test('unverified users cannot login', async () => {
-      const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+      const { data } = await supabaseAdmin.auth.signInWithPassword({
         email: `unverified-${Date.now()}@example.com`,
         password: 'TestPassword123!',
       })
@@ -104,7 +100,7 @@ describe('Authentication Flow Integration', () => {
 
     test('email verification updates confirmed_at timestamp', async () => {
       // Verify email
-      const { data, error } = await supabaseAdmin.auth.admin.updateUserById(unverifiedUserId, {
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(unverifiedUserId, {
         email_confirm: true,
       })
 

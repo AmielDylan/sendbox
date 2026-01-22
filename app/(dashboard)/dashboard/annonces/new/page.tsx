@@ -195,7 +195,7 @@ export default function NewAnnouncementPage() {
 
         router.push('/dashboard/annonces')
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)
@@ -700,5 +700,4 @@ export default function NewAnnouncementPage() {
     </div>
   )
 }
-
 

@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from "@/lib/shared/db/client"
-import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export type ConnectionStatus =
   | 'connecting'

@@ -15,7 +15,6 @@ import {
   IconPackage,
   IconTruck,
   IconStar,
-  IconAlertCircle,
   IconMessageCircle,
   IconBell,
   IconShield,
@@ -122,7 +121,6 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
 
   return content
 }
-
 
 
 

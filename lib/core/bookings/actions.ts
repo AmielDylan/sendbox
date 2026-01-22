@@ -5,7 +5,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/server"
 import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
 import {

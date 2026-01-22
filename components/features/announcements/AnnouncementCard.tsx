@@ -5,14 +5,12 @@
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { IconStar, IconMapPin, IconCalendar, IconPackage, IconCurrencyEuro, IconArrowRight, IconArrowNarrowRight } from '@tabler/icons-react'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { IconStar, IconCalendar, IconPackage, IconArrowRight, IconArrowNarrowRight } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { AnnouncementResult } from "@/lib/shared/db/queries/announcements"
 import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
-import { getCountryName } from "@/lib/utils/countries"
 
 interface AnnouncementCardProps {
   announcement: AnnouncementResult

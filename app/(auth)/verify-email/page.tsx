@@ -57,7 +57,7 @@ function VerifyEmailForm() {
           setStatus('error')
           toast.error('La vérification n\'a pas pu être complétée.')
         }
-      } catch (error) {
+      } catch {
         setStatus('error')
         toast.error('Une erreur est survenue lors de la vérification.')
       }

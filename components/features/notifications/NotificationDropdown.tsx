@@ -17,8 +17,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { useNotifications } from '@/hooks/use-notifications'
-import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import Link from 'next/link'
 import { NotificationItem } from './NotificationItem'
 
@@ -84,4 +82,3 @@ export function NotificationDropdown() {
     </DropdownMenu>
   )
 }
-

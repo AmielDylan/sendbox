@@ -4,7 +4,7 @@
 
 'use client'
 
-import { use, useState, useEffect, useCallback } from 'react'
+import { use, useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
@@ -191,7 +191,7 @@ export default function EditAnnouncementPage({
 
         router.push('/dashboard/annonces')
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue')
     } finally {
       setIsSubmitting(false)

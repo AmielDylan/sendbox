@@ -58,7 +58,7 @@ function ResetPasswordForm() {
         setIsRequestSent(true)
         toast.success(result.message)
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsLoading(false)
@@ -79,7 +79,7 @@ function ResetPasswordForm() {
         return
       }
       // Redirection gérée par la Server Action
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsLoading(false)

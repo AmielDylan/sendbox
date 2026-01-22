@@ -4,7 +4,6 @@
 
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -18,7 +17,6 @@ import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -45,11 +43,9 @@ import {
   IconCalendar,
   IconSparkles,
   IconMapPin,
-  IconFilter,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { useAuth } from '@/hooks/use-auth'
 import { getCountryName } from '@/lib/utils/countries'
 
 const sortLabelMap = {
@@ -59,7 +55,6 @@ const sortLabelMap = {
 } as const
 
 export default function SearchPage() {
-  const { user } = useAuth()
   const [filters, setFilters] = useState<SearchFilters>({
     departureCountry: null,
     arrivalCountry: null,

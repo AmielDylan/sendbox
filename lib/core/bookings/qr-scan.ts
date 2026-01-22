@@ -8,8 +8,6 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
 import { notifyUser } from '@/lib/core/notifications/actions'
 import { generateDepositProof, generateDeliveryProof } from '@/lib/shared/services/pdf/generation'
-import { validateImageUpload } from "@/lib/shared/security/upload-validation"
-import { uploadRateLimit } from "@/lib/shared/security/rate-limit"
 
 /**
  * Gère le scan QR code pour le dépôt du colis
@@ -70,7 +68,7 @@ export async function handleDepositScan(
     // Upload photo
     const photoFileName = `deposit_${bookingId}_${Date.now()}.png`
     const photoBuffer = Buffer.from(photoDataURL.split(',')[1], 'base64')
-    const { data: photoUpload, error: photoError } = await supabase.storage
+    const { error: photoError } = await supabase.storage
       .from('package-photos')
       .upload(photoFileName, photoBuffer, {
         contentType: 'image/png',
@@ -91,7 +89,7 @@ export async function handleDepositScan(
     const signatureFileName = `${user.id}/deposit_signature_${bookingId}_${Date.now()}.png`
     const signatureBase64 = signatureDataURL.includes(',') ? signatureDataURL.split(',')[1] : signatureDataURL
     const signatureBuffer = Buffer.from(signatureBase64, 'base64')
-    const { data: signatureUpload, error: signatureError } = await supabase.storage
+    const { error: signatureError } = await supabase.storage
       .from('signatures')
       .upload(signatureFileName, signatureBuffer, {
         contentType: 'image/png',
@@ -237,7 +235,7 @@ export async function handleDeliveryScan(
     const photoFileName = `${user.id}/delivery_${bookingId}_${Date.now()}.png`
     const photoBase64 = photoDataURL.includes(',') ? photoDataURL.split(',')[1] : photoDataURL
     const photoBuffer = Buffer.from(photoBase64, 'base64')
-    const { data: photoUpload, error: photoError } = await supabase.storage
+    const { error: photoError } = await supabase.storage
       .from('package-photos')
       .upload(photoFileName, photoBuffer, {
         contentType: 'image/png',
@@ -258,7 +256,7 @@ export async function handleDeliveryScan(
     const signatureFileName = `${user.id}/delivery_signature_${bookingId}_${Date.now()}.png`
     const signatureBase64 = signatureDataURL.includes(',') ? signatureDataURL.split(',')[1] : signatureDataURL
     const signatureBuffer = Buffer.from(signatureBase64, 'base64')
-    const { data: signatureUpload, error: signatureError } = await supabase.storage
+    const { error: signatureError } = await supabase.storage
       .from('signatures')
       .upload(signatureFileName, signatureBuffer, {
         contentType: 'image/png',
@@ -401,4 +399,3 @@ export async function getBookingByQRCode(qrCode: string) {
     booking,
   }
 }
-

@@ -13,11 +13,9 @@ import {
   type KYCReviewInput,
 } from "@/lib/core/kyc/validations"
 import {
-  validateFileType,
   processImage,
   generateSecureFileName,
 } from "@/lib/shared/utils/files"
-import { ACCEPTED_IMAGE_TYPES } from "@/lib/core/kyc/validations"
 import { validateKYCDocument } from "@/lib/shared/security/upload-validation"
 import { uploadRateLimit } from "@/lib/shared/security/rate-limit"
 

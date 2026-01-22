@@ -131,7 +131,7 @@ function NewBookingPageContent() {
           setValue('kilos_requested', weightToSet)
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors du chargement de l\'annonce')
       router.push('/recherche')
     } finally {
@@ -207,7 +207,7 @@ function NewBookingPageContent() {
 
         router.push(`/dashboard/colis/${result.bookingId}`)
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)

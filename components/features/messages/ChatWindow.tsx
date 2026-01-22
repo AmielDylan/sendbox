@@ -5,7 +5,6 @@
 'use client'
 
 import { useEffect, useRef, useState, useTransition, memo } from 'react'
-import { useRouter } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -17,7 +16,7 @@ import { sanitizeMessageContent } from '@/lib/shared/security/xss-protection'
 import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { IconSend, IconLoader2, IconPhoto, IconArrowLeft } from '@tabler/icons-react'
+import { IconSend, IconLoader2, IconArrowLeft } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { createClient } from "@/lib/shared/db/client"
 import Image from 'next/image'
@@ -44,10 +43,6 @@ interface MessageItemProps {
  */
 const MessageItem = memo(({ message, currentUserId }: MessageItemProps) => {
   const isOwnMessage = message.sender_id === currentUserId
-  const senderName = isOwnMessage
-    ? 'Vous'
-    : `${message.sender?.firstname || ''} ${message.sender?.lastname || ''}`.trim() ||
-    'Utilisateur'
 
   return (
     <div
@@ -118,7 +113,6 @@ export function ChatWindow({
   onBack,
   onMessagesRead,
 }: ChatWindowProps) {
-  const router = useRouter()
   const { messages, isLoading, addOptimisticMessage, removeOptimisticMessage } = useMessages(bookingId)
   const [messageContent, setMessageContent] = useState('')
   const [isPending, startTransition] = useTransition()

@@ -9,8 +9,6 @@ import {
 } from "@/lib/shared/db/queries/announcement-detail"
 import { createClient } from "@/lib/shared/db/server"
 import { isFeatureEnabled } from "@/lib/shared/config/features"
-import { PageHeader } from '@/components/ui/page-header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TravelerSection } from '@/components/features/announcements/TravelerSection'
 import { TripTimeline } from '@/components/features/announcements/TripTimeline'
@@ -18,12 +16,8 @@ import { CapacityProgress } from '@/components/features/announcements/CapacityPr
 import { ReviewsSection } from '@/components/features/announcements/ReviewsSection'
 import { BookingForm } from '@/components/features/announcements/BookingForm'
 import { ViewTracker } from '@/components/features/announcements/ViewTracker'
-import { IconPackage, IconEdit, IconTrash, IconCircleCheck, IconArrowNarrowRight, IconCalendar } from '@tabler/icons-react'
+import { IconPackage, IconEdit, IconCircleCheck, IconArrowNarrowRight, IconCalendar } from '@tabler/icons-react'
 import Link from 'next/link'
-import {
-  deleteAnnouncement,
-  markAnnouncementAsCompleted,
-} from "@/lib/core/announcements/management"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -165,7 +159,6 @@ export default async function PublicAnnouncementDetailPage({
             <section className="space-y-3 pt-4 border-t border-border/40">
               <ReviewsSection
                 reviews={reviews || []}
-                travelerId={announcement.traveler_id}
               />
             </section>
           </div>
@@ -269,4 +262,3 @@ export default async function PublicAnnouncementDetailPage({
     </>
   )
 }
-
