@@ -8,18 +8,9 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
 } from '@react-pdf/renderer'
 import { getCountryName } from '@/lib/utils/countries'
 import { MAX_INSURANCE_COVERAGE } from "@/lib/core/bookings/validations"
-
-// Enregistrer les polices (optionnel, utilise Helvetica par défaut)
-Font.register({
-  family: 'Helvetica',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/helvetica/v15/JizExREF2nGCv19lOl2eyE.ttf' },
-  ],
-})
 
 interface BookingWithRelations {
   id: string
@@ -69,11 +60,13 @@ export function TransportContract({ booking }: TransportContractProps) {
   }
 
   const getDisplayName = (
-    person: { firstname: string | null; lastname: string | null } | null,
+    person: { firstname: string | null; lastname: string | null; email?: string | null } | null,
     fallback: string
   ) => {
     const name = `${person?.firstname ?? ''} ${person?.lastname ?? ''}`.trim()
-    return name || fallback
+    if (name) return name
+    const email = person?.email?.trim()
+    return email || fallback
   }
 
   const senderName = getDisplayName(booking.sender, 'Expéditeur')
@@ -288,7 +281,6 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
 
 
 
