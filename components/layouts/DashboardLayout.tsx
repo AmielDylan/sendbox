@@ -221,10 +221,9 @@ function SidebarContent({
 function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" asChild>
-        <Link href="/recherche">
-          <IconSearch className="mr-2 h-4 w-4" />
-          Recherche
+      <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+        <Link href="/recherche" aria-label="Recherche">
+          <IconSearch className="h-4 w-4" />
         </Link>
       </Button>
       <ClientOnly>
