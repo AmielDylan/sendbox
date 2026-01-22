@@ -7,6 +7,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
 import { createAdminClient } from "@/lib/shared/db/admin"
+import { createSystemNotification } from "@/lib/core/notifications/system"
 
 /**
  * Annule une réservation avec raison (acceptée non payée par les deux parties,
@@ -118,16 +119,16 @@ export async function cancelBookingWithReason(bookingId: string, reason: string)
     const otherUserId = isSender ? booking.traveler_id : booking.sender_id
     const cancelerLabel = isSender ? 'L\'expéditeur' : 'Le voyageur'
 
-    try {
-      await (supabase.rpc as any)('create_notification', {
-        p_user_id: otherUserId,
-        p_type: 'booking_cancelled',
-        p_title: 'Réservation annulée',
-        p_content: `${cancelerLabel} a annulé la réservation. Raison : ${normalizedReason}`,
-        p_booking_id: bookingId,
-        p_announcement_id: booking.announcement_id,
-      })
-    } catch (notifError) {
+    const { error: notifError } = await createSystemNotification({
+      userId: otherUserId,
+      type: 'system_alert',
+      title: 'Réservation annulée',
+      content: `${cancelerLabel} a annulé la réservation. Raison : ${normalizedReason}`,
+      bookingId,
+      announcementId: booking.announcement_id,
+    })
+
+    if (notifError) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
 
@@ -314,15 +315,18 @@ export async function markAsInTransit(
       }
     }
 
-    // Notifier l'expéditeur
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: booking.sender_id,
-      p_type: 'booking_in_transit',
-      p_title: 'Colis en transit',
-      p_content: 'Votre colis a été pris en charge par le voyageur',
-      p_booking_id: bookingId,
-      p_announcement_id: booking.announcement_id,
+    // Notifier l'expéditeur (non-bloquant)
+    const { error: notifError } = await createSystemNotification({
+      userId: booking.sender_id,
+      type: 'transit_started',
+      title: 'Colis en transit',
+      content: 'Votre colis a été pris en charge par le voyageur',
+      bookingId,
+      announcementId: booking.announcement_id,
     })
+    if (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
 
     revalidatePath('/dashboard/colis')
     revalidatePath(`/dashboard/colis/${bookingId}`)
@@ -414,15 +418,19 @@ export async function markAsDelivered(
     // TODO: Implémenter le transfert Stripe Connect vers le voyageur
     console.log('TODO: Release escrow funds to traveler for booking', bookingId)
 
-    // Notifier l'expéditeur
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: booking.sender_id,
-      p_type: 'booking_delivered',
-      p_title: 'Colis livré',
-      p_content: 'Votre colis a été livré avec succès',
-      p_booking_id: bookingId,
-      p_announcement_id: booking.announcement_id,
+    // Notifier l'expéditeur (non-bloquant)
+    const { error: notifError } = await createSystemNotification({
+      userId: booking.sender_id,
+      type: 'delivery_reminder',
+      title: 'Colis livré',
+      content:
+        'Votre colis a été livré. Merci de confirmer la réception sur Sendbox. Sans action de votre part, les fonds seront versés au voyageur après 7 jours.',
+      bookingId,
+      announcementId: booking.announcement_id,
     })
+    if (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
 
     // Mettre à jour les statistiques du voyageur
     await (supabase.rpc as any)('increment_user_stats', {
@@ -443,5 +451,3 @@ export async function markAsDelivered(
     }
   }
 }
-
-

@@ -7,6 +7,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
 import { sanitizeMessageContent } from '@/lib/shared/security/xss-protection'
+import { createSystemNotification } from "@/lib/core/notifications/system"
 import { z } from 'zod'
 
 const sendMessageSchema = z.object({
@@ -155,14 +156,17 @@ export async function sendMessage(data: SendMessageInput) {
       ? cleanContent.substring(0, 50) + '...'
       : cleanContent
 
-    // Créer une notification pour le destinataire
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: receiver_id,
-      p_type: 'message',
-      p_title: `Message de ${senderName}`,
-      p_content: messagePreview,
-      p_booking_id: booking_id,
+    // Créer une notification pour le destinataire (non-bloquant)
+    const { error: notifError } = await createSystemNotification({
+      userId: receiver_id,
+      type: 'admin_message',
+      title: `Message de ${senderName}`,
+      content: messagePreview,
+      bookingId: booking_id,
     })
+    if (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
 
     revalidatePath('/dashboard/messages')
     return {
@@ -264,4 +268,3 @@ export async function getUserConversations() {
     }
   }
 }
-
