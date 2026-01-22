@@ -285,7 +285,6 @@ function MessagesPageContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
-      const filter = `or=(sender_id.eq.${user.id},traveler_id.eq.${user.id})`
       channel = supabase
         .channel(getChannelName(user.id))
         .on(
@@ -294,7 +293,21 @@ function MessagesPageContent() {
             event: '*',
             schema: 'public',
             table: 'bookings',
-            filter,
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => {
+            refetchRequests()
+            refetchConversations()
+            refetchNotifications()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter: `traveler_id=eq.${user.id}`,
           },
           () => {
             refetchRequests()
@@ -333,7 +346,6 @@ function MessagesPageContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
-      const filter = `or=(sender_id.eq.${user.id},receiver_id.eq.${user.id})`
       channel = supabase
         .channel(getChannelName(user.id))
         .on(
@@ -342,7 +354,20 @@ function MessagesPageContent() {
             event: 'INSERT',
             schema: 'public',
             table: 'messages',
-            filter,
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => {
+            refetchConversations()
+            refetchNotifications()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `receiver_id=eq.${user.id}`,
           },
           () => {
             refetchConversations()
@@ -355,7 +380,19 @@ function MessagesPageContent() {
             event: 'UPDATE',
             schema: 'public',
             table: 'messages',
-            filter,
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => {
+            refetchConversations()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter: `receiver_id=eq.${user.id}`,
           },
           () => {
             refetchConversations()

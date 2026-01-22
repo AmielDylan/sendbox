@@ -97,7 +97,7 @@ export function ConversationList({
           // Logic: Show unread only if count > 0 AND (we don't know who sent it OR it wasn't us)
           // Ideally unread_count is 0 if we sent it, but to be safe per user request:
           const isLastMessageFromMe = user?.id === conversation.last_message_sender_id
-          const hasUnread = conversation.unread_count > 0 && !isLastMessageFromMe
+          const hasUnread = conversation.unread_count > 0 && !isLastMessageFromMe && !isSelected
 
           return (
             <button
@@ -186,7 +186,6 @@ export function ConversationList({
     </ScrollArea>
   )
 }
-
 
 
 

@@ -125,13 +125,20 @@ export function useMessages(bookingId: string | null) {
       return `messages:${id}:realtime:${suffix}`
     }
 
-    // Charger les messages existants
-    const loadMessages = async () => {
+    const setup = async () => {
       setIsLoading(true)
       setError(null)
 
       try {
+        // IMPORTANT: ensure the auth session is loaded before subscribing
+        // Otherwise realtime may connect as anon and not receive any row due to RLS.
         await supabase.auth.getSession()
+
+        if (!isActive) {
+          return
+        }
+
+        // Charger les messages existants
         const { data, error: fetchError } = await (supabase as any)
           .from('messages')
           .select(
@@ -161,6 +168,170 @@ export function useMessages(bookingId: string | null) {
         if (isActive) {
           setMessages((data as unknown as Message[]) || [])
         }
+
+        // Cleanup du channel précédent si existant
+        if (channelRef.current) {
+          supabase.removeChannel(channelRef.current)
+          channelRef.current = null
+        }
+
+        // S'abonner aux nouveaux messages en temps réel
+        // Utilise postgres_changes pour les messages (garantie de livraison)
+        // et broadcast pour les événements temporaires (sera utilisé par use-presence)
+        const channel = supabase
+          .channel(getChannelName(bookingId), {
+            config: {
+              broadcast: {
+                self: false, // Ne pas recevoir nos propres broadcasts
+                ack: false, // Pas besoin d'accusé de réception pour typing indicators
+              },
+            },
+          })
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'messages',
+              filter: `booking_id=eq.${bookingId}`,
+            },
+            async (payload) => {
+              const newMessageData = payload.new as any
+
+              setMessages((prev) => {
+                // Éviter doublons par ID réel
+                if (prev.some((m) => m.id === newMessageData.id)) {
+                  return prev
+                }
+
+                // Calculer le hash du message reçu pour chercher le tempId correspondant
+                const contentHash = hashContent(newMessageData.content, newMessageData.sender_id)
+                const pendingMessage = pendingMessagesMap.current.get(contentHash)
+
+                if (pendingMessage) {
+                  // On a trouvé le tempId correspondant dans notre Map!
+                  // C'est un message qu'on vient d'envoyer nous-mêmes
+                  const optimisticIndex = prev.findIndex(
+                    (m) => m.id.startsWith('optimistic-') && m.tempId === pendingMessage.tempId
+                  )
+
+                  if (optimisticIndex !== -1) {
+                    // Remplacer le message optimiste par le message réel
+                    // IMPORTANT: On garde les sender/receiver déjà chargés du message optimiste
+                    const optimisticMsg = prev[optimisticIndex]
+                    const realMessage: Message = {
+                      ...newMessageData,
+                      sender: optimisticMsg.sender,
+                      receiver: optimisticMsg.receiver,
+                    } as Message
+
+                    const updatedMessages = [...prev]
+                    updatedMessages[optimisticIndex] = realMessage
+
+                    // Nettoyer le Map
+                    pendingMessagesMap.current.delete(contentHash)
+
+                    return updatedMessages
+                  }
+
+                  // Nettoyer le Map même si pas de match
+                  pendingMessagesMap.current.delete(contentHash)
+                }
+
+                // FALLBACK: Matcher par contenu + timestamp (pour messages sans tempId)
+                const fallbackIndex = prev.findIndex(
+                  (m) =>
+                    m.id.startsWith('optimistic-') &&
+                    m.content === newMessageData.content &&
+                    m.sender_id === newMessageData.sender_id &&
+                    Math.abs(new Date(m.created_at).getTime() - new Date(newMessageData.created_at).getTime()) < 5000
+                )
+
+                if (fallbackIndex !== -1) {
+                  const optimisticMsg = prev[fallbackIndex]
+                  const realMessage: Message = {
+                    ...newMessageData,
+                    sender: optimisticMsg.sender,
+                    receiver: optimisticMsg.receiver,
+                  } as Message
+                  const updatedMessages = [...prev]
+                  updatedMessages[fallbackIndex] = realMessage
+                  return updatedMessages
+                }
+
+                // Nouveau message reçu d'un autre utilisateur
+                // On doit fetch les infos sender/receiver de manière asynchrone
+                // MAIS on ajoute d'abord le message sans ces infos pour affichage immédiat
+                ;(async () => {
+                  const { data: fullMessage, error: detailsError } = await (supabase as any)
+                    .from('messages')
+                    .select(
+                      `
+                      *,
+                      sender:profiles!messages_sender_id_fkey (
+                        firstname,
+                        lastname,
+                        avatar_url
+                      ),
+                      receiver:profiles!messages_receiver_id_fkey (
+                        firstname,
+                        lastname,
+                        avatar_url
+                      )
+                    `
+                    )
+                    .eq('id', newMessageData.id)
+                    .single()
+
+                  if (detailsError) {
+                    console.error('[Realtime] Error fetching message details:', detailsError)
+                  }
+
+                  if (fullMessage) {
+                    setMessages((current) =>
+                      current.map((m) =>
+                        m.id === newMessageData.id ? (fullMessage as unknown as Message) : m
+                      )
+                    )
+                  }
+                })()
+
+                // Ajouter immédiatement le message (sans sender/receiver complet)
+                setTimeout(() => {
+                  const messagesEnd = document.querySelector('[data-messages-end]')
+                  messagesEnd?.scrollIntoView({ behavior: 'smooth' })
+                }, 100)
+                return [...prev, newMessageData as Message]
+              })
+
+              // Marquer automatiquement comme lu si on reçoit un message dans cette conversation
+              // (car la conversation est ouverte)
+              if (newMessageData.id && bookingId) {
+                await markMessagesAsRead(bookingId)
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'messages',
+              filter: `booking_id=eq.${bookingId}`,
+            },
+            (payload) => {
+              // Mettre à jour le message si modifié (ex: marqué comme lu)
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === payload.new.id ? (payload.new as Message) : msg
+                )
+              )
+            }
+          )
+          .subscribe()
+
+        // Stocker référence du channel
+        channelRef.current = channel
       } catch (err) {
         console.error('Error loading messages:', err)
         if (isActive) {
@@ -173,171 +344,7 @@ export function useMessages(bookingId: string | null) {
       }
     }
 
-    loadMessages()
-
-    // Cleanup du channel précédent si existant
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current)
-      channelRef.current = null
-    }
-
-    // S'abonner aux nouveaux messages en temps réel
-    // Utilise postgres_changes pour les messages (garantie de livraison)
-    // et broadcast pour les événements temporaires (sera utilisé par use-presence)
-    const channel = supabase
-      .channel(getChannelName(bookingId), {
-        config: {
-          broadcast: {
-            self: false, // Ne pas recevoir nos propres broadcasts
-            ack: false, // Pas besoin d'accusé de réception pour typing indicators
-          },
-        },
-      })
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `booking_id=eq.${bookingId}`,
-        },
-        async (payload) => {
-          const newMessageData = payload.new as any
-
-          setMessages((prev) => {
-            // Éviter doublons par ID réel
-            if (prev.some((m) => m.id === newMessageData.id)) {
-              return prev
-            }
-
-            // Calculer le hash du message reçu pour chercher le tempId correspondant
-            const contentHash = hashContent(newMessageData.content, newMessageData.sender_id)
-            const pendingMessage = pendingMessagesMap.current.get(contentHash)
-
-            if (pendingMessage) {
-              // On a trouvé le tempId correspondant dans notre Map!
-              // C'est un message qu'on vient d'envoyer nous-mêmes
-              const optimisticIndex = prev.findIndex(
-                (m) => m.id.startsWith('optimistic-') && m.tempId === pendingMessage.tempId
-              )
-
-              if (optimisticIndex !== -1) {
-                // Remplacer le message optimiste par le message réel
-                // IMPORTANT: On garde les sender/receiver déjà chargés du message optimiste
-                const optimisticMsg = prev[optimisticIndex]
-                const realMessage: Message = {
-                  ...newMessageData,
-                  sender: optimisticMsg.sender,
-                  receiver: optimisticMsg.receiver,
-                } as Message
-
-                const updatedMessages = [...prev]
-                updatedMessages[optimisticIndex] = realMessage
-
-                // Nettoyer le Map
-                pendingMessagesMap.current.delete(contentHash)
-
-                return updatedMessages
-              }
-
-              // Nettoyer le Map même si pas de match
-              pendingMessagesMap.current.delete(contentHash)
-            }
-
-            // FALLBACK: Matcher par contenu + timestamp (pour messages sans tempId)
-            const fallbackIndex = prev.findIndex(
-              (m) =>
-                m.id.startsWith('optimistic-') &&
-                m.content === newMessageData.content &&
-                m.sender_id === newMessageData.sender_id &&
-                Math.abs(new Date(m.created_at).getTime() - new Date(newMessageData.created_at).getTime()) < 5000
-            )
-
-            if (fallbackIndex !== -1) {
-              const optimisticMsg = prev[fallbackIndex]
-              const realMessage: Message = {
-                ...newMessageData,
-                sender: optimisticMsg.sender,
-                receiver: optimisticMsg.receiver,
-              } as Message
-              const updatedMessages = [...prev]
-              updatedMessages[fallbackIndex] = realMessage
-              return updatedMessages
-            }
-
-            // Nouveau message reçu d'un autre utilisateur
-            // On doit fetch les infos sender/receiver de manière asynchrone
-            // MAIS on ajoute d'abord le message sans ces infos pour affichage immédiat
-            ;(async () => {
-              const { data: fullMessage, error: fetchError } = await (supabase as any)
-                .from('messages')
-                .select(
-                  `
-                  *,
-                  sender:profiles!messages_sender_id_fkey (
-                    firstname,
-                    lastname,
-                    avatar_url
-                  ),
-                  receiver:profiles!messages_receiver_id_fkey (
-                    firstname,
-                    lastname,
-                    avatar_url
-                  )
-                `
-                )
-                .eq('id', newMessageData.id)
-                .single()
-
-              if (fetchError) {
-                console.error('[Realtime] Error fetching message details:', fetchError)
-              }
-
-              if (fullMessage) {
-                setMessages((current) =>
-                  current.map((m) =>
-                    m.id === newMessageData.id ? (fullMessage as unknown as Message) : m
-                  )
-                )
-              }
-            })()
-
-            // Ajouter immédiatement le message (sans sender/receiver complet)
-            setTimeout(() => {
-              const messagesEnd = document.querySelector('[data-messages-end]')
-              messagesEnd?.scrollIntoView({ behavior: 'smooth' })
-            }, 100)
-            return [...prev, newMessageData as Message]
-          })
-
-          // Marquer automatiquement comme lu si on reçoit un message dans cette conversation
-          // (car la conversation est ouverte)
-          if (newMessageData.id && bookingId) {
-            await markMessagesAsRead(bookingId)
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `booking_id=eq.${bookingId}`,
-        },
-        (payload) => {
-          // Mettre à jour le message si modifié (ex: marqué comme lu)
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === payload.new.id ? (payload.new as Message) : msg
-            )
-          )
-        }
-      )
-      .subscribe()
-
-    // Stocker référence du channel
-    channelRef.current = channel
+    void setup()
 
     return () => {
       isActive = false
