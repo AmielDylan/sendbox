@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/shared/db/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { IconTrendingUp, IconChevronDown, IconChevronUp, IconLoader2 } from '@tabler/icons-react'
@@ -27,11 +27,8 @@ export function FinancialSummaryCard({ userId, role }: Props) {
   const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
 
-  useEffect(() => {
-    loadFinancials()
-  }, [userId, role])
-
-  async function loadFinancials() {
+  const loadFinancials = useCallback(async () => {
+    setIsLoading(true)
     const supabase = createClient()
 
     const query =
@@ -51,7 +48,11 @@ export function FinancialSummaryCard({ userId, role }: Props) {
     }
 
     setIsLoading(false)
-  }
+  }, [role, userId])
+
+  useEffect(() => {
+    loadFinancials()
+  }, [loadFinancials])
 
   if (isLoading) {
     return (

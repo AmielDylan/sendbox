@@ -226,9 +226,9 @@ export default function EditAnnouncementPage({
               <IconMapPin className="h-5 w-5" />
               Trajet
             </CardTitle>
-            <CardDescription>
-              Modifiez les villes de départ et d'arrivée
-            </CardDescription>
+	            <CardDescription>
+	              Modifiez les villes de départ et d’arrivée
+	            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -296,7 +296,7 @@ export default function EditAnnouncementPage({
 
               {/* Arrivée */}
               <div className="space-y-2">
-                <Label htmlFor="arrival_country">Pays d'arrivée</Label>
+	                <Label htmlFor="arrival_country">Pays d’arrivée</Label>
                 <Select
                   value={arrivalCountry}
                   onValueChange={(value: 'FR' | 'BJ') =>
@@ -322,7 +322,7 @@ export default function EditAnnouncementPage({
               </div>
 
               <div className="space-y-2 relative">
-                <Label htmlFor="arrival_city">Ville d'arrivée</Label>
+	                <Label htmlFor="arrival_city">Ville d’arrivée</Label>
                 <Input
                   {...register('arrival_city')}
                   placeholder="Paris, Cotonou..."
@@ -395,9 +395,9 @@ export default function EditAnnouncementPage({
               )}
             </div>
 
-            {/* Date d'arrivée */}
+            {/* Date d’arrivée */}
             <div className="space-y-2">
-              <Label>Date d'arrivée</Label>
+              <Label>Date d’arrivée</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -555,4 +555,3 @@ export default function EditAnnouncementPage({
     </div>
   )
 }
-
