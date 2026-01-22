@@ -4,6 +4,7 @@
  */
 
 import { createClient } from "@/lib/shared/db/server"
+import { redirect } from 'next/navigation'
 import type { Profile } from '@/types'
 
 /**
@@ -64,12 +65,10 @@ export async function hasApprovedKYC() {
  * Redirige vers la page de connexion avec un message de redirection
  */
 export function redirectToLogin(redirectPath?: string) {
-  const { redirect } = require('next/navigation')
   const path = redirectPath
     ? `/login?redirect=${encodeURIComponent(redirectPath)}`
     : '/login'
   redirect(path)
 }
-
 
 

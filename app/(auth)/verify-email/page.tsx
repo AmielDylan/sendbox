@@ -22,22 +22,25 @@ import { IconLoader2, IconPackage, IconCheck, IconX } from '@tabler/icons-react'
 function VerifyEmailForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'pending'>(
-    'loading'
-  )
   const token = searchParams.get('token_hash') || searchParams.get('token')
   const type = searchParams.get('type')
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'pending'>(() => {
+    // Si pas de token, c'est que l'utilisateur vient de s'inscrire: on affiche juste le message d'attente.
+    if (!token && !type) {
+      return 'pending'
+    }
+    return 'loading'
+  })
 
   useEffect(() => {
-    // Si pas de token, c'est que l'utilisateur vient de s'inscrire
-    // On affiche juste le message d'attente
     if (!token && !type) {
-      setStatus('pending')
       return
     }
 
     // Si token présent, vérifier l'email
     const verify = async () => {
+      setStatus('loading')
+
       try {
         const result = await verifyEmail(token || undefined, type || undefined)
         if (result?.error) {

@@ -4,7 +4,7 @@
 
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
 import { getUserConversations } from "@/lib/core/messages/actions"
@@ -113,6 +113,29 @@ function MessagesPageContent() {
     },
   })
 
+  // Mettre à jour la conversation sélectionnée quand on clique sur une conversation
+  const handleSelectConversation = useCallback(async (bookingId: string) => {
+    setSelectedBookingId(bookingId)
+
+    // Récupérer les détails de la conversation
+    const baseConversations = conversationsData || []
+    const conversationList =
+      pendingConversation && !baseConversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
+        ? [pendingConversation, ...baseConversations]
+        : baseConversations
+    const conversation = conversationList.find((c: any) => c.booking_id === bookingId)
+
+    if (conversation) {
+      setSelectedConversation({
+        bookingId,
+        otherUserId: conversation.other_user_id,
+        otherUserName: `${conversation.other_user_firstname || ''} ${conversation.other_user_lastname || ''
+          }`.trim() || 'Utilisateur',
+        otherUserAvatar: conversation.other_user_avatar_url,
+      })
+    }
+  }, [conversationsData, pendingConversation])
+
   // Auto-sélectionner la conversation si booking_id dans l'URL
   useEffect(() => {
     const loadConversationFromBooking = async () => {
@@ -175,7 +198,7 @@ function MessagesPageContent() {
     }
 
     loadConversationFromBooking()
-  }, [bookingIdFromUrl, conversationsData])
+  }, [bookingIdFromUrl, conversationsData, handleSelectConversation])
 
   useEffect(() => {
     if (pendingConversation && conversationsData?.some((c: any) => c.booking_id === pendingConversation.booking_id)) {
@@ -232,7 +255,7 @@ function MessagesPageContent() {
       return channel
     }
 
-    let channelPromise = setupRealtimeSubscription()
+    const channelPromise = setupRealtimeSubscription()
 
     return () => {
       isActive = false
@@ -350,29 +373,6 @@ function MessagesPageContent() {
       }
     }
   }, [refetchConversations, refetchNotifications])
-
-  // Mettre à jour la conversation sélectionnée quand on clique sur une conversation
-  const handleSelectConversation = async (bookingId: string) => {
-    setSelectedBookingId(bookingId)
-
-    // Récupérer les détails de la conversation
-    const baseConversations = conversationsData || []
-    const conversationList =
-      pendingConversation && !baseConversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
-        ? [pendingConversation, ...baseConversations]
-        : baseConversations
-    const conversation = conversationList.find((c: any) => c.booking_id === bookingId)
-
-    if (conversation) {
-      setSelectedConversation({
-        bookingId,
-        otherUserId: conversation.other_user_id,
-        otherUserName: `${conversation.other_user_firstname || ''} ${conversation.other_user_lastname || ''
-          }`.trim() || 'Utilisateur',
-        otherUserAvatar: conversation.other_user_avatar_url,
-      })
-    }
-  }
 
   const bookings = requestsData || []
   const notifications = notificationsData || []

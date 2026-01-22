@@ -3,7 +3,7 @@
  * et gérer les reconnexions automatiques
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from "@/lib/shared/db/client"
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
@@ -17,6 +17,7 @@ export function useRealtimeConnection() {
   const [status, setStatus] = useState<ConnectionStatus>('connecting')
   const [reconnectAttempts, setReconnectAttempts] = useState(0)
   const [lastConnectedAt, setLastConnectedAt] = useState<Date | null>(null)
+  const reconnectRef = useRef<(() => Promise<void>) | null>(null)
 
   const checkConnection = useCallback(async () => {
     try {
@@ -79,10 +80,14 @@ export function useRealtimeConnection() {
       const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 16000)
 
       setTimeout(() => {
-        reconnect()
+        reconnectRef.current?.()
       }, delay)
     }
   }, [checkConnection, reconnectAttempts])
+
+  useEffect(() => {
+    reconnectRef.current = reconnect
+  }, [reconnect])
 
   // Vérifier la connexion au montage
   useEffect(() => {
