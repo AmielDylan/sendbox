@@ -54,6 +54,54 @@ export function FinancialSummaryCard({ userId, role }: Props) {
     loadFinancials()
   }, [loadFinancials])
 
+  // Keep financials in sync without manual refresh (realtime)
+  useEffect(() => {
+    const supabase = createClient()
+    let channel: any = null
+    let isActive = true
+
+    const getChannelName = (userId: string, roleLabel: string) => {
+      const suffix =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2)
+      return `bookings:financials:${roleLabel}:${userId}:${suffix}`
+    }
+
+    const setup = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !isActive) return
+
+      const filter =
+        role === 'traveler' ? `traveler_id=eq.${userId}` : `sender_id=eq.${userId}`
+
+      channel = supabase
+        .channel(getChannelName(userId, role))
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter,
+          },
+          () => {
+            loadFinancials()
+          }
+        )
+        .subscribe()
+    }
+
+    void setup()
+
+    return () => {
+      isActive = false
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [loadFinancials, role, userId])
+
   if (isLoading) {
     return (
       <Card>
@@ -99,9 +147,14 @@ export function FinancialSummaryCard({ userId, role }: Props) {
               ).toFixed(2)}{' '}
               €
             </p>
-            {isTravelerFinancials(financials) && financials.pendingAmount > 0 && (
+            {isTravelerFinancials(financials) && financials.inTransitAmount > 0 && (
               <p className="text-sm text-muted-foreground mt-1">
-                dont {financials.pendingAmount.toFixed(2)} € en transit
+                dont {financials.inTransitAmount.toFixed(2)} € en transit
+              </p>
+            )}
+            {isTravelerFinancials(financials) && financials.awaitingPickupAmount > 0 && (
+              <p className="text-sm text-muted-foreground mt-1">
+                dont {financials.awaitingPickupAmount.toFixed(2)} € en attente de dépôt
               </p>
             )}
             {!isTravelerFinancials(financials) && (
@@ -127,7 +180,12 @@ export function FinancialSummaryCard({ userId, role }: Props) {
                     <span className="text-sm font-medium">
                       {booking.trackingNumber || `#${booking.bookingId.slice(0, 8)}`}
                     </span>
-                    <span className="text-sm font-bold">{booking.totalPrice.toFixed(2)} €</span>
+                    <span className="text-sm font-bold">
+                      {role === 'traveler'
+                        ? (booking.transportPrice - booking.commission).toFixed(2)
+                        : booking.totalPaid.toFixed(2)}{' '}
+                      €
+                    </span>
                   </div>
                   <div className="text-xs text-muted-foreground space-y-1">
                     <div className="flex justify-between">
@@ -138,10 +196,10 @@ export function FinancialSummaryCard({ userId, role }: Props) {
                       <span>Commission</span>
                       <span>-{booking.commission.toFixed(2)} €</span>
                     </div>
-                    {booking.insurance > 0 && (
+                    {booking.protection > 0 && (
                       <div className="flex justify-between">
-                        <span>Assurance</span>
-                        <span>{booking.insurance.toFixed(2)} €</span>
+                        <span>Protection du colis</span>
+                        <span>{booking.protection.toFixed(2)} €</span>
                       </div>
                     )}
                     {role === 'traveler' && (
