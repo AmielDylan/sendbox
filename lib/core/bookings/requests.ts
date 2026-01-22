@@ -79,16 +79,19 @@ export async function acceptBooking(bookingId: string) {
   // Calculer le poids réservé actuel (y compris les autres bookings confirmés)
   const { data: existingBookings } = await supabase
     .from('bookings')
-    .select('kilos_requested, weight_kg')
+    .select('id, kilos_requested, weight_kg')
     .eq('announcement_id', announcement.id)
-    .in('status', ['pending', 'accepted', 'in_transit'])
+    .neq('id', bookingId)
+    .in('status', ['accepted', 'paid', 'deposited', 'in_transit', 'delivered'])
 
   const reservedWeight =
     existingBookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
-  const availableWeight = (announcement.available_kg || 0) - reservedWeight
+  const availableWeight = Math.max(0, (announcement.available_kg || 0) - reservedWeight)
+  const requestedWeight = booking.kilos_requested || 0
+  const epsilon = 0.0001
 
-  // Vérifier la capacité disponible
-  if ((booking.kilos_requested || 0) > availableWeight) {
+  // Vérifier la capacité disponible (autoriser les égalités exactes)
+  if (requestedWeight - availableWeight > epsilon) {
     return {
       error: `Capacité insuffisante. Il reste ${availableWeight.toFixed(1)} kg disponible(s).`,
     }
