@@ -516,6 +516,13 @@ export async function confirmDeliveryReceipt(bookingId: string) {
     }
   }
 
+  const { error: servicesError } = await (supabase.rpc as any)('increment_completed_services', {
+    p_user_id: booking.traveler_id,
+  })
+  if (servicesError) {
+    console.error('Error incrementing completed services:', servicesError)
+  }
+
   const { error: notifError } = await createSystemNotification({
     userId: booking.traveler_id,
     type: 'delivery_confirmed',

@@ -174,24 +174,24 @@ export function FinancialSummaryCard({ userId, role }: Props) {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
                 <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Bloqué chez Sendbox
+                  Net bloqué chez Sendbox
                 </p>
                 <p className="text-3xl font-bold">
                   {financials.totalBlocked.toFixed(2)} €
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Libéré après confirmation de livraison.
+                  Montant destiné au voyageur, libéré après confirmation.
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background p-4">
                 <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Total payé
+                  Net payé
                 </p>
                 <p className="text-2xl font-semibold">
                   {financials.totalPaid.toFixed(2)} €
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {financials.bookings.length} colis concernés.
+                  {financials.bookings.length} colis concernés (commission déjà retirée).
                 </p>
               </div>
             </div>
@@ -215,8 +215,8 @@ export function FinancialSummaryCard({ userId, role }: Props) {
                     </span>
                     <span className="text-sm font-bold">
                       {role === 'traveler'
-                        ? (booking.transportPrice - booking.commission).toFixed(2)
-                        : booking.totalPaid.toFixed(2)}{' '}
+                        ? booking.netAmount.toFixed(2)
+                        : booking.netAmount.toFixed(2)}{' '}
                       €
                     </span>
                   </div>
@@ -243,7 +243,13 @@ export function FinancialSummaryCard({ userId, role }: Props) {
                     {role === 'traveler' && (
                       <div className="flex justify-between font-medium text-foreground pt-1 border-t">
                         <span>Vous recevrez</span>
-                        <span>{(booking.transportPrice - booking.commission).toFixed(2)} €</span>
+                        <span>{booking.netAmount.toFixed(2)} €</span>
+                      </div>
+                    )}
+                    {role === 'requester' && (
+                      <div className="flex justify-between font-medium text-foreground pt-1 border-t">
+                        <span>Net voyageur</span>
+                        <span>{booking.netAmount.toFixed(2)} €</span>
                       </div>
                     )}
                   </div>

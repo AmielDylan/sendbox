@@ -12,6 +12,7 @@ export interface BookingFinancialBreakdown {
   transportPrice: number
   commission: number
   protection: number
+  netAmount: number
   totalPaid: number
   status: BookingStatus
   trackingNumber: string | null
@@ -27,8 +28,8 @@ export interface TravelerFinancials {
 }
 
 export interface RequesterFinancials {
-  totalBlocked: number // Funds held (paid/deposited/in_transit/delivered, not confirmed)
-  totalPaid: number // All payments made
+  totalBlocked: number // Net funds held for traveler (paid/deposited/in_transit/delivered, not confirmed)
+  totalPaid: number // Net amount paid to traveler (all payments made)
   bookings: BookingFinancialBreakdown[]
 }
 
@@ -40,12 +41,14 @@ function mapToBreakdown(booking: Booking): BookingFinancialBreakdown {
   const commission = booking.commission_amount || 0
   const protection = booking.insurance_premium || 0
   const totalPaid = transportPrice + commission + protection
+  const netAmount = Math.max(0, transportPrice - commission)
 
   return {
     bookingId: booking.id,
     transportPrice,
     commission,
     protection,
+    netAmount,
     totalPaid,
     status: booking.status,
     trackingNumber: booking.tracking_number,
@@ -116,8 +119,7 @@ export function calculateRequesterFinancials(bookings: Booking[]): RequesterFina
   const totalBlocked = blockedBookings.reduce((sum, b) => {
     const price = b.total_price || 0
     const commission = b.commission_amount || 0
-    const protection = b.insurance_premium || 0
-    return sum + price + commission + protection
+    return sum + Math.max(0, price - commission)
   }, 0)
 
   // Total paid = all bookings with paid_at timestamp
@@ -126,8 +128,7 @@ export function calculateRequesterFinancials(bookings: Booking[]): RequesterFina
     .reduce((sum, b) => {
       const price = b.total_price || 0
       const commission = b.commission_amount || 0
-      const protection = b.insurance_premium || 0
-      return sum + price + commission + protection
+      return sum + Math.max(0, price - commission)
     }, 0)
 
   return {

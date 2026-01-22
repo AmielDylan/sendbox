@@ -62,7 +62,7 @@ sendbox/
 ├── hooks/                 # React hooks personnalisés
 ├── types/                 # Types TypeScript
 ├── supabase/              # Migrations + seed
-└── tests/                 # Tests E2E (Playwright)
+└── tests/                 # Tests unitaires et intégration
 ```
 
 ## 🎨 Design System
@@ -135,11 +135,17 @@ npm run generate:types
 ## 🧪 Tests
 
 ```bash
-# Tests E2E
-npm run test:e2e
+# Tests unitaires
+npm run test:unit
 
-# Tests E2E en mode UI
-npm run test:e2e:ui
+# Tests d'intégration
+npm run test:integration
+
+# Tests RLS
+npm run test:rls
+
+# Tout exécuter
+npm run test:all
 ```
 
 ## 📦 Build
