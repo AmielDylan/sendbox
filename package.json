@@ -17,11 +17,6 @@
     "test:integration": "vitest run __tests__/integration",
     "test:rls": "vitest run __tests__/rls",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:rls",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report",
     "stripe:listen": "tsx scripts/stripe-webhook-setup.ts",
     "stripe:test": "tsx scripts/stripe-test-events.ts",
     "stripe:check": "tsx scripts/check-stripe-workflows.ts"
@@ -83,7 +78,6 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
