@@ -60,7 +60,7 @@ export function useMessages(bookingId: string | null) {
       booking_id: bookingId || '',
       sender_id: message.sender_id,
       receiver_id: message.receiver_id,
-      content: message.content,  // Contenu déjà nettoyé côté ChatWindow
+      content: message.content,
       attachments: null,
       is_read: false,
       read_at: null,
