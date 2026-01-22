@@ -140,7 +140,7 @@ export default function SearchPage() {
             </Badge>
 
             <div className="max-w-3xl space-y-3">
-              <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-tight">
                 Rechercher un trajet
               </h1>
               <p className="text-sm text-muted-foreground sm:text-base max-w-xl leading-relaxed">
@@ -173,12 +173,12 @@ export default function SearchPage() {
                       }))
                     }
                   >
-                    <SelectTrigger id="departure_country" className="h-9 text-sm font-display">
+                    <SelectTrigger id="departure_country" className="h-9 text-sm">
                       <SelectValue placeholder="Tous les pays" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FR" className="font-display">France</SelectItem>
-                      <SelectItem value="BJ" className="font-display">Bénin</SelectItem>
+                      <SelectItem value="FR">France</SelectItem>
+                      <SelectItem value="BJ">Bénin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -194,12 +194,12 @@ export default function SearchPage() {
                       }))
                     }
                   >
-                    <SelectTrigger id="arrival_country" className="h-9 text-sm font-display">
+                    <SelectTrigger id="arrival_country" className="h-9 text-sm">
                       <SelectValue placeholder="Tous les pays" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FR" className="font-display">France</SelectItem>
-                      <SelectItem value="BJ" className="font-display">Bénin</SelectItem>
+                      <SelectItem value="FR">France</SelectItem>
+                      <SelectItem value="BJ">Bénin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -210,7 +210,7 @@ export default function SearchPage() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal h-9 text-sm font-display"
+                        className="w-full justify-start text-left font-normal h-9 text-sm"
                       >
                         <IconCalendar className="mr-2 h-3.5 w-3.5" />
                         {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
@@ -236,7 +236,7 @@ export default function SearchPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="min_kg" className="text-xs font-medium">Poids min.</Label>
-                    <span className="text-xs font-medium text-muted-foreground font-display">{filters.minKg || 1} kg</span>
+                    <span className="text-xs font-medium text-muted-foreground">{filters.minKg || 1} kg</span>
                   </div>
                   <Slider
                     id="min_kg"
@@ -259,18 +259,18 @@ export default function SearchPage() {
                       setFilters((prev) => ({ ...prev, sortBy: value }))
                     }
                   >
-                    <SelectTrigger id="sort_by" className="h-9 text-sm font-display">
+                    <SelectTrigger id="sort_by" className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="date" className="font-display">Date proche</SelectItem>
-                      <SelectItem value="price" className="font-display">Prix croissant</SelectItem>
-                      <SelectItem value="rating" className="font-display">Note voyageur</SelectItem>
+                      <SelectItem value="date">Date proche</SelectItem>
+                      <SelectItem value="price">Prix croissant</SelectItem>
+                      <SelectItem value="rating">Note voyageur</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <Button onClick={handleSearch} className="h-10 w-full text-sm font-medium rounded-md font-display tracking-tight">
+                <Button onClick={handleSearch} className="h-10 w-full text-sm font-medium rounded-md tracking-tight">
                   <IconSearch className="mr-2 h-4 w-4" />
                   Rechercher
                 </Button>

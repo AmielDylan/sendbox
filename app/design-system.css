@@ -111,9 +111,13 @@
 
 /* === Typography Classes === */
 .font-display {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+.landing .font-display {
+  font-family: var(--font-display);
 }
 
 .font-body {
@@ -127,7 +131,7 @@
 
 /* === Semantic Typography === */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -136,10 +140,6 @@ h1, h2, h3, h4, h5, h6 {
 p, li, td, th, label, span {
   font-family: var(--font-body);
   line-height: 1.6;
-}
-
-button {
-  font-family: var(--font-display);
 }
 
 /* === Gradient Backgrounds - Minimal pour Lyra === */

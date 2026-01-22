@@ -56,7 +56,7 @@ const steps = [
 
 export default function HomePage() {
   return (
-    <div className="bg-background">
+    <div className="landing bg-background">
       <section className="relative min-h-[calc(100dvh-4rem)] flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-hero-image opacity-35" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/75 via-background/50 to-background" aria-hidden="true" />

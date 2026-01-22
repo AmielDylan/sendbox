@@ -84,7 +84,7 @@ function LoginForm() {
             <div className="flex justify-center mb-4">
               <IconPackage className="h-12 w-12 text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-2xl font-display">
+            <CardTitle className="text-2xl">
               Vérification de la connexion...
             </CardTitle>
           </CardHeader>
@@ -141,7 +141,7 @@ function LoginForm() {
             <IconPackage className="h-10 w-10 text-primary" />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-display">Connexion</CardTitle>
+            <CardTitle className="text-2xl">Connexion</CardTitle>
             <CardDescription>
               Connectez-vous à votre compte Sendbox
             </CardDescription>
@@ -264,7 +264,7 @@ export default function LoginPage() {
             <div className="flex justify-center mb-4">
               <IconPackage className="h-12 w-12 text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-2xl font-display">
+            <CardTitle className="text-2xl">
               Chargement...
             </CardTitle>
           </CardHeader>

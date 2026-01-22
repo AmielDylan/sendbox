@@ -143,16 +143,6 @@
     @apply bg-background text-foreground font-sans;
   }
 
-  /* Apply Fraunces (font-display) only to Headings */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-display text-balance;
-  }
-
   /* Force Space Grotesk (font-sans) on buttons, inputs, labels, and badges */
   button,
   input,

@@ -72,7 +72,7 @@ function RegisterForm() {
             <div className="flex justify-center mb-4">
               <IconPackage className="h-12 w-12 text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-2xl font-display">
+            <CardTitle className="text-2xl">
               Vérification de la connexion...
             </CardTitle>
           </CardHeader>
@@ -110,7 +110,7 @@ function RegisterForm() {
             <IconPackage className="h-10 w-10 text-primary" />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-display">Créer un compte</CardTitle>
+            <CardTitle className="text-2xl">Créer un compte</CardTitle>
             <CardDescription>
               Rejoignez Sendbox pour commencer à envoyer et recevoir des colis
             </CardDescription>

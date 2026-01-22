@@ -89,7 +89,7 @@ export default async function PublicAnnouncementDetailPage({
         {/* Header Section */}
         <div className="flex flex-col gap-4 border-b border-border/40 pb-6">
           <div className="flex flex-col gap-2">
-            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground flex flex-wrap items-center gap-x-3">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground flex flex-wrap items-center gap-x-3">
               <span>{announcement.departure_city}</span>
               <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/40" stroke={1} />
               <span>{announcement.arrival_city}</span>
@@ -119,7 +119,7 @@ export default async function PublicAnnouncementDetailPage({
           <div className="lg:col-span-8 space-y-8">
             {/* Timeline */}
             <section className="space-y-3">
-              <h2 className="font-display text-xl font-bold">Détails du voyage</h2>
+              <h2 className="text-xl font-bold">Détails du voyage</h2>
               <div className="rounded-xl border border-border/60 bg-card/30 p-6">
                 <TripTimeline
                   originCity={announcement.departure_city}
@@ -133,7 +133,7 @@ export default async function PublicAnnouncementDetailPage({
 
             {/* Capacity & Pricing */}
             <section className="space-y-3">
-              <h2 className="font-display text-xl font-bold">Capacité & Prix</h2>
+              <h2 className="text-xl font-bold">Capacité & Prix</h2>
               <div className="rounded-xl border border-border/60 bg-card/30 p-6">
                 <CapacityProgress
                   maxWeight={announcement.available_kg || 0}
@@ -146,7 +146,7 @@ export default async function PublicAnnouncementDetailPage({
             {/* Description */}
             {announcement.description && (
               <section className="space-y-3">
-                <h2 className="font-display text-xl font-bold">À propos</h2>
+                <h2 className="text-xl font-bold">À propos</h2>
                 <div className="rounded-xl border border-border/60 bg-card/30 p-6">
                   <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
                     {announcement.description}
@@ -180,7 +180,7 @@ export default async function PublicAnnouncementDetailPage({
             {/* Owner Stats */}
             {isOwner && (
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
-                <h3 className="font-display text-base font-bold text-primary">Vos Statistiques</h3>
+                <h3 className="text-base font-bold text-primary">Vos Statistiques</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
                     <span className="text-sm text-muted-foreground font-medium">Vues totales</span>
@@ -216,7 +216,7 @@ export default async function PublicAnnouncementDetailPage({
                     <IconPackage className="h-6 w-6 text-primary" stroke={1.5} />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="font-display text-lg font-bold">Réserver ce trajet</h3>
+                    <h3 className="text-lg font-bold">Réserver ce trajet</h3>
                     <p className="text-sm text-muted-foreground">Connectez-vous pour envoyer une demande de transport.</p>
                   </div>
                   <Link href="/login" className="block w-full">
