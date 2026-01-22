@@ -26,7 +26,8 @@ function Calendar({
         month: 'flex flex-col gap-4',
         month_caption: 'flex justify-center pt-1 relative items-center',
         caption_label: 'text-sm font-medium',
-        nav: 'flex items-center justify-between absolute inset-x-0',
+        // Keep nav in normal flow to avoid click issues inside popovers/modals
+        nav: 'flex items-center justify-between mb-2',
         button_previous: cn(
           buttonVariants({ variant: 'outline' }),
           'size-7 bg-transparent p-0 opacity-50 hover:opacity-100'
