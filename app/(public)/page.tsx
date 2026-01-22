@@ -13,9 +13,9 @@ import {
   IconArrowRight,
   IconCurrencyEuro,
   IconClock,
-  IconMapPin,
   IconSparkles,
 } from '@tabler/icons-react'
+import { LandingCta } from '@/components/landing/LandingCta'
 
 const features = [
   {
@@ -85,20 +85,11 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
-              <Button asChild className="flex-1 min-w-[160px] sm:flex-none">
-                <Link href="/register">
-                  S'inscrire gratuitement
-                  <IconArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="flex-1 min-w-[160px] sm:flex-none">
-                <Link href="/recherche">
-                  <IconMapPin className="h-4 w-4" />
-                  Rechercher un trajet
-                </Link>
-              </Button>
-            </div>
+            <LandingCta
+              className="justify-center lg:justify-start"
+              registerClassName="flex-1 min-w-[160px] sm:flex-none"
+              searchClassName="flex-1 min-w-[160px] sm:flex-none"
+            />
           </div>
 
           <div className="relative order-first lg:order-last hidden sm:block">
