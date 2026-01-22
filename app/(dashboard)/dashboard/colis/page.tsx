@@ -135,7 +135,6 @@ export default function MyBookingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
-      const filter = `or=(sender_id.eq.${user.id},traveler_id.eq.${user.id})`
       channel = supabase
         .channel(getChannelName(user.id))
         .on(
@@ -144,7 +143,19 @@ export default function MyBookingsPage() {
             event: '*',
             schema: 'public',
             table: 'bookings',
-            filter,
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => {
+            refetch()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter: `traveler_id=eq.${user.id}`,
           },
           () => {
             refetch()
