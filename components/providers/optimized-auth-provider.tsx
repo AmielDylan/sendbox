@@ -17,7 +17,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { Session, User } from '@supabase/supabase-js'
 import { QUERY_KEYS, invalidateAuthQueries } from '@/lib/shared/query/config'
 import { useAuthStore } from '@/lib/stores/auth-store'
-import { createProfile } from '@/types'
 
 export interface Profile {
   id: string

@@ -8,7 +8,7 @@ import { createProfile } from '@/types'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
-  const { setUser, setProfile, setLoading, setInitialized, clear, user } = useAuthStore()
+  const { setUser, setProfile, setInitialized, clear, user } = useAuthStore()
   const listenerSetup = useRef(false)
   const supabaseRef = useRef(createClient())
 

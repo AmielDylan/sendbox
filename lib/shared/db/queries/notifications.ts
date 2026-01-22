@@ -16,18 +16,6 @@ export interface Notification {
   created_at: string
 }
 
-interface NotificationRow {
-  id: string
-  user_id: string
-  type: string
-  title: string
-  content: string
-  booking_id: string | null
-  announcement_id: string | null
-  read_at: string | null
-  created_at: string
-}
-
 /**
  * Récupère les notifications de l'utilisateur
  */
@@ -82,4 +70,3 @@ export async function getUnreadNotificationsCount() {
 
   return { count: count || 0 }
 }
-

@@ -17,8 +17,6 @@ interface RateLimitResult {
   reset: Date
 }
 
-const rateLimitStore = new Map<string, { count: number; reset: Date }>()
-
 /**
  * Rate limiting basique avec cookies
  * Pour production, utiliser Upstash Redis ou similaire
@@ -114,7 +112,6 @@ export async function sensitiveActionRateLimit(identifier: string) {
     identifier: `sensitive_${identifier}`,
   })
 }
-
 
 
 

@@ -5,8 +5,7 @@
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { IconStar, IconMessageCircle, IconUser } from '@tabler/icons-react'
+import { IconStar, IconMessageCircle } from '@tabler/icons-react'
 import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 
 interface ParticipantCardProps {
@@ -94,7 +93,6 @@ export function ParticipantCard({
     </div>
   )
 }
-
 
 
 

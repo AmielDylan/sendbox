@@ -176,7 +176,7 @@ describe('Announcements Actions', () => {
       })
 
       let callCount = 0
-      const fromMock = vi.fn((tableName: string) => {
+      const fromMock = vi.fn(() => {
         callCount++
 
         // Profile query

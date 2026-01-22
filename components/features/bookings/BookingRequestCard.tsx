@@ -25,7 +25,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { IconStar, IconPackage, IconCurrencyEuro, IconCalendar, IconMapPin, IconCircleCheck, IconCircleX, IconMessageCircle, IconPhoto } from '@tabler/icons-react'
+import { IconStar, IconPackage, IconCalendar, IconMapPin, IconCircleCheck, IconCircleX, IconMessageCircle, IconPhoto } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
@@ -132,7 +132,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
         setShowAcceptModal(false)
         onUpdate?.()
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue')
     } finally {
       setIsProcessing(false)
@@ -163,7 +163,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
         setRefusalReasonOther('')
         onUpdate?.()
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue')
     } finally {
       setIsProcessing(false)
@@ -487,7 +487,6 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
     </>
   )
 }
-
 
 
 

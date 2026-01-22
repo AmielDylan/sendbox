@@ -72,7 +72,7 @@ export default function KYCPage() {
         setKycStatus(result.status as KYCStatus)
         setSubmittedAt(result.submittedAt || null)
       }
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors du chargement du statut KYC')
     } finally {
       setIsLoading(false)
@@ -128,7 +128,7 @@ export default function KYCPage() {
         toast.success(result.message)
         await loadKYCStatus()
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)
@@ -487,7 +487,6 @@ export default function KYCPage() {
     </div>
   )
 }
-
 
 
 

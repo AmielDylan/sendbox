@@ -8,20 +8,17 @@ import { IconStar } from '@tabler/icons-react'
 
 interface RatingDistributionProps {
   distribution: Record<number, number>
-  totalRatings: number
 }
 
 export function RatingDistribution({
   distribution,
-  totalRatings,
 }: RatingDistributionProps) {
-  const maxCount = Math.max(...Object.values(distribution))
+  const maxCount = Math.max(...Object.values(distribution), 0)
 
   return (
     <div className="space-y-2">
       {[5, 4, 3, 2, 1].map((stars) => {
         const count = distribution[stars] || 0
-        const percentage = totalRatings > 0 ? (count / totalRatings) * 100 : 0
         const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0
 
         return (
@@ -47,8 +44,6 @@ export function RatingDistribution({
     </div>
   )
 }
-
-
 
 
 

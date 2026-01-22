@@ -204,7 +204,7 @@ export default function HomePage() {
 
               <div className="flex flex-col justify-center w-full">
                 <ol className="space-y-4 w-full">
-                  {steps.map((step, index) => {
+                  {steps.map((step) => {
                     const Icon = step.icon
                     return (
                       <li

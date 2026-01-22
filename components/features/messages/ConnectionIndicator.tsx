@@ -19,7 +19,6 @@ export function ConnectionIndicator({
   showText = true,
 }: ConnectionIndicatorProps) {
   const {
-    status,
     isConnected,
     isConnecting,
     isDisconnected,

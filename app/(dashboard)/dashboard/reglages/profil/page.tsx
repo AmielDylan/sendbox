@@ -92,7 +92,7 @@ export default function ProfilePage() {
           bio: (result.profile as any).bio || '',
         })
       }
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors du chargement du profil')
     } finally {
       setIsLoading(false)
@@ -129,7 +129,7 @@ export default function ProfilePage() {
         setAvatarFile(null)
         await Promise.all([loadProfile(), refetch()])
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsRemovingAvatar(false)
@@ -154,7 +154,7 @@ export default function ProfilePage() {
         await Promise.all([loadProfile(), refetch()])
         setAvatarFile(null)
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)

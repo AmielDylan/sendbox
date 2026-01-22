@@ -61,7 +61,7 @@ sendbox/
 │
 ├── hooks/                 # React hooks personnalisés
 ├── types/                 # Types TypeScript
-├── supabase/              # Migrations + seed
+├── supabase/              # Migrations Supabase
 └── tests/                 # Tests E2E (Playwright)
 ```
 

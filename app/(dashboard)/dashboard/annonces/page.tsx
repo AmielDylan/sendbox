@@ -13,7 +13,7 @@ import {
 } from "@/lib/core/announcements/management"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -28,15 +28,12 @@ import { toast } from 'sonner'
 import {
   IconLoader2,
   IconPlus,
-  IconMapPin,
   IconCalendar,
   IconPackage,
-  IconCurrencyEuro,
   IconEdit,
   IconTrash,
   IconCheck,
   IconEye,
-  IconMessage,
   IconArrowNarrowRight,
 } from '@tabler/icons-react'
 import Link from 'next/link'
@@ -126,7 +123,7 @@ export default function MyAnnouncementsPage() {
         setAnnouncementToDelete(null)
         refetch()
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue')
     } finally {
       setIsDeleting(false)
@@ -147,7 +144,7 @@ export default function MyAnnouncementsPage() {
         // Changer vers l'onglet "Terminées" pour montrer le résultat
         setActiveTab('completed')
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue')
     }
   }

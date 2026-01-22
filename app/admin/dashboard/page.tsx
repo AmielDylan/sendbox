@@ -3,7 +3,6 @@
  */
 
 import { Suspense } from 'react'
-import { createClient } from "@/lib/shared/db/server"
 import { isAdmin, getAdminStats } from "@/lib/core/admin/actions"
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -141,7 +140,6 @@ export default function AdminDashboardPage() {
     </Suspense>
   )
 }
-
 
 
 

@@ -5,16 +5,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { redirect } from 'next/navigation'
 import {
   IconLayoutDashboard,
   IconMessage,
   IconPackage,
   IconSettings,
-  IconBell,
   IconMenu2,
-  IconX,
-  IconChevronRight,
   IconLoader2,
   IconShield,
   IconCheck,
@@ -38,7 +34,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
