@@ -21,6 +21,7 @@ import {
 } from '@tabler/icons-react'
 import { PublicHeader } from '@/components/layouts/PublicHeader'
 import { PublicFooter } from '@/components/layouts/PublicFooter'
+import { LandingCta } from '@/components/landing/LandingCta'
 
 const features = [
   {
@@ -99,20 +100,13 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start w-full">
-                  <Button asChild className="min-w-[140px] rounded-md">
-                    <Link href="/register">
-                      S'inscrire gratuitement
-                      <IconArrowRight className="h-4 w-4 ml-2" />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" className="min-w-[140px] rounded-md">
-                    <Link href="/recherche">
-                      <IconMapPin className="h-4 w-4 mr-2" />
-                      Rechercher un trajet
-                    </Link>
-                  </Button>
-                </div>
+                <LandingCta
+                  className="justify-center lg:justify-start w-full"
+                  registerClassName="min-w-[140px] rounded-md"
+                  searchClassName="min-w-[140px] rounded-md"
+                  arrowClassName="ml-2"
+                  mapClassName="mr-2"
+                />
               </div>
             </div>
 
