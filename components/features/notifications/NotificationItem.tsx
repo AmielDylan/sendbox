@@ -35,6 +35,7 @@ const NOTIFICATION_ICONS = {
   deposit_reminder: IconPackage,
   transit_started: IconTruck,
   delivery_reminder: IconPackage,
+  delivery_confirmed: IconCircleCheck,
   rating_request: IconStar,
   admin_message: IconMessageCircle,
   system_alert: IconShield,
@@ -48,6 +49,7 @@ const NOTIFICATION_COLORS = {
   deposit_reminder: 'text-yellow-500',
   transit_started: 'text-blue-500',
   delivery_reminder: 'text-yellow-500',
+  delivery_confirmed: 'text-green-500',
   rating_request: 'text-yellow-500',
   admin_message: 'text-purple-500',
   system_alert: 'text-red-500',
@@ -70,6 +72,9 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
   }
 
   const getLink = () => {
+    if (notification.type === 'admin_message' && notification.booking_id) {
+      return `/dashboard/messages?booking=${notification.booking_id}`
+    }
     if (notification.booking_id) {
       return `/dashboard/colis/${notification.booking_id}`
     }
@@ -121,14 +126,3 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
 
   return content
 }
-
-
-
-
-
-
-
-
-
-
-

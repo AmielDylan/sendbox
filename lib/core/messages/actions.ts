@@ -6,7 +6,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
-import { sanitizeMessageContent } from '@/lib/shared/security/xss-protection'
 import { createSystemNotification } from "@/lib/core/notifications/system"
 import { z } from 'zod'
 
@@ -109,8 +108,7 @@ export async function sendMessage(data: SendMessageInput) {
     }
   }
 
-  // Nettoyer le contenu (protection XSS - devrait déjà être nettoyé côté client, mais double check)
-  const cleanContent = sanitizeMessageContent(content)
+  const cleanContent = content.trim()
 
   if (cleanContent.length === 0) {
     return {
