@@ -152,4 +152,8 @@
   .badge {
     @apply font-sans;
   }
+
+  .bg-destructive {
+    color: var(--destructive-foreground);
+  }
 }

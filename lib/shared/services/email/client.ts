@@ -89,6 +89,30 @@ export async function sendEmail(params: SendEmailParams) {
 
     const { data, error } = await resend.emails.send(emailPayload)
 
+    if (error && params.useResendTemplate) {
+      console.warn('Resend template failed, falling back to inline HTML:', error)
+      const fallbackPayload = {
+        from: FROM_EMAIL,
+        to: params.to,
+        subject: params.subject,
+        html: getEmailTemplate(params.template, params.data),
+      }
+      const { data: fallbackData, error: fallbackError } = await resend.emails.send(fallbackPayload)
+
+      if (fallbackError) {
+        console.error('Error sending fallback email:', fallbackError)
+        return {
+          success: false,
+          error: fallbackError.message,
+        }
+      }
+
+      return {
+        success: true,
+        id: fallbackData?.id,
+      }
+    }
+
     if (error) {
       console.error('Error sending email:', error)
       return {
@@ -389,7 +413,6 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
       `
   }
 }
-
 
 
 
