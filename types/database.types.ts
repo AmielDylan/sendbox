@@ -805,6 +805,7 @@ export type Database = {
           stripe_payment_intent_id: string | null
           stripe_payout_id: string | null
           stripe_transfer_id: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
@@ -819,6 +820,7 @@ export type Database = {
           stripe_payment_intent_id?: string | null
           stripe_payout_id?: string | null
           stripe_transfer_id?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
@@ -833,6 +835,7 @@ export type Database = {
           stripe_payment_intent_id?: string | null
           stripe_payout_id?: string | null
           stripe_transfer_id?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
           type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string
         }
@@ -1024,6 +1027,11 @@ export type Database = {
         | "insurance"
         | "payout"
         | "refund"
+      transaction_status:
+        | "pending"
+        | "completed"
+        | "failed"
+        | "refunded"
       user_role: "sender" | "traveler" | "both" | "admin"
     }
     CompositeTypes: {
