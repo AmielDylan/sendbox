@@ -29,12 +29,10 @@ interface BookingWithRelations {
   sender: {
     firstname: string | null
     lastname: string | null
-    email?: string | null
   } | null
   traveler: {
     firstname: string | null
     lastname: string | null
-    email?: string | null
   } | null
   announcement: {
     departure_city: string
@@ -60,13 +58,12 @@ export function TransportContract({ booking }: TransportContractProps) {
   }
 
   const getDisplayName = (
-    person: { firstname: string | null; lastname: string | null; email?: string | null } | null,
+    person: { firstname: string | null; lastname: string | null } | null,
     fallback: string
   ) => {
     const name = `${person?.firstname ?? ''} ${person?.lastname ?? ''}`.trim()
     if (name) return name
-    const email = person?.email?.trim()
-    return email || fallback
+    return fallback
   }
 
   const senderName = getDisplayName(booking.sender, 'Expéditeur')
@@ -96,17 +93,10 @@ export function TransportContract({ booking }: TransportContractProps) {
 
           <Text style={styles.label}>L'EXPÉDITEUR :</Text>
           <Text style={styles.text}>{senderName}</Text>
-          {booking.sender?.email && (
-            <Text style={styles.text}>{booking.sender.email}</Text>
-          )}
-
           <View style={styles.spacer} />
 
           <Text style={styles.label}>LE VOYAGEUR :</Text>
           <Text style={styles.text}>{travelerName}</Text>
-          {booking.traveler?.email && (
-            <Text style={styles.text}>{booking.traveler.email}</Text>
-          )}
         </View>
 
         {/* Trajet */}
@@ -281,7 +271,6 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
 
 
 
