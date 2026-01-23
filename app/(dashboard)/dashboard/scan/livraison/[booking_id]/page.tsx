@@ -5,21 +5,20 @@
 'use client'
 
 import { use, useState, useRef, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
   SignatureCanvas,
   type SignatureCanvasRef,
 } from '@/components/features/bookings/SignatureCanvas'
 import { markAsDelivered } from "@/lib/core/bookings/workflow"
-import { IconLoader2, IconMapPin, IconCircleCheck, IconCamera } from '@tabler/icons-react'
+import { IconLoader2, IconMapPin, IconCircleCheck } from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface ScanDeliveryPageProps {
@@ -29,7 +28,6 @@ interface ScanDeliveryPageProps {
 export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   const { booking_id } = use(params)
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [booking, setBooking] = useState<any>(null)

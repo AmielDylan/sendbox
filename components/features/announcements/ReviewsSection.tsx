@@ -21,10 +21,9 @@ interface Review {
 
 interface ReviewsSectionProps {
   reviews: Review[]
-  travelerId: string
 }
 
-export function ReviewsSection({ reviews, travelerId }: ReviewsSectionProps) {
+export function ReviewsSection({ reviews }: ReviewsSectionProps) {
   if (reviews.length === 0) {
     return (
       <Card>
@@ -91,7 +90,6 @@ export function ReviewsSection({ reviews, travelerId }: ReviewsSectionProps) {
     </Card>
   )
 }
-
 
 
 

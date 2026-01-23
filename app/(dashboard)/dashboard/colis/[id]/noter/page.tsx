@@ -8,7 +8,7 @@ import { useState, useEffect, useTransition, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconStar, IconLoader2, IconSend } from '@tabler/icons-react'
+import { IconLoader2, IconSend } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,7 +18,6 @@ import { PageHeader } from '@/components/ui/page-header'
 import { StarRating } from '@/components/features/ratings/StarRating'
 import { ratingSchema, RATING_SUGGESTIONS, type RatingInput } from "@/lib/core/ratings/validations"
 import { submitRating, canRateBooking } from "@/lib/core/ratings/actions"
-import { cn } from "@/lib/utils"
 
 function RatingPageContent() {
   const params = useParams()
@@ -242,7 +241,6 @@ export default function RatingPage() {
     </Suspense>
   )
 }
-
 
 
 

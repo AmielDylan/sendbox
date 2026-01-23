@@ -33,7 +33,7 @@ export default function AuthLayout({
                   Accès sécurisé
                 </Badge>
                 <div className="space-y-3">
-                  <h1 className="font-display text-2xl text-balance">
+                  <h1 className="text-2xl text-balance">
                     Votre espace Sendbox
                   </h1>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -59,22 +59,22 @@ export default function AuthLayout({
                     Ils nous font confiance
                   </p>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="border border-border/60 bg-background/80 px-4 py-3">
-                      <p className="text-sm italic text-foreground">
-                        "Réservation rapide, suivi clair et échange facile."
-                      </p>
-                      <p className="mt-3 text-xs text-muted-foreground">
-                        Aïcha · Expéditrice
-                      </p>
-                    </div>
-                    <div className="border border-border/60 bg-background/80 px-4 py-3">
-                      <p className="text-sm italic text-foreground">
-                        "Interface simple et profils rassurants."
-                      </p>
-                      <p className="mt-3 text-xs text-muted-foreground">
-                        Marc · Voyageur
-                      </p>
-                    </div>
+	                    <div className="border border-border/60 bg-background/80 px-4 py-3">
+	                      <p className="text-sm italic text-foreground">
+	                        « Réservation rapide, suivi clair et échange facile. »
+	                      </p>
+	                      <p className="mt-3 text-xs text-muted-foreground">
+	                        Aïcha · Expéditrice
+	                      </p>
+	                    </div>
+	                    <div className="border border-border/60 bg-background/80 px-4 py-3">
+	                      <p className="text-sm italic text-foreground">
+	                        « Interface simple et profils rassurants. »
+	                      </p>
+	                      <p className="mt-3 text-xs text-muted-foreground">
+	                        Marc · Voyageur
+	                      </p>
+	                    </div>
                   </div>
                 </div>
                 <div className="border border-border/70 bg-background/70 px-4 py-3 text-sm text-muted-foreground">

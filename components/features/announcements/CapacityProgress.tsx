@@ -18,7 +18,6 @@ export function CapacityProgress({
 }: CapacityProgressProps) {
   const availableWeight = Math.max(0, maxWeight - reservedWeight)
   const percentageUsed = maxWeight > 0 ? (reservedWeight / maxWeight) * 100 : 0
-  const percentageAvailable = maxWeight > 0 ? (availableWeight / maxWeight) * 100 : 0
 
   return (
     <div className="space-y-4">
@@ -64,7 +63,6 @@ export function CapacityProgress({
     </div>
   )
 }
-
 
 
 

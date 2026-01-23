@@ -20,36 +20,41 @@ import { IconPackage, IconMessage, IconTrendingUp, IconShield, IconCheck, IconCl
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
 import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialSummaryCard'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
+import { calculateRequesterFinancials, calculateTravelerFinancials } from '@/lib/core/bookings/financial-calculations'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { KYCStatus } from '@/types'
+import type { Database } from '@/types/database.types'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Bar, BarChart, XAxis } from 'recharts'
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
-type BookingStatus =
-  | 'pending'
-  | 'accepted'
-  | 'paid'
-  | 'deposited'
-  | 'in_transit'
-  | 'delivered'
-  | 'cancelled'
+type BookingStatus = Database['public']['Enums']['booking_status']
 
 type StatusCounts = Record<BookingStatus, number>
 
-type BookingRow = {
-  id: string
-  status: BookingStatus
-  sender_id: string
-  traveler_id: string
-}
+type Booking = Database['public']['Tables']['bookings']['Row']
+type BookingRow = Pick<
+  Booking,
+  | 'id'
+  | 'status'
+  | 'sender_id'
+  | 'traveler_id'
+  | 'total_price'
+  | 'commission_amount'
+  | 'insurance_premium'
+  | 'delivery_confirmed_at'
+  | 'paid_at'
+>
 
 type DashboardStats = {
   activeAnnouncements: number
   unreadMessages: number
-  revenueTotal: number
+  travelerAvailable: number
+  requesterBlocked: number
+  hasTravelerBookings: boolean
+  hasRequesterBookings: boolean
   sentStatus: StatusCounts
   receivedStatus: StatusCounts
   packagesStatus: StatusCounts
@@ -67,11 +72,13 @@ type RecentNotification = {
 const createEmptyStatusCounts = (): StatusCounts => ({
   pending: 0,
   accepted: 0,
+  refused: 0,
   paid: 0,
   deposited: 0,
   in_transit: 0,
   delivered: 0,
   cancelled: 0,
+  disputed: 0,
 })
 
 const countByStatus = (bookings: BookingRow[]) => {
@@ -94,7 +101,10 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>({
     activeAnnouncements: 0,
     unreadMessages: 0,
-    revenueTotal: 0,
+    travelerAvailable: 0,
+    requesterBlocked: 0,
+    hasTravelerBookings: false,
+    hasRequesterBookings: false,
     sentStatus: createEmptyStatusCounts(),
     receivedStatus: createEmptyStatusCounts(),
     packagesStatus: createEmptyStatusCounts(),
@@ -141,7 +151,7 @@ export default function DashboardPage() {
       const supabase = createClient()
 
       try {
-        const [announcementsResult, unreadResult, bookingsResult, transactionsResult, notificationsResult] =
+        const [announcementsResult, unreadResult, bookingsResult, notificationsResult] =
           await Promise.all([
             supabase
               .from('announcements')
@@ -155,13 +165,8 @@ export default function DashboardPage() {
               .eq('is_read', false),
             supabase
               .from('bookings')
-              .select('id, status, sender_id, traveler_id')
+              .select('id, status, sender_id, traveler_id, total_price, commission_amount, insurance_premium, delivery_confirmed_at, paid_at')
               .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`),
-            supabase
-              .from('transactions')
-              .select('amount, type')
-              .eq('user_id', user.id)
-              .in('type', ['payment', 'payout']),
             supabase
               .from('notifications')
               .select('id, title, content, created_at, booking_id, link')
@@ -170,21 +175,21 @@ export default function DashboardPage() {
               .limit(3),
           ])
 
-        const revenueTotal = (transactionsResult.data || []).reduce(
-          (sum, transaction) => sum + (transaction.amount || 0),
-          0
-        )
-
         const bookings = (bookingsResult.data as BookingRow[]) || []
         const sentBookings = bookings.filter((booking) => booking.sender_id === user.id)
         const receivedBookings = bookings.filter((booking) => booking.traveler_id === user.id)
+        const travelerFinancials = calculateTravelerFinancials(receivedBookings as Booking[])
+        const requesterFinancials = calculateRequesterFinancials(sentBookings as Booking[])
         const sentStatus = countByStatus(sentBookings)
         const receivedStatus = countByStatus(receivedBookings)
 
         setStats({
           activeAnnouncements: announcementsResult.count || 0,
           unreadMessages: unreadResult.count || 0,
-          revenueTotal,
+          travelerAvailable: travelerFinancials.availableAmount,
+          requesterBlocked: requesterFinancials.totalBlocked,
+          hasTravelerBookings: receivedBookings.length > 0,
+          hasRequesterBookings: sentBookings.length > 0,
           sentStatus,
           receivedStatus,
           packagesStatus: sentStatus,
@@ -214,6 +219,9 @@ export default function DashboardPage() {
     stats.receivedStatus.deposited +
     stats.receivedStatus.in_transit +
     stats.receivedStatus.delivered
+  const showTravelerSummary = stats.hasTravelerBookings
+  const showRequesterSummary = stats.hasRequesterBookings
+  const summaryColumns = showTravelerSummary && showRequesterSummary ? 'md:grid-cols-2' : 'md:grid-cols-1'
 
   // Configuration des charts pour EvilCharts
   const sentRequestChartData = [
@@ -362,25 +370,31 @@ export default function DashboardPage() {
 
         <Card className="flex-1 min-w-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenus</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {showTravelerSummary ? 'Revenus' : 'Fonds bloqués'}
+            </CardTitle>
             <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isLoadingStats ? '—' : `€${stats.revenueTotal.toFixed(0)}`}
+              {isLoadingStats
+                ? '—'
+                : `€${(showTravelerSummary ? stats.travelerAvailable : stats.requesterBlocked).toFixed(2)}`}
             </div>
             <p className="text-xs text-muted-foreground">
-              total des transactions
+              {showTravelerSummary
+                ? 'disponible maintenant (net Sendbox)'
+                : 'montant net destiné au voyageur'}
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Financial Summary Widgets */}
-      {user?.id && (
-        <div className="grid gap-6 md:grid-cols-2">
-          <FinancialSummaryCard userId={user.id} role="traveler" />
-          <FinancialSummaryCard userId={user.id} role="requester" />
+      {user?.id && (showTravelerSummary || showRequesterSummary) && (
+        <div className={`grid gap-6 ${summaryColumns}`}>
+          {showTravelerSummary && <FinancialSummaryCard userId={user.id} role="traveler" />}
+          {showRequesterSummary && <FinancialSummaryCard userId={user.id} role="requester" />}
         </div>
       )}
 

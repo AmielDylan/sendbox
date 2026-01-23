@@ -90,7 +90,7 @@ export default function AccountPage() {
         toast.success(result.message)
         passwordForm.reset()
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsChangingPassword(false)
@@ -111,7 +111,7 @@ export default function AccountPage() {
         toast.success(result.message)
         emailForm.reset()
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsChangingEmail(false)
@@ -134,7 +134,7 @@ export default function AccountPage() {
           router.push(result.redirect)
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsDeleting(false)
@@ -470,5 +470,4 @@ export default function AccountPage() {
     </div>
   )
 }
-
 

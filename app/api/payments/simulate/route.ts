@@ -8,6 +8,7 @@ import { calculateBookingAmounts } from "@/lib/core/payments/calculations"
 import { getPaymentsMode } from "@/lib/shared/config/features"
 import { generateTransportContract } from "@/lib/shared/services/pdf/generation"
 import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
+import { createSystemNotification } from "@/lib/core/notifications/system"
 
 export async function POST(req: NextRequest) {
   if (getPaymentsMode() !== 'simulation') {
@@ -130,23 +131,31 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: booking.traveler_id,
-      p_type: 'payment_confirmed',
-      p_title: 'Paiement reçu',
-      p_content: `Paiement de ${amounts.totalAmount.toFixed(2)}€ reçu. Les fonds seront versés après la livraison confirmée.`,
-      p_booking_id: booking_id,
-      p_announcement_id: booking.announcement_id,
+    const travelerNotification = await createSystemNotification({
+      userId: booking.traveler_id,
+      type: 'payment_confirmed',
+      title: 'Paiement reçu',
+      content: `Paiement de ${amounts.totalAmount.toFixed(2)}€ reçu. Les fonds seront versés après la livraison confirmée.`,
+      bookingId: booking_id,
+      announcementId: booking.announcement_id,
     })
 
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: booking.sender_id,
-      p_type: 'payment_confirmed',
-      p_title: 'Paiement confirmé',
-      p_content: 'Votre paiement a été confirmé. Vous pouvez maintenant voir le contrat de transport et le QR code.',
-      p_booking_id: booking_id,
-      p_announcement_id: booking.announcement_id,
+    const senderNotification = await createSystemNotification({
+      userId: booking.sender_id,
+      type: 'payment_confirmed',
+      title: 'Paiement confirmé',
+      content:
+        'Votre paiement a été confirmé. Vous pouvez maintenant voir le contrat de transport et le QR code.',
+      bookingId: booking_id,
+      announcementId: booking.announcement_id,
     })
+
+    if (travelerNotification.error || senderNotification.error) {
+      console.error('Notification creation failed (non-blocking):', {
+        traveler: travelerNotification.error,
+        sender: senderNotification.error,
+      })
+    }
   } catch (notifError) {
     console.error('Notification creation failed (non-blocking):', notifError)
   }

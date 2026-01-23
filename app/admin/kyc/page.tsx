@@ -27,7 +27,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
@@ -53,10 +52,6 @@ export default function AdminKYCPage() {
   const [selectedKYC, setSelectedKYC] = useState<PendingKYC | null>(null)
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
   const [isReviewing, setIsReviewing] = useState(false)
-  const [documentUrls, setDocumentUrls] = useState<{
-    front: string | null
-    back: string | null
-  }>({ front: null, back: null })
 
   const {
     register,
@@ -82,7 +77,7 @@ export default function AdminKYCPage() {
       } else {
         setKycList(result.kycList || [])
       }
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors du chargement des KYC')
     } finally {
       setIsLoading(false)
@@ -121,17 +116,14 @@ export default function AdminKYCPage() {
         setSelectedKYC(null)
         await loadPendingKYC()
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsReviewing(false)
     }
   }
 
-  const handleViewDocument = async (
-    filePath: string | null,
-    side: 'front' | 'back'
-  ) => {
+  const handleViewDocument = async (filePath: string | null) => {
     if (!filePath) return
 
     try {
@@ -142,10 +134,9 @@ export default function AdminKYCPage() {
       }
 
       if (result.url) {
-        setDocumentUrls(prev => ({ ...prev, [side]: result.url! }))
         window.open(result.url, '_blank')
       }
-    } catch (error) {
+    } catch {
       toast.error("Erreur lors de l'ouverture du document")
     }
   }
@@ -228,8 +219,7 @@ export default function AdminKYCPage() {
                           size="sm"
                           onClick={() =>
                             handleViewDocument(
-                              kyc.kyc_document_front || null,
-                              'front'
+                              kyc.kyc_document_front || null
                             )
                           }
                         >
@@ -242,8 +232,7 @@ export default function AdminKYCPage() {
                             size="sm"
                             onClick={() =>
                               handleViewDocument(
-                                kyc.kyc_document_back || null,
-                                'back'
+                                kyc.kyc_document_back || null
                               )
                             }
                           >

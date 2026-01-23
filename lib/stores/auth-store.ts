@@ -23,7 +23,8 @@ export type AuthStore = AuthState & AuthActions
 const initialState: AuthState = {
   user: null,
   profile: null,
-  loading: false, // false par défaut car hydratation depuis localStorage
+  // ✅ true par défaut pour éviter les redirects prématurés avant l'hydratation + getSession()
+  loading: true,
   initialized: false,
 }
 
@@ -47,6 +48,9 @@ export const useAuthStore = create<AuthStore>()(
     {
       name: 'sendbox-auth-storage',
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        state?.setInitialized(true)
+      },
       partialize: (state) => ({
         // Persister seulement user et profile, pas loading/initialized
         user: state.user,

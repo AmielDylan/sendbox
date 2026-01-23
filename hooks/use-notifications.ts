@@ -5,7 +5,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from "@/lib/shared/db/client"
 import { toast } from 'sonner'
-import Link from 'next/link'
 import { Notification } from "@/lib/shared/db/queries/notifications"
 
 export function useNotifications(limit: number = 20) {
@@ -121,11 +120,11 @@ export function useNotifications(limit: number = 20) {
               })
             }
           )
-          .subscribe((status, err) => {
+          .subscribe((status) => {
             if (status === 'SUBSCRIBED') {
               console.log('✅ Subscribed to notifications realtime')
             } else if (status === 'CHANNEL_ERROR') {
-              console.error('❌ Realtime subscription error:', err)
+              console.error('❌ Realtime subscription error')
               toast.error('Erreur de connexion temps réel')
             } else if (status === 'TIMED_OUT') {
               console.error('⏱️ Realtime subscription timed out')

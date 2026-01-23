@@ -7,7 +7,7 @@
 import Link from 'next/link'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { IconShield, IconClock, IconAlertCircle, IconX } from '@tabler/icons-react'
+import { IconShield, IconClock, IconX } from '@tabler/icons-react'
 import type { KYCStatus } from '@/types'
 
 interface KYCAlertBannerProps {
@@ -69,4 +69,3 @@ export function KYCAlertBanner({ kycStatus, rejectionReason, className }: KYCAle
     </Alert>
   )
 }
-

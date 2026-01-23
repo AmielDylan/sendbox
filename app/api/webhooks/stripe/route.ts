@@ -12,6 +12,7 @@ import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
 import { sendEmail } from "@/lib/shared/services/email/client"
 import Stripe from 'stripe'
 import { getPaymentsMode } from '@/lib/shared/config/features'
+import { createSystemNotification } from '@/lib/core/notifications/system'
 
 export async function POST(req: NextRequest) {
   if (getPaymentsMode() !== 'stripe') {
@@ -171,24 +172,31 @@ export async function POST(req: NextRequest) {
 
         // Créer notifications pour les deux parties (ne pas bloquer si ça échoue)
         try {
-          // Notification au voyageur
-          await (supabase.rpc as any)('create_notification', {
-            p_user_id: paymentIntent.metadata.traveler_id,
-            p_type: 'payment_confirmed',
-            p_title: 'Paiement reçu',
-            p_content: `Paiement de ${totalAmount}€ reçu. Les fonds seront versés après la livraison confirmée.`,
-            p_booking_id: booking_id,
+          const travelerNotification = await createSystemNotification({
+            userId: paymentIntent.metadata.traveler_id,
+            type: 'payment_confirmed',
+            title: 'Paiement reçu',
+            content: `Paiement de ${totalAmount}€ reçu. Les fonds seront versés après la livraison confirmée.`,
+            bookingId: booking_id,
           })
 
-          // Notification à l'expéditeur
-          await (supabase.rpc as any)('create_notification', {
-            p_user_id: paymentIntent.metadata.sender_id,
-            p_type: 'payment_confirmed',
-            p_title: 'Paiement confirmé',
-            p_content: 'Votre paiement a été confirmé. Vous pouvez maintenant voir le contrat de transport et le QR code.',
-            p_booking_id: booking_id,
+          const senderNotification = await createSystemNotification({
+            userId: paymentIntent.metadata.sender_id,
+            type: 'payment_confirmed',
+            title: 'Paiement confirmé',
+            content:
+              'Votre paiement a été confirmé. Vous pouvez maintenant voir le contrat de transport et le QR code.',
+            bookingId: booking_id,
           })
-          console.log('✅ Notifications sent')
+
+          if (travelerNotification.error || senderNotification.error) {
+            console.error('❌ Notification creation failed (non-blocking):', {
+              traveler: travelerNotification.error,
+              sender: senderNotification.error,
+            })
+          } else {
+            console.log('✅ Notifications sent')
+          }
         } catch (notifError) {
           console.error('❌ Notification creation failed (non-blocking):', notifError)
         }

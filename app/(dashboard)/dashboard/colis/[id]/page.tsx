@@ -34,6 +34,7 @@ import { PackagePhotosGallery } from '@/components/features/bookings/PackagePhot
 import { RefuseBookingDialog } from '@/components/features/bookings/RefuseBookingDialog'
 import { CancelBookingDialog } from '@/components/features/bookings/CancelBookingDialog'
 import { DeleteBookingDialog } from '@/components/features/bookings/DeleteBookingDialog'
+import { ConfirmDeliveryDialog } from '@/components/features/bookings/ConfirmDeliveryDialog'
 import { acceptBooking } from "@/lib/core/bookings/requests"
 import {
   getPublicProfiles,
@@ -44,7 +45,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { arePaymentsEnabled } from '@/lib/shared/config/features'
 
-type BookingStatus = 'pending' | 'accepted' | 'paid' | 'deposited' | 'in_transit' | 'delivered' | 'cancelled'
+type BookingStatus = 'pending' | 'accepted' | 'paid' | 'deposited' | 'in_transit' | 'delivered' | 'confirmed' | 'cancelled'
 
 interface BookingDetail {
   id: string
@@ -64,6 +65,7 @@ interface BookingDetail {
   refused_reason: string | null
   deposited_at: string | null
   delivered_at: string | null
+  delivery_confirmed_at: string | null
   sender_id: string
   traveler_id: string
   sender: PublicProfile | null
@@ -135,6 +137,8 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             return { ...prev, ...updated }
           })
 
+          void loadBookingDetails()
+
           if (paymentsEnabled && (updated.status === 'paid' || updated.paid_at) && !paymentConfirmedRef.current) {
             paymentConfirmedRef.current = true
             setIsCheckingPayment(false)
@@ -148,7 +152,100 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [id])
+  }, [id, paymentsEnabled])
+
+  useEffect(() => {
+    if (!id || !currentUserId) {
+      return
+    }
+
+    const supabase = createClient()
+    const suffix =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+
+    const channel = supabase
+      .channel(`booking-notifications:${id}:${currentUserId}:${suffix}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `booking_id=eq.${id}`,
+        },
+        (payload) => {
+          const notification = payload.new as { user_id?: string | null }
+          if (notification.user_id && notification.user_id !== currentUserId) {
+            return
+          }
+          void loadBookingDetails()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id, currentUserId])
+
+  useEffect(() => {
+    if (!booking?.sender_id || !booking?.traveler_id) {
+      return
+    }
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`booking-profiles-${booking.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${booking.sender_id}`,
+        },
+        () => {
+          void refreshProfiles(booking.sender_id, booking.traveler_id)
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${booking.traveler_id}`,
+        },
+        () => {
+          void refreshProfiles(booking.sender_id, booking.traveler_id)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [booking?.sender_id, booking?.traveler_id, booking?.id])
+
+  async function refreshProfiles(senderId: string, travelerId: string) {
+    const supabase = createClient()
+    const { data: publicProfiles } = await getPublicProfiles(supabase, [
+      senderId,
+      travelerId,
+    ])
+    const profileById = mapPublicProfilesById(publicProfiles || [])
+
+    setBooking((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        sender: profileById[senderId] || prev.sender,
+        traveler: profileById[travelerId] || prev.traveler,
+      }
+    })
+  }
 
   const loadBookingDetails = async () => {
     try {
@@ -349,6 +446,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   const isSender = booking.sender_id === currentUserId
   const isTraveler = booking.traveler_id === currentUserId
   const fallbackTotalPrice = booking.total_price ?? booking.kilos_requested * (booking.price_per_kg || 0)
+  const displayStatus: BookingStatus = booking.delivery_confirmed_at ? 'confirmed' : booking.status
 
   const handleAcceptBooking = async () => {
     setIsAccepting(true)
@@ -416,7 +514,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                       : `Réservation #${booking.id.slice(0, 8)}`}
                   </p>
                 </div>
-                <BookingStatusBadge status={booking.status} />
+                <BookingStatusBadge status={displayStatus} />
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -575,8 +673,12 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                   </>
                 )}
 
+                {isSender && booking.status === 'delivered' && !booking.delivery_confirmed_at && (
+                  <ConfirmDeliveryDialog bookingId={booking.id} />
+                )}
+
                 {isSender && booking.status === 'delivered' && (
-                  <Button asChild className="w-full">
+                  <Button asChild className="w-full" variant="outline">
                     <Link href={`/dashboard/colis/${booking.id}/noter`}>
                       <IconStar className="mr-2 h-4 w-4" />
                       Noter le voyageur
@@ -645,7 +747,16 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                   <Button asChild className="w-full">
                     <Link href={`/dashboard/scan/livraison/${booking.id}`}>
                       <IconPackage className="mr-2 h-4 w-4" />
-                      Scanner QR livraison
+                      Confirmer la livraison
+                    </Link>
+                  </Button>
+                )}
+
+                {isTraveler && booking.status === 'delivered' && (
+                  <Button asChild className="w-full" variant="outline">
+                    <Link href={`/dashboard/colis/${booking.id}/noter`}>
+                      <IconStar className="mr-2 h-4 w-4" />
+                      Noter le client
                     </Link>
                   </Button>
                 )}

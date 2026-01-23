@@ -44,11 +44,13 @@ export async function generateTransportContract(bookingId: string) {
         *,
         sender:sender_id (
           firstname,
-          lastname
+          lastname,
+          email
         ),
         traveler:traveler_id (
           firstname,
-          lastname
+          lastname,
+          email
         ),
         announcements:announcement_id (
           departure_city,
@@ -162,11 +164,13 @@ export async function generateDepositProof(bookingId: string) {
         *,
         sender:sender_id (
           firstname,
-          lastname
+          lastname,
+          email
         ),
         traveler:traveler_id (
           firstname,
-          lastname
+          lastname,
+          email
         ),
         announcements:announcement_id (
           departure_city,
@@ -268,11 +272,13 @@ export async function generateDeliveryProof(bookingId: string) {
         *,
         sender:sender_id (
           firstname,
-          lastname
+          lastname,
+          email
         ),
         traveler:traveler_id (
           firstname,
-          lastname
+          lastname,
+          email
         ),
         announcements:announcement_id (
           departure_city,

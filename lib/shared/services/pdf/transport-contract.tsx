@@ -8,18 +8,9 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
 } from '@react-pdf/renderer'
 import { getCountryName } from '@/lib/utils/countries'
 import { MAX_INSURANCE_COVERAGE } from "@/lib/core/bookings/validations"
-
-// Enregistrer les polices (optionnel, utilise Helvetica par défaut)
-Font.register({
-  family: 'Helvetica',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/helvetica/v15/JizExREF2nGCv19lOl2eyE.ttf' },
-  ],
-})
 
 interface BookingWithRelations {
   id: string
@@ -38,12 +29,10 @@ interface BookingWithRelations {
   sender: {
     firstname: string | null
     lastname: string | null
-    email?: string | null
   } | null
   traveler: {
     firstname: string | null
     lastname: string | null
-    email?: string | null
   } | null
   announcement: {
     departure_city: string
@@ -73,7 +62,8 @@ export function TransportContract({ booking }: TransportContractProps) {
     fallback: string
   ) => {
     const name = `${person?.firstname ?? ''} ${person?.lastname ?? ''}`.trim()
-    return name || fallback
+    if (name) return name
+    return fallback
   }
 
   const senderName = getDisplayName(booking.sender, 'Expéditeur')
@@ -103,17 +93,10 @@ export function TransportContract({ booking }: TransportContractProps) {
 
           <Text style={styles.label}>L'EXPÉDITEUR :</Text>
           <Text style={styles.text}>{senderName}</Text>
-          {booking.sender?.email && (
-            <Text style={styles.text}>{booking.sender.email}</Text>
-          )}
-
           <View style={styles.spacer} />
 
           <Text style={styles.label}>LE VOYAGEUR :</Text>
           <Text style={styles.text}>{travelerName}</Text>
-          {booking.traveler?.email && (
-            <Text style={styles.text}>{booking.traveler.email}</Text>
-          )}
         </View>
 
         {/* Trajet */}
@@ -288,8 +271,6 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
-
 
 
 

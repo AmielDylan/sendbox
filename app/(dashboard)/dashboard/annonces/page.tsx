@@ -13,7 +13,7 @@ import {
 } from "@/lib/core/announcements/management"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -28,15 +28,12 @@ import { toast } from 'sonner'
 import {
   IconLoader2,
   IconPlus,
-  IconMapPin,
   IconCalendar,
   IconPackage,
-  IconCurrencyEuro,
   IconEdit,
   IconTrash,
   IconCheck,
   IconEye,
-  IconMessage,
   IconArrowNarrowRight,
 } from '@tabler/icons-react'
 import Link from 'next/link'
@@ -126,7 +123,7 @@ export default function MyAnnouncementsPage() {
         setAnnouncementToDelete(null)
         refetch()
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue')
     } finally {
       setIsDeleting(false)
@@ -147,7 +144,7 @@ export default function MyAnnouncementsPage() {
         // Changer vers l'onglet "Terminées" pour montrer le résultat
         setActiveTab('completed')
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue')
     }
   }
@@ -201,7 +198,7 @@ export default function MyAnnouncementsPage() {
                       <IconPackage className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <div className="space-y-2">
-                      <p className="font-display text-lg text-foreground">
+                      <p className="text-lg text-foreground">
                         {emptyTitle}
                       </p>
                       <p className="text-sm text-muted-foreground max-w-sm">
@@ -224,7 +221,7 @@ export default function MyAnnouncementsPage() {
                     <CardHeader className="p-5 pb-3">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div className="space-y-1">
-                          <h3 className="font-display font-bold text-xl sm:text-2xl text-foreground flex flex-wrap items-center gap-2 group-hover:text-primary transition-colors">
+                          <h3 className="font-bold text-xl sm:text-2xl text-foreground flex flex-wrap items-center gap-2 group-hover:text-primary transition-colors">
                             <span>{announcement.departure_city}</span>
                             <span className="text-muted-foreground font-normal text-base mx-1">({getCountryName(announcement.departure_country)})</span>
                             <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/50" stroke={1} />

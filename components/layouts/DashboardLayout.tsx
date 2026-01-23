@@ -5,16 +5,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { redirect } from 'next/navigation'
 import {
   IconLayoutDashboard,
   IconMessage,
   IconPackage,
   IconSettings,
-  IconBell,
   IconMenu2,
-  IconX,
-  IconChevronRight,
   IconLoader2,
   IconShield,
   IconCheck,
@@ -38,7 +34,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
@@ -226,10 +221,9 @@ function SidebarContent({
 function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" asChild>
-        <Link href="/recherche">
-          <IconSearch className="mr-2 h-4 w-4" />
-          Recherche
+      <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+        <Link href="/recherche" aria-label="Recherche">
+          <IconSearch className="h-4 w-4" />
         </Link>
       </Button>
       <ClientOnly>

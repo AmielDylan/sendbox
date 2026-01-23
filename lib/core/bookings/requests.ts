@@ -10,6 +10,7 @@ import {
   getPublicProfiles,
   mapPublicProfilesById,
 } from "@/lib/shared/db/queries/public-profiles"
+import { createSystemNotification } from "@/lib/core/notifications/system"
 
 /**
  * Accepte une demande de réservation
@@ -78,16 +79,19 @@ export async function acceptBooking(bookingId: string) {
   // Calculer le poids réservé actuel (y compris les autres bookings confirmés)
   const { data: existingBookings } = await supabase
     .from('bookings')
-    .select('kilos_requested, weight_kg')
+    .select('id, kilos_requested, weight_kg')
     .eq('announcement_id', announcement.id)
-    .in('status', ['pending', 'accepted', 'in_transit'])
+    .neq('id', bookingId)
+    .in('status', ['accepted', 'paid', 'deposited', 'in_transit', 'delivered'])
 
   const reservedWeight =
     existingBookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
-  const availableWeight = (announcement.available_kg || 0) - reservedWeight
+  const availableWeight = Math.max(0, (announcement.available_kg || 0) - reservedWeight)
+  const requestedWeight = booking.kilos_requested || 0
+  const epsilon = 0.0001
 
-  // Vérifier la capacité disponible
-  if ((booking.kilos_requested || 0) > availableWeight) {
+  // Vérifier la capacité disponible (autoriser les égalités exactes)
+  if (requestedWeight - availableWeight > epsilon) {
     return {
       error: `Capacité insuffisante. Il reste ${availableWeight.toFixed(1)} kg disponible(s).`,
     }
@@ -110,17 +114,16 @@ export async function acceptBooking(bookingId: string) {
       }
     }
 
-    // Créer notification pour l'expéditeur (ne pas bloquer si ça échoue)
-    try {
-      await (supabase.rpc as any)('create_notification', {
-        p_user_id: booking.sender_id,
-        p_type: 'booking_accepted',
-        p_title: 'Demande acceptée',
-        p_content: 'Votre demande de réservation a été acceptée. Veuillez procéder au paiement.',
-        p_booking_id: bookingId,
-        p_announcement_id: announcement.id,
-      })
-    } catch (notifError) {
+    // Créer notification pour l'expéditeur (non-bloquant)
+    const { error: notifError } = await createSystemNotification({
+      userId: booking.sender_id,
+      type: 'booking_accepted',
+      title: 'Demande acceptée',
+      content: 'Votre demande de réservation a été acceptée. Veuillez procéder au paiement.',
+      bookingId,
+      announcementId: announcement.id,
+    })
+    if (notifError) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
 
@@ -220,17 +223,16 @@ export async function refuseBooking(bookingId: string, reason: string) {
       }
     }
 
-    // Créer notification pour l'expéditeur (ne pas bloquer si ça échoue)
-    try {
-      await (supabase.rpc as any)('create_notification', {
-        p_user_id: booking.sender_id,
-        p_type: 'booking_refused',
-        p_title: 'Demande refusée',
-        p_content: `Votre demande de réservation a été refusée. Raison : ${reason.trim()}`,
-        p_booking_id: bookingId,
-        p_announcement_id: announcement.id,
-      })
-    } catch (notifError) {
+    // Créer notification pour l'expéditeur (non-bloquant)
+    const { error: notifError } = await createSystemNotification({
+      userId: booking.sender_id,
+      type: 'booking_refused',
+      title: 'Demande refusée',
+      content: `Votre demande de réservation a été refusée. Raison : ${reason.trim()}`,
+      bookingId,
+      announcementId: announcement.id,
+    })
+    if (notifError) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
 

@@ -200,7 +200,6 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                   </h3>
                   <RatingDistribution
                     distribution={stats.distribution}
-                    totalRatings={stats.totalRatings}
                   />
                 </div>
               )}

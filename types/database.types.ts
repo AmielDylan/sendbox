@@ -207,6 +207,8 @@ export type Database = {
           commission_amount: number | null
           commission_rate: number | null
           created_at: string | null
+          delivery_confirmed_at: string | null
+          delivery_confirmed_by: string | null
           delivered_at: string | null
           delivery_location_lat: number | null
           delivery_location_lng: number | null
@@ -255,6 +257,8 @@ export type Database = {
           commission_amount?: number | null
           commission_rate?: number | null
           created_at?: string | null
+          delivery_confirmed_at?: string | null
+          delivery_confirmed_by?: string | null
           delivered_at?: string | null
           delivery_location_lat?: number | null
           delivery_location_lng?: number | null
@@ -303,6 +307,8 @@ export type Database = {
           commission_amount?: number | null
           commission_rate?: number | null
           created_at?: string | null
+          delivery_confirmed_at?: string | null
+          delivery_confirmed_by?: string | null
           delivered_at?: string | null
           delivery_location_lat?: number | null
           delivery_location_lng?: number | null
@@ -799,6 +805,7 @@ export type Database = {
           stripe_payment_intent_id: string | null
           stripe_payout_id: string | null
           stripe_transfer_id: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
@@ -813,6 +820,7 @@ export type Database = {
           stripe_payment_intent_id?: string | null
           stripe_payout_id?: string | null
           stripe_transfer_id?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
           user_id: string
         }
@@ -827,6 +835,7 @@ export type Database = {
           stripe_payment_intent_id?: string | null
           stripe_payout_id?: string | null
           stripe_transfer_id?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
           type?: Database["public"]["Enums"]["transaction_type"]
           user_id?: string
         }
@@ -1008,6 +1017,7 @@ export type Database = {
         | "deposit_reminder"
         | "transit_started"
         | "delivery_reminder"
+        | "delivery_confirmed"
         | "rating_request"
         | "admin_message"
         | "system_alert"
@@ -1017,6 +1027,11 @@ export type Database = {
         | "insurance"
         | "payout"
         | "refund"
+      transaction_status:
+        | "pending"
+        | "completed"
+        | "failed"
+        | "refunded"
       user_role: "sender" | "traveler" | "both" | "admin"
     }
     CompositeTypes: {
@@ -1175,6 +1190,7 @@ export const Constants = {
         "deposit_reminder",
         "transit_started",
         "delivery_reminder",
+        "delivery_confirmed",
         "rating_request",
         "admin_message",
         "system_alert",

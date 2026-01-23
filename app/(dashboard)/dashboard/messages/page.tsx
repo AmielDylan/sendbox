@@ -4,7 +4,7 @@
 
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
 import { getUserConversations } from "@/lib/core/messages/actions"
@@ -37,6 +37,11 @@ type ConversationSummary = {
 function MessagesPageContent() {
   const searchParams = useSearchParams()
   const bookingIdFromUrl = searchParams.get('booking')
+  const tabFromUrl = searchParams.get('tab')
+  const resolvedTab =
+    tabFromUrl === 'notifications' || tabFromUrl === 'requests' || tabFromUrl === 'chat'
+      ? tabFromUrl
+      : null
 
   const [unreadCount, setUnreadCount] = useState(0)
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(bookingIdFromUrl)
@@ -47,13 +52,18 @@ function MessagesPageContent() {
     otherUserAvatar: string | null
   } | null>(null)
   const [pendingConversation, setPendingConversation] = useState<ConversationSummary | null>(null)
-  const [activeTab, setActiveTab] = useState(bookingIdFromUrl ? 'chat' : 'chat')
+  const [activeTab, setActiveTab] = useState(resolvedTab || 'chat')
 
   useEffect(() => {
     if (bookingIdFromUrl) {
       setActiveTab('chat')
+      return
     }
-  }, [bookingIdFromUrl])
+
+    if (resolvedTab) {
+      setActiveTab(resolvedTab)
+    }
+  }, [bookingIdFromUrl, resolvedTab])
 
   // Query pour les conversations
   const {
@@ -112,6 +122,29 @@ function MessagesPageContent() {
       return result.data || []
     },
   })
+
+  // Mettre à jour la conversation sélectionnée quand on clique sur une conversation
+  const handleSelectConversation = useCallback(async (bookingId: string) => {
+    setSelectedBookingId(bookingId)
+
+    // Récupérer les détails de la conversation
+    const baseConversations = conversationsData || []
+    const conversationList =
+      pendingConversation && !baseConversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
+        ? [pendingConversation, ...baseConversations]
+        : baseConversations
+    const conversation = conversationList.find((c: any) => c.booking_id === bookingId)
+
+    if (conversation) {
+      setSelectedConversation({
+        bookingId,
+        otherUserId: conversation.other_user_id,
+        otherUserName: `${conversation.other_user_firstname || ''} ${conversation.other_user_lastname || ''
+          }`.trim() || 'Utilisateur',
+        otherUserAvatar: conversation.other_user_avatar_url,
+      })
+    }
+  }, [conversationsData, pendingConversation])
 
   // Auto-sélectionner la conversation si booking_id dans l'URL
   useEffect(() => {
@@ -175,7 +208,7 @@ function MessagesPageContent() {
     }
 
     loadConversationFromBooking()
-  }, [bookingIdFromUrl, conversationsData])
+  }, [bookingIdFromUrl, conversationsData, handleSelectConversation])
 
   useEffect(() => {
     if (pendingConversation && conversationsData?.some((c: any) => c.booking_id === pendingConversation.booking_id)) {
@@ -232,7 +265,7 @@ function MessagesPageContent() {
       return channel
     }
 
-    let channelPromise = setupRealtimeSubscription()
+    const channelPromise = setupRealtimeSubscription()
 
     return () => {
       isActive = false
@@ -262,7 +295,6 @@ function MessagesPageContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
-      const filter = `or=(sender_id.eq.${user.id},traveler_id.eq.${user.id})`
       channel = supabase
         .channel(getChannelName(user.id))
         .on(
@@ -271,7 +303,21 @@ function MessagesPageContent() {
             event: '*',
             schema: 'public',
             table: 'bookings',
-            filter,
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => {
+            refetchRequests()
+            refetchConversations()
+            refetchNotifications()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter: `traveler_id=eq.${user.id}`,
           },
           () => {
             refetchRequests()
@@ -310,7 +356,6 @@ function MessagesPageContent() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
-      const filter = `or=(sender_id.eq.${user.id},receiver_id.eq.${user.id})`
       channel = supabase
         .channel(getChannelName(user.id))
         .on(
@@ -319,7 +364,20 @@ function MessagesPageContent() {
             event: 'INSERT',
             schema: 'public',
             table: 'messages',
-            filter,
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => {
+            refetchConversations()
+            refetchNotifications()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `receiver_id=eq.${user.id}`,
           },
           () => {
             refetchConversations()
@@ -332,7 +390,19 @@ function MessagesPageContent() {
             event: 'UPDATE',
             schema: 'public',
             table: 'messages',
-            filter,
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => {
+            refetchConversations()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter: `receiver_id=eq.${user.id}`,
           },
           () => {
             refetchConversations()
@@ -350,29 +420,6 @@ function MessagesPageContent() {
       }
     }
   }, [refetchConversations, refetchNotifications])
-
-  // Mettre à jour la conversation sélectionnée quand on clique sur une conversation
-  const handleSelectConversation = async (bookingId: string) => {
-    setSelectedBookingId(bookingId)
-
-    // Récupérer les détails de la conversation
-    const baseConversations = conversationsData || []
-    const conversationList =
-      pendingConversation && !baseConversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
-        ? [pendingConversation, ...baseConversations]
-        : baseConversations
-    const conversation = conversationList.find((c: any) => c.booking_id === bookingId)
-
-    if (conversation) {
-      setSelectedConversation({
-        bookingId,
-        otherUserId: conversation.other_user_id,
-        otherUserName: `${conversation.other_user_firstname || ''} ${conversation.other_user_lastname || ''
-          }`.trim() || 'Utilisateur',
-        otherUserAvatar: conversation.other_user_avatar_url,
-      })
-    }
-  }
 
   const bookings = requestsData || []
   const notifications = notificationsData || []

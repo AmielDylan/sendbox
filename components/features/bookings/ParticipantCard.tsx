@@ -5,8 +5,7 @@
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { IconStar, IconMessageCircle, IconUser } from '@tabler/icons-react'
+import { IconStar, IconMessageCircle } from '@tabler/icons-react'
 import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
 
 interface ParticipantCardProps {
@@ -40,7 +39,7 @@ export function ParticipantCard({
     profile?.lastname ?? null
   )
   const profileId = profile?.id
-  const profileRating = profile?.rating ?? null
+  const profileRating = typeof profile?.rating === 'number' ? profile.rating : 0
   const completedServices = profile?.completed_services ?? null
   const avatarUrl = getAvatarUrl(profile?.avatar_url ?? null, profileId || displayName)
 
@@ -70,12 +69,10 @@ export function ParticipantCard({
             <span className="font-medium">{displayName}</span>
           )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {profileRating !== null && (
-              <div className="flex items-center gap-1">
-                <IconStar className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                <span>{profileRating.toFixed(1)}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-1">
+              <IconStar className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              <span>{profileRating.toFixed(1)}</span>
+            </div>
             {completedServices !== null && (
               <span>• {completedServices} service{completedServices > 1 ? 's' : ''}</span>
             )}
@@ -94,9 +91,3 @@ export function ParticipantCard({
     </div>
   )
 }
-
-
-
-
-
-

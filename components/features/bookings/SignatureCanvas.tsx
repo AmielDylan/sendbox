@@ -85,9 +85,12 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
       <div className="space-y-2">
         <Card>
           <CardContent className="pt-6">
-            <div className="border-2 border-dashed rounded-lg bg-muted/20">
+            {/* Always render the signature area on a "paper" background for dark mode readability */}
+            <div className="border-2 border-dashed rounded-lg bg-white">
               <SignatureCanvasLib
                 ref={signaturePad}
+                backgroundColor="#ffffff"
+                penColor="#0f172a"
                 canvasProps={{
                   className: 'w-full h-[200px] cursor-crosshair',
                 }}
@@ -116,7 +119,6 @@ export const SignatureCanvas = forwardRef<SignatureCanvasRef, SignatureCanvasPro
 )
 
 SignatureCanvas.displayName = 'SignatureCanvas'
-
 
 
 

@@ -4,7 +4,6 @@
 
 import sharp from 'sharp'
 import { MAX_FILE_SIZE_COMPRESSED } from "@/lib/core/kyc/validations"
-import { validateKYCDocument } from "@/lib/shared/security/upload-validation"
 
 /**
  * Vérifie les magic bytes d'un fichier pour valider son type réel

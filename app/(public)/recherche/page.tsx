@@ -4,7 +4,6 @@
 
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -12,13 +11,13 @@ import {
   countSearchAnnouncements,
   type SearchFilters,
 } from "@/lib/shared/db/queries/announcements"
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -45,11 +44,9 @@ import {
   IconCalendar,
   IconSparkles,
   IconMapPin,
-  IconFilter,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { useAuth } from '@/hooks/use-auth'
 import { getCountryName } from '@/lib/utils/countries'
 
 const sortLabelMap = {
@@ -59,7 +56,6 @@ const sortLabelMap = {
 } as const
 
 export default function SearchPage() {
-  const { user } = useAuth()
   const [filters, setFilters] = useState<SearchFilters>({
     departureCountry: null,
     arrivalCountry: null,
@@ -71,6 +67,7 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false)
 
   const [departureDate, setDepartureDate] = useState<Date | undefined>(undefined)
+  const { user } = useAuth()
 
   // Query pour rechercher les annonces
   const {
@@ -145,7 +142,7 @@ export default function SearchPage() {
             </Badge>
 
             <div className="max-w-3xl space-y-3">
-              <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl tracking-tight leading-tight">
                 Rechercher un trajet
               </h1>
               <p className="text-sm text-muted-foreground sm:text-base max-w-xl leading-relaxed">
@@ -178,12 +175,12 @@ export default function SearchPage() {
                       }))
                     }
                   >
-                    <SelectTrigger id="departure_country" className="h-9 text-sm font-display">
+                    <SelectTrigger id="departure_country" className="h-9 text-sm">
                       <SelectValue placeholder="Tous les pays" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FR" className="font-display">France</SelectItem>
-                      <SelectItem value="BJ" className="font-display">Bénin</SelectItem>
+                      <SelectItem value="FR">France</SelectItem>
+                      <SelectItem value="BJ">Bénin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -199,12 +196,12 @@ export default function SearchPage() {
                       }))
                     }
                   >
-                    <SelectTrigger id="arrival_country" className="h-9 text-sm font-display">
+                    <SelectTrigger id="arrival_country" className="h-9 text-sm">
                       <SelectValue placeholder="Tous les pays" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="FR" className="font-display">France</SelectItem>
-                      <SelectItem value="BJ" className="font-display">Bénin</SelectItem>
+                      <SelectItem value="FR">France</SelectItem>
+                      <SelectItem value="BJ">Bénin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -215,7 +212,7 @@ export default function SearchPage() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal h-9 text-sm font-display"
+                        className="w-full justify-start text-left font-normal h-9 text-sm"
                       >
                         <IconCalendar className="mr-2 h-3.5 w-3.5" />
                         {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
@@ -241,7 +238,7 @@ export default function SearchPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="min_kg" className="text-xs font-medium">Poids min.</Label>
-                    <span className="text-xs font-medium text-muted-foreground font-display">{filters.minKg || 1} kg</span>
+                    <span className="text-xs font-medium text-muted-foreground">{filters.minKg || 1} kg</span>
                   </div>
                   <Slider
                     id="min_kg"
@@ -264,18 +261,18 @@ export default function SearchPage() {
                       setFilters((prev) => ({ ...prev, sortBy: value }))
                     }
                   >
-                    <SelectTrigger id="sort_by" className="h-9 text-sm font-display">
+                    <SelectTrigger id="sort_by" className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="date" className="font-display">Date proche</SelectItem>
-                      <SelectItem value="price" className="font-display">Prix croissant</SelectItem>
-                      <SelectItem value="rating" className="font-display">Note voyageur</SelectItem>
+                      <SelectItem value="date">Date proche</SelectItem>
+                      <SelectItem value="price">Prix croissant</SelectItem>
+                      <SelectItem value="rating">Note voyageur</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                <Button onClick={handleSearch} className="h-10 w-full text-sm font-medium rounded-md font-display tracking-tight">
+                <Button onClick={handleSearch} className="h-10 w-full text-sm font-medium rounded-md tracking-tight">
                   <IconSearch className="mr-2 h-4 w-4" />
                   Rechercher
                 </Button>
@@ -361,19 +358,23 @@ export default function SearchPage() {
               </Card>
             ) : (
               <div className="space-y-4">
-                {announcements.map((announcement) => (
-                  <AnnouncementCard
-                    key={announcement.id}
-                    announcement={announcement}
-                    showMatchScore={
-                      !!(
-                        filters.departureCountry ||
-                        filters.arrivalCountry ||
-                        filters.departureDate
-                      )
-                    }
-                  />
-                ))}
+                {announcements.map((announcement) => {
+                  const isOwnAnnouncement = !!user && user.id === announcement.traveler_id
+                  return (
+                    <AnnouncementCard
+                      key={announcement.id}
+                      announcement={announcement}
+                      disabled={isOwnAnnouncement}
+                      showMatchScore={
+                        !!(
+                          filters.departureCountry ||
+                          filters.arrivalCountry ||
+                          filters.departureDate
+                        )
+                      }
+                    />
+                  )
+                })}
               </div>
             )}
 

@@ -195,7 +195,7 @@ export default function NewAnnouncementPage() {
 
         router.push('/dashboard/annonces')
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)
@@ -233,44 +233,47 @@ export default function NewAnnouncementPage() {
       {/* Indicateur d'étapes */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            {STEPS.map((step, index) => {
-              const StepIcon = step.icon
-              const isActive = currentStep === step.id
-              const isCompleted = currentStep > step.id
+          <div className="relative">
+            <div
+              className="absolute left-4 right-4 top-4 h-0.5 rounded-full bg-primary origin-left transition-transform"
+              style={{
+                transform: `scaleX(${(currentStep - 1) / (STEPS.length - 1)})`,
+              }}
+            />
 
-              return (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1">
+            <div className="grid grid-cols-3 gap-4">
+              {STEPS.map((step) => {
+                const StepIcon = step.icon
+                const isActive = currentStep === step.id
+                const isCompleted = currentStep > step.id
+
+                return (
+                  <div key={step.id} className="flex flex-col items-center text-center">
                     <div
-                      className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-colors ${
+                      className={`flex items-center justify-center w-9 h-9 rounded-full border-2 transition-colors ${
                         isActive
-                          ? 'border-primary bg-primary text-primary-foreground'
+                          ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                           : isCompleted
-                            ? 'border-green-500 bg-green-500 text-white'
+                            ? 'border-emerald-500 bg-emerald-500 text-white'
                             : 'border-muted bg-muted text-muted-foreground'
                       }`}
                     >
-                      <StepIcon className="h-6 w-6" />
+                      <StepIcon className="h-4 w-4" />
                     </div>
+                    <span className="mt-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Étape {step.id}
+                    </span>
                     <p
-                      className={`mt-2 text-sm font-medium ${
-                        isActive ? 'text-primary' : 'text-muted-foreground'
+                      className={`mt-1 text-sm font-medium ${
+                        isActive ? 'text-foreground' : 'text-muted-foreground'
                       }`}
                     >
                       {step.title}
                     </p>
                   </div>
-                  {index < STEPS.length - 1 && (
-                    <div
-                      className={`h-0.5 flex-1 mx-4 ${
-                        isCompleted ? 'bg-green-500' : 'bg-muted'
-                      }`}
-                    />
-                  )}
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -700,5 +703,3 @@ export default function NewAnnouncementPage() {
     </div>
   )
 }
-
-

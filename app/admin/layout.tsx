@@ -4,7 +4,6 @@
 
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/server"
 import { isAdmin } from "@/lib/core/admin/actions"
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -83,7 +82,6 @@ export default async function AdminLayout({
     </div>
   )
 }
-
 
 
 

@@ -46,17 +46,4 @@ export function validateQRCode(
   return scannedCode.trim().toUpperCase() === bookingQRCode.trim().toUpperCase()
 }
 
-/**
- * Extrait l'ID du booking depuis un QR code (si format spécial utilisé)
- * Note: Dans notre cas, le QR code est un hash, donc on ne peut pas extraire l'ID
- */
-export function extractBookingIdFromQR(qrCode: string): string | null {
-  // Pour l'instant, retourne null car notre QR est un hash
-  // Si besoin d'encoder l'ID dans le QR, modifier generateBookingQRCode
-  return null
-}
-
-
-
-
 

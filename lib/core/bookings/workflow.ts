@@ -7,6 +7,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
 import { createAdminClient } from "@/lib/shared/db/admin"
+import { createSystemNotification } from "@/lib/core/notifications/system"
 
 /**
  * Annule une réservation avec raison (acceptée non payée par les deux parties,
@@ -118,16 +119,16 @@ export async function cancelBookingWithReason(bookingId: string, reason: string)
     const otherUserId = isSender ? booking.traveler_id : booking.sender_id
     const cancelerLabel = isSender ? 'L\'expéditeur' : 'Le voyageur'
 
-    try {
-      await (supabase.rpc as any)('create_notification', {
-        p_user_id: otherUserId,
-        p_type: 'booking_cancelled',
-        p_title: 'Réservation annulée',
-        p_content: `${cancelerLabel} a annulé la réservation. Raison : ${normalizedReason}`,
-        p_booking_id: bookingId,
-        p_announcement_id: booking.announcement_id,
-      })
-    } catch (notifError) {
+    const { error: notifError } = await createSystemNotification({
+      userId: otherUserId,
+      type: 'system_alert',
+      title: 'Réservation annulée',
+      content: `${cancelerLabel} a annulé la réservation. Raison : ${normalizedReason}`,
+      bookingId,
+      announcementId: booking.announcement_id,
+    })
+
+    if (notifError) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
 
@@ -314,15 +315,18 @@ export async function markAsInTransit(
       }
     }
 
-    // Notifier l'expéditeur
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: booking.sender_id,
-      p_type: 'booking_in_transit',
-      p_title: 'Colis en transit',
-      p_content: 'Votre colis a été pris en charge par le voyageur',
-      p_booking_id: bookingId,
-      p_announcement_id: booking.announcement_id,
+    // Notifier l'expéditeur (non-bloquant)
+    const { error: notifError } = await createSystemNotification({
+      userId: booking.sender_id,
+      type: 'transit_started',
+      title: 'Colis en transit',
+      content: 'Votre colis a été pris en charge par le voyageur',
+      bookingId,
+      announcementId: booking.announcement_id,
     })
+    if (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
 
     revalidatePath('/dashboard/colis')
     revalidatePath(`/dashboard/colis/${bookingId}`)
@@ -414,15 +418,19 @@ export async function markAsDelivered(
     // TODO: Implémenter le transfert Stripe Connect vers le voyageur
     console.log('TODO: Release escrow funds to traveler for booking', bookingId)
 
-    // Notifier l'expéditeur
-    await (supabase.rpc as any)('create_notification', {
-      p_user_id: booking.sender_id,
-      p_type: 'booking_delivered',
-      p_title: 'Colis livré',
-      p_content: 'Votre colis a été livré avec succès',
-      p_booking_id: bookingId,
-      p_announcement_id: booking.announcement_id,
+    // Notifier l'expéditeur (non-bloquant)
+    const { error: notifError } = await createSystemNotification({
+      userId: booking.sender_id,
+      type: 'delivery_reminder',
+      title: 'Colis livré',
+      content:
+        'Votre colis a été livré. Merci de confirmer la réception sur Sendbox. Sans action de votre part, les fonds seront versés au voyageur après 7 jours.',
+      bookingId,
+      announcementId: booking.announcement_id,
     })
+    if (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
 
     // Mettre à jour les statistiques du voyageur
     await (supabase.rpc as any)('increment_user_stats', {
@@ -444,4 +452,97 @@ export async function markAsDelivered(
   }
 }
 
+/**
+ * Expéditeur confirme la livraison (débloque les fonds côté plateforme)
+ */
+export async function confirmDeliveryReceipt(bookingId: string) {
+  const supabase = await createClient()
 
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      error: 'Vous devez être connecté',
+    }
+  }
+
+  const { data: booking, error: bookingError } = await supabase
+    .from('bookings')
+    .select('id, status, sender_id, traveler_id, delivery_confirmed_at, announcement_id')
+    .eq('id', bookingId)
+    .single()
+
+  if (bookingError || !booking) {
+    return {
+      error: 'Réservation introuvable',
+    }
+  }
+
+  if (booking.sender_id !== user.id) {
+    return {
+      error: 'Vous n\'êtes pas autorisé à confirmer cette livraison',
+    }
+  }
+
+  if (booking.status !== 'delivered') {
+    return {
+      error: 'La livraison doit être marquée comme livrée avant confirmation',
+    }
+  }
+
+  if (booking.delivery_confirmed_at) {
+    return {
+      error: 'La livraison est déjà confirmée',
+    }
+  }
+
+  const confirmedAt = new Date().toISOString()
+
+  const { error: updateError } = await supabase
+    .from('bookings')
+    .update({
+      delivery_confirmed_at: confirmedAt,
+      delivery_confirmed_by: user.id,
+    })
+    .eq('id', bookingId)
+
+  if (updateError) {
+    console.error('Error confirming delivery:', updateError)
+    return {
+      error: 'Erreur lors de la confirmation',
+    }
+  }
+
+  const { error: servicesError } = await (supabase.rpc as any)('increment_completed_services', {
+    p_user_id: booking.traveler_id,
+  })
+  if (servicesError) {
+    console.error('Error incrementing completed services:', servicesError)
+  }
+
+  const { error: notifError } = await createSystemNotification({
+    userId: booking.traveler_id,
+    type: 'delivery_confirmed',
+    title: 'Livraison confirmée',
+    content:
+      'Le client a confirmé la remise. Les fonds sont débloqués pour vous.',
+    bookingId,
+    announcementId: booking.announcement_id,
+  })
+
+  if (notifError) {
+    console.error('Notification creation failed (non-blocking):', notifError)
+  }
+
+  revalidatePath('/dashboard/colis')
+  revalidatePath(`/dashboard/colis/${bookingId}`)
+  revalidatePath('/dashboard/notifications')
+
+  return {
+    success: true,
+    message: 'Livraison confirmée',
+  }
+}

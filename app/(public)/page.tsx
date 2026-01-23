@@ -13,9 +13,9 @@ import {
   IconArrowRight,
   IconCurrencyEuro,
   IconClock,
-  IconMapPin,
   IconSparkles,
 } from '@tabler/icons-react'
+import { LandingCta } from '@/components/landing/LandingCta'
 
 const features = [
   {
@@ -56,7 +56,7 @@ const steps = [
 
 export default function HomePage() {
   return (
-    <div className="bg-background">
+    <div className="landing bg-background">
       <section className="relative min-h-[calc(100dvh-4rem)] flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-hero-image opacity-35" aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/75 via-background/50 to-background" aria-hidden="true" />
@@ -85,20 +85,11 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
-              <Button asChild className="flex-1 min-w-[160px] sm:flex-none">
-                <Link href="/register">
-                  S'inscrire gratuitement
-                  <IconArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="flex-1 min-w-[160px] sm:flex-none">
-                <Link href="/recherche">
-                  <IconMapPin className="h-4 w-4" />
-                  Rechercher un trajet
-                </Link>
-              </Button>
-            </div>
+            <LandingCta
+              className="justify-center lg:justify-start"
+              registerClassName="flex-1 min-w-[160px] sm:flex-none"
+              searchClassName="flex-1 min-w-[160px] sm:flex-none"
+            />
           </div>
 
           <div className="relative order-first lg:order-last hidden sm:block">

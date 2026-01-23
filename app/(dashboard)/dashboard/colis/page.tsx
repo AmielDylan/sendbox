@@ -13,7 +13,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import {
   IconLoader2,
@@ -41,9 +41,12 @@ type BookingStatus =
   | 'delivered'
   | 'cancelled'
 
+type BookingDisplayStatus = BookingStatus | 'confirmed'
+
 interface Booking {
   id: string
   status: BookingStatus
+  delivery_confirmed_at?: string | null
   kilos_requested: number
   total_price: number | null
   created_at: string
@@ -76,6 +79,7 @@ export default function MyBookingsPage() {
           `
           id,
           status,
+          delivery_confirmed_at,
           kilos_requested,
           total_price,
           created_at,
@@ -135,7 +139,6 @@ export default function MyBookingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
-      const filter = `or=(sender_id.eq.${user.id},traveler_id.eq.${user.id})`
       channel = supabase
         .channel(getChannelName(user.id))
         .on(
@@ -144,7 +147,19 @@ export default function MyBookingsPage() {
             event: '*',
             schema: 'public',
             table: 'bookings',
-            filter,
+            filter: `sender_id=eq.${user.id}`,
+          },
+          () => {
+            refetch()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter: `traveler_id=eq.${user.id}`,
           },
           () => {
             refetch()
@@ -163,24 +178,27 @@ export default function MyBookingsPage() {
     }
   }, [refetch])
 
-  const getStatusBadge = (status: BookingStatus) => {
-    const variants: Record<BookingStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  const getStatusBadge = (booking: Booking) => {
+    const status: BookingDisplayStatus = booking.delivery_confirmed_at ? 'confirmed' : booking.status
+    const variants: Record<BookingDisplayStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       pending: 'secondary',
       accepted: 'default',
       paid: 'default',
       deposited: 'default',
       in_transit: 'default',
       delivered: 'default',
+      confirmed: 'default',
       cancelled: 'destructive',
     }
 
-    const labels: Record<BookingStatus, string> = {
+    const labels: Record<BookingDisplayStatus, string> = {
       pending: 'En attente',
       accepted: 'Accepté',
       paid: 'Payé',
       deposited: 'Déposé',
       in_transit: 'En transit',
       delivered: 'Livré',
+      confirmed: 'Confirmé',
       cancelled: 'Annulé',
     }
 
@@ -305,7 +323,7 @@ export default function MyBookingsPage() {
                     <IconPackage className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="font-display text-lg font-semibold">
+                    <h3 className="text-lg font-semibold">
                       Aucun colis trouvé
                     </h3>
                     <p className="text-sm text-muted-foreground max-w-sm">
@@ -341,7 +359,7 @@ export default function MyBookingsPage() {
                             </CardTitle>
                             {/* Badge visible only on mobile next to title to save space, hidden on sm */}
                             <div className="sm:hidden ml-2 shrink-0">
-                              {getStatusBadge(booking.status)}
+                              {getStatusBadge(booking)}
                             </div>
                           </div>
                           <p className="text-xs sm:text-sm text-muted-foreground">
@@ -353,7 +371,7 @@ export default function MyBookingsPage() {
                         </div>
                         {/* Badge visible only on sm */}
                         <div className="hidden sm:block shrink-0">
-                          {getStatusBadge(booking.status)}
+                          {getStatusBadge(booking)}
                         </div>
                       </div>
                     </CardHeader>

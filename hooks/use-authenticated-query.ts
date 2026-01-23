@@ -11,7 +11,6 @@
 
 import { useQuery, UseQueryOptions, UseQueryResult } from '@tanstack/react-query'
 import { useAuth } from '@/components/providers/optimized-auth-provider'
-import { createClient } from '@/lib/shared/db/client'
 
 export interface AuthenticatedQueryOptions<TData, TError = Error> extends Omit<UseQueryOptions<TData, TError>, 'queryKey' | 'queryFn'> {
   /**

@@ -38,15 +38,12 @@ function RegisterForm() {
     handleSubmit,
     control,
     formState: { errors },
-    watch,
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       terms: false,
     },
   })
-
-  const password = watch('password')
 
   // Vérification d'authentification avec timeout
   useEffect(() => {
@@ -75,7 +72,7 @@ function RegisterForm() {
             <div className="flex justify-center mb-4">
               <IconPackage className="h-12 w-12 text-primary animate-pulse" />
             </div>
-            <CardTitle className="text-2xl font-display">
+            <CardTitle className="text-2xl">
               Vérification de la connexion...
             </CardTitle>
           </CardHeader>
@@ -98,7 +95,7 @@ function RegisterForm() {
         toast.success(result.message)
         router.push('/verify-email')
       }
-    } catch (error) {
+    } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsLoading(false)
@@ -113,7 +110,7 @@ function RegisterForm() {
             <IconPackage className="h-10 w-10 text-primary" />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-display">Créer un compte</CardTitle>
+            <CardTitle className="text-2xl">Créer un compte</CardTitle>
             <CardDescription>
               Rejoignez Sendbox pour commencer à envoyer et recevoir des colis
             </CardDescription>

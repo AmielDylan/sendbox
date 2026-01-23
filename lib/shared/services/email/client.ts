@@ -64,7 +64,7 @@ export async function sendEmail(params: SendEmailParams) {
     }
 
     // Choisir entre template Resend ou HTML embarqué
-    let emailPayload: any = {
+    const emailPayload: any = {
       from: FROM_EMAIL,
       to: params.to,
     }
@@ -389,7 +389,6 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
       `
   }
 }
-
 
 
 
