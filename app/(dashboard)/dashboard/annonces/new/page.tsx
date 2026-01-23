@@ -235,13 +235,13 @@ export default function NewAnnouncementPage() {
         <CardContent className="pt-6">
           <div className="relative">
             <div
-              className="absolute left-4 right-4 top-4 h-0.5 rounded-full bg-primary origin-left transition-transform"
+              className="absolute left-4 right-4 top-4 z-0 h-0.5 rounded-full bg-primary origin-left transition-transform"
               style={{
                 transform: `scaleX(${(currentStep - 1) / (STEPS.length - 1)})`,
               }}
             />
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="relative z-10 grid grid-cols-3 gap-4">
               {STEPS.map((step) => {
                 const StepIcon = step.icon
                 const isActive = currentStep === step.id
