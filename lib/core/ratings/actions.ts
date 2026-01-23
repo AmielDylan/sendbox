@@ -55,9 +55,9 @@ export async function submitRating(data: RatingInput) {
       }
     }
 
-    if (booking.status !== 'delivered' && !booking.delivery_confirmed_at) {
+    if (!booking.delivery_confirmed_at) {
       return {
-        error: 'Le service doit être terminé pour pouvoir noter',
+        error: 'La livraison doit être validée pour pouvoir noter',
       }
     }
 
@@ -114,17 +114,7 @@ export async function submitRating(data: RatingInput) {
     // 5. Le trigger SQL met à jour automatiquement profiles.rating
 
     // 6. Incrémenter completed_services pour l'utilisateur noté
-    const { error: incrementError } = await (supabase.rpc as any)(
-      'increment_completed_services',
-      {
-        p_user_id: ratedId,
-      }
-    )
-
-    if (incrementError) {
-      console.error('Error incrementing completed services:', incrementError)
-      // Ne pas bloquer si cette étape échoue
-    }
+    // Le compteur completed_services est mis à jour lors de la confirmation de livraison
 
     // 7. Notification à l'utilisateur noté
     await notifyUser({
