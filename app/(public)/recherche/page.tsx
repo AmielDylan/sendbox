@@ -11,6 +11,7 @@ import {
   countSearchAnnouncements,
   type SearchFilters,
 } from "@/lib/shared/db/queries/announcements"
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -66,6 +67,7 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false)
 
   const [departureDate, setDepartureDate] = useState<Date | undefined>(undefined)
+  const { user } = useAuth()
 
   // Query pour rechercher les annonces
   const {
@@ -356,19 +358,23 @@ export default function SearchPage() {
               </Card>
             ) : (
               <div className="space-y-4">
-                {announcements.map((announcement) => (
-                  <AnnouncementCard
-                    key={announcement.id}
-                    announcement={announcement}
-                    showMatchScore={
-                      !!(
-                        filters.departureCountry ||
-                        filters.arrivalCountry ||
-                        filters.departureDate
-                      )
-                    }
-                  />
-                ))}
+                {announcements.map((announcement) => {
+                  const isOwnAnnouncement = !!user && user.id === announcement.traveler_id
+                  return (
+                    <AnnouncementCard
+                      key={announcement.id}
+                      announcement={announcement}
+                      disabled={isOwnAnnouncement}
+                      showMatchScore={
+                        !!(
+                          filters.departureCountry ||
+                          filters.arrivalCountry ||
+                          filters.departureDate
+                        )
+                      }
+                    />
+                  )
+                })}
               </div>
             )}
 
