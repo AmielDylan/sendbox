@@ -37,6 +37,11 @@ type ConversationSummary = {
 function MessagesPageContent() {
   const searchParams = useSearchParams()
   const bookingIdFromUrl = searchParams.get('booking')
+  const tabFromUrl = searchParams.get('tab')
+  const resolvedTab =
+    tabFromUrl === 'notifications' || tabFromUrl === 'requests' || tabFromUrl === 'chat'
+      ? tabFromUrl
+      : null
 
   const [unreadCount, setUnreadCount] = useState(0)
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(bookingIdFromUrl)
@@ -47,13 +52,18 @@ function MessagesPageContent() {
     otherUserAvatar: string | null
   } | null>(null)
   const [pendingConversation, setPendingConversation] = useState<ConversationSummary | null>(null)
-  const [activeTab, setActiveTab] = useState(bookingIdFromUrl ? 'chat' : 'chat')
+  const [activeTab, setActiveTab] = useState(resolvedTab || 'chat')
 
   useEffect(() => {
     if (bookingIdFromUrl) {
       setActiveTab('chat')
+      return
     }
-  }, [bookingIdFromUrl])
+
+    if (resolvedTab) {
+      setActiveTab(resolvedTab)
+    }
+  }, [bookingIdFromUrl, resolvedTab])
 
   // Query pour les conversations
   const {

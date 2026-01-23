@@ -137,6 +137,8 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
             return { ...prev, ...updated }
           })
 
+          void loadBookingDetails()
+
           if (paymentsEnabled && (updated.status === 'paid' || updated.paid_at) && !paymentConfirmedRef.current) {
             paymentConfirmedRef.current = true
             setIsCheckingPayment(false)
@@ -150,7 +152,43 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [id])
+  }, [id, paymentsEnabled])
+
+  useEffect(() => {
+    if (!id || !currentUserId) {
+      return
+    }
+
+    const supabase = createClient()
+    const suffix =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+
+    const channel = supabase
+      .channel(`booking-notifications:${id}:${currentUserId}:${suffix}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `booking_id=eq.${id}`,
+        },
+        (payload) => {
+          const notification = payload.new as { user_id?: string | null }
+          if (notification.user_id && notification.user_id !== currentUserId) {
+            return
+          }
+          void loadBookingDetails()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id, currentUserId])
 
   useEffect(() => {
     if (!booking?.sender_id || !booking?.traveler_id) {
