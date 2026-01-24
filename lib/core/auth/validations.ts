@@ -4,6 +4,8 @@
 
 import { z } from 'zod'
 
+export const IDENTITY_DOCUMENT_TYPES = ['passport', 'national_id'] as const
+
 // Schéma d'inscription
 export const registerSchema = z
   .object({
@@ -21,6 +23,14 @@ export const registerSchema = z
     phone: z
       .string()
       .regex(/^\+(?:33|229)\d{9}$/, 'Format : +33XXXXXXXXX ou +229XXXXXXXXX'),
+    documentType: z.enum(IDENTITY_DOCUMENT_TYPES, {
+      message: 'Type de document invalide',
+    }),
+    documentCountry: z
+      .string()
+      .min(2, 'Pays du document requis')
+      .max(2, 'Code pays invalide')
+      .regex(/^[A-Z]{2}$/, 'Code pays invalide'),
     terms: z.boolean().refine(val => val === true, {
       message: 'Vous devez accepter les CGU',
     }),

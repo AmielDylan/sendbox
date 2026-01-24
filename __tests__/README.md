@@ -112,6 +112,8 @@ describe('Auth Actions', () => {
       firstname: 'John',
       lastname: 'Doe',
       phone: '+33612345678',
+      documentType: 'passport',
+      documentCountry: 'FR',
       terms: true,
     }
 

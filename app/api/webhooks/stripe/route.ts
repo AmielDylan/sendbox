@@ -1,5 +1,5 @@
 /**
- * Webhook Stripe pour gérer les événements de paiement
+ * Webhook Stripe pour gérer les événements de paiement et d'identité
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -15,10 +15,6 @@ import { getPaymentsMode } from '@/lib/shared/config/features'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 
 export async function POST(req: NextRequest) {
-  if (getPaymentsMode() !== 'stripe') {
-    return NextResponse.json({ received: true, disabled: true })
-  }
-
   const body = await req.text()
   const headersList = await headers()
   const signature = headersList.get('stripe-signature')
@@ -55,10 +51,154 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = await createClient()
+  const paymentsEnabled = getPaymentsMode() === 'stripe'
+
+  const withIdentityMetadata = (
+    updateData: Record<string, unknown>,
+    session: Stripe.Identity.VerificationSession
+  ) => {
+    const documentType = session.metadata?.document_type
+    if (documentType) {
+      updateData.kyc_document_type = documentType
+    }
+    const documentCountry = session.metadata?.document_country
+    if (documentCountry) {
+      updateData.kyc_nationality = documentCountry
+    }
+    return updateData
+  }
 
   try {
     switch (event.type) {
+      case 'identity.verification_session.processing': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'pending',
+            kyc_submitted_at: new Date().toISOString(),
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('user_id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (processing):', error)
+        }
+        break
+      }
+
+      case 'identity.verification_session.verified': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'approved',
+            kyc_reviewed_at: new Date().toISOString(),
+            kyc_rejection_reason: null,
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('user_id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (verified):', error)
+        }
+        break
+      }
+
+      case 'identity.verification_session.requires_input': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const rejectionReason =
+          verificationSession.last_error?.code ||
+          verificationSession.last_error?.reason ||
+          'verification_failed'
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'rejected',
+            kyc_reviewed_at: new Date().toISOString(),
+            kyc_rejection_reason: rejectionReason,
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('user_id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (requires_input):', error)
+        }
+        break
+      }
+
+      case 'identity.verification_session.canceled': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'incomplete',
+            kyc_reviewed_at: new Date().toISOString(),
+            kyc_rejection_reason: 'verification_canceled',
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('user_id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (canceled):', error)
+        }
+        break
+      }
+
       case 'payment_intent.succeeded': {
+        if (!paymentsEnabled) {
+          console.log('Stripe payments disabled, skipping payment events')
+          break
+        }
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const booking_id = paymentIntent.metadata.booking_id
 
@@ -278,6 +418,10 @@ export async function POST(req: NextRequest) {
       }
 
       case 'payment_intent.payment_failed': {
+        if (!paymentsEnabled) {
+          console.log('Stripe payments disabled, skipping payment events')
+          break
+        }
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const booking_id = paymentIntent.metadata.booking_id
 
@@ -302,6 +446,10 @@ export async function POST(req: NextRequest) {
       }
 
       case 'charge.refunded': {
+        if (!paymentsEnabled) {
+          console.log('Stripe payments disabled, skipping payment events')
+          break
+        }
         const charge = event.data.object as Stripe.Charge
         const paymentIntentId = charge.payment_intent as string
 

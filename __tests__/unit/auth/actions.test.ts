@@ -44,6 +44,16 @@ vi.mock('@/lib/shared/security/rate-limit', () => ({
   authRateLimit: vi.fn(() => Promise.resolve({ success: true })),
 }))
 
+vi.mock('@/lib/shared/services/stripe/identity', () => ({
+  createIdentityVerificationSession: vi.fn(() =>
+    Promise.resolve({
+      id: 'vs_123',
+      clientSecret: 'seti_123_secret',
+      url: 'https://verify.stripe.com/session/vs_123',
+    })
+  ),
+}))
+
 // Import after mocks are set up
 import { signUp, signIn } from '@/lib/core/auth/actions'
 
@@ -61,6 +71,8 @@ describe('Auth Actions', () => {
         firstname: 'John',
         lastname: 'Doe',
         phone: '+33612345678',
+        documentType: 'passport',
+        documentCountry: 'FR',
         terms: true,
       }
 
@@ -99,6 +111,8 @@ describe('Auth Actions', () => {
         firstname: 'John',
         lastname: 'Doe',
         phone: '+33612345678',
+        documentType: 'passport',
+        documentCountry: 'FR',
         terms: true,
       }
 
@@ -116,6 +130,8 @@ describe('Auth Actions', () => {
         firstname: 'John',
         lastname: 'Doe',
         phone: '+33612345678',
+        documentType: 'passport',
+        documentCountry: 'FR',
         terms: true,
       }
 
@@ -133,6 +149,8 @@ describe('Auth Actions', () => {
         firstname: 'John',
         lastname: 'Doe',
         phone: '+33612345678',
+        documentType: 'passport',
+        documentCountry: 'FR',
         terms: true,
       }
 
@@ -150,6 +168,8 @@ describe('Auth Actions', () => {
         firstname: 'John',
         lastname: 'Doe',
         phone: '+33612345678',
+        documentType: 'passport',
+        documentCountry: 'FR',
         terms: true,
       }
 
@@ -310,6 +330,8 @@ describe('Auth Actions', () => {
         firstname: '<script>alert("XSS")</script>',
         lastname: 'Doe',
         phone: '+33612345678',
+        documentType: 'passport',
+        documentCountry: 'FR',
         terms: true,
       }
 
@@ -356,6 +378,8 @@ describe('Auth Actions', () => {
         firstname: 'John',
         lastname: 'Doe',
         phone: '+33612345678',
+        documentType: 'passport',
+        documentCountry: 'FR',
         terms: true,
       }
 
