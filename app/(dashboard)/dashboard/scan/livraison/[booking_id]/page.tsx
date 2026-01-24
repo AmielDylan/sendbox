@@ -4,9 +4,10 @@
 
 'use client'
 
-import { use, useState, useRef, useEffect } from 'react'
+import { use, useCallback, useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
+import Image from 'next/image'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -36,12 +37,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
   const signatureRef = useRef<SignatureCanvasRef>(null)
 
-  useEffect(() => {
-    loadBooking()
-    getCurrentLocation()
-  }, [booking_id])
-
-  const loadBooking = async () => {
+  const loadBooking = useCallback(async () => {
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -83,9 +79,9 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [booking_id, router])
 
-  const getCurrentLocation = () => {
+  const getCurrentLocation = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -100,7 +96,12 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
         }
       )
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadBooking()
+    getCurrentLocation()
+  }, [loadBooking, getCurrentLocation])
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -248,10 +249,13 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
             </div>
             {photoPreview && (
               <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-                <img
+                <Image
                   src={photoPreview}
-                  alt="Aperçu"
-                  className="object-cover w-full h-full"
+                  alt="Aperçu de la livraison"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 640px"
+                  unoptimized
                 />
               </div>
             )}

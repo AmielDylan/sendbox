@@ -4,11 +4,12 @@
 
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useCallback, useEffect, useState, Suspense } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
+import Image from 'next/image'
 import {
   createBookingSchema,
   type CreateBookingInput,
@@ -97,16 +98,7 @@ function NewBookingPageContent() {
     insuranceOpted
   )
 
-  useEffect(() => {
-    if (announcementId) {
-      loadAnnouncement()
-    } else {
-      // Rediriger silencieusement vers la page de recherche sans toast
-      router.push('/recherche')
-    }
-  }, [announcementId])
-
-  const loadAnnouncement = async () => {
+  const loadAnnouncement = useCallback(async () => {
     setIsLoading(true)
     try {
       const result = await getAnnouncementForBooking(announcementId)
@@ -137,7 +129,16 @@ function NewBookingPageContent() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [announcementId, initialWeight, router, setValue])
+
+  useEffect(() => {
+    if (announcementId) {
+      loadAnnouncement()
+    } else {
+      // Rediriger silencieusement vers la page de recherche sans toast
+      router.push('/recherche')
+    }
+  }, [announcementId, loadAnnouncement, router])
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -389,10 +390,13 @@ function NewBookingPageContent() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
                       {photoPreviews.map((preview, index) => (
                         <div key={index} className="relative group">
-                          <img
+                          <Image
                             src={preview}
                             alt={`Photo ${index + 1}`}
+                            width={320}
+                            height={128}
                             className="w-full h-32 object-cover rounded-md"
+                            unoptimized
                           />
                           <button
                             type="button"

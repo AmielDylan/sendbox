@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -58,11 +58,7 @@ export default function ProfilePage() {
     resolver: zodResolver(updateProfileSchema),
   })
 
-  useEffect(() => {
-    loadProfile()
-  }, [])
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     setIsLoading(true)
     try {
       const result = await getCurrentProfile()
@@ -97,7 +93,11 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [reset])
+
+  useEffect(() => {
+    loadProfile()
+  }, [loadProfile])
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

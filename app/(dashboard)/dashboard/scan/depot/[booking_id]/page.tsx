@@ -4,9 +4,10 @@
 
 'use client'
 
-import { use, useState, useRef, useEffect } from 'react'
+import { use, useCallback, useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/client"
+import Image from 'next/image'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,19 +42,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
   const qrFileInputRef = useRef<HTMLInputElement | null>(null)
   const signatureRef = useRef<SignatureCanvasRef>(null)
 
-  useEffect(() => {
-    loadBooking()
-    getCurrentLocation()
-  }, [booking_id])
-
-  useEffect(() => {
-    const codeFromQuery = searchParams.get('code')
-    if (codeFromQuery) {
-      setScannedCode(codeFromQuery)
-    }
-  }, [searchParams])
-
-  const loadBooking = async () => {
+  const loadBooking = useCallback(async () => {
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -95,9 +84,16 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [booking_id, router])
 
-  const getCurrentLocation = () => {
+  useEffect(() => {
+    const codeFromQuery = searchParams.get('code')
+    if (codeFromQuery) {
+      setScannedCode(codeFromQuery)
+    }
+  }, [searchParams])
+
+  const getCurrentLocation = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -112,7 +108,12 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
         }
       )
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadBooking()
+    getCurrentLocation()
+  }, [loadBooking, getCurrentLocation])
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -374,10 +375,13 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
             </div>
             {photoPreview && (
               <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-                <img
+                <Image
                   src={photoPreview}
                   alt="Aperçu"
-                  className="object-cover w-full h-full"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 640px"
+                  unoptimized
                 />
               </div>
             )}

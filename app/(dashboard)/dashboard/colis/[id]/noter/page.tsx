@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useTransition, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconLoader2, IconSend } from '@tabler/icons-react'
 import { toast } from 'sonner'
@@ -44,13 +44,12 @@ function RatingPageContent() {
 
   const {
     handleSubmit,
-    watch,
     setValue,
     formState: { errors },
   } = form
 
-  const rating = watch('rating')
-  const comment = watch('comment')
+  const rating = useWatch({ control: form.control, name: 'rating' }) ?? 0
+  const comment = useWatch({ control: form.control, name: 'comment' }) ?? ''
 
   useEffect(() => {
     const checkCanRate = async () => {
@@ -241,7 +240,6 @@ export default function RatingPage() {
     </Suspense>
   )
 }
-
 
 
 

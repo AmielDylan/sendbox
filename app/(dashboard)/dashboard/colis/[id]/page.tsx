@@ -4,7 +4,7 @@
 
 'use client'
 
-import { use, useEffect, useRef, useState } from 'react'
+import { use, useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from "@/lib/shared/db/client"
@@ -98,7 +98,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
   useEffect(() => {
     loadBookingDetails()
-  }, [id])
+  }, [loadBookingDetails])
 
   useEffect(() => {
     if (!paymentsEnabled) {
@@ -109,7 +109,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     if (searchParams.get('payment') === 'success' && !isCheckingPayment) {
       void handlePaymentSuccess()
     }
-  }, [id, isCheckingPayment, paymentsEnabled])
+  }, [handlePaymentSuccess, isCheckingPayment, paymentsEnabled])
 
   useEffect(() => {
     if (!id) {
@@ -152,7 +152,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [id, paymentsEnabled])
+  }, [id, paymentsEnabled, loadBookingDetails])
 
   useEffect(() => {
     if (!id || !currentUserId) {
@@ -188,7 +188,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [id, currentUserId])
+  }, [id, currentUserId, loadBookingDetails])
 
   useEffect(() => {
     if (!booking?.sender_id || !booking?.traveler_id) {
@@ -247,7 +247,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     })
   }
 
-  const loadBookingDetails = async () => {
+  const loadBookingDetails = useCallback(async () => {
     try {
       setError(null)
       const supabase = createClient()
@@ -332,9 +332,9 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [id, router])
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = useCallback(async () => {
     if (!paymentsEnabled) {
       return
     }
@@ -397,7 +397,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
     // Lancer le polling
     await checkPayment()
-  }
+  }, [id, loadBookingDetails, paymentsEnabled])
 
   if (isLoading) {
     return (

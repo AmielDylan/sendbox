@@ -8,7 +8,11 @@ import { createProfile } from '@/types'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
-  const { setUser, setProfile, setInitialized, clear, user } = useAuthStore()
+  const setUser = useAuthStore((state) => state.setUser)
+  const setProfile = useAuthStore((state) => state.setProfile)
+  const setInitialized = useAuthStore((state) => state.setInitialized)
+  const clear = useAuthStore((state) => state.clear)
+  const user = useAuthStore((state) => state.user)
   const listenerSetup = useRef(false)
   const supabaseRef = useRef(createClient())
 
@@ -148,7 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         listenerSetup.current = false
       }
     }
-  }, [])
+  }, [clear, queryClient, setInitialized, setProfile, setUser])
 
   // Écouter changement user ID pour détection multi-tab
   useEffect(() => {
