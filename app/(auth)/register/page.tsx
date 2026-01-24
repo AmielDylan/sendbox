@@ -55,8 +55,6 @@ function RegisterForm() {
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      documentType: '',
-      documentCountry: '',
       terms: false,
     },
   })
