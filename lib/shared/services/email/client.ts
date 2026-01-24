@@ -11,6 +11,10 @@ if (!process.env.RESEND_API_KEY) {
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@sendbox.io'
+const FROM_NAME = process.env.RESEND_FROM_NAME || 'Sendbox Support'
+const FROM_ADDRESS = FROM_EMAIL.includes('<')
+  ? FROM_EMAIL
+  : `${FROM_NAME} <${FROM_EMAIL}>`
 
 // Rate limiting simple (à améliorer avec Redis en production)
 const emailRateLimit = new Map<string, { count: number; resetAt: number }>()
@@ -65,7 +69,7 @@ export async function sendEmail(params: SendEmailParams) {
 
     // Choisir entre template Resend ou HTML embarqué
     const emailPayload: any = {
-      from: FROM_EMAIL,
+      from: FROM_ADDRESS,
       to: params.to,
     }
 
@@ -92,7 +96,7 @@ export async function sendEmail(params: SendEmailParams) {
     if (error && params.useResendTemplate) {
       console.warn('Resend template failed, falling back to inline HTML:', error)
       const fallbackPayload = {
-        from: FROM_EMAIL,
+        from: FROM_ADDRESS,
         to: params.to,
         subject: params.subject,
         html: getEmailTemplate(params.template, params.data),
@@ -413,7 +417,6 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
       `
   }
 }
-
 
 
 
