@@ -107,7 +107,7 @@ export async function signUp(formData: RegisterInput) {
       const { error: profileError } = await supabase
         .from('profiles')
         .update(profileUpdates)
-        .eq('user_id', authData.user.id)
+        .eq('id', authData.user.id)
 
       if (profileError) {
         console.error('Error updating profile:', profileError)
