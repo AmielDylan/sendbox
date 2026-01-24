@@ -8,6 +8,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/shared/db/server"
+import { createAdminClient } from "@/lib/shared/db/admin"
 import {
   registerSchema,
   loginSchema,
@@ -79,13 +80,39 @@ export async function signUp(formData: RegisterInput) {
         kyc_status: 'incomplete',
       }
 
-      const { error: profileError } = await supabase
+      const { data: updatedProfiles, error: profileError } = await supabase
         .from('profiles')
         .update(profileUpdates)
         .eq('id', authData.user.id)
+        .select('id')
 
       if (profileError) {
         console.error('Error updating profile:', profileError)
+      }
+
+      if (!updatedProfiles || updatedProfiles.length === 0) {
+        try {
+          const adminClient = process.env.SUPABASE_SERVICE_ROLE_KEY
+            ? createAdminClient()
+            : null
+          const client = adminClient || supabase
+          const { error: insertError } = await client
+            .from('profiles')
+            .insert({
+              id: authData.user.id,
+              email: validation.data.email,
+              firstname: validation.data.firstname,
+              lastname: validation.data.lastname,
+              phone: validation.data.phone,
+              kyc_status: 'incomplete',
+            })
+
+          if (insertError) {
+            console.error('Error inserting profile fallback:', insertError)
+          }
+        } catch (insertError) {
+          console.error('Error inserting profile fallback:', insertError)
+        }
       }
     }
 
