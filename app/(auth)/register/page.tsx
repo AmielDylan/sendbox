@@ -557,7 +557,7 @@ function RegisterForm() {
                 </div>
 
                 {/* CGU */}
-                <div className="flex items-start space-x-2">
+                <div className="flex items-center space-x-2">
                   <Controller
                     name="terms"
                     control={control}
