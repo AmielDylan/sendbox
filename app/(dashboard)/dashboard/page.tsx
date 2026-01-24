@@ -285,7 +285,7 @@ export default function DashboardPage() {
                 className="border-emerald-600 text-emerald-600"
               >
                 <IconCheck className="mr-1 h-3.5 w-3.5" />
-                Profil vérifié
+                Identité vérifiée
               </Badge>
             )}
             <Button asChild>

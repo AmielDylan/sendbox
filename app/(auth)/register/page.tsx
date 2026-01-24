@@ -16,7 +16,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Card,
@@ -25,24 +24,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { toast } from 'sonner'
 import {
   IconLoader2,
   IconPackage,
   IconChevronDown,
-  IconSearch,
-  IconShieldLock,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
-import { getStripeClient } from '@/lib/shared/services/stripe/config'
-import { COUNTRY_OPTIONS, getCountryFlagEmoji } from '@/lib/utils/countries'
+import { getCountryFlagEmoji } from '@/lib/utils/countries'
 
 const PHONE_COUNTRIES = [
   { code: 'FR', name: 'France', dialCode: '+33' },
@@ -86,21 +75,16 @@ function RegisterForm() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
-  const [isVerifyingIdentity, setIsVerifyingIdentity] = useState(false)
   const [authCheckComplete, setAuthCheckComplete] = useState(false)
-  const [step, setStep] = useState<1 | 2>(1)
   const [phoneCountry, setPhoneCountry] = useState(DEFAULT_PHONE_COUNTRY)
   const [phoneDigits, setPhoneDigits] = useState('')
   const [phoneOpen, setPhoneOpen] = useState(false)
-  const [countryOpen, setCountryOpen] = useState(false)
-  const [countrySearch, setCountrySearch] = useState('')
 
   // Tous les hooks doivent être définis avant toute condition de rendu
   const {
     register,
     handleSubmit,
     control,
-    trigger,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -143,19 +127,6 @@ function RegisterForm() {
     }
   }, [watchedPhone, phoneCountry.code, phoneDigits])
 
-  const filteredCountries = useMemo(() => {
-    const query = countrySearch.trim().toLowerCase()
-    if (!query) {
-      return COUNTRY_OPTIONS
-    }
-    return COUNTRY_OPTIONS.filter(country =>
-      country.name.toLowerCase().includes(query) ||
-      country.code.toLowerCase().includes(query)
-    )
-  }, [countrySearch])
-
-  const stripePromise = useMemo(() => getStripeClient(), [])
-
   // Vérification d'authentification avec timeout
   useEffect(() => {
     if (!loading) {
@@ -192,28 +163,8 @@ function RegisterForm() {
     )
   }
 
-  const goToIdentityStep = async () => {
-    const isValid = await trigger([
-      'firstname',
-      'lastname',
-      'email',
-      'phone',
-      'password',
-      'confirmPassword',
-      'terms',
-    ])
-    if (isValid) {
-      setStep(2)
-    }
-  }
-
   const onSubmit = async (data: RegisterInput) => {
-    if (step === 1) {
-      await goToIdentityStep()
-      return
-    }
     setIsLoading(true)
-    setIsVerifyingIdentity(false)
     try {
       const result = await signUp(data)
 
@@ -223,31 +174,6 @@ function RegisterForm() {
       }
 
       if (result.success) {
-        if (result.identityError) {
-          toast.error(result.identityError)
-        }
-
-        if (result.verificationClientSecret) {
-          const stripe = await stripePromise
-          if (!stripe) {
-            toast.error("Stripe n'est pas encore disponible. Réessayez.")
-          } else {
-            setIsVerifyingIdentity(true)
-            const { error } = await stripe.verifyIdentity(
-              result.verificationClientSecret
-            )
-
-            if (error) {
-              toast.error(
-                error.message ||
-                  "La vérification d'identité n'a pas pu être complétée."
-              )
-            } else {
-              toast.success('Vérification envoyée avec succès.')
-            }
-          }
-        }
-
         toast.success(result.message)
         router.push('/verify-email')
       }
@@ -255,7 +181,6 @@ function RegisterForm() {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsLoading(false)
-      setIsVerifyingIdentity(false)
     }
   }
 
@@ -266,538 +191,325 @@ function RegisterForm() {
           <div className="flex justify-center">
             <IconPackage className="h-10 w-10 text-primary" />
           </div>
-          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
-            <div
-              className={cn(
-                'flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-semibold',
-                step === 1
-                  ? 'border-primary text-primary'
-                  : 'border-muted-foreground/40 text-muted-foreground'
-              )}
-            >
-              1
-            </div>
-            <span>Compte</span>
-            <div className="h-px w-8 bg-border" />
-            <div
-              className={cn(
-                'flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-semibold',
-                step === 2
-                  ? 'border-primary text-primary'
-                  : 'border-muted-foreground/40 text-muted-foreground'
-              )}
-            >
-              2
-            </div>
-            <span>Identité</span>
-          </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl">
-              {step === 1 ? 'Créer un compte' : "Vérification d'identité"}
-            </CardTitle>
+            <CardTitle className="text-2xl">Créer un compte</CardTitle>
             <CardDescription>
-              {step === 1
-                ? 'Rejoignez Sendbox pour commencer à envoyer et recevoir des colis'
-                : "Vérifiez votre identité pour sécuriser votre compte"}
+              Rejoignez Sendbox pour commencer à envoyer et recevoir des colis
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {step === 1 ? (
-              <>
-                {/* Prénom et Nom */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstname">Prénom</Label>
-                    <Input
-                      id="firstname"
-                      type="text"
-                      placeholder="Jean"
-                      {...register('firstname')}
-                      aria-invalid={errors.firstname ? 'true' : 'false'}
-                      aria-describedby={
-                        errors.firstname ? 'firstname-error' : undefined
-                      }
-                    />
-                    {errors.firstname && (
-                      <p
-                        id="firstname-error"
-                        className="text-sm text-destructive"
-                        role="alert"
-                      >
-                        {errors.firstname.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastname">Nom</Label>
-                    <Input
-                      id="lastname"
-                      type="text"
-                      placeholder="Dupont"
-                      {...register('lastname')}
-                      aria-invalid={errors.lastname ? 'true' : 'false'}
-                      aria-describedby={
-                        errors.lastname ? 'lastname-error' : undefined
-                      }
-                    />
-                    {errors.lastname && (
-                      <p
-                        id="lastname-error"
-                        className="text-sm text-destructive"
-                        role="alert"
-                      >
-                        {errors.lastname.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="jean.dupont@example.com"
-                    {...register('email')}
-                    aria-invalid={errors.email ? 'true' : 'false'}
-                    aria-describedby={errors.email ? 'email-error' : undefined}
-                  />
-                  {errors.email && (
-                    <p
-                      id="email-error"
-                      className="text-sm text-destructive"
-                      role="alert"
-                    >
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Téléphone */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone</Label>
-                  <Controller
-                    name="phone"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="flex flex-col gap-2 sm:flex-row">
-                        <Popover open={phoneOpen} onOpenChange={setPhoneOpen}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={phoneOpen}
-                              className="h-10 w-full justify-between sm:w-[200px]"
-                            >
-                              <span className="flex items-center gap-2">
-                                <span>{phoneCountry.flag}</span>
-                                <span className="text-sm">
-                                  {phoneCountry.dialCode}
-                                </span>
-                              </span>
-                              <IconChevronDown className="h-4 w-4 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            side="bottom"
-                            align="start"
-                            className="w-[--radix-popover-trigger-width] p-0"
-                          >
-                            <div className="max-h-60 overflow-y-auto">
-                              {PHONE_COUNTRIES.map(country => (
-                                <button
-                                  key={country.code}
-                                  type="button"
-                                  className={cn(
-                                    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
-                                    phoneCountry.code === country.code && 'bg-accent'
-                                  )}
-                                  onClick={() => {
-                                    setPhoneCountry(country)
-                                    const nextValue = phoneDigits
-                                      ? `${country.dialCode}${phoneDigits}`
-                                      : ''
-                                    field.onChange(nextValue)
-                                    setPhoneOpen(false)
-                                  }}
-                                >
-                                  <span>{country.flag}</span>
-                                  <span className="flex-1">{country.name}</span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {country.dialCode}
-                                  </span>
-                                </button>
-                              ))}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          inputMode="numeric"
-                          autoComplete="tel-national"
-                          placeholder="612345678"
-                          className="h-10"
-                          value={phoneDigits}
-                          onChange={(event) => {
-                            const digits = event.target.value.replace(/\D/g, '')
-                            setPhoneDigits(digits)
-                            const nextValue = digits
-                              ? `${phoneCountry.dialCode}${digits}`
-                              : ''
-                            field.onChange(nextValue)
-                          }}
-                          aria-invalid={errors.phone ? 'true' : 'false'}
-                          aria-describedby={
-                            errors.phone ? 'phone-error' : undefined
-                          }
-                        />
-                      </div>
-                    )}
-                  />
-                  {errors.phone && (
-                    <p
-                      id="phone-error"
-                      className="text-sm text-destructive"
-                      role="alert"
-                    >
-                      {errors.phone.message}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Choisissez l&apos;indicatif puis entrez le numéro
-                    (chiffres uniquement).
+            {/* Prénom et Nom */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstname">Prénom</Label>
+                <Input
+                  id="firstname"
+                  type="text"
+                  placeholder="Jean"
+                  {...register('firstname')}
+                  aria-invalid={errors.firstname ? 'true' : 'false'}
+                  aria-describedby={
+                    errors.firstname ? 'firstname-error' : undefined
+                  }
+                />
+                {errors.firstname && (
+                  <p
+                    id="firstname-error"
+                    className="text-sm text-destructive"
+                    role="alert"
+                  >
+                    {errors.firstname.message}
                   </p>
-                </div>
-
-                {/* Mot de passe */}
-                <div className="space-y-2">
-                  <Label htmlFor="password">Mot de passe</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••••••"
-                    {...register('password')}
-                    aria-invalid={errors.password ? 'true' : 'false'}
-                    aria-describedby={
-                      errors.password ? 'password-error' : undefined
-                    }
-                  />
-                  {errors.password && (
-                    <p
-                      id="password-error"
-                      className="text-sm text-destructive"
-                      role="alert"
-                    >
-                      {errors.password.message}
-                    </p>
-                  )}
-                  <div className="space-y-2">
-                    <div className="h-2 w-full rounded-full bg-muted">
-                      <div
-                        className={cn('h-2 rounded-full transition-all', passwordBarClass)}
-                        style={{ width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Force : <span className="font-medium">{passwordLabel}</span>
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      {PASSWORD_CHECKS.map(check => {
-                        const isValid = check.test(passwordValue)
-                        return (
-                          <span
-                            key={check.key}
-                            className={cn(
-                              'flex items-center gap-1',
-                              isValid ? 'text-emerald-600' : 'text-muted-foreground'
-                            )}
-                          >
-                            <span aria-hidden="true">
-                              {isValid ? '✓' : '•'}
-                            </span>
-                            {check.label}
-                          </span>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Confirmation mot de passe */}
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">
-                    Confirmer le mot de passe
-                  </Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••••••••"
-                    {...register('confirmPassword')}
-                    aria-invalid={errors.confirmPassword ? 'true' : 'false'}
-                    aria-describedby={
-                      errors.confirmPassword
-                        ? 'confirmPassword-error'
-                        : undefined
-                    }
-                  />
-                  {errors.confirmPassword && (
-                    <p
-                      id="confirmPassword-error"
-                      className="text-sm text-destructive"
-                      role="alert"
-                    >
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* CGU */}
-                <div className="flex items-center space-x-2">
-                  <Controller
-                    name="terms"
-                    control={control}
-                    render={({ field }) => (
-                      <Checkbox
-                        id="terms"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        aria-invalid={errors.terms ? 'true' : 'false'}
-                        aria-describedby={
-                          errors.terms ? 'terms-error' : undefined
-                        }
-                      />
-                    )}
-                  />
-                  <div className="space-y-1 leading-none">
-                    <Label
-                      htmlFor="terms"
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      J&apos;accepte les{' '}
-                      <Link
-                        href="/terms"
-                        className="text-primary underline hover:no-underline"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        conditions générales d&apos;utilisation
-                      </Link>
-                    </Label>
-                    {errors.terms && (
-                      <p
-                        id="terms-error"
-                        className="text-sm text-destructive"
-                        role="alert"
-                      >
-                        {errors.terms.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Button type="button" className="w-full" onClick={goToIdentityStep}>
-                    Continuer vers la vérification d&apos;identité
-                  </Button>
-                  <p className="text-center text-xs text-muted-foreground">
-                    Étape suivante : sélection du document et vérification via
-                    Stripe Identity.
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastname">Nom</Label>
+                <Input
+                  id="lastname"
+                  type="text"
+                  placeholder="Dupont"
+                  {...register('lastname')}
+                  aria-invalid={errors.lastname ? 'true' : 'false'}
+                  aria-describedby={
+                    errors.lastname ? 'lastname-error' : undefined
+                  }
+                />
+                {errors.lastname && (
+                  <p
+                    id="lastname-error"
+                    className="text-sm text-destructive"
+                    role="alert"
+                  >
+                    {errors.lastname.message}
                   </p>
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Type de document */}
-                <div className="space-y-2">
-                  <Label htmlFor="documentType">Type de document</Label>
-                  <Controller
-                    name="documentType"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value || ''}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger id="documentType">
-                          <SelectValue placeholder="Sélectionnez un document" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="passport">Passeport</SelectItem>
-                          <SelectItem value="national_id">
-                            Carte nationale d&apos;identité
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.documentType && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.documentType.message}
-                    </p>
-                  )}
-                </div>
+                )}
+              </div>
+            </div>
 
-                {/* Pays d'émission */}
-                <div className="space-y-2">
-                  <Label htmlFor="documentCountry">
-                    Pays d&apos;émission du document
-                  </Label>
-                  <Controller
-                    name="documentCountry"
-                    control={control}
-                    render={({ field }) => (
-                      <Popover
-                        open={countryOpen}
-                        onOpenChange={(open) => {
-                          setCountryOpen(open)
-                          if (!open) {
-                            setCountrySearch('')
-                          }
-                        }}
-                      >
-                        <PopoverTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={countryOpen}
-                            className="w-full justify-between"
-                            id="documentCountry"
-                          >
-                            {field.value ? (
-                              <span className="flex items-center gap-2">
-                                <span>
-                                  {
-                                    COUNTRY_OPTIONS.find(
-                                      country => country.code === field.value
-                                    )?.flag
-                                  }
-                                </span>
-                                <span>
-                                  {
-                                    COUNTRY_OPTIONS.find(
-                                      country => country.code === field.value
-                                    )?.name
-                                  }
-                                </span>
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">
-                                Sélectionnez un pays
-                              </span>
-                            )}
-                            <IconChevronDown className="h-4 w-4 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          side="bottom"
-                          align="start"
-                          className="w-[--radix-popover-trigger-width] p-0"
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="jean.dupont@example.com"
+                {...register('email')}
+                aria-invalid={errors.email ? 'true' : 'false'}
+                aria-describedby={errors.email ? 'email-error' : undefined}
+              />
+              {errors.email && (
+                <p
+                  id="email-error"
+                  className="text-sm text-destructive"
+                  role="alert"
+                >
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            {/* Téléphone */}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Téléphone</Label>
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Popover open={phoneOpen} onOpenChange={setPhoneOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={phoneOpen}
+                          className="h-10 w-full justify-between sm:w-[200px]"
                         >
-                          <div className="flex items-center gap-2 border-b px-3 py-2">
-                            <IconSearch className="h-4 w-4 text-muted-foreground" />
-                            <Input
-                              placeholder="Rechercher un pays..."
-                              value={countrySearch}
-                              onChange={(event) =>
-                                setCountrySearch(event.target.value)
-                              }
-                              className="h-8 border-0 px-0 focus-visible:ring-0"
-                            />
-                          </div>
-                          <div className="max-h-64 overflow-y-auto">
-                            {filteredCountries.length > 0 ? (
-                              filteredCountries.map(country => (
-                                <button
-                                  key={country.code}
-                                  type="button"
-                                  className={cn(
-                                    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
-                                    field.value === country.code && 'bg-accent'
-                                  )}
-                                  onClick={() => {
-                                    field.onChange(country.code)
-                                    setCountryOpen(false)
-                                    setCountrySearch('')
-                                  }}
-                                >
-                                  <span>{country.flag}</span>
-                                  <span>{country.name}</span>
-                                  <span className="ml-auto text-xs text-muted-foreground">
-                                    {country.code}
-                                  </span>
-                                </button>
-                              ))
-                            ) : (
-                              <p className="px-3 py-2 text-sm text-muted-foreground">
-                                Aucun pays trouvé.
-                              </p>
-                            )}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    )}
+                          <span className="flex items-center gap-2">
+                            <span>{phoneCountry.flag}</span>
+                            <span className="text-sm">
+                              {phoneCountry.dialCode}
+                            </span>
+                          </span>
+                          <IconChevronDown className="h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        side="bottom"
+                        align="start"
+                        className="w-[--radix-popover-trigger-width] p-0"
+                      >
+                        <div className="max-h-60 overflow-y-auto">
+                          {PHONE_COUNTRIES.map(country => (
+                            <button
+                              key={country.code}
+                              type="button"
+                              className={cn(
+                                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
+                                phoneCountry.code === country.code && 'bg-accent'
+                              )}
+                              onClick={() => {
+                                setPhoneCountry(country)
+                                const nextValue = phoneDigits
+                                  ? `${country.dialCode}${phoneDigits}`
+                                  : ''
+                                field.onChange(nextValue)
+                                setPhoneOpen(false)
+                              }}
+                            >
+                              <span>{country.flag}</span>
+                              <span className="flex-1">{country.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {country.dialCode}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      placeholder="612345678"
+                      className="h-10"
+                      value={phoneDigits}
+                      onChange={(event) => {
+                        const digits = event.target.value.replace(/\D/g, '')
+                        setPhoneDigits(digits)
+                        const nextValue = digits
+                          ? `${phoneCountry.dialCode}${digits}`
+                          : ''
+                        field.onChange(nextValue)
+                      }}
+                      aria-invalid={errors.phone ? 'true' : 'false'}
+                      aria-describedby={
+                        errors.phone ? 'phone-error' : undefined
+                      }
+                    />
+                  </div>
+                )}
+              />
+              {errors.phone && (
+                <p
+                  id="phone-error"
+                  className="text-sm text-destructive"
+                  role="alert"
+                >
+                  {errors.phone.message}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Choisissez l&apos;indicatif puis entrez le numéro
+                (chiffres uniquement).
+              </p>
+            </div>
+
+            {/* Mot de passe */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••••••"
+                {...register('password')}
+                aria-invalid={errors.password ? 'true' : 'false'}
+                aria-describedby={
+                  errors.password ? 'password-error' : undefined
+                }
+              />
+              {errors.password && (
+                <p
+                  id="password-error"
+                  className="text-sm text-destructive"
+                  role="alert"
+                >
+                  {errors.password.message}
+                </p>
+              )}
+              <div className="space-y-2">
+                <div className="h-2 w-full rounded-full bg-muted">
+                  <div
+                    className={cn('h-2 rounded-full transition-all', passwordBarClass)}
+                    style={{ width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%` }}
                   />
-                  {errors.documentCountry && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.documentCountry.message}
-                    </p>
-                  )}
                 </div>
-
-                <Alert>
-                  <IconShieldLock className="h-4 w-4" />
-                  <AlertTitle>Sécurité & confidentialité</AlertTitle>
-                  <AlertDescription>
-                    <p>
-                      La vérification est opérée par Stripe Identity. Nous ne
-                      stockons pas vos documents, uniquement le statut de
-                      vérification et les informations déclarées.
-                    </p>
-                    <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
-                      <li>Données chiffrées pendant le transfert.</li>
-                      <li>Utilisation strictement liée à la conformité KYC.</li>
-                      <li>Vous pouvez relancer la vérification si besoin.</li>
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                    onClick={() => setStep(1)}
-                  >
-                    Retour
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isLoading || isVerifyingIdentity}
-                  >
-                    {isVerifyingIdentity ? (
-                      <>
-                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Ouverture de Stripe Identity...
-                      </>
-                    ) : isLoading ? (
-                      <>
-                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Inscription en cours...
-                      </>
-                    ) : (
-                      'Créer mon compte & vérifier mon identité'
-                    )}
-                  </Button>
+                <p className="text-xs text-muted-foreground">
+                  Force : <span className="font-medium">{passwordLabel}</span>
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {PASSWORD_CHECKS.map(check => {
+                    const isValid = check.test(passwordValue)
+                    return (
+                      <span
+                        key={check.key}
+                        className={cn(
+                          'flex items-center gap-1',
+                          isValid ? 'text-emerald-600' : 'text-muted-foreground'
+                        )}
+                      >
+                        <span aria-hidden="true">
+                          {isValid ? '✓' : '•'}
+                        </span>
+                        {check.label}
+                      </span>
+                    )
+                  })}
                 </div>
-              </>
-            )}
+              </div>
+            </div>
+
+            {/* Confirmation mot de passe */}
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">
+                Confirmer le mot de passe
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••••••"
+                {...register('confirmPassword')}
+                aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+                aria-describedby={
+                  errors.confirmPassword
+                    ? 'confirmPassword-error'
+                    : undefined
+                }
+              />
+              {errors.confirmPassword && (
+                <p
+                  id="confirmPassword-error"
+                  className="text-sm text-destructive"
+                  role="alert"
+                >
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            {/* CGU */}
+            <div className="flex items-center space-x-2">
+              <Controller
+                name="terms"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    id="terms"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    aria-invalid={errors.terms ? 'true' : 'false'}
+                    aria-describedby={
+                      errors.terms ? 'terms-error' : undefined
+                    }
+                  />
+                )}
+              />
+              <div className="space-y-1 leading-none">
+                <Label
+                  htmlFor="terms"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  J&apos;accepte les{' '}
+                  <Link
+                    href="/terms"
+                    className="text-primary underline hover:no-underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    conditions générales d&apos;utilisation
+                  </Link>
+                </Label>
+                {errors.terms && (
+                  <p
+                    id="terms-error"
+                    className="text-sm text-destructive"
+                    role="alert"
+                  >
+                    {errors.terms.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Inscription en cours...
+                  </>
+                ) : (
+                  'Créer mon compte'
+                )}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                Certaines actions (publication, paiement, envoi/réception,
+                assurance) nécessitent une vérification d&apos;identité.
+              </p>
+            </div>
 
             {/* Lien connexion */}
             <p className="text-center text-sm text-muted-foreground">

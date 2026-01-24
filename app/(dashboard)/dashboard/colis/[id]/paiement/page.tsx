@@ -114,6 +114,10 @@ function PaymentPageContent() {
         if (!response.ok) {
           const error = await response.json()
           toast.error(error.error || 'Erreur lors de la création du paiement')
+          if (error.field === 'kyc') {
+            router.push('/dashboard/reglages/kyc')
+            return
+          }
           router.push('/dashboard/colis')
           return
         }
@@ -164,6 +168,9 @@ function PaymentPageContent() {
       if (!response.ok) {
         const error = await response.json()
         toast.error(error.error || 'Erreur lors du paiement')
+        if (error.field === 'kyc') {
+          router.push('/dashboard/reglages/kyc')
+        }
         return
       }
 

@@ -45,14 +45,16 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
     }
   }
 
+  const intent = formData.intent === 'draft' ? 'draft' : 'publish'
+
   // Vérifier que le KYC est approuvé SEULEMENT si feature activée
-  if (isFeatureEnabled('KYC_ENABLED') && profile.kyc_status !== 'approved') {
-    let errorMessage = 'Vérification d\'identité requise'
-    let errorDetails = 'Veuillez compléter votre vérification d\'identité pour créer une annonce.'
+  if (isFeatureEnabled('KYC_ENABLED') && profile.kyc_status !== 'approved' && intent !== 'draft') {
+    let errorMessage = 'Vérification d\'identité requise pour continuer'
+    let errorDetails = 'Veuillez compléter votre vérification d\'identité pour publier une annonce.'
     
     if (profile.kyc_status === 'pending') {
       errorMessage = 'Vérification en cours'
-      errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez créer des annonces une fois celle-ci approuvée (24-48h).'
+      errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez publier vos annonces une fois celle-ci approuvée (24-48h).'
     } else if (profile.kyc_status === 'rejected') {
       errorMessage = 'Vérification refusée'
       errorDetails = profile.kyc_rejection_reason 
@@ -60,7 +62,7 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
         : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
     } else if (profile.kyc_status === 'incomplete') {
       errorMessage = 'Vérification d\'identité incomplète'
-      errorDetails = 'Veuillez soumettre vos documents d\'identité pour créer une annonce.'
+      errorDetails = 'Veuillez soumettre vos documents d\'identité pour publier une annonce.'
     }
     
     return {
@@ -110,6 +112,8 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
       return `${year}-${month}-${day}`
     }
 
+    const status = intent === 'draft' ? 'draft' : 'active'
+
     // Créer l'annonce
     const { data: announcement, error: createError } = await supabase
       .from('announcements')
@@ -124,7 +128,7 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
         available_kg: validation.data.available_kg,
         price_per_kg: validation.data.price_per_kg,
         description: validation.data.description || null,
-        status: 'active', // L'annonce est directement active
+        status, // draft ou active selon l'intention
       })
       .select('id')
       .single()
@@ -139,12 +143,17 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
     console.log('Announcement created successfully:', announcement)
 
     revalidatePath('/dashboard/annonces')
-    revalidatePath('/annonces')
+    if (status === 'active') {
+      revalidatePath('/annonces')
+    }
 
     return {
       success: true,
       announcementId: announcement.id,
-      message: 'Annonce créée avec succès',
+      message:
+        status === 'draft'
+          ? 'Annonce enregistrée en brouillon'
+          : 'Annonce publiée avec succès',
     }
   } catch (error) {
     console.error('Create announcement error:', error)
@@ -187,6 +196,5 @@ export async function getActiveAnnouncementsCount() {
     maxAllowed: MAX_ACTIVE_ANNOUNCEMENTS,
   }
 }
-
 
 
