@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useCallback, useEffect, useState, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Elements } from '@stripe/react-stripe-js'
 import { getStripeClient } from "@/lib/shared/services/stripe/config"
@@ -54,16 +54,7 @@ function PaymentPageContent() {
   const [stripePromise] = useState(() => getStripeClient())
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
 
-  useEffect(() => {
-    if (!paymentsEnabled) {
-      setIsLoading(false)
-      return
-    }
-
-    loadBooking()
-  }, [bookingId, paymentsEnabled, isStripe])
-
-  const loadBooking = async () => {
+  const loadBooking = useCallback(async () => {
     setIsLoading(true)
     try {
       const supabase = createClient()
@@ -139,7 +130,16 @@ function PaymentPageContent() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [bookingId, isStripe, router])
+
+  useEffect(() => {
+    if (!paymentsEnabled) {
+      setIsLoading(false)
+      return
+    }
+
+    loadBooking()
+  }, [loadBooking, paymentsEnabled])
 
   const handleSimulatedPayment = async () => {
     if (!isSimulation || isProcessingPayment) {

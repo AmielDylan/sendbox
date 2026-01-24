@@ -8,7 +8,7 @@ import {
   Text,
   View,
   StyleSheet,
-  Image,
+  Image as PdfImage,
 } from '@react-pdf/renderer'
 
 interface DeliveryProofProps {
@@ -120,7 +120,7 @@ export function DeliveryProof({ booking }: DeliveryProofProps) {
         {booking.delivery_photo_url && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>PHOTO DU COLIS REÇU</Text>
-            <Image
+            <PdfImage
               src={booking.delivery_photo_url}
               style={styles.image}
               cache={false}
@@ -132,7 +132,7 @@ export function DeliveryProof({ booking }: DeliveryProofProps) {
         {booking.delivery_signature_url && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>SIGNATURE DE RÉCEPTION</Text>
-            <Image
+            <PdfImage
               src={booking.delivery_signature_url}
               style={styles.signature}
               cache={false}
@@ -245,7 +245,6 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
 
 
 
