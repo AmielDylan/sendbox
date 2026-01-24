@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
 
         const updateData = withIdentityMetadata(
           {
-            kyc_status: 'rejected',
+            kyc_status: 'incomplete',
             kyc_reviewed_at: new Date().toISOString(),
             kyc_rejection_reason: rejectionReason,
           },
@@ -190,6 +190,36 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error('❌ Failed to update KYC status (canceled):', error)
+        }
+        break
+      }
+
+      case 'identity.verification_session.redacted': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'incomplete',
+            kyc_reviewed_at: new Date().toISOString(),
+            kyc_rejection_reason: 'verification_redacted',
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (redacted):', error)
         }
         break
       }

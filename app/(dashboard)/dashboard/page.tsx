@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { IconPackage, IconMessage, IconTrendingUp, IconShield, IconCheck, IconClock } from '@tabler/icons-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
 import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialSummaryCard'
@@ -277,12 +278,23 @@ export default function DashboardPage() {
           { label: 'Tableau de bord' },
         ]}
         actions={
-          <Button asChild>
-            <Link href="/dashboard/annonces/new">
-              <IconPackage className="mr-2 h-4 w-4" />
-              Nouvelle annonce
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            {isFeatureEnabled('KYC_ENABLED') && kycStatus === 'approved' && (
+              <Badge
+                variant="outline"
+                className="border-emerald-600 text-emerald-600"
+              >
+                <IconCheck className="mr-1 h-3.5 w-3.5" />
+                Profil vérifié
+              </Badge>
+            )}
+            <Button asChild>
+              <Link href="/dashboard/annonces/new">
+                <IconPackage className="mr-2 h-4 w-4" />
+                Nouvelle annonce
+              </Link>
+            </Button>
+          </div>
         }
       />
 

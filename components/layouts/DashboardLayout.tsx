@@ -235,9 +235,35 @@ function HeaderActions() {
       </ClientOnly>
 
       <ClientOnly>
+        <VerifiedProfileBadge />
+      </ClientOnly>
+
+      <ClientOnly>
         <UserMenu />
       </ClientOnly>
     </div>
+  )
+}
+
+function VerifiedProfileBadge() {
+  const { profile } = useAuth()
+
+  if (!isFeatureEnabled('KYC_ENABLED')) {
+    return null
+  }
+
+  if ((profile as any)?.kyc_status !== 'approved') {
+    return null
+  }
+
+  return (
+    <Badge
+      variant="outline"
+      className="inline-flex items-center gap-1 border-emerald-600 text-emerald-600"
+    >
+      <IconCheck className="h-3.5 w-3.5" />
+      Profil vérifié
+    </Badge>
   )
 }
 
