@@ -225,28 +225,36 @@ function RegisterForm() {
       if (result.success) {
         if (result.identityError) {
           toast.error(result.identityError)
+          return
         }
 
-        if (result.verificationClientSecret) {
-          const stripe = await stripePromise
-          if (!stripe) {
-            toast.error("Stripe n'est pas encore disponible. Réessayez.")
-          } else {
-            setIsVerifyingIdentity(true)
-            const { error } = await stripe.verifyIdentity(
-              result.verificationClientSecret
-            )
-
-            if (error) {
-              toast.error(
-                error.message ||
-                  "La vérification d'identité n'a pas pu être complétée."
-              )
-            } else {
-              toast.success('Vérification envoyée avec succès.')
-            }
-          }
+        if (!result.verificationClientSecret) {
+          toast.error(
+            "La vérification d'identité n'a pas pu démarrer. Réessayez."
+          )
+          return
         }
+
+        const stripe = await stripePromise
+        if (!stripe) {
+          toast.error("Stripe n'est pas encore disponible. Réessayez.")
+          return
+        }
+
+        setIsVerifyingIdentity(true)
+        const { error } = await stripe.verifyIdentity(
+          result.verificationClientSecret
+        )
+
+        if (error) {
+          toast.error(
+            error.message ||
+              "La vérification d'identité n'a pas pu être complétée."
+          )
+          return
+        }
+
+        toast.success('Vérification envoyée avec succès.')
 
         toast.success(result.message)
         router.push('/verify-email')
