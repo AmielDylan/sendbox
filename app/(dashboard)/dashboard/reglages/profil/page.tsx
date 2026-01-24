@@ -329,9 +329,6 @@ export default function ProfilePage() {
                   {errors.phone.message}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
-                Format : +33XXXXXXXXX ou +229XXXXXXXXX
-              </p>
             </div>
 
             {/* Adresse */}
