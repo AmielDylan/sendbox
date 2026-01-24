@@ -267,6 +267,9 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
 
       if (result.error) {
         toast.error(result.error)
+        if ((result as any).field === 'kyc') {
+          router.push('/dashboard/reglages/kyc')
+        }
         return
       }
 

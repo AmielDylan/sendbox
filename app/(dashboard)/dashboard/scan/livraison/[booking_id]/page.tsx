@@ -197,6 +197,9 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
 
       if (result.error) {
         toast.error(result.error)
+        if ((result as any).field === 'kyc') {
+          router.push('/dashboard/reglages/kyc')
+        }
         return
       }
 

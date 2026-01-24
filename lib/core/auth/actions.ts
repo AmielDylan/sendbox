@@ -19,7 +19,6 @@ import {
   type ResetPasswordInput,
 } from "@/lib/core/auth/validations"
 import { authRateLimit } from "@/lib/shared/security/rate-limit"
-import { createIdentityVerificationSession } from "@/lib/shared/services/stripe/identity"
 
 // Messages d'erreur génériques pour éviter l'énumération
 const GENERIC_ERROR_MESSAGE =
@@ -69,11 +68,6 @@ export async function signUp(formData: RegisterInput) {
       }
     }
 
-    // Le profil sera créé automatiquement via trigger PostgreSQL
-    // Vérifier que le profil existe
-    let verificationClientSecret: string | null = null
-    let identityError: string | undefined
-
     if (authData.user) {
       // Attendre un peu pour que le trigger s'exécute
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -82,26 +76,7 @@ export async function signUp(formData: RegisterInput) {
         firstname: validation.data.firstname,
         lastname: validation.data.lastname,
         phone: validation.data.phone,
-      }
-
-      try {
-        const documentCountry = validation.data.documentCountry.toUpperCase()
-        const identitySession = await createIdentityVerificationSession({
-          email: validation.data.email,
-          userId: authData.user.id,
-          documentType: validation.data.documentType,
-          documentCountry,
-        })
-
-        verificationClientSecret = identitySession.clientSecret || null
-        profileUpdates.kyc_status = 'pending'
-        profileUpdates.kyc_document_type = validation.data.documentType
-        profileUpdates.kyc_nationality = documentCountry
-        profileUpdates.kyc_submitted_at = new Date().toISOString()
-      } catch (error) {
-        console.error('Identity session error:', error)
-        identityError =
-          "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard."
+        kyc_status: 'incomplete',
       }
 
       const { error: profileError } = await supabase
@@ -118,8 +93,6 @@ export async function signUp(formData: RegisterInput) {
       success: true,
       message:
         'Inscription réussie ! Vérifiez votre email pour confirmer votre compte.',
-      verificationClientSecret,
-      identityError,
     }
   } catch (error) {
     console.error('Sign up error:', error)

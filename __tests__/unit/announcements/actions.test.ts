@@ -152,7 +152,7 @@ describe('Announcements Actions', () => {
 
       expect(result.success).toBe(true)
       expect(result.announcementId).toBe('announcement-123')
-      expect(result.message).toContain('créée avec succès')
+      expect(result.message).toContain('publiée avec succès')
     })
 
     test('requires authentication', async () => {

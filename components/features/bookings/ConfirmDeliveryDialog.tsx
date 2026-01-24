@@ -40,6 +40,9 @@ export function ConfirmDeliveryDialog({ bookingId, trigger }: ConfirmDeliveryDia
 
       if (result.error) {
         toast.error(result.error)
+        if ((result as any).field === 'kyc') {
+          router.push('/dashboard/reglages/kyc')
+        }
         return
       }
 

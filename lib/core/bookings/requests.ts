@@ -11,6 +11,7 @@ import {
   mapPublicProfilesById,
 } from "@/lib/shared/db/queries/public-profiles"
 import { createSystemNotification } from "@/lib/core/notifications/system"
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 
 /**
  * Accepte une demande de réservation
@@ -59,6 +60,44 @@ export async function acceptBooking(bookingId: string) {
   if (announcement.traveler_id !== user.id) {
     return {
       error: 'Vous n\'êtes pas autorisé à accepter cette demande',
+    }
+  }
+
+  if (isFeatureEnabled('KYC_ENABLED')) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('kyc_status, kyc_rejection_reason')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile) {
+      return {
+        error: 'Profil introuvable',
+      }
+    }
+
+    if (profile.kyc_status !== 'approved') {
+      let errorMessage = 'Vérification d\'identité requise pour continuer'
+      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour accepter cette demande.'
+
+      if (profile.kyc_status === 'pending') {
+        errorMessage = 'Vérification en cours'
+        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez accepter les demandes une fois celle-ci approuvée (24-48h).'
+      } else if (profile.kyc_status === 'rejected') {
+        errorMessage = 'Vérification refusée'
+        errorDetails = profile.kyc_rejection_reason
+          ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
+          : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
+      } else if (profile.kyc_status === 'incomplete') {
+        errorMessage = 'Vérification d\'identité incomplète'
+        errorDetails = 'Veuillez soumettre vos documents d\'identité pour accepter cette demande.'
+      }
+
+      return {
+        error: errorMessage,
+        errorDetails,
+        field: 'kyc',
+      }
     }
   }
 

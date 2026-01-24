@@ -262,7 +262,7 @@ function VerifiedProfileBadge() {
       className="inline-flex items-center gap-1 border-emerald-600 text-emerald-600"
     >
       <IconCheck className="h-3.5 w-3.5" />
-      Profil vérifié
+      Identité vérifiée
     </Badge>
   )
 }

@@ -10,6 +10,7 @@ import { getUserAnnouncements } from "@/lib/shared/db/queries/announcements"
 import {
   deleteAnnouncement,
   markAnnouncementAsCompleted,
+  toggleAnnouncementStatus,
 } from "@/lib/core/announcements/management"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
@@ -57,6 +58,7 @@ export default function MyAnnouncementsPage() {
     string | null
   >(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null)
 
   // Query pour récupérer les annonces
   const { data, isLoading, refetch } = useQuery({
@@ -146,6 +148,30 @@ export default function MyAnnouncementsPage() {
       }
     } catch {
       toast.error('Une erreur est survenue')
+    }
+  }
+
+  const handleToggleStatus = async (announcementId: string) => {
+    setIsUpdatingStatus(announcementId)
+    try {
+      const result = await toggleAnnouncementStatus(announcementId)
+
+      if (result.error) {
+        toast.error(result.error)
+        if ((result as any).field === 'kyc') {
+          router.push('/dashboard/reglages/kyc')
+        }
+        return
+      }
+
+      if (result.success) {
+        toast.success(result.message)
+        refetch()
+      }
+    } catch {
+      toast.error('Une erreur est survenue')
+    } finally {
+      setIsUpdatingStatus(null)
     }
   }
 
@@ -325,6 +351,37 @@ export default function MyAnnouncementsPage() {
                           >
                             <IconEdit className="mr-2 h-3.5 w-3.5" />
                             Modifier
+                          </Button>
+                        </>
+                      )}
+                      {announcement.status === 'draft' && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all font-medium"
+                            onClick={() => router.push(`/dashboard/annonces/${announcement.id}/edit`)}
+                          >
+                            <IconEdit className="mr-2 h-3.5 w-3.5" />
+                            Modifier
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-9"
+                            onClick={() => handleToggleStatus(announcement.id)}
+                            disabled={isUpdatingStatus === announcement.id}
+                          >
+                            {isUpdatingStatus === announcement.id ? (
+                              <>
+                                <IconLoader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                Publication...
+                              </>
+                            ) : (
+                              <>
+                                <IconCheck className="mr-2 h-3.5 w-3.5" />
+                                Publier
+                              </>
+                            )}
                           </Button>
                         </>
                       )}
