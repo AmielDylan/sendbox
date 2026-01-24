@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
         const { error } = await supabase
           .from('profiles')
           .update(updateData)
-          .eq('user_id', userId)
+          .eq('id', userId)
 
         if (error) {
           console.error('❌ Failed to update KYC status (processing):', error)
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
         const { error } = await supabase
           .from('profiles')
           .update(updateData)
-          .eq('user_id', userId)
+          .eq('id', userId)
 
         if (error) {
           console.error('❌ Failed to update KYC status (verified):', error)
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
         const { error } = await supabase
           .from('profiles')
           .update(updateData)
-          .eq('user_id', userId)
+          .eq('id', userId)
 
         if (error) {
           console.error('❌ Failed to update KYC status (requires_input):', error)
@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
         const { error } = await supabase
           .from('profiles')
           .update(updateData)
-          .eq('user_id', userId)
+          .eq('id', userId)
 
         if (error) {
           console.error('❌ Failed to update KYC status (canceled):', error)
