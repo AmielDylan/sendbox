@@ -121,8 +121,8 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single()
         .abortSignal(abortController.signal)
+        .single()
 
       clearTimeout(timeoutId)
 
