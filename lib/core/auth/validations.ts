@@ -22,7 +22,10 @@ export const registerSchema = z
     lastname: z.string().min(2, 'Minimum 2 caractères').max(50),
     phone: z
       .string()
-      .regex(/^\+(?:33|229)\d{9}$/, 'Format : +33XXXXXXXXX ou +229XXXXXXXXX'),
+      .regex(
+        /^\+\d{6,15}$/,
+        'Format : indicatif + numéro (6 à 15 chiffres)'
+      ),
     documentType: z.enum(IDENTITY_DOCUMENT_TYPES, {
       message: 'Type de document invalide',
     }),
