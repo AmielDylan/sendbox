@@ -7,7 +7,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, Controller, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerSchema, type RegisterInput } from "@/lib/core/auth/validations"
 import { signUp } from "@/lib/core/auth/actions"
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Card,
   CardContent,
@@ -32,10 +33,51 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
-import { IconLoader2, IconPackage, IconShieldLock } from '@tabler/icons-react'
+import {
+  IconLoader2,
+  IconPackage,
+  IconChevronDown,
+  IconSearch,
+  IconShieldLock,
+} from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
-import { COUNTRY_OPTIONS } from '@/lib/utils/countries'
+import { COUNTRY_OPTIONS, getCountryFlagEmoji } from '@/lib/utils/countries'
+
+const PHONE_COUNTRIES = [
+  { code: 'FR', name: 'France', dialCode: '+33' },
+  { code: 'BJ', name: 'Bénin', dialCode: '+229' },
+  { code: 'CI', name: 'Côte d\'Ivoire', dialCode: '+225' },
+  { code: 'SN', name: 'Sénégal', dialCode: '+221' },
+  { code: 'TG', name: 'Togo', dialCode: '+228' },
+  { code: 'BF', name: 'Burkina Faso', dialCode: '+226' },
+  { code: 'ML', name: 'Mali', dialCode: '+223' },
+  { code: 'NE', name: 'Niger', dialCode: '+227' },
+  { code: 'GN', name: 'Guinée', dialCode: '+224' },
+  { code: 'CM', name: 'Cameroun', dialCode: '+237' },
+  { code: 'CD', name: 'Rép. Dém. du Congo', dialCode: '+243' },
+  { code: 'CG', name: 'Congo', dialCode: '+242' },
+  { code: 'GA', name: 'Gabon', dialCode: '+241' },
+  { code: 'MA', name: 'Maroc', dialCode: '+212' },
+  { code: 'DZ', name: 'Algérie', dialCode: '+213' },
+  { code: 'TN', name: 'Tunisie', dialCode: '+216' },
+  { code: 'BE', name: 'Belgique', dialCode: '+32' },
+  { code: 'CH', name: 'Suisse', dialCode: '+41' },
+  { code: 'CA', name: 'Canada', dialCode: '+1' },
+  { code: 'LU', name: 'Luxembourg', dialCode: '+352' },
+  { code: 'MC', name: 'Monaco', dialCode: '+377' },
+].map(country => ({
+  ...country,
+  flag: getCountryFlagEmoji(country.code),
+}))
+
+const PASSWORD_CHECKS = [
+  { key: 'length', label: '12+ caractères', test: (v: string) => v.length >= 12 },
+  { key: 'lower', label: '1 minuscule', test: (v: string) => /[a-z]/.test(v) },
+  { key: 'upper', label: '1 majuscule', test: (v: string) => /[A-Z]/.test(v) },
+  { key: 'number', label: '1 chiffre', test: (v: string) => /\d/.test(v) },
+  { key: 'special', label: '1 caractère spécial', test: (v: string) => /[@$!%*?&]/.test(v) },
+]
 
 function RegisterForm() {
   const router = useRouter()
@@ -44,6 +86,10 @@ function RegisterForm() {
   const [isVerifyingIdentity, setIsVerifyingIdentity] = useState(false)
   const [authCheckComplete, setAuthCheckComplete] = useState(false)
   const [step, setStep] = useState<1 | 2>(1)
+  const [phoneCountry, setPhoneCountry] = useState(PHONE_COUNTRIES[0])
+  const [phoneDigits, setPhoneDigits] = useState('')
+  const [countryOpen, setCountryOpen] = useState(false)
+  const [countrySearch, setCountrySearch] = useState('')
 
   // Tous les hooks doivent être définis avant toute condition de rendu
   const {
@@ -58,6 +104,51 @@ function RegisterForm() {
       terms: false,
     },
   })
+
+  const passwordValue = useWatch({ control, name: 'password' }) || ''
+  const passwordScore = useMemo(
+    () => PASSWORD_CHECKS.filter(check => check.test(passwordValue)).length,
+    [passwordValue]
+  )
+  const passwordLabel =
+    passwordScore <= 2 ? 'Faible' : passwordScore <= 4 ? 'Moyen' : 'Fort'
+  const passwordBarClass =
+    passwordScore <= 2
+      ? 'bg-destructive'
+      : passwordScore <= 4
+        ? 'bg-amber-500'
+        : 'bg-emerald-500'
+
+  const watchedPhone = useWatch({ control, name: 'phone' }) || ''
+
+  useEffect(() => {
+    if (!watchedPhone) {
+      return
+    }
+    const matchedCountry = PHONE_COUNTRIES.find(country =>
+      watchedPhone.startsWith(country.dialCode)
+    )
+    if (matchedCountry && matchedCountry.code !== phoneCountry.code) {
+      setPhoneCountry(matchedCountry)
+    }
+    const digitsOnly = watchedPhone
+      .replace(matchedCountry?.dialCode || '', '')
+      .replace(/\D/g, '')
+    if (digitsOnly && digitsOnly !== phoneDigits) {
+      setPhoneDigits(digitsOnly)
+    }
+  }, [watchedPhone, phoneCountry.code, phoneDigits])
+
+  const filteredCountries = useMemo(() => {
+    const query = countrySearch.trim().toLowerCase()
+    if (!query) {
+      return COUNTRY_OPTIONS
+    }
+    return COUNTRY_OPTIONS.filter(country =>
+      country.name.toLowerCase().includes(query) ||
+      country.code.toLowerCase().includes(query)
+    )
+  }, [countrySearch])
 
   const stripePromise = useMemo(() => getStripeClient(), [])
 
@@ -284,13 +375,62 @@ function RegisterForm() {
                 {/* Téléphone */}
                 <div className="space-y-2">
                   <Label htmlFor="phone">Téléphone</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+33123456789"
-                    {...register('phone')}
-                    aria-invalid={errors.phone ? 'true' : 'false'}
-                    aria-describedby={errors.phone ? 'phone-error' : undefined}
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Select
+                          value={phoneCountry.code}
+                          onValueChange={(value) => {
+                            const selected = PHONE_COUNTRIES.find(
+                              country => country.code === value
+                            )
+                            if (!selected) return
+                            setPhoneCountry(selected)
+                            const nextValue = phoneDigits
+                              ? `${selected.dialCode}${phoneDigits}`
+                              : ''
+                            field.onChange(nextValue)
+                          }}
+                        >
+                          <SelectTrigger className="sm:w-[200px]">
+                            <SelectValue placeholder="Indicatif" />
+                          </SelectTrigger>
+                          <SelectContent side="bottom">
+                            {PHONE_COUNTRIES.map(country => (
+                              <SelectItem key={country.code} value={country.code}>
+                                <span className="mr-2">{country.flag}</span>
+                                <span className="mr-2">{country.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {country.dialCode}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          inputMode="numeric"
+                          autoComplete="tel-national"
+                          placeholder="612345678"
+                          value={phoneDigits}
+                          onChange={(event) => {
+                            const digits = event.target.value.replace(/\D/g, '')
+                            setPhoneDigits(digits)
+                            const nextValue = digits
+                              ? `${phoneCountry.dialCode}${digits}`
+                              : ''
+                            field.onChange(nextValue)
+                          }}
+                          aria-invalid={errors.phone ? 'true' : 'false'}
+                          aria-describedby={
+                            errors.phone ? 'phone-error' : undefined
+                          }
+                        />
+                      </div>
+                    )}
                   />
                   {errors.phone && (
                     <p
@@ -302,7 +442,8 @@ function RegisterForm() {
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Format : +33XXXXXXXXX ou +229XXXXXXXXX
+                    Choisissez l&apos;indicatif puis entrez le numéro
+                    (chiffres uniquement).
                   </p>
                 </div>
 
@@ -328,10 +469,36 @@ function RegisterForm() {
                       {errors.password.message}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    Minimum 12 caractères avec majuscule, minuscule, chiffre et
-                    caractère spécial
-                  </p>
+                  <div className="space-y-2">
+                    <div className="h-2 w-full rounded-full bg-muted">
+                      <div
+                        className={cn('h-2 rounded-full transition-all', passwordBarClass)}
+                        style={{ width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Force : <span className="font-medium">{passwordLabel}</span>
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {PASSWORD_CHECKS.map(check => {
+                        const isValid = check.test(passwordValue)
+                        return (
+                          <span
+                            key={check.key}
+                            className={cn(
+                              'flex items-center gap-1',
+                              isValid ? 'text-emerald-600' : 'text-muted-foreground'
+                            )}
+                          >
+                            <span aria-hidden="true">
+                              {isValid ? '✓' : '•'}
+                            </span>
+                            {check.label}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Confirmation mot de passe */}
@@ -457,25 +624,96 @@ function RegisterForm() {
                     name="documentCountry"
                     control={control}
                     render={({ field }) => (
-                      <Select
-                        value={field.value || ''}
-                        onValueChange={field.onChange}
+                      <Popover
+                        open={countryOpen}
+                        onOpenChange={(open) => {
+                          setCountryOpen(open)
+                          if (!open) {
+                            setCountrySearch('')
+                          }
+                        }}
                       >
-                        <SelectTrigger id="documentCountry">
-                          <SelectValue placeholder="Sélectionnez un pays" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {COUNTRY_OPTIONS.map(country => (
-                            <SelectItem
-                              key={country.code}
-                              value={country.code}
-                            >
-                              <span className="mr-2">{country.flag}</span>
-                              {country.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={countryOpen}
+                            className="w-full justify-between"
+                            id="documentCountry"
+                          >
+                            {field.value ? (
+                              <span className="flex items-center gap-2">
+                                <span>
+                                  {
+                                    COUNTRY_OPTIONS.find(
+                                      country => country.code === field.value
+                                    )?.flag
+                                  }
+                                </span>
+                                <span>
+                                  {
+                                    COUNTRY_OPTIONS.find(
+                                      country => country.code === field.value
+                                    )?.name
+                                  }
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                Sélectionnez un pays
+                              </span>
+                            )}
+                            <IconChevronDown className="h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          side="bottom"
+                          align="start"
+                          className="w-[--radix-popover-trigger-width] p-0"
+                        >
+                          <div className="flex items-center gap-2 border-b px-3 py-2">
+                            <IconSearch className="h-4 w-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Rechercher un pays..."
+                              value={countrySearch}
+                              onChange={(event) =>
+                                setCountrySearch(event.target.value)
+                              }
+                              className="h-8 border-0 px-0 focus-visible:ring-0"
+                            />
+                          </div>
+                          <div className="max-h-64 overflow-y-auto">
+                            {filteredCountries.length > 0 ? (
+                              filteredCountries.map(country => (
+                                <button
+                                  key={country.code}
+                                  type="button"
+                                  className={cn(
+                                    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
+                                    field.value === country.code && 'bg-accent'
+                                  )}
+                                  onClick={() => {
+                                    field.onChange(country.code)
+                                    setCountryOpen(false)
+                                    setCountrySearch('')
+                                  }}
+                                >
+                                  <span>{country.flag}</span>
+                                  <span>{country.name}</span>
+                                  <span className="ml-auto text-xs text-muted-foreground">
+                                    {country.code}
+                                  </span>
+                                </button>
+                              ))
+                            ) : (
+                              <p className="px-3 py-2 text-sm text-muted-foreground">
+                                Aucun pays trouvé.
+                              </p>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     )}
                   />
                   {errors.documentCountry && (
