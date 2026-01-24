@@ -96,139 +96,6 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   const [isCheckingPayment, setIsCheckingPayment] = useState(false)
   const paymentConfirmedRef = useRef(false)
 
-  useEffect(() => {
-    loadBookingDetails()
-  }, [loadBookingDetails])
-
-  useEffect(() => {
-    if (!paymentsEnabled) {
-      return
-    }
-
-    const searchParams = new URLSearchParams(window.location.search)
-    if (searchParams.get('payment') === 'success' && !isCheckingPayment) {
-      void handlePaymentSuccess()
-    }
-  }, [handlePaymentSuccess, isCheckingPayment, paymentsEnabled])
-
-  useEffect(() => {
-    if (!id) {
-      return
-    }
-
-    const supabase = createClient()
-    const channel = supabase
-      .channel(`booking-${id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'bookings',
-          filter: `id=eq.${id}`,
-        },
-        (payload) => {
-          const updated = payload.new as BookingDetail
-
-          setBooking((prev) => {
-            if (!prev) {
-              return prev
-            }
-            return { ...prev, ...updated }
-          })
-
-          void loadBookingDetails()
-
-          if (paymentsEnabled && (updated.status === 'paid' || updated.paid_at) && !paymentConfirmedRef.current) {
-            paymentConfirmedRef.current = true
-            setIsCheckingPayment(false)
-            toast.success('Paiement confirmé ! Vous pouvez maintenant accéder au contrat et au QR code.')
-            window.history.replaceState({}, '', `/dashboard/colis/${id}`)
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [id, paymentsEnabled, loadBookingDetails])
-
-  useEffect(() => {
-    if (!id || !currentUserId) {
-      return
-    }
-
-    const supabase = createClient()
-    const suffix =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2)
-
-    const channel = supabase
-      .channel(`booking-notifications:${id}:${currentUserId}:${suffix}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `booking_id=eq.${id}`,
-        },
-        (payload) => {
-          const notification = payload.new as { user_id?: string | null }
-          if (notification.user_id && notification.user_id !== currentUserId) {
-            return
-          }
-          void loadBookingDetails()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [id, currentUserId, loadBookingDetails])
-
-  useEffect(() => {
-    if (!booking?.sender_id || !booking?.traveler_id) {
-      return
-    }
-
-    const supabase = createClient()
-    const channel = supabase
-      .channel(`booking-profiles-${booking.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${booking.sender_id}`,
-        },
-        () => {
-          void refreshProfiles(booking.sender_id, booking.traveler_id)
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${booking.traveler_id}`,
-        },
-        () => {
-          void refreshProfiles(booking.sender_id, booking.traveler_id)
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [booking?.sender_id, booking?.traveler_id, booking?.id])
-
   async function refreshProfiles(senderId: string, travelerId: string) {
     const supabase = createClient()
     const { data: publicProfiles } = await getPublicProfiles(supabase, [
@@ -398,6 +265,139 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     // Lancer le polling
     await checkPayment()
   }, [id, loadBookingDetails, paymentsEnabled])
+
+  useEffect(() => {
+    loadBookingDetails()
+  }, [loadBookingDetails])
+
+  useEffect(() => {
+    if (!paymentsEnabled) {
+      return
+    }
+
+    const searchParams = new URLSearchParams(window.location.search)
+    if (searchParams.get('payment') === 'success' && !isCheckingPayment) {
+      void handlePaymentSuccess()
+    }
+  }, [handlePaymentSuccess, isCheckingPayment, paymentsEnabled])
+
+  useEffect(() => {
+    if (!id) {
+      return
+    }
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`booking-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings',
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+          const updated = payload.new as BookingDetail
+
+          setBooking((prev) => {
+            if (!prev) {
+              return prev
+            }
+            return { ...prev, ...updated }
+          })
+
+          void loadBookingDetails()
+
+          if (paymentsEnabled && (updated.status === 'paid' || updated.paid_at) && !paymentConfirmedRef.current) {
+            paymentConfirmedRef.current = true
+            setIsCheckingPayment(false)
+            toast.success('Paiement confirmé ! Vous pouvez maintenant accéder au contrat et au QR code.')
+            window.history.replaceState({}, '', `/dashboard/colis/${id}`)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id, paymentsEnabled, loadBookingDetails])
+
+  useEffect(() => {
+    if (!id || !currentUserId) {
+      return
+    }
+
+    const supabase = createClient()
+    const suffix =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+
+    const channel = supabase
+      .channel(`booking-notifications:${id}:${currentUserId}:${suffix}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `booking_id=eq.${id}`,
+        },
+        (payload) => {
+          const notification = payload.new as { user_id?: string | null }
+          if (notification.user_id && notification.user_id !== currentUserId) {
+            return
+          }
+          void loadBookingDetails()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id, currentUserId, loadBookingDetails])
+
+  useEffect(() => {
+    if (!booking?.sender_id || !booking?.traveler_id) {
+      return
+    }
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel(`booking-profiles-${booking.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${booking.sender_id}`,
+        },
+        () => {
+          void refreshProfiles(booking.sender_id, booking.traveler_id)
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${booking.traveler_id}`,
+        },
+        () => {
+          void refreshProfiles(booking.sender_id, booking.traveler_id)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [booking?.sender_id, booking?.traveler_id, booking?.id])
 
   if (isLoading) {
     return (
