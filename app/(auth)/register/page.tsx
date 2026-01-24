@@ -391,12 +391,11 @@ function RegisterForm() {
                               variant="outline"
                               role="combobox"
                               aria-expanded={phoneOpen}
-                              className="w-full justify-between sm:w-[240px]"
+                              className="h-10 w-full justify-between sm:w-[200px]"
                             >
                               <span className="flex items-center gap-2">
                                 <span>{phoneCountry.flag}</span>
-                                <span className="text-sm">{phoneCountry.name}</span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-sm">
                                   {phoneCountry.dialCode}
                                 </span>
                               </span>
@@ -442,6 +441,7 @@ function RegisterForm() {
                           inputMode="numeric"
                           autoComplete="tel-national"
                           placeholder="612345678"
+                          className="h-10"
                           value={phoneDigits}
                           onChange={(event) => {
                             const digits = event.target.value.replace(/\D/g, '')
@@ -557,7 +557,7 @@ function RegisterForm() {
                 </div>
 
                 {/* CGU */}
-                <div className="flex items-start space-x-2">
+                <div className="flex items-center space-x-2">
                   <Controller
                     name="terms"
                     control={control}
