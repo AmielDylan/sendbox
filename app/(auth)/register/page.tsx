@@ -69,7 +69,10 @@ const PHONE_COUNTRIES = [
 ].map(country => ({
   ...country,
   flag: getCountryFlagEmoji(country.code),
-}))
+})).sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+
+const DEFAULT_PHONE_COUNTRY =
+  PHONE_COUNTRIES.find(country => country.code === 'FR') || PHONE_COUNTRIES[0]
 
 const PASSWORD_CHECKS = [
   { key: 'length', label: '12+ caractères', test: (v: string) => v.length >= 12 },
@@ -86,8 +89,9 @@ function RegisterForm() {
   const [isVerifyingIdentity, setIsVerifyingIdentity] = useState(false)
   const [authCheckComplete, setAuthCheckComplete] = useState(false)
   const [step, setStep] = useState<1 | 2>(1)
-  const [phoneCountry, setPhoneCountry] = useState(PHONE_COUNTRIES[0])
+  const [phoneCountry, setPhoneCountry] = useState(DEFAULT_PHONE_COUNTRY)
   const [phoneDigits, setPhoneDigits] = useState('')
+  const [phoneOpen, setPhoneOpen] = useState(false)
   const [countryOpen, setCountryOpen] = useState(false)
   const [countrySearch, setCountrySearch] = useState('')
 
@@ -380,35 +384,58 @@ function RegisterForm() {
                     control={control}
                     render={({ field }) => (
                       <div className="flex flex-col gap-2 sm:flex-row">
-                        <Select
-                          value={phoneCountry.code}
-                          onValueChange={(value) => {
-                            const selected = PHONE_COUNTRIES.find(
-                              country => country.code === value
-                            )
-                            if (!selected) return
-                            setPhoneCountry(selected)
-                            const nextValue = phoneDigits
-                              ? `${selected.dialCode}${phoneDigits}`
-                              : ''
-                            field.onChange(nextValue)
-                          }}
-                        >
-                          <SelectTrigger className="sm:w-[200px]">
-                            <SelectValue placeholder="Indicatif" />
-                          </SelectTrigger>
-                          <SelectContent side="bottom">
-                            {PHONE_COUNTRIES.map(country => (
-                              <SelectItem key={country.code} value={country.code}>
-                                <span className="mr-2">{country.flag}</span>
-                                <span className="mr-2">{country.name}</span>
+                        <Popover open={phoneOpen} onOpenChange={setPhoneOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={phoneOpen}
+                              className="w-full justify-between sm:w-[240px]"
+                            >
+                              <span className="flex items-center gap-2">
+                                <span>{phoneCountry.flag}</span>
+                                <span className="text-sm">{phoneCountry.name}</span>
                                 <span className="text-xs text-muted-foreground">
-                                  {country.dialCode}
+                                  {phoneCountry.dialCode}
                                 </span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              </span>
+                              <IconChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            side="bottom"
+                            align="start"
+                            className="w-[--radix-popover-trigger-width] p-0"
+                          >
+                            <div className="max-h-60 overflow-y-auto">
+                              {PHONE_COUNTRIES.map(country => (
+                                <button
+                                  key={country.code}
+                                  type="button"
+                                  className={cn(
+                                    'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
+                                    phoneCountry.code === country.code && 'bg-accent'
+                                  )}
+                                  onClick={() => {
+                                    setPhoneCountry(country)
+                                    const nextValue = phoneDigits
+                                      ? `${country.dialCode}${phoneDigits}`
+                                      : ''
+                                    field.onChange(nextValue)
+                                    setPhoneOpen(false)
+                                  }}
+                                >
+                                  <span>{country.flag}</span>
+                                  <span className="flex-1">{country.name}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {country.dialCode}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                         <Input
                           id="phone"
                           type="tel"
