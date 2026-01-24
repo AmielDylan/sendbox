@@ -6,7 +6,7 @@
  * - Invalidation ciblée des queries (pas de clear global)
  * - Gestion robuste des erreurs avec fallback
  * - Synchronisation multi-onglets via BroadcastChannel
- * - Pas de timeout agressif sur le fetch du profil
+ * - Timeout raisonnable + retry sur le fetch du profil
  */
 
 'use client'
@@ -81,6 +81,12 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   // Ref pour éviter les double-fetches
   const isFetchingProfile = useRef(false)
   const lastUserId = useRef<string | null>(null)
+  const profileRetryCount = useRef(0)
+  const profileRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const PROFILE_FETCH_TIMEOUT_MS = 12000
+  const MAX_PROFILE_FETCH_RETRIES = 2
+  const PROFILE_RETRY_BASE_DELAY_MS = 1500
 
   /**
    * Fetch du profil utilisateur avec gestion d'erreur robuste
@@ -98,23 +104,27 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
 
     isFetchingProfile.current = true
     lastUserId.current = userId
+    if (profileRetryTimer.current) {
+      clearTimeout(profileRetryTimer.current)
+      profileRetryTimer.current = null
+    }
 
     try {
       console.log('[Auth] Fetching profile for user:', userId)
 
-      // Add a timeout to prevent hanging forever (réduit à 5s)
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Profile fetch timeout after 5s')), 5000)
-      })
+      const abortController = new AbortController()
+      const timeoutId = setTimeout(() => {
+        abortController.abort()
+      }, PROFILE_FETCH_TIMEOUT_MS)
 
-      const fetchPromise = supabase
+      const { data, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
+        .abortSignal(abortController.signal)
 
-      const result = await Promise.race([fetchPromise, timeoutPromise])
-      const { data, error: profileError } = result
+      clearTimeout(timeoutId)
 
       console.log('[Auth] Profile query result:', { data: !!data, error: !!profileError })
 
@@ -139,12 +149,27 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
         const profileData = data as Profile
         setProfile(profileData)
         setError(null)
+        profileRetryCount.current = 0
         // ✅ Synchroniser avec Zustand store (les deux interfaces sont compatibles)
         setStoreProfile(profileData as any)
       }
     } catch (err) {
-      console.error('[Auth] Unexpected error fetching profile:', err)
-      setError(err as Error)
+      if ((err as Error)?.name === 'AbortError') {
+        console.warn(`[Auth] Profile fetch aborted after ${PROFILE_FETCH_TIMEOUT_MS}ms`, userId)
+      } else {
+        console.error('[Auth] Unexpected error fetching profile:', err)
+      }
+
+      if (profileRetryCount.current < MAX_PROFILE_FETCH_RETRIES) {
+        const retryDelay =
+          PROFILE_RETRY_BASE_DELAY_MS * (profileRetryCount.current + 1)
+        profileRetryCount.current += 1
+        profileRetryTimer.current = setTimeout(() => {
+          fetchProfile(userId)
+        }, retryDelay)
+      }
+
+      setError(null)
     } finally {
       console.log('[Auth] Finished fetching profile, setting isFetchingProfile to false')
       isFetchingProfile.current = false
