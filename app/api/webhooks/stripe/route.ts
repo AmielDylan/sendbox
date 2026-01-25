@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe, STRIPE_WEBHOOK_SECRET } from "@/lib/shared/services/stripe/config"
-import { createClient } from "@/lib/shared/db/server"
+import { createAdminClient } from "@/lib/shared/db/admin"
 import { fromStripeAmount } from "@/lib/core/payments/calculations"
 import { generateTransportContract } from "@/lib/shared/services/pdf/generation"
 import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
@@ -34,6 +34,14 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY is not set')
+    return NextResponse.json(
+      { error: 'Service role not configured' },
+      { status: 500 }
+    )
+  }
+
   let event: Stripe.Event
 
   try {
@@ -50,7 +58,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const paymentsEnabled = getPaymentsMode() === 'stripe'
 
   const withIdentityMetadata = (
@@ -66,6 +74,48 @@ export async function POST(req: NextRequest) {
       updateData.kyc_nationality = documentCountry
     }
     return updateData
+  }
+
+  type KycStatus = 'pending' | 'approved' | 'rejected' | 'incomplete'
+
+  const notifyKycStatusChange = async (
+    userId: string,
+    status: KycStatus,
+    rejectionReason?: string | null
+  ) => {
+    const titleMap: Record<KycStatus, string> = {
+      pending: 'Vérification en cours',
+      approved: 'Identité vérifiée',
+      rejected: 'Vérification refusée',
+      incomplete: 'Vérification à compléter',
+    }
+
+    const contentMap: Record<KycStatus, string> = {
+      pending:
+        "Votre vérification d'identité est en cours de traitement. Vous serez notifié dès qu'elle sera terminée.",
+      approved:
+        "Votre identité a été vérifiée avec succès. Toutes les actions sont désormais débloquées.",
+      rejected: rejectionReason
+        ? `Votre vérification a été refusée : ${rejectionReason}. Vous pouvez soumettre de nouveaux documents.`
+        : "Votre vérification a été refusée. Vous pouvez soumettre de nouveaux documents.",
+      incomplete:
+        "Votre vérification d'identité n'a pas été finalisée. Veuillez relancer la procédure.",
+    }
+
+    try {
+      const { error } = await createSystemNotification({
+        userId,
+        type: 'system_alert',
+        title: titleMap[status],
+        content: contentMap[status],
+      })
+
+      if (error) {
+        console.error('❌ KYC notification creation failed (non-blocking):', error)
+      }
+    } catch (notifError) {
+      console.error('❌ KYC notification creation failed (non-blocking):', notifError)
+    }
   }
 
   try {
@@ -84,6 +134,7 @@ export async function POST(req: NextRequest) {
           {
             kyc_status: 'pending',
             kyc_submitted_at: new Date().toISOString(),
+            kyc_rejection_reason: null,
           },
           verificationSession
         )
@@ -95,6 +146,8 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error('❌ Failed to update KYC status (processing):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'pending')
         }
         break
       }
@@ -125,6 +178,8 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error('❌ Failed to update KYC status (verified):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'approved')
         }
         break
       }
@@ -140,13 +195,13 @@ export async function POST(req: NextRequest) {
         }
 
         const rejectionReason =
-          verificationSession.last_error?.code ||
           verificationSession.last_error?.reason ||
+          verificationSession.last_error?.code ||
           'verification_failed'
 
         const updateData = withIdentityMetadata(
           {
-            kyc_status: 'incomplete',
+            kyc_status: 'rejected',
             kyc_reviewed_at: new Date().toISOString(),
             kyc_rejection_reason: rejectionReason,
           },
@@ -160,6 +215,8 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error('❌ Failed to update KYC status (requires_input):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'rejected', rejectionReason)
         }
         break
       }
@@ -190,6 +247,8 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error('❌ Failed to update KYC status (canceled):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'incomplete', 'verification_canceled')
         }
         break
       }
@@ -220,6 +279,8 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error('❌ Failed to update KYC status (redacted):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'incomplete', 'verification_redacted')
         }
         break
       }

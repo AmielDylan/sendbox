@@ -17,6 +17,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { Session, User } from '@supabase/supabase-js'
 import { QUERY_KEYS, invalidateAuthQueries } from '@/lib/shared/query/config'
 import { useAuthStore } from '@/lib/stores/auth-store'
+import { toast } from 'sonner'
 
 export interface Profile {
   id: string
@@ -83,10 +84,51 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   const lastUserId = useRef<string | null>(null)
   const profileRetryCount = useRef(0)
   const profileRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastKycStatus = useRef<string | null>(null)
 
   const PROFILE_FETCH_TIMEOUT_MS = 12000
   const MAX_PROFILE_FETCH_RETRIES = 2
   const PROFILE_RETRY_BASE_DELAY_MS = 1500
+
+  const showKycStatusToast = useCallback(
+    (status: string | null, rejectionReason?: string | null) => {
+      if (!status) return
+
+      switch (status) {
+        case 'approved':
+          toast.success('Identité vérifiée', {
+            description: 'Toutes les actions sensibles sont désormais débloquées.',
+            duration: 5000,
+          })
+          break
+        case 'pending':
+          toast.info('Vérification en cours', {
+            description: "Votre vérification d'identité est en cours de traitement.",
+            duration: 5000,
+          })
+          break
+        case 'rejected':
+          toast.error('Vérification refusée', {
+            description:
+              rejectionReason
+                ? `Raison : ${rejectionReason}. Veuillez soumettre de nouveaux documents.`
+                : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents.',
+            duration: 6000,
+          })
+          break
+        case 'incomplete':
+          toast.info('Vérification à compléter', {
+            description:
+              "Votre vérification d'identité n'est pas finalisée. Veuillez reprendre la procédure.",
+            duration: 5000,
+          })
+          break
+        default:
+          break
+      }
+    },
+    []
+  )
 
   /**
    * Fetch du profil utilisateur avec gestion d'erreur robuste
@@ -288,6 +330,54 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   }, [supabase, queryClient, fetchProfile])
 
   /**
+   * Realtime: synchroniser le profil (dont KYC) en direct
+   */
+  useEffect(() => {
+    if (!user?.id) return
+
+    const suffix =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+    const channelName = `profiles:${user.id}:${suffix}`
+
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          const nextProfile = payload.new as Profile
+          setProfile(nextProfile)
+          setStoreProfile(nextProfile as any)
+
+          const nextKycStatus = (nextProfile as any)?.kyc_status ?? null
+          const prevKycStatus = lastKycStatus.current
+
+          if (prevKycStatus && nextKycStatus && prevKycStatus !== nextKycStatus) {
+            showKycStatusToast(nextKycStatus, (nextProfile as any)?.kyc_rejection_reason ?? null)
+          }
+
+          lastKycStatus.current = nextKycStatus
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Realtime profile subscription error')
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id, supabase, setStoreProfile, showKycStatusToast])
+
+  /**
    * Synchronisation multi-onglets via BroadcastChannel
    */
   useEffect(() => {
@@ -326,6 +416,10 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     setStoreProfile(profile as any)
   }, [profile, setStoreProfile])
+
+  useEffect(() => {
+    lastKycStatus.current = (profile as any)?.kyc_status ?? null
+  }, [profile])
 
   useEffect(() => {
     setStoreLoading(isLoading)
