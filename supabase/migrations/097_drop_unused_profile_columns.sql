@@ -1,6 +1,20 @@
 -- Drop unused legacy profile/KYC columns
 -- This is safe to run multiple times thanks to IF EXISTS
 
+-- Drop dependent view if it exists to avoid blocking column removal
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_views
+    WHERE schemaname = 'public'
+      AND viewname = 'user_stats'
+  ) THEN
+    EXECUTE 'DROP VIEW public.user_stats';
+  END IF;
+END
+$$;
+
 ALTER TABLE public.profiles
   DROP COLUMN IF EXISTS kyc_document_url,
   DROP COLUMN IF EXISTS kyc_verified_at,
