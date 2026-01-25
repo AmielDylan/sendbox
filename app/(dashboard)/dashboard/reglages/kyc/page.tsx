@@ -45,6 +45,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
+import { createClient } from '@/lib/shared/db/client'
 import { COUNTRY_OPTIONS } from '@/lib/utils/countries'
 import { getKYCStatus, startKYCVerification } from '@/lib/core/kyc/actions'
 
@@ -62,6 +63,7 @@ export default function KYCPage() {
   const [countrySearch, setCountrySearch] = useState('')
 
   const stripePromise = useMemo(() => getStripeClient(), [])
+  const supabase = useMemo(() => createClient(), [])
 
   const filteredCountries = useMemo(() => {
     const query = countrySearch.trim().toLowerCase()
@@ -78,6 +80,52 @@ export default function KYCPage() {
   useEffect(() => {
     loadKYCStatus()
   }, [])
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    let isActive = true
+
+    const subscribeToProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !isActive) return
+
+      const suffix =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2)
+
+      channel = supabase
+        .channel(`kyc-profile:${user.id}:${suffix}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`,
+          },
+          (payload) => {
+            const nextProfile = payload.new as { kyc_status?: KYCStatus; kyc_submitted_at?: string | null }
+            setKycStatus(nextProfile.kyc_status ?? null)
+            setSubmittedAt(nextProfile.kyc_submitted_at ?? null)
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR') {
+            console.error('❌ Realtime KYC subscription error')
+          }
+        })
+    }
+
+    subscribeToProfile()
+
+    return () => {
+      isActive = false
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [supabase])
 
   const loadKYCStatus = async () => {
     setIsLoading(true)
