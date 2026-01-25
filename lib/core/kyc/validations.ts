@@ -9,6 +9,19 @@ import { subYears } from 'date-fns'
 export const DOCUMENT_TYPES = ['passport', 'national_id'] as const
 export type DocumentType = (typeof DOCUMENT_TYPES)[number]
 
+export const stripeIdentitySchema = z.object({
+  documentType: z.enum(DOCUMENT_TYPES, {
+    message: 'Type de document invalide',
+  }),
+  documentCountry: z
+    .string()
+    .min(2, 'Pays du document requis')
+    .max(2, 'Code pays invalide')
+    .regex(/^[A-Z]{2}$/, 'Code pays invalide'),
+})
+
+export type StripeIdentityInput = z.infer<typeof stripeIdentitySchema>
+
 // Types MIME acceptés
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 const MAX_FILE_SIZE = 5_000_000 // 5 MB

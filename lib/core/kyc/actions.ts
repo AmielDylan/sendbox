@@ -11,6 +11,8 @@ import {
   kycReviewSchema,
   type KYCInput,
   type KYCReviewInput,
+  stripeIdentitySchema,
+  type StripeIdentityInput,
 } from "@/lib/core/kyc/validations"
 import {
   processImage,
@@ -18,6 +20,91 @@ import {
 } from "@/lib/shared/utils/files"
 import { validateKYCDocument } from "@/lib/shared/security/upload-validation"
 import { uploadRateLimit } from "@/lib/shared/security/rate-limit"
+import { createIdentityVerificationSession } from "@/lib/shared/services/stripe/identity"
+
+/**
+ * Démarre une vérification Stripe Identity
+ */
+export async function startKYCVerification(input: StripeIdentityInput) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      error: 'Vous devez être connecté pour vérifier votre identité',
+    }
+  }
+
+  const validation = stripeIdentitySchema.safeParse(input)
+  if (!validation.success) {
+    return {
+      error: validation.error.issues[0]?.message || 'Données invalides',
+      field: String(validation.error.issues[0]?.path[0] || 'unknown'),
+    }
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, email, kyc_status')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError || !profile) {
+    return {
+      error: 'Profil introuvable',
+    }
+  }
+
+  if (profile.kyc_status === 'approved') {
+    return {
+      error: 'Votre identité est déjà vérifiée',
+    }
+  }
+
+  const email = profile.email || user.email
+  if (!email) {
+    return {
+      error: 'Email indisponible pour la vérification',
+    }
+  }
+
+  try {
+    const session = await createIdentityVerificationSession({
+      email,
+      userId: user.id,
+      documentType: validation.data.documentType,
+      documentCountry: validation.data.documentCountry,
+    })
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        kyc_document_type: validation.data.documentType,
+        kyc_nationality: validation.data.documentCountry,
+        kyc_rejection_reason: null,
+      })
+      .eq('id', user.id)
+
+    if (updateError) {
+      console.error('Error updating profile KYC metadata:', updateError)
+    }
+
+    return {
+      success: true,
+      verificationClientSecret: session.clientSecret,
+      message: 'Vérification Stripe Identity prête.',
+    }
+  } catch (error) {
+    console.error('Identity session error:', error)
+    return {
+      error: "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard.",
+    }
+  }
+}
 
 /**
  * Upload et soumission du formulaire KYC

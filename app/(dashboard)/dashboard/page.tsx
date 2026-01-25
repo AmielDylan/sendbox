@@ -303,44 +303,6 @@ export default function DashboardPage() {
         <KYCAlertBanner kycStatus={kycStatus} rejectionReason={kycRejectionReason} />
       )}
 
-      {isFeatureEnabled('KYC_ENABLED') && kycStatus !== 'approved' && (
-        <Card className="border-blue-500/40 bg-blue-50/60">
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-blue-900 flex items-center gap-2">
-                <IconShield className="h-5 w-5 text-blue-600" />
-                Vérification d'identité requise
-              </CardTitle>
-              <CardDescription className="text-blue-900/80">
-                Finalisez votre vérification pour débloquer toutes les actions sensibles.
-              </CardDescription>
-            </div>
-            <Button asChild>
-              <Link href="/dashboard/reglages/kyc">Vérifier mon identité</Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2 text-xs">
-              {[
-                'Publier un trajet',
-                'Accepter un colis',
-                'Effectuer un paiement',
-                'Envoyer / recevoir un colis',
-                'Activer une assurance',
-              ].map((label) => (
-                <Badge
-                  key={label}
-                  variant="secondary"
-                  className="bg-white/80 text-blue-900 border border-blue-200/60"
-                >
-                  {label}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Stats Cards */}
       <div className="flex flex-wrap gap-4">
         {/* Card KYC Status - SEULEMENT si feature activée */}
