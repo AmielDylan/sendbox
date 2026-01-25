@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { kycReviewSchema, type KYCReviewInput } from "@/lib/core/kyc/validations"
-import { getPendingKYC, reviewKYC, getKYCDocumentUrl } from "@/lib/core/kyc/actions"
+import { getPendingKYC, reviewKYC } from "@/lib/core/kyc/actions"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { IconLoader2, IconCircleCheck, IconCircleX, IconEye, IconClock } from '@tabler/icons-react'
+import { IconLoader2, IconCircleCheck, IconCircleX, IconClock } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -41,8 +41,7 @@ interface PendingKYC {
   kyc_status: string
   kyc_submitted_at: string | null
   kyc_document_type: string | null
-  kyc_document_front: string | null
-  kyc_document_back: string | null
+  kyc_nationality: string | null
   kyc_rejection_reason: string | null
 }
 
@@ -123,24 +122,6 @@ export default function AdminKYCPage() {
     }
   }
 
-  const handleViewDocument = async (filePath: string | null) => {
-    if (!filePath) return
-
-    try {
-      const result = await getKYCDocumentUrl(filePath)
-      if (result.error) {
-        toast.error(result.error)
-        return
-      }
-
-      if (result.url) {
-        window.open(result.url, '_blank')
-      }
-    } catch {
-      toast.error("Erreur lors de l'ouverture du document")
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -199,8 +180,11 @@ export default function AdminKYCPage() {
                             Type de document:{' '}
                             {kyc.kyc_document_type === 'passport'
                               ? 'Passeport'
-                              : 'Carte nationale'}
+                              : kyc.kyc_document_type === 'national_id'
+                                ? 'Carte nationale'
+                                : 'Non renseigné'}
                           </p>
+                          <p>Pays du document: {kyc.kyc_nationality || 'Non renseigné'}</p>
                           {kyc.kyc_submitted_at && (
                             <p>
                               Soumis le{' '}
@@ -214,32 +198,6 @@ export default function AdminKYCPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            handleViewDocument(
-                              kyc.kyc_document_front || null
-                            )
-                          }
-                        >
-                          <IconEye className="mr-2 h-4 w-4" />
-                          Voir recto
-                        </Button>
-                        {kyc.kyc_document_back && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleViewDocument(
-                                kyc.kyc_document_back || null
-                              )
-                            }
-                          >
-                            <IconEye className="mr-2 h-4 w-4" />
-                            Voir verso
-                          </Button>
-                        )}
                         <Button
                           variant="default"
                           size="sm"
