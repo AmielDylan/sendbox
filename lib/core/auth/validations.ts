@@ -12,7 +12,7 @@ export const registerSchema = z
       .string()
       .min(12, 'Minimum 12 caractères')
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`])/,
         'Doit contenir majuscule, minuscule, chiffre et caractère spécial'
       ),
     confirmPassword: z.string(),
@@ -60,7 +60,7 @@ export const resetPasswordSchema = z
       .string()
       .min(12, 'Minimum 12 caractères')
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`])/,
         'Doit contenir majuscule, minuscule, chiffre et caractère spécial'
       ),
     confirmPassword: z.string(),

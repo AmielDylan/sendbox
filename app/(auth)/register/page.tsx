@@ -68,7 +68,7 @@ const PASSWORD_CHECKS = [
   { key: 'lower', label: '1 minuscule', test: (v: string) => /[a-z]/.test(v) },
   { key: 'upper', label: '1 majuscule', test: (v: string) => /[A-Z]/.test(v) },
   { key: 'number', label: '1 chiffre', test: (v: string) => /\d/.test(v) },
-  { key: 'special', label: '1 caractère spécial', test: (v: string) => /[@$!%*?&]/.test(v) },
+  { key: 'special', label: '1 caractère spécial', test: (v: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(v) },
 ]
 
 function RegisterForm() {
