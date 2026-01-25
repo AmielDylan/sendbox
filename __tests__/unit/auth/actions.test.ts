@@ -29,9 +29,12 @@ const mockSupabase = {
   from: vi.fn(() => ({
     update: vi.fn(() => ({
       eq: vi.fn(() => ({
-        select: vi.fn(),
+        select: vi.fn(() =>
+          Promise.resolve({ data: [{ id: 'profile-123' }], error: null })
+        ),
       })),
     })),
+    insert: vi.fn(() => Promise.resolve({ error: null })),
   })),
 }
 
