@@ -59,10 +59,10 @@ export function KYCAlertBanner({ kycStatus, rejectionReason, className }: KYCAle
       <IconShield className="h-4 w-4 text-blue-600" />
       <AlertTitle className="text-blue-900">Vérification d'identité requise pour continuer</AlertTitle>
       <AlertDescription className="text-blue-800">
-        Pour publier un trajet, accepter un colis, effectuer un paiement, envoyer ou recevoir un colis ou activer une assurance, vous devez vérifier votre identité.
+        Pour publier un trajet, accepter un colis, effectuer un paiement, envoyer ou recevoir un colis ou activer une assurance, vous devez vérifier votre identité.{` `}
         <Button variant="link" asChild className="px-0 h-auto font-normal text-blue-600 underline">
           <Link href="/dashboard/reglages/kyc">
-            Compléter maintenant →
+            Vérifier mon identité →
           </Link>
         </Button>
       </AlertDescription>

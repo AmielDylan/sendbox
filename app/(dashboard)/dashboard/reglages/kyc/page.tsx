@@ -4,15 +4,12 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { kycSchema, type KYCInput, DOCUMENT_TYPES } from "@/lib/core/kyc/validations"
-import { submitKYC, getKYCStatus } from "@/lib/core/kyc/actions"
+import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   Card,
   CardContent,
@@ -27,36 +24,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { toast } from 'sonner'
-import { IconLoader2, IconCircleCheck, IconCircleX, IconClock, IconUpload } from '@tabler/icons-react'
-import { Calendar } from '@/components/ui/calendar'
+import {
+  IconLoader2,
+  IconCircleCheck,
+  IconCircleX,
+  IconClock,
+  IconUpload,
+  IconShieldLock,
+  IconChevronDown,
+  IconSearch,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { cn } from '@/lib/utils'
+import { getStripeClient } from '@/lib/shared/services/stripe/config'
+import { COUNTRY_OPTIONS } from '@/lib/utils/countries'
+import { getKYCStatus, startKYCVerification } from '@/lib/core/kyc/actions'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
+type DocumentType = 'passport' | 'national_id'
 
 export default function KYCPage() {
   const [kycStatus, setKycStatus] = useState<KYCStatus>(null)
   const [submittedAt, setSubmittedAt] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [date, setDate] = useState<Date | undefined>(undefined)
-  const [uploadProgress, setUploadProgress] = useState({ front: 0, back: 0 })
-  const [isUploading, setIsUploading] = useState(false)
+  const [documentType, setDocumentType] = useState<DocumentType | ''>('')
+  const [documentCountry, setDocumentCountry] = useState('')
+  const [countryOpen, setCountryOpen] = useState(false)
+  const [countrySearch, setCountrySearch] = useState('')
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useForm<KYCInput>({
-    resolver: zodResolver(kycSchema),
-  })
+  const stripePromise = useMemo(() => getStripeClient(), [])
 
-  const documentType = watch('documentType')
+  const filteredCountries = useMemo(() => {
+    const query = countrySearch.trim().toLowerCase()
+    if (!query) {
+      return COUNTRY_OPTIONS
+    }
+    return COUNTRY_OPTIONS.filter(
+      country =>
+        country.name.toLowerCase().includes(query) ||
+        country.code.toLowerCase().includes(query)
+    )
+  }, [countrySearch])
 
   useEffect(() => {
     loadKYCStatus()
@@ -79,64 +96,54 @@ export default function KYCPage() {
     }
   }
 
-  const simulateProgress = (field: 'front' | 'back') => {
-    setIsUploading(true)
-    let progress = 0
-    const interval = setInterval(() => {
-      progress += 10
-      setUploadProgress(prev => ({ ...prev, [field]: Math.min(progress, 90) }))
-      if (progress >= 90) {
-        clearInterval(interval)
-      }
-    }, 200)
-    return interval
-  }
+  const handleStartVerification = async () => {
+    if (!documentType || !documentCountry) {
+      toast.error('Veuillez sélectionner un document et un pays')
+      return
+    }
 
-  const onSubmit = async (data: KYCInput) => {
     setIsSubmitting(true)
-    setUploadProgress({ front: 0, back: 0 })
-    
+
     try {
-      // Simuler progression upload
-      const frontInterval = simulateProgress('front')
-      const backInterval = data.documentBack ? simulateProgress('back') : null
-
-      const formData = new FormData()
-      formData.append('documentType', data.documentType)
-      formData.append('documentNumber', data.documentNumber)
-      formData.append('documentFront', data.documentFront)
-      if (data.documentBack) {
-        formData.append('documentBack', data.documentBack)
-      }
-      formData.append('birthday', data.birthday.toISOString())
-      formData.append('nationality', data.nationality)
-      formData.append('address', data.address)
-
-      const result = await submitKYC(formData)
-
-      // Compléter la progression
-      clearInterval(frontInterval)
-      if (backInterval) clearInterval(backInterval)
-      setUploadProgress({ front: 100, back: 100 })
+      const result = await startKYCVerification({
+        documentType: documentType as DocumentType,
+        documentCountry,
+      })
 
       if (result.error) {
         toast.error(result.error)
         return
       }
 
-      if (result.success) {
-        toast.success(result.message)
-        await loadKYCStatus()
+      const stripe = await stripePromise
+      if (!stripe) {
+        toast.error("Stripe n'est pas encore disponible. Réessayez.")
+        return
       }
+
+      if (!result.verificationClientSecret) {
+        toast.error("Impossible d'initialiser Stripe Identity.")
+        return
+      }
+
+      const { error } = await stripe.verifyIdentity(
+        result.verificationClientSecret
+      )
+
+      if (error) {
+        toast.error(
+          error.message ||
+            "La vérification d'identité n'a pas pu être complétée."
+        )
+        return
+      }
+
+      toast.success('Vérification envoyée avec succès.')
+      await loadKYCStatus()
     } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)
-      setIsUploading(false)
-      // Réinitialiser la progression après un délai
-      setTimeout(() => {
-        setUploadProgress({ front: 0, back: 0 })
-      }, 2000)
     }
   }
 
@@ -187,7 +194,7 @@ export default function KYCPage() {
     <div className="space-y-6">
       <PageHeader
         title="Vérification d'identité (KYC)"
-        description="Vérifiez votre identité pour pouvoir créer des annonces et réserver des colis"
+        description="Stripe Identity se charge de vérifier vos documents."
       />
 
       {/* Statut actuel */}
@@ -196,13 +203,13 @@ export default function KYCPage() {
           <CardTitle>Statut de votre KYC</CardTitle>
           <CardDescription>
             {kycStatus === 'approved' &&
-              'Votre identité a été vérifiée. Vous pouvez créer des annonces.'}
+              'Votre identité a été vérifiée. Toutes les actions sont débloquées.'}
             {kycStatus === 'pending' &&
-              "Votre demande est en cours d'examen. Vous serez notifié par email."}
+              "Votre vérification est en cours d'examen. Vous serez notifié par email."}
             {kycStatus === 'rejected' &&
-              'Votre demande a été rejetée. Veuillez soumettre une nouvelle demande.'}
+              'Votre vérification a été refusée. Vous pouvez relancer une vérification.'}
             {(kycStatus === 'incomplete' || !kycStatus) &&
-              'Aucune demande KYC soumise. Complétez le formulaire ci-dessous.'}
+              'Aucune vérification en cours. Lancez Stripe Identity pour continuer.'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -217,276 +224,173 @@ export default function KYCPage() {
         </CardContent>
       </Card>
 
-      {/* Formulaire KYC */}
-      {(kycStatus === null || kycStatus === 'rejected' || kycStatus === 'incomplete') && (
+      {kycStatus !== 'approved' && (
         <Card>
           <CardHeader>
-            <CardTitle>Formulaire de vérification</CardTitle>
+            <CardTitle>Lancer la vérification Stripe Identity</CardTitle>
             <CardDescription>
-              Téléchargez vos documents d&apos;identité pour vérification
+              Sélectionnez votre document puis continuez sur Stripe.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Type de document */}
-              <div className="space-y-2">
-                <Label htmlFor="documentType">Type de document</Label>
-                <Select
-                  onValueChange={value =>
-                    setValue(
-                      'documentType',
-                      value as 'passport' | 'national_id'
-                    )
+          <CardContent className="space-y-6">
+            {/* Type de document */}
+            <div className="space-y-2">
+              <Label htmlFor="documentType">Type de document</Label>
+              <Select
+                value={documentType}
+                onValueChange={value =>
+                  setDocumentType(value as DocumentType)
+                }
+              >
+                <SelectTrigger id="documentType">
+                  <SelectValue placeholder="Sélectionnez un document" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="passport">Passeport</SelectItem>
+                  <SelectItem value="national_id">
+                    Carte nationale d&apos;identité
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Pays d'émission */}
+            <div className="space-y-2">
+              <Label htmlFor="documentCountry">
+                Pays d&apos;émission du document
+              </Label>
+              <Popover
+                open={countryOpen}
+                onOpenChange={(open) => {
+                  setCountryOpen(open)
+                  if (!open) {
+                    setCountrySearch('')
                   }
+                }}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={countryOpen}
+                    className="w-full justify-between"
+                    id="documentCountry"
+                  >
+                    {documentCountry ? (
+                      <span className="flex items-center gap-2">
+                        <span>
+                          {
+                            COUNTRY_OPTIONS.find(
+                              country => country.code === documentCountry
+                            )?.flag
+                          }
+                        </span>
+                        <span>
+                          {
+                            COUNTRY_OPTIONS.find(
+                              country => country.code === documentCountry
+                            )?.name
+                          }
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Sélectionnez un pays
+                      </span>
+                    )}
+                    <IconChevronDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  side="bottom"
+                  align="start"
+                  className="w-[--radix-popover-trigger-width] p-0"
                 >
-                  <SelectTrigger id="documentType">
-                    <SelectValue placeholder="Sélectionnez un type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DOCUMENT_TYPES.map(type => (
-                      <SelectItem key={type} value={type}>
-                        {type === 'passport'
-                          ? 'Passeport'
-                          : "Carte nationale d'identité"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.documentType && (
-                  <p className="text-sm text-destructive" role="alert">
-                    {errors.documentType.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Numéro de document */}
-              <div className="space-y-2">
-                <Label htmlFor="documentNumber">Numéro de document</Label>
-                <Input
-                  id="documentNumber"
-                  placeholder="AB123456"
-                  {...register('documentNumber')}
-                  aria-invalid={errors.documentNumber ? 'true' : 'false'}
-                  aria-describedby={
-                    errors.documentNumber ? 'documentNumber-error' : undefined
-                  }
-                />
-                {errors.documentNumber && (
-                  <p
-                    id="documentNumber-error"
-                    className="text-sm text-destructive"
-                    role="alert"
-                  >
-                    {errors.documentNumber.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Date de naissance */}
-              <div className="space-y-2">
-                <Label>Date de naissance</Label>
-                <div className="flex flex-col gap-2">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={selectedDate => {
-                      setDate(selectedDate)
-                      if (selectedDate) {
-                        setValue('birthday', selectedDate)
+                  <div className="flex items-center gap-2 border-b px-3 py-2">
+                    <IconSearch className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher un pays..."
+                      value={countrySearch}
+                      onChange={(event) =>
+                        setCountrySearch(event.target.value)
                       }
-                    }}
-                    disabled={date =>
-                      date > new Date() || date < new Date('1900-01-01')
-                    }
-                    className="rounded-md border"
-                  />
-                  {date && (
-                    <p className="text-sm text-muted-foreground">
-                      {format(date, 'PP', { locale: fr })}
-                    </p>
-                  )}
-                </div>
-                {errors.birthday && (
-                  <p className="text-sm text-destructive" role="alert">
-                    {errors.birthday.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Nationalité */}
-              <div className="space-y-2">
-                <Label htmlFor="nationality">Nationalité</Label>
-                <Input
-                  id="nationality"
-                  placeholder="FR ou FRA"
-                  {...register('nationality')}
-                  aria-invalid={errors.nationality ? 'true' : 'false'}
-                  aria-describedby={
-                    errors.nationality ? 'nationality-error' : undefined
-                  }
-                />
-                {errors.nationality && (
-                  <p
-                    id="nationality-error"
-                    className="text-sm text-destructive"
-                    role="alert"
-                  >
-                    {errors.nationality.message}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Code pays ISO 3166-1 (ex: FR, FRA, BEN)
-                </p>
-              </div>
-
-              {/* Adresse */}
-              <div className="space-y-2">
-                <Label htmlFor="address">Adresse complète</Label>
-                <Input
-                  id="address"
-                  placeholder="123 Rue Example, 75001 Paris, France"
-                  {...register('address')}
-                  aria-invalid={errors.address ? 'true' : 'false'}
-                  aria-describedby={
-                    errors.address ? 'address-error' : undefined
-                  }
-                />
-                {errors.address && (
-                  <p
-                    id="address-error"
-                    className="text-sm text-destructive"
-                    role="alert"
-                  >
-                    {errors.address.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Document recto */}
-              <div className="space-y-2">
-                <Label htmlFor="documentFront">
-                  Document recto <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="documentFront"
-                  type="file"
-                  accept="image/jpeg,image/png,application/pdf"
-                  {...register('documentFront', {
-                    onChange: e => {
-                      const file = e.target.files?.[0]
-                      if (file) {
-                        setValue('documentFront', file)
-                      }
-                    },
-                  })}
-                  aria-invalid={errors.documentFront ? 'true' : 'false'}
-                  aria-describedby={
-                    errors.documentFront ? 'documentFront-error' : undefined
-                  }
-                  disabled={isSubmitting}
-                />
-                {isUploading && uploadProgress.front > 0 && uploadProgress.front < 100 && (
-                  <div className="space-y-2">
-                    <Progress value={uploadProgress.front} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      Upload en cours... {uploadProgress.front}%
-                    </p>
+                      className="h-8 border-0 px-0 focus-visible:ring-0"
+                    />
                   </div>
-                )}
-                {uploadProgress.front === 100 && (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <IconCircleCheck className="h-4 w-4" />
-                    <p className="text-xs">Document téléchargé avec succès</p>
-                  </div>
-                )}
-                {errors.documentFront && (
-                  <p
-                    id="documentFront-error"
-                    className="text-sm text-destructive"
-                    role="alert"
-                  >
-                    {errors.documentFront.message}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  JPEG, PNG ou PDF (maximum 5 MB)
-                </p>
-              </div>
-
-              {/* Document verso (optionnel pour passeport) */}
-              {documentType === 'national_id' && (
-                <div className="space-y-2">
-                  <Label htmlFor="documentBack">
-                    Document verso (optionnel)
-                  </Label>
-                  <Input
-                    id="documentBack"
-                    type="file"
-                    accept="image/jpeg,image/png,application/pdf"
-                    {...register('documentBack', {
-                      onChange: e => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          setValue('documentBack', file)
-                        }
-                      },
-                    })}
-                    aria-invalid={errors.documentBack ? 'true' : 'false'}
-                    aria-describedby={
-                      errors.documentBack ? 'documentBack-error' : undefined
-                    }
-                    disabled={isSubmitting}
-                  />
-                  {isUploading && uploadProgress.back > 0 && uploadProgress.back < 100 && (
-                    <div className="space-y-2">
-                      <Progress value={uploadProgress.back} className="h-2" />
-                      <p className="text-xs text-muted-foreground">
-                        Upload en cours... {uploadProgress.back}%
+                  <div className="max-h-64 overflow-y-auto">
+                    {filteredCountries.length > 0 ? (
+                      filteredCountries.map(country => (
+                        <button
+                          key={country.code}
+                          type="button"
+                          className={cn(
+                            'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
+                            documentCountry === country.code && 'bg-accent'
+                          )}
+                          onClick={() => {
+                            setDocumentCountry(country.code)
+                            setCountryOpen(false)
+                            setCountrySearch('')
+                          }}
+                        >
+                          <span>{country.flag}</span>
+                          <span>{country.name}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            {country.code}
+                          </span>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">
+                        Aucun pays trouvé.
                       </p>
-                    </div>
-                  )}
-                  {uploadProgress.back === 100 && (
-                    <div className="flex items-center gap-2 text-green-600">
-                      <IconCircleCheck className="h-4 w-4" />
-                      <p className="text-xs">Document téléchargé avec succès</p>
-                    </div>
-                  )}
-                  {errors.documentBack && (
-                    <p
-                      id="documentBack-error"
-                      className="text-sm text-destructive"
-                      role="alert"
-                    >
-                      {errors.documentBack.message}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    JPEG, PNG ou PDF (maximum 5 MB)
-                  </p>
-                </div>
-              )}
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
 
-              {/* Bouton submit */}
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Envoi en cours...
-                  </>
-                ) : (
-                  <>
-                    <IconUpload className="mr-2 h-4 w-4" />
-                    Soumettre ma demande KYC
-                  </>
-                )}
-              </Button>
-            </form>
+            <Alert>
+              <IconShieldLock className="h-4 w-4" />
+              <AlertTitle>Sécurité & confidentialité</AlertTitle>
+              <AlertDescription>
+                <p>
+                  La vérification est opérée par Stripe Identity. Nous ne
+                  stockons pas vos documents, uniquement le statut de
+                  vérification et les informations déclarées.
+                </p>
+                <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
+                  <li>Données chiffrées pendant le transfert.</li>
+                  <li>Utilisation strictement liée à la conformité KYC.</li>
+                  <li>Vous pouvez relancer la vérification si besoin.</li>
+                </ul>
+              </AlertDescription>
+            </Alert>
+
+            <Button
+              type="button"
+              className="w-full"
+              disabled={isSubmitting || kycStatus === 'pending'}
+              onClick={handleStartVerification}
+            >
+              {isSubmitting ? (
+                <>
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Ouverture de Stripe Identity...
+                </>
+              ) : (
+                'Vérifier mon identité'
+              )}
+            </Button>
+            {kycStatus === 'pending' && (
+              <p className="text-xs text-muted-foreground text-center">
+                Vérification en cours. Vous recevrez un email dès validation.
+              </p>
+            )}
           </CardContent>
         </Card>
       )}
     </div>
   )
 }
-
-
-
