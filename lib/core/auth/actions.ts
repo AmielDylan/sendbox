@@ -80,7 +80,7 @@ export async function signUp(formData: RegisterInput) {
         kyc_status: 'incomplete',
       }
 
-      const { data: updatedProfiles, error: profileError } = await supabase
+      let { data: updatedProfiles, error: profileError } = await supabase
         .from('profiles')
         .update(profileUpdates)
         .eq('id', authData.user.id)
@@ -91,24 +91,58 @@ export async function signUp(formData: RegisterInput) {
       }
 
       if (!updatedProfiles || updatedProfiles.length === 0) {
+        await new Promise(resolve => setTimeout(resolve, 300))
+
+        const retryResult = await supabase
+          .from('profiles')
+          .update(profileUpdates)
+          .eq('id', authData.user.id)
+          .select('id')
+
+        updatedProfiles = retryResult.data
+        if (retryResult.error) {
+          console.error('Error retrying profile update:', retryResult.error)
+        }
+      }
+
+      if (!updatedProfiles || updatedProfiles.length === 0) {
         try {
           const adminClient = process.env.SUPABASE_SERVICE_ROLE_KEY
             ? createAdminClient()
             : null
-          const client = adminClient || supabase
-          const { error: insertError } = await client
-            .from('profiles')
-            .insert({
-              id: authData.user.id,
-              email: validation.data.email,
-              firstname: validation.data.firstname,
-              lastname: validation.data.lastname,
-              phone: validation.data.phone,
-              kyc_status: 'incomplete',
-            })
+          let canInsertProfile = true
+          if (adminClient) {
+            const { data: adminUser, error: adminError } =
+              await adminClient.auth.admin.getUserById(authData.user.id)
+            if (adminError || !adminUser?.user) {
+              console.warn(
+                'Auth user not found yet, skipping profile fallback insert'
+              )
+              canInsertProfile = false
+            }
+          }
+          if (canInsertProfile) {
+            const client = adminClient || supabase
+            const { error: insertError } = await client
+              .from('profiles')
+              .insert({
+                id: authData.user.id,
+                email: validation.data.email,
+                firstname: validation.data.firstname,
+                lastname: validation.data.lastname,
+                phone: validation.data.phone,
+                kyc_status: 'incomplete',
+              })
 
-          if (insertError) {
-            console.error('Error inserting profile fallback:', insertError)
+            if (insertError) {
+              if ((insertError as any)?.code === '23503') {
+                console.warn(
+                  'Profile fallback insert skipped: auth user not present yet'
+                )
+              } else {
+                console.error('Error inserting profile fallback:', insertError)
+              }
+            }
           }
         } catch (insertError) {
           console.error('Error inserting profile fallback:', insertError)
