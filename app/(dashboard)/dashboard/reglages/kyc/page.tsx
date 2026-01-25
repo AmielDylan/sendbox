@@ -36,7 +36,6 @@ import {
   IconCircleCheck,
   IconCircleX,
   IconClock,
-  IconUpload,
   IconShieldLock,
   IconChevronDown,
   IconSearch,

@@ -80,11 +80,14 @@ export async function signUp(formData: RegisterInput) {
         kyc_status: 'incomplete',
       }
 
-      let { data: updatedProfiles, error: profileError } = await supabase
+      let updatedProfiles: Array<{ id: string }> | null = null
+      const { data: initialProfiles, error: profileError } = await supabase
         .from('profiles')
         .update(profileUpdates)
         .eq('id', authData.user.id)
         .select('id')
+
+      updatedProfiles = initialProfiles as Array<{ id: string }> | null
 
       if (profileError) {
         console.error('Error updating profile:', profileError)
@@ -99,7 +102,7 @@ export async function signUp(formData: RegisterInput) {
           .eq('id', authData.user.id)
           .select('id')
 
-        updatedProfiles = retryResult.data
+        updatedProfiles = retryResult.data as Array<{ id: string }> | null
         if (retryResult.error) {
           console.error('Error retrying profile update:', retryResult.error)
         }
