@@ -88,6 +88,8 @@ export default function KYCPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
+      console.log('🔔 Subscribing to KYC updates for user:', user.id)
+
       const suffix =
         typeof crypto !== 'undefined' && 'randomUUID' in crypto
           ? crypto.randomUUID()
@@ -104,12 +106,15 @@ export default function KYCPage() {
             filter: `id=eq.${user.id}`,
           },
           (payload) => {
+            console.log('🔔 Realtime UPDATE received:', payload)
             const nextProfile = payload.new as { kyc_status?: KYCStatus; kyc_submitted_at?: string | null }
+            console.log('📊 New KYC status:', nextProfile.kyc_status)
             setKycStatus(nextProfile.kyc_status ?? null)
             setSubmittedAt(nextProfile.kyc_submitted_at ?? null)
           }
         )
         .subscribe((status) => {
+          console.log('📡 Realtime subscription status:', status)
           if (status === 'CHANNEL_ERROR') {
             console.error('❌ Realtime KYC subscription error')
           }
@@ -220,14 +225,14 @@ export default function KYCPage() {
         )
       case 'pending':
         return (
-          <Badge variant="secondary">
+          <Badge variant="warning">
             <IconClock className="mr-1 h-3 w-3" />
             En attente
           </Badge>
         )
       case 'incomplete':
         return (
-          <Badge variant="secondary" className="cursor-default">
+          <Badge variant="warning" className="cursor-default">
             À compléter
           </Badge>
         )
