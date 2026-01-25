@@ -2,15 +2,13 @@
  * Feature flags globaux de l'application
  * Permet d'activer/désactiver des fonctionnalités sans modifier le code
  */
-const KYC_ENABLED = (process.env.NEXT_PUBLIC_KYC_ENABLED ?? 'true') === 'true'
-
 export const FEATURES = {
   /**
    * KYC (Know Your Customer)
    * Si false : création d'annonces autorisée avec seulement email + téléphone
    * Si true : KYC requis avant création d'annonces
    */
-  KYC_ENABLED,
+  KYC_ENABLED: true,
 
   /**
    * Messagerie temps réel
