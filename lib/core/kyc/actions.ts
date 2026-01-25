@@ -91,7 +91,16 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       message: 'Vérification Stripe Identity prête.',
     }
   } catch (error) {
-    console.error('Identity session error:', error)
+    console.error('❌ Identity session creation failed:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      userId: user.id,
+      email,
+      documentType: validation.data.documentType,
+      documentCountry: validation.data.documentCountry,
+      stripeKeyConfigured: !!process.env.STRIPE_SECRET_KEY,
+      stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 7),
+    })
     return {
       error: "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard.",
     }
