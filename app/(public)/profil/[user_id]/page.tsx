@@ -116,7 +116,11 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {badges.map((badge) => (
-                      <Badge key={badge} variant="secondary" className="text-xs">
+                      <Badge
+                        key={badge}
+                        variant={badge === 'Nouveau voyageur' ? 'info' : 'secondary'}
+                        className="text-xs"
+                      >
                         {badge === '5 étoiles' && <IconAward className="h-3 w-3 mr-1" />}
                         {badge === 'Vérifié' && <IconCircleCheck className="h-3 w-3 mr-1" />}
                         {badge === 'Expert' && <IconBriefcase className="h-3 w-3 mr-1" />}

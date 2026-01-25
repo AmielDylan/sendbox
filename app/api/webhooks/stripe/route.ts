@@ -179,6 +179,7 @@ export async function POST(req: NextRequest) {
         if (error) {
           console.error('❌ Failed to update KYC status (verified):', error)
         } else {
+          console.log('✅ KYC approved for user:', userId)
           await notifyKycStatusChange(userId, 'approved')
         }
         break

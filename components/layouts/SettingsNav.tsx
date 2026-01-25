@@ -5,18 +5,78 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { IconUser, IconIdBadge2, IconShield, IconCircleCheck, IconAlertCircle } from '@tabler/icons-react'
+import { IconUser, IconIdBadge2, IconShield, IconCircleCheck, IconAlertCircle, IconClock } from '@tabler/icons-react'
 import { cn } from "@/lib/utils"
 import { isFeatureEnabled } from "@/lib/shared/config/features"
+import { createClient } from '@/lib/shared/db/client'
+import { useAuth } from '@/hooks/use-auth'
 
 interface SettingsNavProps {
   kycStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 }
 
-export function SettingsNav({ kycStatus }: SettingsNavProps) {
+export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
   const pathname = usePathname()
+  const { user } = useAuth()
+  const supabase = useMemo(() => createClient(), [])
+  const [kycStatus, setKycStatus] = useState<'pending' | 'approved' | 'rejected' | 'incomplete' | null>(
+    initialKycStatus || null
+  )
+
+  // Charger le statut initial si non fourni
+  useEffect(() => {
+    if (!user?.id || initialKycStatus !== undefined) return
+
+    const loadKycStatus = async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('kyc_status')
+        .eq('id', user.id)
+        .single()
+
+      if (profile) {
+        setKycStatus(profile.kyc_status as any)
+      }
+    }
+
+    loadKycStatus()
+  }, [user?.id, initialKycStatus, supabase])
+
+  // Subscription Realtime pour KYC status
+  useEffect(() => {
+    if (!user?.id) return
+
+    console.log('🔔 [SettingsNav] Subscribing to KYC updates for user:', user.id)
+
+    const channel = supabase
+      .channel(`settings-nav-kyc:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('🔔 [SettingsNav] Realtime UPDATE received:', payload)
+          const nextProfile = payload.new as { kyc_status?: 'pending' | 'approved' | 'rejected' | 'incomplete' | null }
+          console.log('📊 [SettingsNav] New KYC status:', nextProfile.kyc_status)
+          setKycStatus(nextProfile.kyc_status ?? null)
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 [SettingsNav] Realtime subscription status:', status)
+      })
+
+    return () => {
+      console.log('🔌 [SettingsNav] Unsubscribing from KYC updates')
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id, supabase])
 
   const allNavItems = [
     {
@@ -60,7 +120,8 @@ export function SettingsNav({ kycStatus }: SettingsNavProps) {
     }
     if (kycStatus === 'pending') {
       return (
-        <Badge variant="secondary" className="ml-auto bg-yellow-100 text-yellow-700">
+        <Badge variant="warning" className="ml-auto">
+          <IconClock className="mr-1 h-3 w-3" />
           En attente
         </Badge>
       )
