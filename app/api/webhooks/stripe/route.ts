@@ -1,11 +1,11 @@
 /**
- * Webhook Stripe pour gérer les événements de paiement
+ * Webhook Stripe pour gérer les événements de paiement et d'identité
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe, STRIPE_WEBHOOK_SECRET } from "@/lib/shared/services/stripe/config"
-import { createClient } from "@/lib/shared/db/server"
+import { createAdminClient } from "@/lib/shared/db/admin"
 import { fromStripeAmount } from "@/lib/core/payments/calculations"
 import { generateTransportContract } from "@/lib/shared/services/pdf/generation"
 import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
@@ -15,10 +15,6 @@ import { getPaymentsMode } from '@/lib/shared/config/features'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 
 export async function POST(req: NextRequest) {
-  if (getPaymentsMode() !== 'stripe') {
-    return NextResponse.json({ received: true, disabled: true })
-  }
-
   const body = await req.text()
   const headersList = await headers()
   const signature = headersList.get('stripe-signature')
@@ -34,6 +30,14 @@ export async function POST(req: NextRequest) {
     console.error('STRIPE_WEBHOOK_SECRET is not set')
     return NextResponse.json(
       { error: 'Webhook secret not configured' },
+      { status: 500 }
+    )
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY is not set')
+    return NextResponse.json(
+      { error: 'Service role not configured' },
       { status: 500 }
     )
   }
@@ -54,11 +58,239 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
+  const paymentsEnabled = getPaymentsMode() === 'stripe'
+
+  const withIdentityMetadata = (
+    updateData: Record<string, unknown>,
+    session: Stripe.Identity.VerificationSession
+  ) => {
+    const documentType = session.metadata?.document_type
+    if (documentType) {
+      updateData.kyc_document_type = documentType
+    }
+    const documentCountry = session.metadata?.document_country
+    if (documentCountry) {
+      updateData.kyc_nationality = documentCountry
+    }
+    return updateData
+  }
+
+  type KycStatus = 'pending' | 'approved' | 'rejected' | 'incomplete'
+
+  const notifyKycStatusChange = async (
+    userId: string,
+    status: KycStatus,
+    rejectionReason?: string | null
+  ) => {
+    const titleMap: Record<KycStatus, string> = {
+      pending: 'Vérification en cours',
+      approved: 'Identité vérifiée',
+      rejected: 'Vérification refusée',
+      incomplete: 'Vérification à compléter',
+    }
+
+    const contentMap: Record<KycStatus, string> = {
+      pending:
+        "Votre vérification d'identité est en cours de traitement. Vous serez notifié dès qu'elle sera terminée.",
+      approved:
+        "Votre identité a été vérifiée avec succès. Toutes les actions sont désormais débloquées.",
+      rejected: rejectionReason
+        ? `Votre vérification a été refusée : ${rejectionReason}. Vous pouvez soumettre de nouveaux documents.`
+        : "Votre vérification a été refusée. Vous pouvez soumettre de nouveaux documents.",
+      incomplete:
+        "Votre vérification d'identité n'a pas été finalisée. Veuillez relancer la procédure.",
+    }
+
+    try {
+      const { error } = await createSystemNotification({
+        userId,
+        type: 'system_alert',
+        title: titleMap[status],
+        content: contentMap[status],
+      })
+
+      if (error) {
+        console.error('❌ KYC notification creation failed (non-blocking):', error)
+      }
+    } catch (notifError) {
+      console.error('❌ KYC notification creation failed (non-blocking):', notifError)
+    }
+  }
 
   try {
     switch (event.type) {
+      case 'identity.verification_session.processing': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'pending',
+            kyc_submitted_at: new Date().toISOString(),
+            kyc_rejection_reason: null,
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (processing):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'pending')
+        }
+        break
+      }
+
+      case 'identity.verification_session.verified': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'approved',
+            kyc_reviewed_at: new Date().toISOString(),
+            kyc_rejection_reason: null,
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (verified):', error)
+        } else {
+          console.log('✅ KYC approved for user:', userId)
+          await notifyKycStatusChange(userId, 'approved')
+        }
+        break
+      }
+
+      case 'identity.verification_session.requires_input': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const rejectionReason =
+          verificationSession.last_error?.reason ||
+          verificationSession.last_error?.code ||
+          'verification_failed'
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'rejected',
+            kyc_reviewed_at: new Date().toISOString(),
+            kyc_rejection_reason: rejectionReason,
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (requires_input):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'rejected', rejectionReason)
+        }
+        break
+      }
+
+      case 'identity.verification_session.canceled': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'incomplete',
+            kyc_reviewed_at: new Date().toISOString(),
+            kyc_rejection_reason: 'verification_canceled',
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (canceled):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'incomplete', 'verification_canceled')
+        }
+        break
+      }
+
+      case 'identity.verification_session.redacted': {
+        const verificationSession =
+          event.data.object as Stripe.Identity.VerificationSession
+        const userId = verificationSession.metadata?.user_id
+
+        if (!userId) {
+          console.error('❌ Missing user_id in verification session metadata')
+          break
+        }
+
+        const updateData = withIdentityMetadata(
+          {
+            kyc_status: 'incomplete',
+            kyc_reviewed_at: new Date().toISOString(),
+            kyc_rejection_reason: 'verification_redacted',
+          },
+          verificationSession
+        )
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', userId)
+
+        if (error) {
+          console.error('❌ Failed to update KYC status (redacted):', error)
+        } else {
+          await notifyKycStatusChange(userId, 'incomplete', 'verification_redacted')
+        }
+        break
+      }
+
       case 'payment_intent.succeeded': {
+        if (!paymentsEnabled) {
+          console.log('Stripe payments disabled, skipping payment events')
+          break
+        }
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const booking_id = paymentIntent.metadata.booking_id
 
@@ -278,6 +510,10 @@ export async function POST(req: NextRequest) {
       }
 
       case 'payment_intent.payment_failed': {
+        if (!paymentsEnabled) {
+          console.log('Stripe payments disabled, skipping payment events')
+          break
+        }
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const booking_id = paymentIntent.metadata.booking_id
 
@@ -302,6 +538,10 @@ export async function POST(req: NextRequest) {
       }
 
       case 'charge.refunded': {
+        if (!paymentsEnabled) {
+          console.log('Stripe payments disabled, skipping payment events')
+          break
+        }
         const charge = event.data.object as Stripe.Charge
         const paymentIntentId = charge.payment_intent as string
 

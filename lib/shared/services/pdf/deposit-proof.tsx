@@ -8,7 +8,7 @@ import {
   Text,
   View,
   StyleSheet,
-  Image,
+  Image as PdfImage,
 } from '@react-pdf/renderer'
 
 interface DepositProofProps {
@@ -99,7 +99,7 @@ export function DepositProof({ booking }: DepositProofProps) {
         {booking.deposit_photo_url && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>PHOTO DU COLIS</Text>
-            <Image
+            <PdfImage
               src={booking.deposit_photo_url}
               style={styles.image}
               cache={false}
@@ -111,7 +111,7 @@ export function DepositProof({ booking }: DepositProofProps) {
         {booking.deposit_signature_url && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>SIGNATURE DE CONFIRMATION</Text>
-            <Image
+            <PdfImage
               src={booking.deposit_signature_url}
               style={styles.signature}
               cache={false}
@@ -215,7 +215,6 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
 
 
 

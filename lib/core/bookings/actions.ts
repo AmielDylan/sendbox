@@ -84,7 +84,7 @@ export async function createBooking(formData: CreateBookingInput & {
 
   // Vérifier que le KYC est approuvé SEULEMENT si feature activée
   if (isFeatureEnabled('KYC_ENABLED') && profile.kyc_status !== 'approved') {
-    let errorMessage = 'Vérification d\'identité requise'
+    let errorMessage = 'Vérification d\'identité requise pour continuer'
     let errorDetails = 'Veuillez compléter votre vérification d\'identité pour créer une réservation.'
     
     if (profile.kyc_status === 'pending') {

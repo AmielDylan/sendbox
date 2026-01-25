@@ -3,7 +3,8 @@
  */
 
 import sharp from 'sharp'
-import { MAX_FILE_SIZE_COMPRESSED } from "@/lib/core/kyc/validations"
+
+const DEFAULT_MAX_FILE_SIZE_COMPRESSED = 2_000_000 // 2 MB
 
 /**
  * Vérifie les magic bytes d'un fichier pour valider son type réel
@@ -46,7 +47,7 @@ export async function validateFileType(
  */
 export async function processImage(
   file: File,
-  maxSize: number = MAX_FILE_SIZE_COMPRESSED
+  maxSize: number = DEFAULT_MAX_FILE_SIZE_COMPRESSED
 ): Promise<Buffer> {
   const buffer = Buffer.from(await file.arrayBuffer())
 

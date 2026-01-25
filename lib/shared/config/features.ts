@@ -8,7 +8,7 @@ export const FEATURES = {
    * Si false : création d'annonces autorisée avec seulement email + téléphone
    * Si true : KYC requis avant création d'annonces
    */
-  KYC_ENABLED: false,
+  KYC_ENABLED: true,
 
   /**
    * Messagerie temps réel

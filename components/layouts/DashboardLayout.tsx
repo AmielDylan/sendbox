@@ -13,6 +13,7 @@ import {
   IconMenu2,
   IconLoader2,
   IconShield,
+  IconRosetteDiscountCheck,
   IconCheck,
   IconClock,
   IconAlertCircle,
@@ -336,6 +337,8 @@ function UserMenu() {
   const profileId = (profile as any)?.id || user?.id
   const profileLink = profileId ? `/profil/${profileId}` : '/dashboard/reglages/profil'
 
+  const isVerified = isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status === 'approved'
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -356,6 +359,14 @@ function UserMenu() {
               {initials}
             </AvatarFallback>
           </Avatar>
+          {isVerified && (
+            <span
+              className="absolute -bottom-0.5 -right-0.5"
+              aria-label="Profil vérifié"
+            >
+              <IconRosetteDiscountCheck className="h-4 w-4 text-emerald-500 fill-emerald-500" strokeWidth={1.5} />
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -367,19 +378,19 @@ function UserMenu() {
             </p>
             {/* Badge statut KYC - SEULEMENT si feature activée */}
             {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status === 'approved' && (
-              <Badge variant="outline" className="w-fit text-green-600 border-green-600 mt-2">
+              <Badge variant="outline" className="w-fit text-xs text-green-600 border-green-600 mt-2">
                 <IconCheck className="mr-1 h-3 w-3" />
                 Vérifié
               </Badge>
             )}
             {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status === 'pending' && (
-              <Badge variant="outline" className="w-fit text-yellow-600 border-yellow-600 mt-2">
+              <Badge variant="outline" className="w-fit text-xs text-yellow-600 border-yellow-600 mt-2">
                 <IconClock className="mr-1 h-3 w-3" />
-                Vérification en cours
+                En cours
               </Badge>
             )}
-            {isFeatureEnabled('KYC_ENABLED') && (!(profile as any)?.kyc_status || (profile as any).kyc_status === 'rejected') && (
-              <Badge variant="outline" className="w-fit text-muted-foreground mt-2">
+            {isFeatureEnabled('KYC_ENABLED') && (!(profile as any)?.kyc_status || (profile as any).kyc_status === 'rejected' || (profile as any).kyc_status === 'incomplete') && (
+              <Badge variant="outline" className="w-fit text-xs text-muted-foreground mt-2">
                 <IconAlertCircle className="mr-1 h-3 w-3" />
                 Non vérifié
               </Badge>

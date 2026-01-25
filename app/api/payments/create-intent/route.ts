@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from "@/lib/shared/db/server"
 import { stripe } from "@/lib/shared/services/stripe/config"
 import { calculateBookingAmounts, toStripeAmount } from "@/lib/core/payments/calculations"
-import { getPaymentsMode } from "@/lib/shared/config/features"
+import { getPaymentsMode, isFeatureEnabled } from "@/lib/shared/config/features"
 
 export async function POST(req: NextRequest) {
   if (getPaymentsMode() !== 'stripe') {
@@ -79,6 +79,44 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (isFeatureEnabled('KYC_ENABLED')) {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('kyc_status, kyc_rejection_reason')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError || !profile) {
+        return NextResponse.json(
+          { error: 'Profil introuvable' },
+          { status: 404 }
+        )
+      }
+
+      if (profile.kyc_status !== 'approved') {
+        let errorMessage = 'Vérification d\'identité requise pour continuer'
+        let errorDetails = 'Veuillez compléter votre vérification d\'identité pour effectuer un paiement.'
+
+        if (profile.kyc_status === 'pending') {
+          errorMessage = 'Vérification en cours'
+          errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez effectuer un paiement une fois celle-ci approuvée (24-48h).'
+        } else if (profile.kyc_status === 'rejected') {
+          errorMessage = 'Vérification refusée'
+          errorDetails = profile.kyc_rejection_reason
+            ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
+            : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
+        } else if (profile.kyc_status === 'incomplete') {
+          errorMessage = 'Vérification d\'identité incomplète'
+          errorDetails = 'Veuillez soumettre vos documents d\'identité pour effectuer un paiement.'
+        }
+
+        return NextResponse.json(
+          { error: errorMessage, errorDetails, field: 'kyc' },
+          { status: 403 }
+        )
+      }
+    }
+
     const announcement = booking.announcements as any
 
     // Calculer les montants
@@ -126,7 +164,6 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-
 
 
 

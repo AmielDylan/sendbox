@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useCallback, useEffect, useState, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Elements } from '@stripe/react-stripe-js'
 import { getStripeClient } from "@/lib/shared/services/stripe/config"
@@ -54,16 +54,7 @@ function PaymentPageContent() {
   const [stripePromise] = useState(() => getStripeClient())
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
 
-  useEffect(() => {
-    if (!paymentsEnabled) {
-      setIsLoading(false)
-      return
-    }
-
-    loadBooking()
-  }, [bookingId, paymentsEnabled, isStripe])
-
-  const loadBooking = async () => {
+  const loadBooking = useCallback(async () => {
     setIsLoading(true)
     try {
       const supabase = createClient()
@@ -123,6 +114,10 @@ function PaymentPageContent() {
         if (!response.ok) {
           const error = await response.json()
           toast.error(error.error || 'Erreur lors de la création du paiement')
+          if (error.field === 'kyc') {
+            router.push('/dashboard/reglages/kyc')
+            return
+          }
           router.push('/dashboard/colis')
           return
         }
@@ -139,7 +134,16 @@ function PaymentPageContent() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [bookingId, isStripe, router])
+
+  useEffect(() => {
+    if (!paymentsEnabled) {
+      setIsLoading(false)
+      return
+    }
+
+    loadBooking()
+  }, [loadBooking, paymentsEnabled])
 
   const handleSimulatedPayment = async () => {
     if (!isSimulation || isProcessingPayment) {
@@ -164,6 +168,9 @@ function PaymentPageContent() {
       if (!response.ok) {
         const error = await response.json()
         toast.error(error.error || 'Erreur lors du paiement')
+        if (error.field === 'kyc') {
+          router.push('/dashboard/reglages/kyc')
+        }
         return
       }
 

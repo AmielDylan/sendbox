@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from "@/lib/shared/db/server"
 import { createAdminClient } from "@/lib/shared/db/admin"
 import { createSystemNotification } from "@/lib/core/notifications/system"
+import { isFeatureEnabled } from "@/lib/shared/config/features"
 
 /**
  * Annule une réservation avec raison (acceptée non payée par les deux parties,
@@ -280,6 +281,44 @@ export async function markAsInTransit(
     }
   }
 
+  if (isFeatureEnabled('KYC_ENABLED')) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('kyc_status, kyc_rejection_reason')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile) {
+      return {
+        error: 'Profil introuvable',
+      }
+    }
+
+    if (profile.kyc_status !== 'approved') {
+      let errorMessage = 'Vérification d\'identité requise pour continuer'
+      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour déposer un colis.'
+
+      if (profile.kyc_status === 'pending') {
+        errorMessage = 'Vérification en cours'
+        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez déposer des colis une fois celle-ci approuvée (24-48h).'
+      } else if (profile.kyc_status === 'rejected') {
+        errorMessage = 'Vérification refusée'
+        errorDetails = profile.kyc_rejection_reason
+          ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
+          : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
+      } else if (profile.kyc_status === 'incomplete') {
+        errorMessage = 'Vérification d\'identité incomplète'
+        errorDetails = 'Veuillez soumettre vos documents d\'identité pour déposer un colis.'
+      }
+
+      return {
+        error: errorMessage,
+        errorDetails,
+        field: 'kyc',
+      }
+    }
+  }
+
   // Vérifier le statut
   if (booking.status !== 'accepted' && booking.status !== 'paid') {
     return {
@@ -386,6 +425,44 @@ export async function markAsDelivered(
     }
   }
 
+  if (isFeatureEnabled('KYC_ENABLED')) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('kyc_status, kyc_rejection_reason')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile) {
+      return {
+        error: 'Profil introuvable',
+      }
+    }
+
+    if (profile.kyc_status !== 'approved') {
+      let errorMessage = 'Vérification d\'identité requise pour continuer'
+      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour livrer un colis.'
+
+      if (profile.kyc_status === 'pending') {
+        errorMessage = 'Vérification en cours'
+        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez livrer des colis une fois celle-ci approuvée (24-48h).'
+      } else if (profile.kyc_status === 'rejected') {
+        errorMessage = 'Vérification refusée'
+        errorDetails = profile.kyc_rejection_reason
+          ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
+          : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
+      } else if (profile.kyc_status === 'incomplete') {
+        errorMessage = 'Vérification d\'identité incomplète'
+        errorDetails = 'Veuillez soumettre vos documents d\'identité pour livrer un colis.'
+      }
+
+      return {
+        error: errorMessage,
+        errorDetails,
+        field: 'kyc',
+      }
+    }
+  }
+
   // Vérifier le statut
   if (booking.status !== 'in_transit') {
     return {
@@ -484,6 +561,44 @@ export async function confirmDeliveryReceipt(bookingId: string) {
   if (booking.sender_id !== user.id) {
     return {
       error: 'Vous n\'êtes pas autorisé à confirmer cette livraison',
+    }
+  }
+
+  if (isFeatureEnabled('KYC_ENABLED')) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('kyc_status, kyc_rejection_reason')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile) {
+      return {
+        error: 'Profil introuvable',
+      }
+    }
+
+    if (profile.kyc_status !== 'approved') {
+      let errorMessage = 'Vérification d\'identité requise pour continuer'
+      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour confirmer la réception.'
+
+      if (profile.kyc_status === 'pending') {
+        errorMessage = 'Vérification en cours'
+        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez confirmer la réception une fois celle-ci approuvée (24-48h).'
+      } else if (profile.kyc_status === 'rejected') {
+        errorMessage = 'Vérification refusée'
+        errorDetails = profile.kyc_rejection_reason
+          ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
+          : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
+      } else if (profile.kyc_status === 'incomplete') {
+        errorMessage = 'Vérification d\'identité incomplète'
+        errorDetails = 'Veuillez soumettre vos documents d\'identité pour confirmer la réception.'
+      }
+
+      return {
+        error: errorMessage,
+        errorDetails,
+        field: 'kyc',
+      }
     }
   }
 

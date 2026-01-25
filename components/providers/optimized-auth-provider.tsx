@@ -6,7 +6,7 @@
  * - Invalidation ciblée des queries (pas de clear global)
  * - Gestion robuste des erreurs avec fallback
  * - Synchronisation multi-onglets via BroadcastChannel
- * - Pas de timeout agressif sur le fetch du profil
+ * - Timeout raisonnable + retry sur le fetch du profil
  */
 
 'use client'
@@ -17,6 +17,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { Session, User } from '@supabase/supabase-js'
 import { QUERY_KEYS, invalidateAuthQueries } from '@/lib/shared/query/config'
 import { useAuthStore } from '@/lib/stores/auth-store'
+import { toast } from 'sonner'
 
 export interface Profile {
   id: string
@@ -81,6 +82,53 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   // Ref pour éviter les double-fetches
   const isFetchingProfile = useRef(false)
   const lastUserId = useRef<string | null>(null)
+  const profileRetryCount = useRef(0)
+  const profileRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastKycStatus = useRef<string | null>(null)
+
+  const PROFILE_FETCH_TIMEOUT_MS = 12000
+  const MAX_PROFILE_FETCH_RETRIES = 2
+  const PROFILE_RETRY_BASE_DELAY_MS = 1500
+
+  const showKycStatusToast = useCallback(
+    (status: string | null, rejectionReason?: string | null) => {
+      if (!status) return
+
+      switch (status) {
+        case 'approved':
+          toast.success('Identité vérifiée', {
+            description: 'Toutes les actions sensibles sont désormais débloquées.',
+            duration: 5000,
+          })
+          break
+        case 'pending':
+          toast.info('Vérification en cours', {
+            description: "Votre vérification d'identité est en cours de traitement.",
+            duration: 5000,
+          })
+          break
+        case 'rejected':
+          toast.error('Vérification refusée', {
+            description:
+              rejectionReason
+                ? `Raison : ${rejectionReason}. Veuillez soumettre de nouveaux documents.`
+                : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents.',
+            duration: 6000,
+          })
+          break
+        case 'incomplete':
+          toast.info('Vérification à compléter', {
+            description:
+              "Votre vérification d'identité n'est pas finalisée. Veuillez reprendre la procédure.",
+            duration: 5000,
+          })
+          break
+        default:
+          break
+      }
+    },
+    []
+  )
 
   /**
    * Fetch du profil utilisateur avec gestion d'erreur robuste
@@ -98,23 +146,27 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
 
     isFetchingProfile.current = true
     lastUserId.current = userId
+    if (profileRetryTimer.current) {
+      clearTimeout(profileRetryTimer.current)
+      profileRetryTimer.current = null
+    }
 
     try {
       console.log('[Auth] Fetching profile for user:', userId)
 
-      // Add a timeout to prevent hanging forever (réduit à 5s)
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Profile fetch timeout after 5s')), 5000)
-      })
+      const abortController = new AbortController()
+      const timeoutId = setTimeout(() => {
+        abortController.abort()
+      }, PROFILE_FETCH_TIMEOUT_MS)
 
-      const fetchPromise = supabase
+      const { data, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
+        .abortSignal(abortController.signal)
         .single()
 
-      const result = await Promise.race([fetchPromise, timeoutPromise])
-      const { data, error: profileError } = result
+      clearTimeout(timeoutId)
 
       console.log('[Auth] Profile query result:', { data: !!data, error: !!profileError })
 
@@ -139,12 +191,27 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
         const profileData = data as Profile
         setProfile(profileData)
         setError(null)
+        profileRetryCount.current = 0
         // ✅ Synchroniser avec Zustand store (les deux interfaces sont compatibles)
         setStoreProfile(profileData as any)
       }
     } catch (err) {
-      console.error('[Auth] Unexpected error fetching profile:', err)
-      setError(err as Error)
+      if ((err as Error)?.name === 'AbortError') {
+        console.warn(`[Auth] Profile fetch aborted after ${PROFILE_FETCH_TIMEOUT_MS}ms`, userId)
+      } else {
+        console.error('[Auth] Unexpected error fetching profile:', err)
+      }
+
+      if (profileRetryCount.current < MAX_PROFILE_FETCH_RETRIES) {
+        const retryDelay =
+          PROFILE_RETRY_BASE_DELAY_MS * (profileRetryCount.current + 1)
+        profileRetryCount.current += 1
+        profileRetryTimer.current = setTimeout(() => {
+          fetchProfile(userId)
+        }, retryDelay)
+      }
+
+      setError(null)
     } finally {
       console.log('[Auth] Finished fetching profile, setting isFetchingProfile to false')
       isFetchingProfile.current = false
@@ -263,6 +330,54 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   }, [supabase, queryClient, fetchProfile])
 
   /**
+   * Realtime: synchroniser le profil (dont KYC) en direct
+   */
+  useEffect(() => {
+    if (!user?.id) return
+
+    const suffix =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
+    const channelName = `profiles:${user.id}:${suffix}`
+
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          const nextProfile = payload.new as Profile
+          setProfile(nextProfile)
+          setStoreProfile(nextProfile as any)
+
+          const nextKycStatus = (nextProfile as any)?.kyc_status ?? null
+          const prevKycStatus = lastKycStatus.current
+
+          if (prevKycStatus && nextKycStatus && prevKycStatus !== nextKycStatus) {
+            showKycStatusToast(nextKycStatus, (nextProfile as any)?.kyc_rejection_reason ?? null)
+          }
+
+          lastKycStatus.current = nextKycStatus
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Realtime profile subscription error')
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id, supabase, setStoreProfile, showKycStatusToast])
+
+  /**
    * Synchronisation multi-onglets via BroadcastChannel
    */
   useEffect(() => {
@@ -301,6 +416,10 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     setStoreProfile(profile as any)
   }, [profile, setStoreProfile])
+
+  useEffect(() => {
+    lastKycStatus.current = (profile as any)?.kyc_status ?? null
+  }, [profile])
 
   useEffect(() => {
     setStoreLoading(isLoading)

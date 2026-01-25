@@ -68,6 +68,7 @@ export default function NewAnnouncementPage() {
   const queryClient = useQueryClient()
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMode, setSubmitMode] = useState<'publish' | 'draft' | null>(null)
   const [departureCitySuggestions, setDepartureCitySuggestions] = useState<
     string[]
   >([])
@@ -77,7 +78,7 @@ export default function NewAnnouncementPage() {
   const [showDepartureSuggestions, setShowDepartureSuggestions] =
     useState(false)
   const [showArrivalSuggestions, setShowArrivalSuggestions] = useState(false)
-  const submitIntentRef = useRef(false)
+  const submitIntentRef = useRef<'publish' | 'draft' | null>(null)
 
   const {
     register,
@@ -173,10 +174,11 @@ export default function NewAnnouncementPage() {
       return
     }
 
-    submitIntentRef.current = false
+    const intent = submitIntentRef.current
+    submitIntentRef.current = null
     setIsSubmitting(true)
     try {
-      const result = await createAnnouncement(data)
+      const result = await createAnnouncement({ ...data, intent })
 
       if (result.error) {
         toast.error(result.error)
@@ -199,11 +201,19 @@ export default function NewAnnouncementPage() {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)
+      setSubmitMode(null)
     }
   }
 
   const handlePublishClick = () => {
-    submitIntentRef.current = true
+    setSubmitMode('publish')
+    submitIntentRef.current = 'publish'
+    void handleSubmit(onSubmit)()
+  }
+
+  const handleDraftClick = () => {
+    setSubmitMode('draft')
+    submitIntentRef.current = 'draft'
     void handleSubmit(onSubmit)()
   }
 
@@ -235,13 +245,13 @@ export default function NewAnnouncementPage() {
         <CardContent className="pt-6">
           <div className="relative">
             <div
-              className="absolute left-4 right-4 top-4 h-0.5 rounded-full bg-primary origin-left transition-transform"
+              className="absolute left-4 right-4 top-4 z-0 h-0.5 rounded-full bg-primary origin-left transition-transform"
               style={{
                 transform: `scaleX(${(currentStep - 1) / (STEPS.length - 1)})`,
               }}
             />
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="relative z-10 grid grid-cols-3 gap-4">
               {STEPS.map((step) => {
                 const StepIcon = step.icon
                 const isActive = currentStep === step.id
@@ -682,19 +692,40 @@ export default function NewAnnouncementPage() {
                   <IconArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
-                <Button type="button" onClick={handlePublishClick} disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Publication...
-                    </>
-                  ) : (
-                    <>
-                      <IconCheck className="mr-2 h-4 w-4" />
-                      Publier l'annonce
-                    </>
-                  )}
-                </Button>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleDraftClick}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting && submitMode === 'draft' ? (
+                      <>
+                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      'Enregistrer en brouillon'
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handlePublishClick}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting && submitMode === 'publish' ? (
+                      <>
+                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Publication...
+                      </>
+                    ) : (
+                      <>
+                        <IconCheck className="mr-2 h-4 w-4" />
+                        Publier l'annonce
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
           </CardContent>
