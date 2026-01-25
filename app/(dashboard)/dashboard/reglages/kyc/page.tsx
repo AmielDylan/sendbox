@@ -180,8 +180,7 @@ export default function KYCPage() {
         )
       case 'incomplete':
         return (
-          <Badge variant="outline">
-            <IconUpload className="mr-1 h-3 w-3" />
+          <Badge variant="secondary" className="cursor-default">
             À compléter
           </Badge>
         )
