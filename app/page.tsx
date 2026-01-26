@@ -24,6 +24,8 @@ import {
   IconCheck,
 } from '@tabler/icons-react'
 import { LandingCta } from '@/components/landing/LandingCta'
+import { PublicHeader } from '@/components/layouts/PublicHeader'
+import { PublicFooter } from '@/components/layouts/PublicFooter'
 
 const features = [
   {
@@ -96,7 +98,9 @@ const stats = [
 
 export default function HomePage() {
   return (
-    <div className="landing-v2 bg-background relative overflow-x-hidden">
+    <>
+      <PublicHeader />
+      <div className="landing-v2 bg-background relative overflow-x-hidden">
       {/* Hero Section - Bold & Dynamic */}
       <section className="relative min-h-[calc(100dvh-4rem)] flex items-center">
         {/* Animated background gradient */}
@@ -123,16 +127,16 @@ export default function HomePage() {
 
               {/* Main headline */}
               <div className="space-y-6">
-                <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight">
-                  Vos colis{' '}
+                <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+                  Transformez chaque{' '}
                   <span className="relative inline-block">
-                    <span className="relative z-10 text-primary">voyagent</span>
+                    <span className="relative z-10 text-primary">voyage</span>
                     <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
                   </span>
-                  {' '}avec vous
+                  {' '}en solution d'envoi sécurisée
                 </h1>
 
-                <p className="text-xl sm:text-2xl text-muted-foreground leading-relaxed max-w-2xl">
+                <p className="text-lg sm:text-xl lg:text-xl text-muted-foreground leading-relaxed max-w-2xl">
                   La plateforme de covalisage qui connecte voyageurs et expéditeurs
                   pour des envois <span className="text-foreground font-semibold">économiques</span>,
                   {' '}<span className="text-foreground font-semibold">rapides</span> et
@@ -141,10 +145,10 @@ export default function HomePage() {
               </div>
 
               {/* Stats row */}
-              <div className="flex flex-wrap gap-8 pt-4">
+              <div className="flex flex-wrap gap-6 lg:gap-8 pt-4">
                 {stats.map((stat, i) => (
                   <div key={stat.label} className="space-y-1 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
-                    <div className="text-3xl sm:text-4xl font-bold text-primary">{stat.value}</div>
+                    <div className="text-2xl sm:text-3xl lg:text-3xl font-bold text-primary">{stat.value}</div>
                     <div className="text-sm text-muted-foreground">{stat.label}</div>
                   </div>
                 ))}
@@ -221,7 +225,7 @@ export default function HomePage() {
             <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2">
               Nos avantages
             </Badge>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold">
               Pourquoi <span className="text-primary">Sendbox</span> ?
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -332,7 +336,7 @@ export default function HomePage() {
             <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2">
               Pour tous
             </Badge>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold">
               Voyageurs & Expéditeurs
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -426,7 +430,7 @@ export default function HomePage() {
               <span className="text-sm font-medium">Prêt à commencer ?</span>
             </div>
 
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold">
               Rejoignez la communauté{' '}
               <span className="text-primary">Sendbox</span>
             </h2>
@@ -471,5 +475,7 @@ export default function HomePage() {
         </div>
       </section>
     </div>
+    <PublicFooter />
+  </>
   )
 }
