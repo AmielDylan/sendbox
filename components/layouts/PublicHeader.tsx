@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { IconMenu2, IconSearch, IconLoader2, IconLayoutDashboard } from '@tabler/icons-react'
+import { IconMenu2, IconSearch, IconLoader2, IconLayoutDashboard, IconUser, IconSettings, IconShield, IconLogout } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -190,31 +190,42 @@ export function PublicHeader() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard">Tableau de bord</Link>
+                      <Link href="/dashboard" className="cursor-pointer">
+                        <IconLayoutDashboard className="mr-2 h-4 w-4" />
+                        <span>Tableau de bord</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={profileLink}>Mon profil</Link>
+                      <Link href={profileLink} className="cursor-pointer">
+                        <IconUser className="mr-2 h-4 w-4" />
+                        <span>Mon profil</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     {showKycLink && (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link href="/dashboard/reglages/kyc">
-                            Vérifier mon identité
+                          <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
+                            <IconShield className="mr-2 h-4 w-4" />
+                            <span>Vérifier mon identité</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                       </>
                     )}
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/reglages">Paramètres</Link>
+                      <Link href="/dashboard/reglages" className="cursor-pointer">
+                        <IconSettings className="mr-2 h-4 w-4" />
+                        <span>Paramètres</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
-                      className="text-red-600 focus:text-red-600"
+                      className="cursor-pointer text-red-600 focus:text-red-600"
                     >
-                      Se déconnecter
+                      <IconLogout className="mr-2 h-4 w-4" />
+                      <span>Se déconnecter</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
