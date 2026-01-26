@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { IconPackage, IconMessage, IconTrendingUp, IconShield, IconCheck, IconClock } from '@tabler/icons-react'
+import { IconMessage, IconTrendingUp, IconShield, IconCheck, IconClock, IconSpeakerphone } from '@tabler/icons-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
 import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialSummaryCard'
 import { isFeatureEnabled } from "@/lib/shared/config/features"
@@ -279,7 +279,7 @@ export default function DashboardPage() {
         actions={
           <Button asChild>
             <Link href="/dashboard/annonces/new">
-              <IconPackage className="mr-2 h-4 w-4" />
+              <IconSpeakerphone className="mr-2 h-4 w-4" />
               Nouvelle annonce
             </Link>
           </Button>
@@ -341,7 +341,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">
               Annonces actives
             </CardTitle>
-            <IconPackage className="h-4 w-4 text-muted-foreground" />
+            <IconSpeakerphone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
