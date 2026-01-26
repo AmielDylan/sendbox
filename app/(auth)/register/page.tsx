@@ -148,14 +148,16 @@ function RegisterForm() {
   // Afficher un indicateur de chargement pendant la vérification d'authentification
   if (!authCheckComplete) {
     return (
-      <div className="w-full max-w-xl">
-        <Card className="border-border/70 shadow-sm rounded-md">
-          <CardHeader className="space-y-2 text-center">
-            <div className="flex justify-center mb-4">
-              <IconPackage className="h-12 w-12 text-primary animate-pulse" />
+      <div className="w-full">
+        <Card className="border-2 border-border/50 shadow-xl shadow-primary/5 backdrop-blur-sm bg-background/95 rounded-2xl">
+          <CardHeader className="space-y-4 py-12 text-center">
+            <div className="flex justify-center">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <IconPackage className="h-7 w-7 text-primary animate-pulse" />
+              </div>
             </div>
             <CardTitle className="text-2xl">
-              Vérification de la connexion...
+              Vérification...
             </CardTitle>
           </CardHeader>
         </Card>
@@ -185,21 +187,23 @@ function RegisterForm() {
   }
 
   return (
-    <div className="w-full max-w-xl">
-      <Card className="border-border/70 shadow-sm rounded-md">
-        <CardHeader className="space-y-3 text-center">
+    <div className="w-full">
+      <Card className="border-2 border-border/50 shadow-xl shadow-primary/5 backdrop-blur-sm bg-background/95 rounded-2xl overflow-hidden">
+        <CardHeader className="space-y-4 pb-8 text-center">
           <div className="flex justify-center">
-            <IconPackage className="h-10 w-10 text-primary" />
+            <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <IconPackage className="h-7 w-7 text-primary" />
+            </div>
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-2xl">Créer un compte</CardTitle>
-            <CardDescription>
-              Rejoignez Sendbox pour commencer à envoyer et recevoir des colis
+          <div className="space-y-2">
+            <CardTitle className="text-3xl font-bold">Créer un compte</CardTitle>
+            <CardDescription className="text-base">
+              Rejoignez la communauté Sendbox
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <CardContent className="px-6 sm:px-8 pb-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Prénom et Nom */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

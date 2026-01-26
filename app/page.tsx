@@ -1,265 +1,476 @@
 /**
- * Landing Page Sendbox - Design System "Warm Transit"
- * Covalisage international Europe-Afrique
+ * Landing Page Sendbox - "Transit Magazine" Design
+ * Editorial, dynamic, memorable
  */
+
+'use client'
 
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import {
   IconShieldCheck,
   IconArrowRight,
   IconCurrencyEuro,
   IconClock,
-  IconMapPin,
   IconSparkles,
+  IconPlane,
   IconPackage,
   IconUsers,
-  IconPlaneDeparture,
+  IconTrendingUp,
+  IconMapPin,
+  IconCheck,
 } from '@tabler/icons-react'
+import { LandingCta } from '@/components/landing/LandingCta'
 import { PublicHeader } from '@/components/layouts/PublicHeader'
 import { PublicFooter } from '@/components/layouts/PublicFooter'
-import { LandingCta } from '@/components/landing/LandingCta'
 
 const features = [
   {
-    title: 'Tarifs clairs',
-    description: 'Jusqu\'à 60% moins cher que les services classiques.',
+    title: 'Tarifs transparents',
+    description: 'Économisez jusqu\'à 60% sur vos envois avec des prix fixes et sans surprise.',
     icon: IconCurrencyEuro,
+    accent: 'teal',
   },
   {
     title: 'Voyageurs vérifiés',
-    description: 'Identités contrôlées, profils notés et support actif.',
+    description: 'Chaque transporteur vérifié par KYC, avec évaluations et badges de confiance.',
     icon: IconShieldCheck,
+    accent: 'emerald',
   },
   {
     title: 'Livraison rapide',
-    description: 'Délais courts et suivi en temps réel de vos colis.',
+    description: 'Suivez votre colis en temps réel et communiquez directement avec le voyageur.',
     icon: IconClock,
+    accent: 'amber',
   },
 ]
 
+const benefits = {
+  travelers: [
+    'Rentabilisez vos voyages',
+    'Paiement sécurisé garanti',
+    'Flexibilité totale',
+    'Communauté solidaire',
+  ],
+  senders: [
+    'Prix imbattables',
+    'Remise en main propre',
+    'Suivi en direct',
+    'Support réactif 24/7',
+  ],
+}
+
 const steps = [
   {
-    title: 'Recherchez un trajet',
-    description: 'Trouvez un voyageur de confiance sur votre axe.',
-    icon: IconMapPin,
+    number: '01',
+    title: 'Trouvez votre trajet',
+    description: 'Parcourez les annonces de voyageurs sur votre itinéraire France-Bénin.',
+    visual: 'search',
   },
   {
-    title: 'Réservez votre espace',
-    description: 'Indiquez le poids et décrivez votre colis simplement.',
-    icon: IconPackage,
+    number: '02',
+    title: 'Réservez l\'espace',
+    description: 'Sélectionnez le voyageur et indiquez les détails de votre colis.',
+    visual: 'book',
   },
   {
-    title: 'Remettez votre colis',
-    description: 'Rencontrez le voyageur et confiez-lui votre colis.',
-    icon: IconUsers,
+    number: '03',
+    title: 'Remettez en personne',
+    description: 'Rencontrez le voyageur et confiez-lui votre colis en toute sécurité.',
+    visual: 'handoff',
   },
   {
+    number: '04',
     title: 'Suivez la livraison',
-    description: 'Recevez des notifications jusqu\'à la livraison finale.',
-    icon: IconPlaneDeparture,
+    description: 'Recevez des notifications à chaque étape et chattez en direct.',
+    visual: 'track',
   },
+]
+
+const stats = [
+  { value: '2,500+', label: 'Colis livrés' },
+  { value: '1,200+', label: 'Utilisateurs actifs' },
+  { value: '4.8/5', label: 'Note moyenne' },
 ]
 
 export default function HomePage() {
   return (
-    <div className="landing min-h-screen flex flex-col bg-background">
+    <>
       <PublicHeader />
-      <main className="flex-1 bg-background">
-        {/* HERO SECTION */}
-        <section className="relative min-h-[calc(100dvh-4rem)] flex items-center overflow-hidden">
-          <div className="absolute inset-0 bg-hero-image opacity-35" aria-hidden="true" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/75 via-background/50 to-background" aria-hidden="true" />
-
-          <div className="container mx-auto px-8 sm:px-16 lg:px-24 relative z-10 grid gap-10 lg:grid-cols-2 lg:gap-16 items-center py-12 sm:py-16 md:py-20">
-            <div className="space-y-6 text-center lg:text-left">
-              <Badge
-                variant="outline"
-                className="gap-2 rounded-md px-3 py-1 text-xs border-foreground/25 bg-background/90 text-foreground shadow-sm backdrop-blur dark:bg-background/50"
-              >
-                <IconSparkles className="h-3 w-3 text-primary" />
-                Service sécurisé et vérifié
-              </Badge>
-
-              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-balance tracking-tight leading-tight">
-                Envoyez vos colis entre l'Europe et l'Afrique
+      <div className="landing-v2 bg-background relative overflow-x-hidden">
+      {/* Hero Section - Clean & Focused */}
+      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center bg-gradient-to-br from-primary/5 via-background to-background">
+        <div className="container-wide relative z-10 py-16 sm:py-20 lg:py-24">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+            {/* Left: Content */}
+            <div className="space-y-6 animate-fade-in-up">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
+                Transformez chaque{' '}
+                <span className="relative inline-block">
+                  <span className="relative z-10 text-primary">voyage</span>
+                  <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
+                </span>
+                {' '}en solution d'envoi sécurisée
               </h1>
 
-              <p className="text-base sm:text-lg text-muted-foreground max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Covalisage international rapide, sécurisé et économique pour la France et le Bénin.
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                La plateforme de covalisage qui connecte voyageurs et expéditeurs
+                pour des envois <span className="text-foreground font-semibold">économiques</span>,
+                {' '}<span className="text-foreground font-semibold">rapides</span> et
+                {' '}<span className="text-foreground font-semibold">sécurisés</span>.
               </p>
 
-              <div className="flex flex-col gap-5 items-center lg:items-start">
-                <div className="inline-flex items-center gap-2 border border-primary/20 bg-primary/5 px-2.5 py-1 rounded-md">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                  <span className="text-xs font-medium text-foreground">
-                    Actuellement disponible entre la France et le Bénin
-                  </span>
-                </div>
+              {/* Stats row */}
+              <div className="flex flex-wrap gap-6 lg:gap-8 pt-2">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="space-y-1">
+                    <div className="text-xl sm:text-2xl font-bold text-primary">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
 
-                <LandingCta
-                  className="justify-center lg:justify-start w-full"
-                  registerClassName="min-w-[140px] rounded-md"
-                  searchClassName="min-w-[140px] rounded-md"
-                  arrowClassName="ml-2"
-                  mapClassName="mr-2"
-                />
+              {/* CTAs */}
+              <LandingCta
+                className="flex-wrap sm:flex-nowrap pt-2"
+                registerClassName="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                searchClassName="w-full sm:w-auto border-2 hover:bg-accent transition-all duration-300"
+              />
+
+              {/* Trust indicator */}
+              <div className="flex items-center gap-3 pt-2">
+                <IconShieldCheck className="h-5 w-5 text-primary" />
+                <p className="text-sm text-muted-foreground">
+                  Identités vérifiées • Paiements sécurisés • Support 24/7
+                </p>
               </div>
             </div>
 
-            <div className="relative order-first lg:order-last hidden sm:block">
-              <div className="relative w-full max-w-[240px] sm:max-w-[320px] md:max-w-[400px] lg:ml-auto transform hover:scale-[1.01] transition-transform duration-500">
-                <div className="aspect-square overflow-hidden rounded-lg border border-border bg-muted/40 shadow-xl shadow-primary/5">
-                  <Image
-                    src="/images/illustrations/envoi-colis.svg"
-                    alt="Envoi de colis France-Bénin"
-                    width={520}
-                    height={520}
-                    priority
-                    className="w-full h-full object-contain p-4"
-                  />
+            {/* Right: Hero Image */}
+            <div className="relative hidden lg:block animate-fade-in-up animation-delay-200">
+              <Image
+                src="/images/hero.png"
+                alt="Sendbox - Covalisage international"
+                width={600}
+                height={600}
+                priority
+                className="w-full h-auto rounded-2xl"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Grid with accent colors */}
+      <section className="py-20 sm:py-28 bg-muted/30 relative">
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]"></div>
+
+        <div className="container-wide relative">
+          <div className="text-center space-y-4 mb-16 animate-fade-in-up">
+            <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2">
+              Nos avantages
+            </Badge>
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
+              Pourquoi <span className="text-primary">Sendbox</span> ?
+            </h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Une solution pensée pour rendre vos envois simples, sûrs et abordables.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {features.map((feature, i) => {
+              const Icon = feature.icon
+              return (
+                <Card
+                  key={feature.title}
+                  className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 bg-background animate-fade-in-up"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
+                  {/* Gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-transparent transition-all duration-500"></div>
+
+                  <div className="relative p-8 space-y-6">
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                      <Icon className="h-7 w-7 text-primary" />
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-2xl font-bold">
+                        {feature.title}
+                      </h3>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Pays couverts Section */}
+      <section className="py-12 border-y bg-muted/20">
+        <div className="container-wide">
+          <div className="flex flex-col items-center justify-center gap-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Pays couverts</h2>
+
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              {/* Active countries */}
+              <div className="flex items-center gap-3">
+              <div className="group relative">
+                <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                  <span className="text-3xl">🇫🇷</span>
                 </div>
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  France
+                </span>
+              </div>
+
+              <div className="group relative">
+                <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                  <span className="text-3xl">🇧🇯</span>
+                </div>
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Bénin
+                </span>
               </div>
             </div>
-          </div>
-        </section>
 
-        {/* FEATURES SECTION */}
-        <section className="py-16 sm:py-24 bg-background">
-          <div className="container mx-auto px-8 sm:px-16 lg:px-24">
-            <div className="text-center space-y-3 mb-12">
-              <Badge variant="outline" className="text-xs uppercase tracking-wide rounded-md border-primary/20 text-primary bg-primary/5">
-                Nos avantages
-              </Badge>
-              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-balance">
-                Pourquoi choisir Sendbox ?
-              </h2>
-              <p className="text-base text-muted-foreground max-w-xl mx-auto">
-                Une solution simple, sécurisée et adaptée aux trajets France-Bénin.
-              </p>
+            {/* Empty state placeholders */}
+            <div className="flex items-center gap-3">
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              {features.map((feature) => {
-                const Icon = feature.icon
-                return (
-                  <Card key={feature.title} className="border-border bg-card/50 hover:bg-card transition-all duration-300 rounded-lg">
-                    <CardHeader className="space-y-3 p-5 sm:p-6">
-                      <div className="h-10 w-10 rounded-md border border-border bg-muted/50 flex items-center justify-center">
-                        <Icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <CardTitle className="text-lg font-bold">
-                          {feature.title}
-                        </CardTitle>
-                        <CardDescription className="text-sm leading-relaxed text-muted-foreground/80">
-                          {feature.description}
-                        </CardDescription>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                )
-              })}
+              <span className="text-sm text-muted-foreground italic">et d'autres à venir</span>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* HOW IT WORKS SECTION */}
-        <section className="py-16 sm:py-24 bg-muted/30">
-          <div className="container mx-auto px-8 sm:px-16 lg:px-24 space-y-16">
+      {/* How it Works - Editorial layout */}
+      <section className="py-20 sm:py-28 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-primary/5 to-transparent"></div>
 
-            <div className="text-center space-y-3">
-              <Badge variant="outline" className="text-xs uppercase tracking-wide rounded-md border-primary/20 text-primary bg-primary/5">
-                Processus simple
-              </Badge>
-              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-balance">
-                Comment ça marche ?
-              </h2>
-              <p className="text-base text-muted-foreground">
-                Envoyez votre colis en 4 étapes simples.
-              </p>
+        <div className="container-wide relative">
+          <div className="mb-16 animate-fade-in-up">
+            <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2 mb-6">
+              Simple & Efficace
+            </Badge>
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold max-w-3xl">
+              4 étapes pour envoyer votre colis
+            </h2>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
+            {/* Left: Steps */}
+            <div className="space-y-6">
+              {steps.map((step, i) => (
+                <div
+                  key={step.number}
+                  className="group flex gap-6 p-6 rounded-2xl border-2 border-border hover:border-primary/50 bg-background hover:shadow-xl transition-all duration-500 animate-fade-in-up"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
+                  <div className="flex-shrink-0">
+                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-500">
+                      <span className="text-2xl font-bold text-primary group-hover:text-primary-foreground transition-colors duration-500">
+                        {step.number}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 flex-1">
+                    <h3 className="text-xl font-bold group-hover:text-primary transition-colors duration-300">
+                      {step.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
-              <div className="hidden sm:block relative w-full flex justify-center">
-                <div className="relative w-full max-w-[420px]">
+            {/* Right: Visual */}
+            <div className="relative animate-fade-in-up animation-delay-300">
+              <div className="relative aspect-square max-w-lg mx-auto lg:ml-auto">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-emerald-500/20 rounded-3xl"></div>
+                <div className="relative h-full rounded-3xl overflow-hidden border-2 border-border bg-muted/20 p-12">
                   <Image
                     src="/images/illustrations/covoiturage.svg"
-                    alt="Comment fonctionne le covoiturage de colis"
-                    width={600}
-                    height={600}
-                    className="w-full h-auto object-contain"
+                    alt="Processus de covalisage"
+                    width={500}
+                    height={500}
+                    className="w-full h-full object-contain"
                   />
                 </div>
               </div>
-
-              <div className="flex flex-col justify-center w-full">
-                <ol className="space-y-4 w-full">
-                  {steps.map((step) => {
-                    const Icon = step.icon
-                    return (
-                      <li
-                        key={step.title}
-                        className="group flex items-start gap-4 p-4 rounded-xl border border-border/50 bg-card/30 hover:bg-card hover:border-border transition-all duration-300 w-full"
-                      >
-                        <span className="flex-none flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-background shadow-sm text-foreground transition-all group-hover:border-primary/20 group-hover:shadow-md group-hover:text-primary mt-1">
-                          <Icon size={20} className="transition-transform duration-300 group-hover:scale-110" />
-                        </span>
-                        <div className="space-y-1">
-                          <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors">
-                            {step.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {step.description}
-                          </p>
-                        </div>
-                      </li>
-                    )
-                  })}
-                </ol>
-              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA SECTION */}
-        <section className="py-16 sm:py-24 bg-background">
-          <div className="container mx-auto px-8 sm:px-16 lg:px-24">
-            <div className="relative overflow-hidden border border-border bg-primary/5 rounded-xl px-5 py-12 sm:px-10 sm:py-16 text-center space-y-6">
-              <div className="absolute top-0 right-0 -mr-10 -mt-10 w-[200px] h-[200px] bg-primary/10 rounded-full blur-[60px] -z-10" />
-              <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-[150px] h-[150px] bg-primary/5 rounded-full blur-[40px] -z-10" />
+      {/* Benefits - Dual audience */}
+      <section className="py-20 sm:py-28 bg-muted/30 relative">
+        <div className="container-wide">
+          <div className="text-center space-y-4 mb-16 animate-fade-in-up">
+            <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2">
+              Pour tous
+            </Badge>
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
+              Voyageurs & Expéditeurs
+            </h2>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Une communauté gagnant-gagnant où chacun trouve son compte.
+            </p>
+          </div>
 
-              <div className="max-w-lg mx-auto space-y-5">
-                <Badge variant="outline" className="gap-2 rounded-md px-3 py-1 text-xs cursor-default bg-background border-primary/20 text-foreground shadow-sm">
-                  <IconSparkles className="h-3.5 w-3.5 text-primary" />
-                  Prêt à commencer ?
-                </Badge>
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Travelers */}
+            <Card className="relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-500 bg-background group animate-fade-in-up">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
 
-                <h2 className="font-display text-2xl sm:text-3xl text-balance font-bold leading-tight">
-                  Rejoignez une communauté <br className="hidden sm:block" /> en pleine croissance
-                </h2>
-
-                <p className="text-base text-muted-foreground max-w-md mx-auto">
-                  Créez votre compte, vérifiez votre identité et envoyez votre premier colis dès aujourd'hui.
-                </p>
-
-                <div className="pt-2">
-                  <Button asChild className="rounded-md px-6 shadow-md hover:shadow-lg transition-shadow">
-                    <Link href="/register">
-                      Créer mon compte
-                      <IconArrowRight className="h-4 w-4 ml-2" />
-                    </Link>
-                  </Button>
+              <div className="relative p-8 sm:p-10 space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <IconPlane className="h-7 w-7 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-bold mb-2">Voyageurs</h3>
+                    <p className="text-muted-foreground">Rentabilisez vos trajets</p>
+                  </div>
                 </div>
+
+                <ul className="space-y-4">
+                  {benefits.travelers.map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <IconCheck className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="text-foreground font-medium">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild className="w-full sm:w-auto group/btn" variant="outline">
+                  <Link href="/register">
+                    Devenir transporteur
+                    <IconArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </Link>
+                </Button>
+              </div>
+            </Card>
+
+            {/* Senders */}
+            <Card className="relative overflow-hidden border-2 hover:border-emerald-500/50 transition-all duration-500 bg-background group animate-fade-in-up animation-delay-100">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+
+              <div className="relative p-8 sm:p-10 space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                    <IconPackage className="h-7 w-7 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-bold mb-2">Expéditeurs</h3>
+                    <p className="text-muted-foreground">Envoyez malin</p>
+                  </div>
+                </div>
+
+                <ul className="space-y-4">
+                  {benefits.senders.map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-3">
+                      <div className="h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <IconCheck className="h-4 w-4 text-emerald-600" />
+                      </div>
+                      <span className="text-foreground font-medium">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild className="w-full sm:w-auto group/btn bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Link href="/recherche">
+                    <IconMapPin className="h-4 w-4" />
+                    Rechercher un trajet
+                  </Link>
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA - Bold & centered */}
+      <section className="py-24 sm:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-emerald-500/10"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
+
+        <div className="container-wide relative">
+          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <IconSparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Prêt à commencer ?</span>
+            </div>
+
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
+              Rejoignez la communauté{' '}
+              <span className="text-primary">Sendbox</span>
+            </h2>
+
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Des milliers d'utilisateurs font déjà confiance à notre plateforme
+              pour leurs envois entre l'Europe et l'Afrique.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Button asChild size="lg" className="w-full sm:w-auto text-base px-8 py-6 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300">
+                <Link href="/register">
+                  Créer mon compte gratuitement
+                  <IconArrowRight className="h-5 w-5" />
+                </Link>
+              </Button>
+
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 py-6 border-2 hover:scale-105 transition-all duration-300">
+                <Link href="/recherche">
+                  <IconMapPin className="h-5 w-5" />
+                  Explorer les trajets
+                </Link>
+              </Button>
+            </div>
+
+            {/* Trust badges */}
+            <div className="flex flex-wrap items-center justify-center gap-6 pt-8 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <IconShieldCheck className="h-5 w-5 text-primary" />
+                <span>KYC vérifié</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <IconUsers className="h-5 w-5 text-primary" />
+                <span>1,200+ membres</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <IconTrendingUp className="h-5 w-5 text-primary" />
+                <span>4.8/5 étoiles</span>
               </div>
             </div>
           </div>
-        </section>
-      </main>
-      <PublicFooter />
+        </div>
+      </section>
     </div>
+    <PublicFooter />
+  </>
   )
 }
