@@ -164,53 +164,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pays couverts Section */}
-      <section className="py-12 border-y bg-muted/20">
-        <div className="container-wide">
-          <div className="flex flex-col items-center justify-center gap-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Pays couverts</h2>
-
-            <div className="flex flex-wrap items-center justify-center gap-6">
-              {/* Active countries */}
-              <div className="flex items-center gap-3">
-              <div className="group relative">
-                <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                  <span className="text-3xl">🇫🇷</span>
-                </div>
-                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  France
-                </span>
-              </div>
-
-              <div className="group relative">
-                <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                  <span className="text-3xl">🇧🇯</span>
-                </div>
-                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Bénin
-                </span>
-              </div>
-            </div>
-
-            {/* Empty state placeholders */}
-            <div className="flex items-center gap-3">
-              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
-                <span className="text-sm text-muted-foreground/40">+</span>
-              </div>
-              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
-                <span className="text-sm text-muted-foreground/40">+</span>
-              </div>
-              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
-                <span className="text-sm text-muted-foreground/40">+</span>
-              </div>
-            </div>
-
-              <span className="text-sm text-muted-foreground italic">et d'autres à venir</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features Section - Grid with accent colors */}
       <section className="py-20 sm:py-28 bg-muted/30 relative">
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]"></div>
@@ -257,6 +210,53 @@ export default function HomePage() {
                 </Card>
               )
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Pays couverts Section */}
+      <section className="py-12 border-y bg-muted/20">
+        <div className="container-wide">
+          <div className="flex flex-col items-center justify-center gap-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Pays couverts</h2>
+
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              {/* Active countries */}
+              <div className="flex items-center gap-3">
+              <div className="group relative">
+                <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                  <span className="text-3xl">🇫🇷</span>
+                </div>
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  France
+                </span>
+              </div>
+
+              <div className="group relative">
+                <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                  <span className="text-3xl">🇧🇯</span>
+                </div>
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Bénin
+                </span>
+              </div>
+            </div>
+
+            {/* Empty state placeholders */}
+            <div className="flex items-center gap-3">
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
+            </div>
+
+              <span className="text-sm text-muted-foreground italic">et d'autres à venir</span>
+            </div>
           </div>
         </div>
       </section>
