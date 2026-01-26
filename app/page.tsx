@@ -101,81 +101,33 @@ export default function HomePage() {
     <>
       <PublicHeader />
       <div className="landing-v2 bg-background relative overflow-x-hidden">
-      {/* Hero Section - Bold & Dynamic */}
-      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center">
-        {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5 animate-gradient-shift" />
-
-        {/* Decorative elements */}
-        <div className="absolute top-20 right-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse-slow animation-delay-2000" />
-
+      {/* Hero Section - Clean & Focused */}
+      <section className="relative min-h-[calc(100dvh-4rem)] flex items-center bg-gradient-to-br from-primary/5 via-background to-background">
         <div className="container-wide relative z-10 py-16 sm:py-20 lg:py-24">
-          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 items-center">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             {/* Left: Content */}
-            <div className="space-y-8 animate-fade-in-up">
-              {/* Main headline */}
-              <div className="space-y-6">
-                <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-                  Transformez chaque{' '}
-                  <span className="relative inline-block">
-                    <span className="relative z-10 text-primary">voyage</span>
-                    <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
-                  </span>
-                  {' '}en solution d'envoi sécurisée
-                </h1>
+            <div className="space-y-6 animate-fade-in-up">
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+                Transformez chaque{' '}
+                <span className="relative inline-block">
+                  <span className="relative z-10 text-primary">voyage</span>
+                  <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
+                </span>
+                {' '}en solution d'envoi sécurisée
+              </h1>
 
-                <p className="text-lg sm:text-xl lg:text-xl text-muted-foreground leading-relaxed max-w-2xl">
-                  La plateforme de covalisage qui connecte voyageurs et expéditeurs
-                  pour des envois <span className="text-foreground font-semibold">économiques</span>,
-                  {' '}<span className="text-foreground font-semibold">rapides</span> et
-                  {' '}<span className="text-foreground font-semibold">sécurisés</span>.
-                </p>
-
-                {/* Pays couverts */}
-                <div className="flex flex-wrap items-center gap-3 animate-fade-in-up animation-delay-200">
-                  <span className="text-sm font-medium text-muted-foreground">Pays couverts :</span>
-
-                  {/* Active countries */}
-                  <div className="flex items-center gap-2">
-                    <div className="group relative">
-                      <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                        <span className="text-2xl">🇫🇷</span>
-                      </div>
-                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        France
-                      </span>
-                    </div>
-
-                    <div className="group relative">
-                      <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                        <span className="text-2xl">🇧🇯</span>
-                      </div>
-                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        Bénin
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Empty state placeholders */}
-                  <div className="flex items-center gap-2">
-                    <div className="w-[52px] h-[40px] rounded-lg border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground/40">+</span>
-                    </div>
-                    <div className="w-[52px] h-[40px] rounded-lg border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground/40">+</span>
-                    </div>
-                  </div>
-
-                  <span className="text-sm text-muted-foreground italic">et d'autres à venir</span>
-                </div>
-              </div>
+              <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
+                La plateforme de covalisage qui connecte voyageurs et expéditeurs
+                pour des envois <span className="text-foreground font-semibold">économiques</span>,
+                {' '}<span className="text-foreground font-semibold">rapides</span> et
+                {' '}<span className="text-foreground font-semibold">sécurisés</span>.
+              </p>
 
               {/* Stats row */}
-              <div className="flex flex-wrap gap-6 lg:gap-8 pt-4">
-                {stats.map((stat, i) => (
-                  <div key={stat.label} className="space-y-1 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
-                    <div className="text-2xl sm:text-3xl lg:text-3xl font-bold text-primary">{stat.value}</div>
+              <div className="flex flex-wrap gap-6 lg:gap-8 pt-2">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="space-y-1">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">{stat.value}</div>
                     <div className="text-sm text-muted-foreground">{stat.label}</div>
                   </div>
                 ))}
@@ -183,9 +135,9 @@ export default function HomePage() {
 
               {/* CTAs */}
               <LandingCta
-                className="flex-wrap sm:flex-nowrap"
-                registerClassName="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
-                searchClassName="w-full sm:w-auto border-2 hover:bg-accent hover:scale-[1.02] transition-all duration-300"
+                className="flex-wrap sm:flex-nowrap pt-2"
+                registerClassName="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                searchClassName="w-full sm:w-auto border-2 hover:bg-accent transition-all duration-300"
               />
 
               {/* Trust indicator */}
@@ -197,48 +149,62 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: Visual */}
-            <div className="relative lg:pl-8 animate-fade-in-up animation-delay-300">
-              <div className="relative">
-                {/* Main illustration container */}
-                <div className="relative aspect-square max-w-md mx-auto">
-                  {/* Decorative ring */}
-                  <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin-slow"></div>
-                  <div className="absolute inset-4 rounded-full border border-primary/10 animate-spin-slow animation-delay-1000" style={{ animationDirection: 'reverse' }}></div>
+            {/* Right: Hero Image */}
+            <div className="relative animate-fade-in-up animation-delay-200">
+              <Image
+                src="/images/hero.png"
+                alt="Sendbox - Covalisage international"
+                width={600}
+                height={600}
+                priority
+                className="w-full h-auto rounded-2xl"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
-                  {/* Center image */}
-                  <div className="absolute inset-8 rounded-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-emerald-500/10 backdrop-blur-sm border border-primary/30 shadow-2xl flex items-center justify-center">
-                    <Image
-                      src="/images/illustrations/envoi-colis.svg"
-                      alt="Covalisage France-Bénin"
-                      width={450}
-                      height={450}
-                      priority
-                      className="w-[110%] h-[110%] object-cover"
-                    />
-                  </div>
+      {/* Pays couverts Section */}
+      <section className="py-12 border-y bg-muted/20">
+        <div className="container-wide">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
+            <span className="text-sm font-medium text-muted-foreground">Pays couverts :</span>
 
-                  {/* Floating badges */}
-                  <div className="absolute top-8 -left-4 animate-float">
-                    <div className="bg-background border-2 border-primary rounded-2xl px-4 py-3 shadow-xl">
-                      <div className="flex items-center gap-2">
-                        <IconPlane className="h-5 w-5 text-primary" />
-                        <span className="font-semibold text-sm">Vol direct</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="absolute bottom-12 -right-4 animate-float animation-delay-1000">
-                    <div className="bg-background border-2 border-emerald-500 rounded-2xl px-4 py-3 shadow-xl">
-                      <div className="flex items-center gap-2">
-                        <IconPackage className="h-5 w-5 text-emerald-600" />
-                        <span className="font-semibold text-sm">-60% vs DHL</span>
-                      </div>
-                    </div>
-                  </div>
+            {/* Active countries */}
+            <div className="flex items-center gap-3">
+              <div className="group relative">
+                <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                  <span className="text-3xl">🇫🇷</span>
                 </div>
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  France
+                </span>
+              </div>
+
+              <div className="group relative">
+                <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                  <span className="text-3xl">🇧🇯</span>
+                </div>
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Bénin
+                </span>
               </div>
             </div>
+
+            {/* Empty state placeholders */}
+            <div className="flex items-center gap-3">
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
+              <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                <span className="text-sm text-muted-foreground/40">+</span>
+              </div>
+            </div>
+
+            <span className="text-sm text-muted-foreground italic">et d'autres à venir</span>
           </div>
         </div>
       </section>
