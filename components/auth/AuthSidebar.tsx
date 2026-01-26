@@ -12,9 +12,8 @@ export function AuthSidebar() {
   const isRegister = pathname?.includes('register')
 
   return (
-    <aside className="hidden lg:block">
-      <div className="sticky top-24 space-y-6">
-        {isRegister ? (
+    <div className="w-full max-w-md space-y-6">
+      {isRegister ? (
           <>
             {/* Registration Progress */}
             <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
@@ -110,7 +109,6 @@ export function AuthSidebar() {
             </span>
           </p>
         </div>
-      </div>
-    </aside>
+    </div>
   )
 }
