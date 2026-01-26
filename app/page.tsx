@@ -180,14 +180,14 @@ export default function HomePage() {
                   <div className="absolute inset-4 rounded-full border border-primary/10 animate-spin-slow animation-delay-1000" style={{ animationDirection: 'reverse' }}></div>
 
                   {/* Center image */}
-                  <div className="absolute inset-8 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-emerald-500/20 backdrop-blur-sm border border-primary/30 shadow-2xl">
+                  <div className="absolute inset-8 rounded-full overflow-hidden bg-gradient-to-br from-primary/10 via-background to-emerald-500/10 backdrop-blur-sm border border-primary/30 shadow-2xl flex items-center justify-center">
                     <Image
                       src="/images/illustrations/envoi-colis.svg"
                       alt="Covalisage France-Bénin"
-                      width={400}
-                      height={400}
+                      width={450}
+                      height={450}
                       priority
-                      className="w-full h-full object-contain p-8"
+                      className="w-[110%] h-[110%] object-cover"
                     />
                   </div>
 
