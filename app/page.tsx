@@ -150,7 +150,7 @@ export default function HomePage() {
             </div>
 
             {/* Right: Hero Image */}
-            <div className="relative animate-fade-in-up animation-delay-200">
+            <div className="relative hidden lg:block animate-fade-in-up animation-delay-200">
               <Image
                 src="/images/hero.png"
                 alt="Sendbox - Covalisage international"
