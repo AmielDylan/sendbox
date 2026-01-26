@@ -114,17 +114,6 @@ export default function HomePage() {
           <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 items-center">
             {/* Left: Content */}
             <div className="space-y-8 animate-fade-in-up">
-              {/* Eyebrow badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
-                </span>
-                <span className="text-sm font-medium text-foreground">
-                  France ⇄ Bénin • Service actif
-                </span>
-              </div>
-
               {/* Main headline */}
               <div className="space-y-6">
                 <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
@@ -142,6 +131,44 @@ export default function HomePage() {
                   {' '}<span className="text-foreground font-semibold">rapides</span> et
                   {' '}<span className="text-foreground font-semibold">sécurisés</span>.
                 </p>
+
+                {/* Pays couverts */}
+                <div className="flex flex-wrap items-center gap-3 animate-fade-in-up animation-delay-200">
+                  <span className="text-sm font-medium text-muted-foreground">Pays couverts :</span>
+
+                  {/* Active countries */}
+                  <div className="flex items-center gap-2">
+                    <div className="group relative">
+                      <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                        <span className="text-2xl">🇫🇷</span>
+                      </div>
+                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        France
+                      </span>
+                    </div>
+
+                    <div className="group relative">
+                      <div className="px-3 py-2 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                        <span className="text-2xl">🇧🇯</span>
+                      </div>
+                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        Bénin
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Empty state placeholders */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-[52px] h-[40px] rounded-lg border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground/40">+</span>
+                    </div>
+                    <div className="w-[52px] h-[40px] rounded-lg border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground/40">+</span>
+                    </div>
+                  </div>
+
+                  <span className="text-sm text-muted-foreground italic">et d'autres à venir</span>
+                </div>
               </div>
 
               {/* Stats row */}
