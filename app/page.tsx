@@ -107,7 +107,7 @@ export default function HomePage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             {/* Left: Content */}
             <div className="space-y-6 animate-fade-in-up">
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
                 Transformez chaque{' '}
                 <span className="relative inline-block">
                   <span className="relative z-10 text-primary">voyage</span>
@@ -116,7 +116,7 @@ export default function HomePage() {
                 {' '}en solution d'envoi sécurisée
               </h1>
 
-              <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                 La plateforme de covalisage qui connecte voyageurs et expéditeurs
                 pour des envois <span className="text-foreground font-semibold">économiques</span>,
                 {' '}<span className="text-foreground font-semibold">rapides</span> et
@@ -127,7 +127,7 @@ export default function HomePage() {
               <div className="flex flex-wrap gap-6 lg:gap-8 pt-2">
                 {stats.map((stat) => (
                   <div key={stat.label} className="space-y-1">
-                    <div className="text-2xl sm:text-3xl font-bold text-primary">{stat.value}</div>
+                    <div className="text-xl sm:text-2xl font-bold text-primary">{stat.value}</div>
                     <div className="text-sm text-muted-foreground">{stat.label}</div>
                   </div>
                 ))}
@@ -173,10 +173,10 @@ export default function HomePage() {
             <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2">
               Nos avantages
             </Badge>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold">
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
               Pourquoi <span className="text-primary">Sendbox</span> ?
             </h2>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Une solution pensée pour rendre vos envois simples, sûrs et abordables.
             </p>
           </div>
@@ -271,7 +271,7 @@ export default function HomePage() {
             <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2 mb-6">
               Simple & Efficace
             </Badge>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold max-w-3xl">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold max-w-3xl">
               4 étapes pour envoyer votre colis
             </h2>
           </div>
@@ -331,10 +331,10 @@ export default function HomePage() {
             <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2">
               Pour tous
             </Badge>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold">
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
               Voyageurs & Expéditeurs
             </h2>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
               Une communauté gagnant-gagnant où chacun trouve son compte.
             </p>
           </div>
@@ -425,12 +425,12 @@ export default function HomePage() {
               <span className="text-sm font-medium">Prêt à commencer ?</span>
             </div>
 
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold">
+            <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
               Rejoignez la communauté{' '}
               <span className="text-primary">Sendbox</span>
             </h2>
 
-            <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Des milliers d'utilisateurs font déjà confiance à notre plateforme
               pour leurs envois entre l'Europe et l'Afrique.
             </p>
