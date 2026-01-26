@@ -167,11 +167,12 @@ export default function HomePage() {
       {/* Pays couverts Section */}
       <section className="py-12 border-y bg-muted/20">
         <div className="container-wide">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
-            <span className="text-sm font-medium text-muted-foreground">Pays couverts :</span>
+          <div className="flex flex-col items-center justify-center gap-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Pays couverts</h2>
 
-            {/* Active countries */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              {/* Active countries */}
+              <div className="flex items-center gap-3">
               <div className="group relative">
                 <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <span className="text-3xl">🇫🇷</span>
@@ -204,7 +205,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <span className="text-sm text-muted-foreground italic">et d'autres à venir</span>
+              <span className="text-sm text-muted-foreground italic">et d'autres à venir</span>
+            </div>
           </div>
         </div>
       </section>
