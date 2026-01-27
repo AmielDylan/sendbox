@@ -20,6 +20,7 @@ import {
   IconLogout,
   IconUser,
   IconSearch,
+  IconSpeakerphone,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from "@/lib/utils"
@@ -68,7 +69,7 @@ const navItems: NavItem[] = [
   {
     title: 'Annonces',
     href: '/dashboard/annonces',
-    icon: IconPackage,
+    icon: IconSpeakerphone,
   },
   {
     title: 'Colis',
