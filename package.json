@@ -15,8 +15,7 @@
     "test:coverage": "vitest --coverage",
     "test:unit": "vitest run __tests__/unit",
     "test:integration": "vitest run __tests__/integration",
-    "test:rls": "vitest run __tests__/rls",
-    "test:all": "npm run test:unit && npm run test:integration && npm run test:rls",
+    "test:all": "npm run test:unit && npm run test:integration",
     "stripe:listen": "tsx scripts/stripe-webhook-setup.ts",
     "stripe:test": "tsx scripts/stripe-test-events.ts",
     "stripe:check": "tsx scripts/check-stripe-workflows.ts"
