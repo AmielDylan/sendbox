@@ -29,10 +29,7 @@ export function PublicHeader() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const { user, profile, loading, signOut: authSignOut } = useAuth()
-  const isLogin = pathname.startsWith('/login')
-  const isRegister = pathname.startsWith('/register')
-  const authPrimary = isLogin ? 'login' : isRegister ? 'register' : 'register'
+  const { user, profile, signOut: authSignOut } = useAuth()
 
   // Detect if user is admin
   const isAdmin = (profile as any)?.role === 'admin'
@@ -46,7 +43,7 @@ export function PublicHeader() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const navItems = [
+  const navItems: Array<{ label: string; href: string; icon?: any }> = [
     { label: 'Accueil', href: '/' },
   ]
 
