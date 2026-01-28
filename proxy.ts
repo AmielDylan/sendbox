@@ -103,13 +103,21 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Si l'utilisateur est authentifié et essaie d'accéder aux pages auth, rediriger
-  // Admin → /admin/dashboard, User → /dashboard
-  // Exception : laisser accéder à /verify-email même si authentifié (pour la vérification)
-  if (user && isPublicRoute && pathname !== '/' && pathname !== '/verify-email') {
-    const url = request.nextUrl.clone()
-    url.pathname = isAdmin ? '/admin/dashboard' : '/dashboard'
-    return NextResponse.redirect(url)
+  // Si l'utilisateur est authentifié et essaie d'accéder aux pages publiques
+  // Admin → toujours rediriger vers /admin/dashboard (même depuis "/")
+  // User → rediriger vers /dashboard (sauf depuis "/" et "/verify-email")
+  if (user && isPublicRoute && pathname !== '/verify-email') {
+    if (isAdmin) {
+      // Admin ne peut pas accéder à la landing page ni aux pages auth
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin/dashboard'
+      return NextResponse.redirect(url)
+    } else if (pathname !== '/') {
+      // Utilisateurs normaux redirigés depuis les pages auth uniquement
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
