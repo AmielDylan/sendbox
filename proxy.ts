@@ -56,15 +56,34 @@ export async function proxy(request: NextRequest) {
 
   // Routes protégées (dashboard)
   const isProtectedRoute = pathname.startsWith('/dashboard')
-  
+
   // Routes admin
   const isAdminRoute = pathname.startsWith('/admin')
+
+  // Vérifier le role de l'utilisateur (admin ou non)
+  let isAdmin = false
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    isAdmin = profile?.role === 'admin'
+  }
 
   // Si l'utilisateur essaie d'accéder à une route protégée sans être authentifié
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // Si un admin essaie d'accéder à /dashboard, rediriger vers /admin/dashboard
+  if (isProtectedRoute && user && isAdmin && !isAdminRoute) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/admin/dashboard'
     return NextResponse.redirect(url)
   }
 
@@ -77,24 +96,19 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.role !== 'admin') {
+    if (!isAdmin) {
       const url = request.nextUrl.clone()
       url.pathname = '/'
       return NextResponse.redirect(url)
     }
   }
 
-  // Si l'utilisateur est authentifié et essaie d'accéder aux pages auth, rediriger vers dashboard
+  // Si l'utilisateur est authentifié et essaie d'accéder aux pages auth, rediriger
+  // Admin → /admin/dashboard, User → /dashboard
   // Exception : laisser accéder à /verify-email même si authentifié (pour la vérification)
   if (user && isPublicRoute && pathname !== '/' && pathname !== '/verify-email') {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = isAdmin ? '/admin/dashboard' : '/dashboard'
     return NextResponse.redirect(url)
   }
 

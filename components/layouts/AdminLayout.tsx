@@ -159,18 +159,20 @@ function SidebarContent({
 }) {
   return (
     <div className="flex h-full flex-col">
-      {/* Logo + ADMIN Badge */}
+      {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
-        <div className="flex items-center gap-2">
-          <LogoLink className="h-6" onClick={onNavigate} />
-          <Badge variant="destructive" className="text-xs font-semibold">
+        <LogoLink className="h-6" onClick={onNavigate} />
+      </div>
+
+      {/* Badge ADMIN + Navigation */}
+      <nav className="flex-1 space-y-1 p-4" aria-label="Navigation administration">
+        {/* Badge ADMIN */}
+        <div className="mb-4 px-3">
+          <Badge variant="destructive" className="text-[10px] font-semibold px-2 py-0.5">
             ADMIN
           </Badge>
         </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4" aria-label="Navigation administration">
         {adminNavItems.map(item => {
           const Icon = item.icon
           const isActive =
