@@ -3,10 +3,17 @@
  */
 
 import { Suspense } from 'react'
-import { isAdmin, getAdminStats } from "@/lib/core/admin/actions"
+import { isAdmin, getAdminStats } from '@/lib/core/admin/actions'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { IconUsers, IconFileCheck, IconPackage, IconCurrencyEuro, IconAlertTriangle, IconLoader2 } from '@tabler/icons-react'
+import {
+  IconUsers,
+  IconFileCheck,
+  IconPackage,
+  IconCurrencyEuro,
+  IconAlertTriangle,
+  IconLoader2,
+} from '@tabler/icons-react'
 
 async function DashboardContent() {
   const admin = await isAdmin()
@@ -46,7 +53,9 @@ async function DashboardContent() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">KYC en attente</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              KYC en attente
+            </CardTitle>
             <IconFileCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -140,14 +149,3 @@ export default function AdminDashboardPage() {
     </Suspense>
   )
 }
-
-
-
-
-
-
-
-
-
-
-

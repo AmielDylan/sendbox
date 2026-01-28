@@ -4,12 +4,15 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { stripe, STRIPE_WEBHOOK_SECRET } from "@/lib/shared/services/stripe/config"
-import { createAdminClient } from "@/lib/shared/db/admin"
-import { fromStripeAmount } from "@/lib/core/payments/calculations"
-import { generateTransportContract } from "@/lib/shared/services/pdf/generation"
-import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
-import { sendEmail } from "@/lib/shared/services/email/client"
+import {
+  stripe,
+  STRIPE_WEBHOOK_SECRET,
+} from '@/lib/shared/services/stripe/config'
+import { createAdminClient } from '@/lib/shared/db/admin'
+import { fromStripeAmount } from '@/lib/core/payments/calculations'
+import { generateTransportContract } from '@/lib/shared/services/pdf/generation'
+import { generateBookingQRCode } from '@/lib/core/bookings/qr-codes'
+import { sendEmail } from '@/lib/shared/services/email/client'
 import Stripe from 'stripe'
 import { getPaymentsMode } from '@/lib/shared/config/features'
 import { createSystemNotification } from '@/lib/core/notifications/system'
@@ -94,10 +97,10 @@ export async function POST(req: NextRequest) {
       pending:
         "Votre vérification d'identité est en cours de traitement. Vous serez notifié dès qu'elle sera terminée.",
       approved:
-        "Votre identité a été vérifiée avec succès. Toutes les actions sont désormais débloquées.",
+        'Votre identité a été vérifiée avec succès. Toutes les actions sont désormais débloquées.',
       rejected: rejectionReason
         ? `Votre vérification a été refusée : ${rejectionReason}. Vous pouvez soumettre de nouveaux documents.`
-        : "Votre vérification a été refusée. Vous pouvez soumettre de nouveaux documents.",
+        : 'Votre vérification a été refusée. Vous pouvez soumettre de nouveaux documents.',
       incomplete:
         "Votre vérification d'identité n'a pas été finalisée. Veuillez relancer la procédure.",
     }
@@ -111,18 +114,24 @@ export async function POST(req: NextRequest) {
       })
 
       if (error) {
-        console.error('❌ KYC notification creation failed (non-blocking):', error)
+        console.error(
+          '❌ KYC notification creation failed (non-blocking):',
+          error
+        )
       }
     } catch (notifError) {
-      console.error('❌ KYC notification creation failed (non-blocking):', notifError)
+      console.error(
+        '❌ KYC notification creation failed (non-blocking):',
+        notifError
+      )
     }
   }
 
   try {
     switch (event.type) {
       case 'identity.verification_session.processing': {
-        const verificationSession =
-          event.data.object as Stripe.Identity.VerificationSession
+        const verificationSession = event.data
+          .object as Stripe.Identity.VerificationSession
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
@@ -153,8 +162,8 @@ export async function POST(req: NextRequest) {
       }
 
       case 'identity.verification_session.verified': {
-        const verificationSession =
-          event.data.object as Stripe.Identity.VerificationSession
+        const verificationSession = event.data
+          .object as Stripe.Identity.VerificationSession
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
@@ -186,8 +195,8 @@ export async function POST(req: NextRequest) {
       }
 
       case 'identity.verification_session.requires_input': {
-        const verificationSession =
-          event.data.object as Stripe.Identity.VerificationSession
+        const verificationSession = event.data
+          .object as Stripe.Identity.VerificationSession
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
@@ -215,7 +224,10 @@ export async function POST(req: NextRequest) {
           .eq('id', userId)
 
         if (error) {
-          console.error('❌ Failed to update KYC status (requires_input):', error)
+          console.error(
+            '❌ Failed to update KYC status (requires_input):',
+            error
+          )
         } else {
           await notifyKycStatusChange(userId, 'rejected', rejectionReason)
         }
@@ -223,8 +235,8 @@ export async function POST(req: NextRequest) {
       }
 
       case 'identity.verification_session.canceled': {
-        const verificationSession =
-          event.data.object as Stripe.Identity.VerificationSession
+        const verificationSession = event.data
+          .object as Stripe.Identity.VerificationSession
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
@@ -249,14 +261,18 @@ export async function POST(req: NextRequest) {
         if (error) {
           console.error('❌ Failed to update KYC status (canceled):', error)
         } else {
-          await notifyKycStatusChange(userId, 'incomplete', 'verification_canceled')
+          await notifyKycStatusChange(
+            userId,
+            'incomplete',
+            'verification_canceled'
+          )
         }
         break
       }
 
       case 'identity.verification_session.redacted': {
-        const verificationSession =
-          event.data.object as Stripe.Identity.VerificationSession
+        const verificationSession = event.data
+          .object as Stripe.Identity.VerificationSession
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
@@ -281,7 +297,11 @@ export async function POST(req: NextRequest) {
         if (error) {
           console.error('❌ Failed to update KYC status (redacted):', error)
         } else {
-          await notifyKycStatusChange(userId, 'incomplete', 'verification_redacted')
+          await notifyKycStatusChange(
+            userId,
+            'incomplete',
+            'verification_redacted'
+          )
         }
         break
       }
@@ -430,27 +450,34 @@ export async function POST(req: NextRequest) {
             console.log('✅ Notifications sent')
           }
         } catch (notifError) {
-          console.error('❌ Notification creation failed (non-blocking):', notifError)
+          console.error(
+            '❌ Notification creation failed (non-blocking):',
+            notifError
+          )
         }
 
         // Récupérer le reçu Stripe depuis le dernier charge
         let receiptUrl: string | null = null
         try {
           if (paymentIntent.latest_charge) {
-            const chargeId = typeof paymentIntent.latest_charge === 'string'
-              ? paymentIntent.latest_charge
-              : paymentIntent.latest_charge.id
+            const chargeId =
+              typeof paymentIntent.latest_charge === 'string'
+                ? paymentIntent.latest_charge
+                : paymentIntent.latest_charge.id
             const charge = await stripe.charges.retrieve(chargeId)
             receiptUrl = charge.receipt_url
           }
         } catch (chargeError) {
-          console.error('❌ Failed to retrieve charge for receipt:', chargeError)
+          console.error(
+            '❌ Failed to retrieve charge for receipt:',
+            chargeError
+          )
         }
 
         // Envoyer email avec reçu à l'expéditeur
         if (senderProfile?.email && receiptUrl) {
           try {
-            console.log('📧 Envoi email reçu à l\'expéditeur:', {
+            console.log("📧 Envoi email reçu à l'expéditeur:", {
               to: senderProfile.email,
               receiptUrl,
               amount: totalAmount,
@@ -467,9 +494,12 @@ export async function POST(req: NextRequest) {
               },
             })
 
-            console.log('✅ Email reçu envoyé à l\'expéditeur')
+            console.log("✅ Email reçu envoyé à l'expéditeur")
           } catch (emailError) {
-            console.error('❌ Failed to send receipt email (non-blocking):', emailError)
+            console.error(
+              '❌ Failed to send receipt email (non-blocking):',
+              emailError
+            )
           }
         }
 
@@ -493,7 +523,10 @@ export async function POST(req: NextRequest) {
 
             console.log('✅ Email notification envoyé au voyageur')
           } catch (emailError) {
-            console.error('❌ Failed to send traveler email (non-blocking):', emailError)
+            console.error(
+              '❌ Failed to send traveler email (non-blocking):',
+              emailError
+            )
           }
         }
 
@@ -502,7 +535,10 @@ export async function POST(req: NextRequest) {
           await generateTransportContract(booking_id)
           console.log('✅ Transport contract generated')
         } catch (pdfError) {
-          console.error('❌ Failed to generate contract (non-blocking):', pdfError)
+          console.error(
+            '❌ Failed to generate contract (non-blocking):',
+            pdfError
+          )
         }
 
         console.log('✅✅✅ Payment succeeded for booking:', booking_id)
@@ -528,7 +564,8 @@ export async function POST(req: NextRequest) {
             status: 'failed',
             stripe_payment_intent_id: paymentIntent.id,
             metadata: {
-              error: paymentIntent.last_payment_error?.message || 'Unknown error',
+              error:
+                paymentIntent.last_payment_error?.message || 'Unknown error',
             },
           })
 

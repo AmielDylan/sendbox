@@ -3,10 +3,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from "@/lib/shared/db/server"
-import { stripe } from "@/lib/shared/services/stripe/config"
-import { calculateBookingAmounts, toStripeAmount } from "@/lib/core/payments/calculations"
-import { getPaymentsMode, isFeatureEnabled } from "@/lib/shared/config/features"
+import { createClient } from '@/lib/shared/db/server'
+import { stripe } from '@/lib/shared/services/stripe/config'
+import {
+  calculateBookingAmounts,
+  toStripeAmount,
+} from '@/lib/core/payments/calculations'
+import { getPaymentsMode, isFeatureEnabled } from '@/lib/shared/config/features'
 
 export async function POST(req: NextRequest) {
   if (getPaymentsMode() !== 'stripe') {
@@ -26,19 +29,13 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Non authentifié' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
     const { booking_id } = await req.json()
 
     if (!booking_id) {
-      return NextResponse.json(
-        { error: 'booking_id requis' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'booking_id requis' }, { status: 400 })
     }
 
     // Récupérer le booking avec l'annonce
@@ -65,10 +62,7 @@ export async function POST(req: NextRequest) {
 
     // Vérifier que le booking appartient à l'utilisateur
     if (booking.sender_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
     }
 
     // Vérifier que le booking n'est pas déjà payé
@@ -94,20 +88,23 @@ export async function POST(req: NextRequest) {
       }
 
       if (profile.kyc_status !== 'approved') {
-        let errorMessage = 'Vérification d\'identité requise pour continuer'
-        let errorDetails = 'Veuillez compléter votre vérification d\'identité pour effectuer un paiement.'
+        let errorMessage = "Vérification d'identité requise pour continuer"
+        let errorDetails =
+          "Veuillez compléter votre vérification d'identité pour effectuer un paiement."
 
         if (profile.kyc_status === 'pending') {
           errorMessage = 'Vérification en cours'
-          errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez effectuer un paiement une fois celle-ci approuvée (24-48h).'
+          errorDetails =
+            "Votre vérification d'identité est en cours d'examen. Vous pourrez effectuer un paiement une fois celle-ci approuvée (24-48h)."
         } else if (profile.kyc_status === 'rejected') {
           errorMessage = 'Vérification refusée'
           errorDetails = profile.kyc_rejection_reason
             ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
             : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
         } else if (profile.kyc_status === 'incomplete') {
-          errorMessage = 'Vérification d\'identité incomplète'
-          errorDetails = 'Veuillez soumettre vos documents d\'identité pour effectuer un paiement.'
+          errorMessage = "Vérification d'identité incomplète"
+          errorDetails =
+            "Veuillez soumettre vos documents d'identité pour effectuer un paiement."
         }
 
         return NextResponse.json(
@@ -164,9 +161,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
-
-
-
-
-
-

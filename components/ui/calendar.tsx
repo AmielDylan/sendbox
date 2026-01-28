@@ -39,7 +39,8 @@ function Calendar({
           'absolute right-1 h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
         ),
         dropdowns: 'flex items-center justify-center gap-2',
-        dropdown: 'rounded-md border border-input bg-background px-2 py-1 text-sm',
+        dropdown:
+          'rounded-md border border-input bg-background px-2 py-1 text-sm',
         dropdown_root: 'flex items-center gap-2',
         months_dropdown: 'text-sm',
         years_dropdown: 'text-sm',
@@ -74,7 +75,7 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Chevron: (props) => {
+        Chevron: props => {
           if (props.orientation === 'left') {
             return <IconChevronLeft className="size-4" />
           }

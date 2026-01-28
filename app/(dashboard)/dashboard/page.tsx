@@ -6,7 +6,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import { PageHeader } from '@/components/ui/page-header'
 import {
   Card,
@@ -16,11 +16,21 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { IconMessage, IconTrendingUp, IconShield, IconCheck, IconClock, IconSpeakerphone } from '@tabler/icons-react'
+import {
+  IconMessage,
+  IconTrendingUp,
+  IconShield,
+  IconCheck,
+  IconClock,
+  IconSpeakerphone,
+} from '@tabler/icons-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
 import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialSummaryCard'
-import { isFeatureEnabled } from "@/lib/shared/config/features"
-import { calculateRequesterFinancials, calculateTravelerFinancials } from '@/lib/core/bookings/financial-calculations'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
+import {
+  calculateRequesterFinancials,
+  calculateTravelerFinancials,
+} from '@/lib/core/bookings/financial-calculations'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { KYCStatus } from '@/types'
@@ -28,7 +38,12 @@ import type { Database } from '@/types/database.types'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Bar, BarChart, XAxis } from 'recharts'
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart'
 
 type BookingStatus = Database['public']['Enums']['booking_status']
 
@@ -83,7 +98,7 @@ const createEmptyStatusCounts = (): StatusCounts => ({
 
 const countByStatus = (bookings: BookingRow[]) => {
   const counts = createEmptyStatusCounts()
-  bookings.forEach((booking) => {
+  bookings.forEach(booking => {
     if (counts[booking.status] !== undefined) {
       counts[booking.status] += 1
     }
@@ -97,7 +112,9 @@ const sumCounts = (counts: StatusCounts) =>
 export default function DashboardPage() {
   const { user, profile } = useAuth()
   const [kycStatus, setKycStatus] = useState<KYCStatus | null>(null)
-  const [kycRejectionReason, setKycRejectionReason] = useState<string | null>(null)
+  const [kycRejectionReason, setKycRejectionReason] = useState<string | null>(
+    null
+  )
   const [stats, setStats] = useState<DashboardStats>({
     activeAnnouncements: 0,
     unreadMessages: 0,
@@ -109,7 +126,9 @@ export default function DashboardPage() {
     receivedStatus: createEmptyStatusCounts(),
     packagesStatus: createEmptyStatusCounts(),
   })
-  const [recentNotifications, setRecentNotifications] = useState<RecentNotification[]>([])
+  const [recentNotifications, setRecentNotifications] = useState<
+    RecentNotification[]
+  >([])
   const [isLoadingStats, setIsLoadingStats] = useState(true)
 
   useEffect(() => {
@@ -122,7 +141,8 @@ export default function DashboardPage() {
       if (verified === 'true') {
         console.log('[Dashboard] Showing verification success toast')
         toast.success('Inscription réussie !', {
-          description: 'Votre email a été vérifié avec succès. Bienvenue sur Sendbox !',
+          description:
+            'Votre email a été vérifié avec succès. Bienvenue sur Sendbox !',
           duration: 5000,
         })
         // Supprimer le paramètre de l'URL
@@ -151,35 +171,49 @@ export default function DashboardPage() {
       const supabase = createClient()
 
       try {
-        const [announcementsResult, unreadResult, bookingsResult, notificationsResult] =
-          await Promise.all([
-            supabase
-              .from('announcements')
-              .select('id', { count: 'exact', head: true })
-              .eq('traveler_id', user.id)
-              .in('status', ['active', 'partially_booked', 'fully_booked']),
-            supabase
-              .from('messages')
-              .select('id', { count: 'exact', head: true })
-              .eq('receiver_id', user.id)
-              .eq('is_read', false),
-            supabase
-              .from('bookings')
-              .select('id, status, sender_id, traveler_id, total_price, commission_amount, insurance_premium, delivery_confirmed_at, paid_at')
-              .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`),
-            supabase
-              .from('notifications')
-              .select('id, title, content, created_at, booking_id, link')
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: false })
-              .limit(3),
-          ])
+        const [
+          announcementsResult,
+          unreadResult,
+          bookingsResult,
+          notificationsResult,
+        ] = await Promise.all([
+          supabase
+            .from('announcements')
+            .select('id', { count: 'exact', head: true })
+            .eq('traveler_id', user.id)
+            .in('status', ['active', 'partially_booked', 'fully_booked']),
+          supabase
+            .from('messages')
+            .select('id', { count: 'exact', head: true })
+            .eq('receiver_id', user.id)
+            .eq('is_read', false),
+          supabase
+            .from('bookings')
+            .select(
+              'id, status, sender_id, traveler_id, total_price, commission_amount, insurance_premium, delivery_confirmed_at, paid_at'
+            )
+            .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`),
+          supabase
+            .from('notifications')
+            .select('id, title, content, created_at, booking_id, link')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(3),
+        ])
 
         const bookings = (bookingsResult.data as BookingRow[]) || []
-        const sentBookings = bookings.filter((booking) => booking.sender_id === user.id)
-        const receivedBookings = bookings.filter((booking) => booking.traveler_id === user.id)
-        const travelerFinancials = calculateTravelerFinancials(receivedBookings as Booking[])
-        const requesterFinancials = calculateRequesterFinancials(sentBookings as Booking[])
+        const sentBookings = bookings.filter(
+          booking => booking.sender_id === user.id
+        )
+        const receivedBookings = bookings.filter(
+          booking => booking.traveler_id === user.id
+        )
+        const travelerFinancials = calculateTravelerFinancials(
+          receivedBookings as Booking[]
+        )
+        const requesterFinancials = calculateRequesterFinancials(
+          sentBookings as Booking[]
+        )
         const sentStatus = countByStatus(sentBookings)
         const receivedStatus = countByStatus(receivedBookings)
 
@@ -195,7 +229,9 @@ export default function DashboardPage() {
           packagesStatus: sentStatus,
         })
 
-        setRecentNotifications((notificationsResult.data as RecentNotification[]) || [])
+        setRecentNotifications(
+          (notificationsResult.data as RecentNotification[]) || []
+        )
       } catch (error) {
         console.error('Dashboard data load error:', error)
         toast.error('Erreur lors du chargement des statistiques')
@@ -221,13 +257,24 @@ export default function DashboardPage() {
     stats.receivedStatus.delivered
   const showTravelerSummary = stats.hasTravelerBookings
   const showRequesterSummary = stats.hasRequesterBookings
-  const summaryColumns = showTravelerSummary && showRequesterSummary ? 'md:grid-cols-2' : 'md:grid-cols-1'
+  const summaryColumns =
+    showTravelerSummary && showRequesterSummary
+      ? 'md:grid-cols-2'
+      : 'md:grid-cols-1'
 
   // Configuration des charts pour EvilCharts
   const sentRequestChartData = [
-    { status: 'En attente', value: stats.sentStatus.pending, fill: 'var(--chart-1)' },
+    {
+      status: 'En attente',
+      value: stats.sentStatus.pending,
+      fill: 'var(--chart-1)',
+    },
     { status: 'Acceptées', value: sentAcceptedTotal, fill: 'var(--chart-2)' },
-    { status: 'Annulées', value: stats.sentStatus.cancelled, fill: 'var(--chart-5)' },
+    {
+      status: 'Annulées',
+      value: stats.sentStatus.cancelled,
+      fill: 'var(--chart-5)',
+    },
   ]
 
   const sentRequestChartConfig = {
@@ -238,9 +285,21 @@ export default function DashboardPage() {
   } satisfies ChartConfig
 
   const receivedRequestChartData = [
-    { status: 'En attente', value: stats.receivedStatus.pending, fill: 'var(--chart-1)' },
-    { status: 'Acceptées', value: receivedAcceptedTotal, fill: 'var(--chart-2)' },
-    { status: 'Annulées', value: stats.receivedStatus.cancelled, fill: 'var(--chart-5)' },
+    {
+      status: 'En attente',
+      value: stats.receivedStatus.pending,
+      fill: 'var(--chart-1)',
+    },
+    {
+      status: 'Acceptées',
+      value: receivedAcceptedTotal,
+      fill: 'var(--chart-2)',
+    },
+    {
+      status: 'Annulées',
+      value: stats.receivedStatus.cancelled,
+      fill: 'var(--chart-5)',
+    },
   ]
 
   const receivedRequestChartConfig = {
@@ -251,11 +310,31 @@ export default function DashboardPage() {
   } satisfies ChartConfig
 
   const packagesChartData = [
-    { status: 'À payer', value: stats.packagesStatus.accepted, fill: 'var(--chart-1)' },
-    { status: 'Envoyés', value: stats.packagesStatus.paid + stats.packagesStatus.deposited, fill: 'var(--chart-2)' },
-    { status: 'En transit', value: stats.packagesStatus.in_transit, fill: 'var(--chart-3)' },
-    { status: 'Livrés', value: stats.packagesStatus.delivered, fill: 'var(--chart-4)' },
-    { status: 'Annulés', value: stats.packagesStatus.cancelled, fill: 'var(--chart-5)' },
+    {
+      status: 'À payer',
+      value: stats.packagesStatus.accepted,
+      fill: 'var(--chart-1)',
+    },
+    {
+      status: 'Envoyés',
+      value: stats.packagesStatus.paid + stats.packagesStatus.deposited,
+      fill: 'var(--chart-2)',
+    },
+    {
+      status: 'En transit',
+      value: stats.packagesStatus.in_transit,
+      fill: 'var(--chart-3)',
+    },
+    {
+      status: 'Livrés',
+      value: stats.packagesStatus.delivered,
+      fill: 'var(--chart-4)',
+    },
+    {
+      status: 'Annulés',
+      value: stats.packagesStatus.cancelled,
+      fill: 'var(--chart-5)',
+    },
   ]
 
   const packagesChartConfig = {
@@ -288,7 +367,10 @@ export default function DashboardPage() {
 
       {/* Alert Banner KYC - SEULEMENT si feature activée */}
       {isFeatureEnabled('KYC_ENABLED') && (
-        <KYCAlertBanner kycStatus={kycStatus} rejectionReason={kycRejectionReason} />
+        <KYCAlertBanner
+          kycStatus={kycStatus}
+          rejectionReason={kycRejectionReason}
+        />
       )}
 
       {/* Stats Cards */}
@@ -315,9 +397,7 @@ export default function DashboardPage() {
                     <IconClock className="h-5 w-5" />
                     <span className="font-medium text-sm">En cours</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    24-48h
-                  </p>
+                  <p className="text-xs text-muted-foreground">24-48h</p>
                 </div>
               )}
               {(!kycStatus || kycStatus === 'rejected') && (
@@ -325,10 +405,13 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">
                     Vérifiez votre identité
                   </p>
-                  <Button asChild size="sm" variant="outline" className="w-full">
-                    <Link href="/dashboard/reglages/kyc">
-                      Commencer →
-                    </Link>
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Link href="/dashboard/reglages/kyc">Commencer →</Link>
                   </Button>
                 </div>
               )}
@@ -348,7 +431,9 @@ export default function DashboardPage() {
               {isLoadingStats ? '—' : stats.activeAnnouncements}
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats.activeAnnouncements > 1 ? 'annonces publiées' : 'annonce publiée'}
+              {stats.activeAnnouncements > 1
+                ? 'annonces publiées'
+                : 'annonce publiée'}
             </p>
           </CardContent>
         </Card>
@@ -393,15 +478,21 @@ export default function DashboardPage() {
       {/* Financial Summary Widgets */}
       {user?.id && (showTravelerSummary || showRequesterSummary) && (
         <div className={`grid gap-6 ${summaryColumns}`}>
-          {showTravelerSummary && <FinancialSummaryCard userId={user.id} role="traveler" />}
-          {showRequesterSummary && <FinancialSummaryCard userId={user.id} role="requester" />}
+          {showTravelerSummary && (
+            <FinancialSummaryCard userId={user.id} role="traveler" />
+          )}
+          {showRequesterSummary && (
+            <FinancialSummaryCard userId={user.id} role="requester" />
+          )}
         </div>
       )}
 
       <div className="flex flex-wrap gap-4">
         <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
           <CardHeader className="p-5 pb-3 space-y-1">
-            <CardTitle className="text-sm font-semibold">Demandes envoyées</CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              Demandes envoyées
+            </CardTitle>
             <CardDescription className="text-xs">
               Demandes créées sur les annonces
             </CardDescription>
@@ -413,7 +504,10 @@ export default function DashboardPage() {
                 {isLoadingStats ? '—' : sumCounts(stats.sentStatus)}
               </span>
             </div>
-            <ChartContainer config={sentRequestChartConfig} className="h-[200px] w-full">
+            <ChartContainer
+              config={sentRequestChartConfig}
+              className="h-[200px] w-full"
+            >
               <BarChart accessibilityLayer data={sentRequestChartData}>
                 <XAxis
                   dataKey="status"
@@ -433,7 +527,9 @@ export default function DashboardPage() {
 
         <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
           <CardHeader className="p-5 pb-3 space-y-1">
-            <CardTitle className="text-sm font-semibold">Demandes reçues</CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              Demandes reçues
+            </CardTitle>
             <CardDescription className="text-xs">
               Demandes sur vos annonces publiées
             </CardDescription>
@@ -445,7 +541,10 @@ export default function DashboardPage() {
                 {isLoadingStats ? '—' : sumCounts(stats.receivedStatus)}
               </span>
             </div>
-            <ChartContainer config={receivedRequestChartConfig} className="h-[200px] w-full">
+            <ChartContainer
+              config={receivedRequestChartConfig}
+              className="h-[200px] w-full"
+            >
               <BarChart accessibilityLayer data={receivedRequestChartData}>
                 <XAxis
                   dataKey="status"
@@ -474,11 +573,23 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Total suivis</span>
               <span className="font-semibold text-foreground">
-                {isLoadingStats ? '—' : packagesChartData.reduce((sum, item) => sum + item.value, 0)}
+                {isLoadingStats
+                  ? '—'
+                  : packagesChartData.reduce(
+                      (sum, item) => sum + item.value,
+                      0
+                    )}
               </span>
             </div>
-            <ChartContainer config={packagesChartConfig} className="h-[200px] w-full">
-              <BarChart accessibilityLayer data={packagesChartData} layout="horizontal">
+            <ChartContainer
+              config={packagesChartConfig}
+              className="h-[200px] w-full"
+            >
+              <BarChart
+                accessibilityLayer
+                data={packagesChartData}
+                layout="horizontal"
+              >
                 <XAxis
                   dataKey="status"
                   tickLine={false}
@@ -509,25 +620,31 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {isLoadingStats ? (
-            <div className="text-sm text-muted-foreground">Chargement des activités...</div>
+            <div className="text-sm text-muted-foreground">
+              Chargement des activités...
+            </div>
           ) : recentNotifications.length === 0 ? (
             <div className="text-sm text-muted-foreground">
               Aucune activité récente pour le moment.
             </div>
           ) : (
             <div className="space-y-4">
-              {recentNotifications.map((notification) => (
-                <div key={notification.id} className="flex items-center justify-between gap-4">
+              {recentNotifications.map(notification => (
+                <div
+                  key={notification.id}
+                  className="flex items-center justify-between gap-4"
+                >
                   <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      {notification.title}
-                    </p>
+                    <p className="text-sm font-medium">{notification.title}</p>
                     <p className="text-xs text-muted-foreground">
                       {notification.created_at
-                        ? formatDistanceToNow(new Date(notification.created_at), {
-                          addSuffix: true,
-                          locale: fr,
-                        })
+                        ? formatDistanceToNow(
+                            new Date(notification.created_at),
+                            {
+                              addSuffix: true,
+                              locale: fr,
+                            }
+                          )
                         : 'À l’instant'}
                     </p>
                   </div>
@@ -538,7 +655,12 @@ export default function DashboardPage() {
                     asChild={!!(notification.link || notification.booking_id)}
                   >
                     {notification.link || notification.booking_id ? (
-                      <Link href={notification.link || `/dashboard/colis/${notification.booking_id}`}>
+                      <Link
+                        href={
+                          notification.link ||
+                          `/dashboard/colis/${notification.booking_id}`
+                        }
+                      >
                         Voir
                       </Link>
                     ) : (

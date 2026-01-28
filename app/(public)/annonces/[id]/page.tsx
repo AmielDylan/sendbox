@@ -6,9 +6,9 @@ import { notFound } from 'next/navigation'
 import {
   getAnnouncementDetail,
   getTravelerReviews,
-} from "@/lib/shared/db/queries/announcement-detail"
-import { createClient } from "@/lib/shared/db/server"
-import { isFeatureEnabled } from "@/lib/shared/config/features"
+} from '@/lib/shared/db/queries/announcement-detail'
+import { createClient } from '@/lib/shared/db/server'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { Button } from '@/components/ui/button'
 import { TravelerSection } from '@/components/features/announcements/TravelerSection'
 import { TripTimeline } from '@/components/features/announcements/TripTimeline'
@@ -16,7 +16,13 @@ import { CapacityProgress } from '@/components/features/announcements/CapacityPr
 import { ReviewsSection } from '@/components/features/announcements/ReviewsSection'
 import { BookingForm } from '@/components/features/announcements/BookingForm'
 import { ViewTracker } from '@/components/features/announcements/ViewTracker'
-import { IconPackage, IconEdit, IconCircleCheck, IconArrowNarrowRight, IconCalendar } from '@tabler/icons-react'
+import {
+  IconPackage,
+  IconEdit,
+  IconCircleCheck,
+  IconArrowNarrowRight,
+  IconCalendar,
+} from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface PageProps {
@@ -32,7 +38,10 @@ export default async function PublicAnnouncementDetailPage({
   const supabase = await createClient()
 
   // Récupérer les détails de l'annonce
-  const { data: announcement, error } = await getAnnouncementDetail(id, supabase)
+  const { data: announcement, error } = await getAnnouncementDetail(
+    id,
+    supabase
+  )
 
   if (error || !announcement) {
     console.error('Error fetching announcement:', error)
@@ -46,14 +55,19 @@ export default async function PublicAnnouncementDetailPage({
   }
 
   // Récupérer les avis du voyageur
-  const { data: reviews } = await getTravelerReviews(announcement.traveler_id, 5, supabase)
+  const { data: reviews } = await getTravelerReviews(
+    announcement.traveler_id,
+    5,
+    supabase
+  )
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   let canBook = false
   let isOwner = false
-  let userKycStatus: 'pending' | 'approved' | 'rejected' | 'incomplete' | null = null
+  let userKycStatus: 'pending' | 'approved' | 'rejected' | 'incomplete' | null =
+    null
 
   if (user) {
     isOwner = user.id === announcement.traveler_id
@@ -79,7 +93,10 @@ export default async function PublicAnnouncementDetailPage({
       (announcement.available_kg || 0) - (announcement.reserved_weight || 0) > 0
   }
 
-  const availableWeight = Math.max(0, (announcement.available_kg || 0) - (announcement.reserved_weight || 0))
+  const availableWeight = Math.max(
+    0,
+    (announcement.available_kg || 0) - (announcement.reserved_weight || 0)
+  )
 
   return (
     <>
@@ -91,12 +108,19 @@ export default async function PublicAnnouncementDetailPage({
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground flex flex-wrap items-center gap-x-3">
               <span>{announcement.departure_city}</span>
-              <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/40" stroke={1} />
+              <IconArrowNarrowRight
+                className="h-6 w-6 text-muted-foreground/40"
+                stroke={1}
+              />
               <span>{announcement.arrival_city}</span>
             </h1>
             <p className="text-base text-muted-foreground font-medium flex items-center gap-2">
               <IconCalendar className="h-4 w-4" />
-              Départ le {new Date(announcement.departure_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              Départ le{' '}
+              {new Date(announcement.departure_date).toLocaleDateString(
+                'fr-FR',
+                { day: 'numeric', month: 'long', year: 'numeric' }
+              )}
             </p>
           </div>
 
@@ -104,7 +128,10 @@ export default async function PublicAnnouncementDetailPage({
             <div className="flex items-center gap-3">
               {announcement.status === 'active' && (
                 <Link href={`/dashboard/annonces/${id}/edit`}>
-                  <Button variant="outline" className="hover:bg-primary/5 hover:border-primary/30 h-9 px-4 rounded-lg font-medium">
+                  <Button
+                    variant="outline"
+                    className="hover:bg-primary/5 hover:border-primary/30 h-9 px-4 rounded-lg font-medium"
+                  >
                     <IconEdit className="mr-2 h-4 w-4" />
                     Éditer mon annonce
                   </Button>
@@ -157,9 +184,7 @@ export default async function PublicAnnouncementDetailPage({
 
             {/* Reviews */}
             <section className="space-y-3 pt-4 border-t border-border/40">
-              <ReviewsSection
-                reviews={reviews || []}
-              />
+              <ReviewsSection reviews={reviews || []} />
             </section>
           </div>
 
@@ -180,20 +205,33 @@ export default async function PublicAnnouncementDetailPage({
             {/* Owner Stats */}
             {isOwner && (
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-3">
-                <h3 className="text-base font-bold text-primary">Vos Statistiques</h3>
+                <h3 className="text-base font-bold text-primary">
+                  Vos Statistiques
+                </h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                    <span className="text-sm text-muted-foreground font-medium">Vues totales</span>
-                    <span className="font-bold text-base">{announcement.views_count || 0}</span>
+                    <span className="text-sm text-muted-foreground font-medium">
+                      Vues totales
+                    </span>
+                    <span className="font-bold text-base">
+                      {announcement.views_count || 0}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                    <span className="text-sm text-muted-foreground font-medium">Réservations</span>
+                    <span className="text-sm text-muted-foreground font-medium">
+                      Réservations
+                    </span>
                     <span className="font-bold text-base">0</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-background/50 rounded-lg">
-                    <span className="text-sm text-muted-foreground font-medium">Poids restant</span>
+                    <span className="text-sm text-muted-foreground font-medium">
+                      Poids restant
+                    </span>
                     <span className="font-bold text-base">
-                      {availableWeight} <span className="text-xs text-muted-foreground font-normal">/ {announcement.available_kg} kg</span>
+                      {availableWeight}{' '}
+                      <span className="text-xs text-muted-foreground font-normal">
+                        / {announcement.available_kg} kg
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -213,11 +251,16 @@ export default async function PublicAnnouncementDetailPage({
               ) : !user ? (
                 <div className="p-6 text-center space-y-4">
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                    <IconPackage className="h-6 w-6 text-primary" stroke={1.5} />
+                    <IconPackage
+                      className="h-6 w-6 text-primary"
+                      stroke={1.5}
+                    />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-lg font-bold">Réserver ce trajet</h3>
-                    <p className="text-sm text-muted-foreground">Connectez-vous pour envoyer une demande de transport.</p>
+                    <p className="text-sm text-muted-foreground">
+                      Connectez-vous pour envoyer une demande de transport.
+                    </p>
                   </div>
                   <Link href="/login" className="block w-full">
                     <Button className="w-full h-11 rounded-lg shadow-warm hover:shadow-xl hover:-translate-y-0.5 transition-all">
@@ -225,17 +268,27 @@ export default async function PublicAnnouncementDetailPage({
                     </Button>
                   </Link>
                 </div>
-              ) : isFeatureEnabled('KYC_ENABLED') && userKycStatus !== 'approved' ? (
+              ) : isFeatureEnabled('KYC_ENABLED') &&
+                userKycStatus !== 'approved' ? (
                 <div className="p-5 bg-amber-50/50 dark:bg-amber-900/10 space-y-3 text-center">
                   <div className="inline-flex p-2.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
                     <IconCircleCheck className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm text-amber-900 dark:text-amber-100">Vérification requise</h4>
-                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">Votre profil doit être vérifié pour effectuer une réservation.</p>
+                    <h4 className="font-bold text-sm text-amber-900 dark:text-amber-100">
+                      Vérification requise
+                    </h4>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                      Votre profil doit être vérifié pour effectuer une
+                      réservation.
+                    </p>
                   </div>
                   <Link href="/dashboard/reglages/kyc" className="block">
-                    <Button variant="outline" size="sm" className="w-full border-amber-200 hover:bg-amber-100 text-amber-800">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-amber-200 hover:bg-amber-100 text-amber-800"
+                    >
                       Vérifier mon profil
                     </Button>
                   </Link>
@@ -251,7 +304,9 @@ export default async function PublicAnnouncementDetailPage({
                   <IconPackage className="h-8 w-8 text-muted-foreground/40 mx-auto" />
                   <div>
                     <h3 className="font-bold text-base">Complet</h3>
-                    <p className="text-sm text-muted-foreground">Plus de kilos disponibles pour ce trajet.</p>
+                    <p className="text-sm text-muted-foreground">
+                      Plus de kilos disponibles pour ce trajet.
+                    </p>
                   </div>
                 </div>
               ) : null}

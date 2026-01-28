@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { IconStar } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 
 interface Review {
   id: string
@@ -45,8 +45,10 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
         <CardTitle>Avis ({reviews.length})</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {reviews.map((review) => {
-          const raterName = `${review.rater_firstname || ''} ${review.rater_lastname || ''}`.trim() || 'Utilisateur'
+        {reviews.map(review => {
+          const raterName =
+            `${review.rater_firstname || ''} ${review.rater_lastname || ''}`.trim() ||
+            'Utilisateur'
           const raterInitials = generateInitials(
             review.rater_firstname,
             review.rater_lastname
@@ -54,12 +56,12 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
           const raterAvatar = getAvatarUrl(review.rater_avatar_url, raterName)
 
           return (
-            <div key={review.id} className="flex gap-4 pb-4 border-b last:border-0">
+            <div
+              key={review.id}
+              className="flex gap-4 pb-4 border-b last:border-0"
+            >
               <Avatar>
-                <AvatarImage
-                  src={raterAvatar}
-                  alt={raterName}
-                />
+                <AvatarImage src={raterAvatar} alt={raterName} />
                 <AvatarFallback>{raterInitials}</AvatarFallback>
               </Avatar>
 
@@ -80,7 +82,9 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
                 </div>
 
                 {review.comment && (
-                  <p className="text-sm text-muted-foreground">{review.comment}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {review.comment}
+                  </p>
                 )}
               </div>
             </div>
@@ -90,13 +94,3 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
     </Card>
   )
 }
-
-
-
-
-
-
-
-
-
-

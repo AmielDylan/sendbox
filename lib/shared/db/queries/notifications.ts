@@ -2,7 +2,7 @@
  * Queries pour les notifications
  */
 
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 
 export interface Notification {
   id: string

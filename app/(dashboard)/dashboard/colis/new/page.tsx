@@ -14,15 +14,15 @@ import {
   createBookingSchema,
   type CreateBookingInput,
   MAX_INSURANCE_COVERAGE,
-} from "@/lib/core/bookings/validations"
+} from '@/lib/core/bookings/validations'
 import {
   createBooking,
   getAnnouncementForBooking,
-} from "@/lib/core/bookings/actions"
+} from '@/lib/core/bookings/actions'
 import {
   calculateBookingPrice,
   formatPrice,
-} from "@/lib/core/bookings/calculations"
+} from '@/lib/core/bookings/calculations'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,8 +48,12 @@ import {
   IconShield,
   IconInfoCircle,
 } from '@tabler/icons-react'
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
-import { MAX_PHOTOS, MAX_FILE_SIZE, validatePackagePhoto } from "@/lib/core/bookings/photos"
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  MAX_PHOTOS,
+  MAX_FILE_SIZE,
+  validatePackagePhoto,
+} from '@/lib/core/bookings/photos'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 function NewBookingPageContent() {
@@ -67,7 +71,7 @@ function NewBookingPageContent() {
   const [photos, setPhotos] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
   const protectionTooltip =
-    'Cette option ne constitue pas un contrat d\'assurance et n\'implique aucune indemnisation automatique.'
+    "Cette option ne constitue pas un contrat d'assurance et n'implique aucune indemnisation automatique."
 
   const {
     register,
@@ -114,7 +118,10 @@ function NewBookingPageContent() {
         setValue('announcement_id', result.announcement.id)
 
         console.log('Initial weight from URL:', initialWeight)
-        console.log('Available weight from announcement:', result.announcement.available_weight)
+        console.log(
+          'Available weight from announcement:',
+          result.announcement.available_weight
+        )
 
         if (initialWeight) {
           const maxWeight = result.announcement.available_weight || 999
@@ -124,7 +131,7 @@ function NewBookingPageContent() {
         }
       }
     } catch {
-      toast.error('Erreur lors du chargement de l\'annonce')
+      toast.error("Erreur lors du chargement de l'annonce")
       router.push('/recherche')
     } finally {
       setIsLoading(false)
@@ -145,7 +152,7 @@ function NewBookingPageContent() {
     const validFiles: File[] = []
     const previews: string[] = []
 
-    files.forEach((file) => {
+    files.forEach(file => {
       const validation = validatePackagePhoto(file)
       if (validation.valid && photos.length + validFiles.length < MAX_PHOTOS) {
         validFiles.push(file)
@@ -153,7 +160,7 @@ function NewBookingPageContent() {
         reader.onloadend = () => {
           previews.push(reader.result as string)
           if (previews.length === validFiles.length) {
-            setPhotoPreviews((prev) => [...prev, ...previews])
+            setPhotoPreviews(prev => [...prev, ...previews])
           }
         }
         reader.readAsDataURL(file)
@@ -163,7 +170,7 @@ function NewBookingPageContent() {
     })
 
     if (validFiles.length > 0) {
-      setPhotos((prev) => [...prev, ...validFiles])
+      setPhotos(prev => [...prev, ...validFiles])
       setValue('package_photos', [...photos, ...validFiles])
     }
 
@@ -173,8 +180,8 @@ function NewBookingPageContent() {
   }
 
   const removePhoto = (index: number) => {
-    setPhotos((prev) => prev.filter((_, i) => i !== index))
-    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index))
+    setPhotos(prev => prev.filter((_, i) => i !== index))
+    setPhotoPreviews(prev => prev.filter((_, i) => i !== index))
     setValue(
       'package_photos',
       photos.filter((_, i) => i !== index)
@@ -227,7 +234,9 @@ function NewBookingPageContent() {
     return null
   }
 
-  const travelerName = `${announcement.traveler_firstname || ''} ${announcement.traveler_lastname || ''}`.trim() || 'Voyageur'
+  const travelerName =
+    `${announcement.traveler_firstname || ''} ${announcement.traveler_lastname || ''}`.trim() ||
+    'Voyageur'
   const travelerAvatar = getAvatarUrl(
     announcement.traveler_avatar_url,
     announcement.traveler_id || travelerName
@@ -264,10 +273,7 @@ function NewBookingPageContent() {
 
               <div className="flex items-center gap-3 pt-4 border-t">
                 <Avatar>
-                  <AvatarImage
-                    src={travelerAvatar}
-                    alt={travelerName}
-                  />
+                  <AvatarImage src={travelerAvatar} alt={travelerName} />
                   <AvatarFallback>
                     {generateInitials(
                       announcement.traveler_firstname,
@@ -301,9 +307,7 @@ function NewBookingPageContent() {
               <CardContent className="space-y-4">
                 {/* Poids */}
                 <div className="space-y-2">
-                  <Label htmlFor="kilos_requested">
-                    Poids à réserver (kg)
-                  </Label>
+                  <Label htmlFor="kilos_requested">Poids à réserver (kg)</Label>
                   <Input
                     id="kilos_requested"
                     type="number"
@@ -335,9 +339,7 @@ function NewBookingPageContent() {
                     placeholder="Décrivez votre colis en détail..."
                     rows={4}
                     {...register('package_description')}
-                    aria-invalid={
-                      errors.package_description ? 'true' : 'false'
-                    }
+                    aria-invalid={errors.package_description ? 'true' : 'false'}
                   />
                   {errors.package_description && (
                     <p className="text-sm text-destructive" role="alert">
@@ -351,9 +353,7 @@ function NewBookingPageContent() {
 
                 {/* Valeur déclarée */}
                 <div className="space-y-2">
-                  <Label htmlFor="package_value">
-                    Valeur déclarée (EUR)
-                  </Label>
+                  <Label htmlFor="package_value">Valeur déclarée (EUR)</Label>
                   <Input
                     id="package_value"
                     type="number"
@@ -410,7 +410,8 @@ function NewBookingPageContent() {
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Maximum {MAX_PHOTOS} photos, {MAX_FILE_SIZE / 1_000_000} MB chacune
+                    Maximum {MAX_PHOTOS} photos, {MAX_FILE_SIZE / 1_000_000} MB
+                    chacune
                   </p>
                 </div>
               </CardContent>
@@ -432,7 +433,7 @@ function NewBookingPageContent() {
                   <Checkbox
                     id="insurance_opted"
                     checked={insuranceOpted}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={checked =>
                       setValue('insurance_opted', checked === true)
                     }
                   />
@@ -451,7 +452,8 @@ function NewBookingPageContent() {
                     {insuranceOpted && (
                       <div className="p-4 bg-muted rounded-lg space-y-2">
                         <p className="text-sm">
-                          Frais : {formatPrice(calculation.insurancePremium || 0)}
+                          Frais :{' '}
+                          {formatPrice(calculation.insurancePremium || 0)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Plafond :{' '}
@@ -462,7 +464,8 @@ function NewBookingPageContent() {
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Option sans assurance automatique. Consultez l'info-bulle pour les conditions.
+                      Option sans assurance automatique. Consultez l'info-bulle
+                      pour les conditions.
                     </p>
                   </div>
                 </div>
@@ -479,7 +482,11 @@ function NewBookingPageContent() {
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto"
+              >
                 {isSubmitting ? (
                   <>
                     <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />

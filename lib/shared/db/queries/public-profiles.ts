@@ -25,12 +25,9 @@ export async function getPublicProfiles(
     return { data: [], error: null }
   }
 
-  const { data, error } = await (supabase.rpc as any)(
-    'get_public_profiles',
-    {
-      p_user_ids: uniqueIds,
-    }
-  )
+  const { data, error } = await (supabase.rpc as any)('get_public_profiles', {
+    p_user_ids: uniqueIds,
+  })
 
   if (error) {
     console.error('Error fetching public profiles:', error)

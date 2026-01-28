@@ -5,7 +5,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 
 const VIEW_COOKIE_PREFIX = 'announcement_view_'
 const COOKIE_MAX_AGE = 60 * 60 * 24 // 24 heures
@@ -29,9 +29,12 @@ export async function incrementAnnouncementViews(announcementId: string) {
     // Incrémenter le compteur de vues dans la base de données
     // Note: Il faut ajouter une colonne views_count dans la table announcements
     try {
-      const { error } = await (supabase.rpc as any)('increment_announcement_views', {
-        p_announcement_id: announcementId,
-      })
+      const { error } = await (supabase.rpc as any)(
+        'increment_announcement_views',
+        {
+          p_announcement_id: announcementId,
+        }
+      )
 
       if (error) {
         // Si la fonction RPC n'existe pas encore, on peut utiliser une requête UPDATE
@@ -53,7 +56,6 @@ export async function incrementAnnouncementViews(announcementId: string) {
     return { success: true, alreadyViewed: false }
   } catch (error) {
     console.error('Error incrementing views:', error)
-    return { success: false, error: 'Erreur lors de l\'incrémentation des vues' }
+    return { success: false, error: "Erreur lors de l'incrémentation des vues" }
   }
 }
-

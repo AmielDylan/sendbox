@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { deleteCancelledBooking } from "@/lib/core/bookings/workflow"
+import { deleteCancelledBooking } from '@/lib/core/bookings/workflow'
 import { IconLoader2, IconTrash } from '@tabler/icons-react'
 
 interface DeleteBookingDialogProps {
@@ -33,7 +33,7 @@ export function DeleteBookingDialog({
   bookingId,
   trigger,
   onDeleted,
-  redirectAfterDelete = true
+  redirectAfterDelete = true,
 }: DeleteBookingDialogProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
@@ -85,16 +85,14 @@ export function DeleteBookingDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Supprimer ce colis ?</AlertDialogTitle>
           <AlertDialogDescription>
-            Cette action est irréversible. La réservation sera supprimée pour vous
-            et pour l&apos;autre participant.
+            Cette action est irréversible. La réservation sera supprimée pour
+            vous et pour l&apos;autre participant.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isSubmitting}>
-            Retour
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isSubmitting}>Retour</AlertDialogCancel>
           <AlertDialogAction
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault()
               handleDelete()
             }}

@@ -9,8 +9,8 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { loginSchema, type LoginInput } from "@/lib/core/auth/validations"
-import { signIn } from "@/lib/core/auth/actions"
+import { loginSchema, type LoginInput } from '@/lib/core/auth/validations'
+import { signIn } from '@/lib/core/auth/actions'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -86,9 +86,7 @@ function LoginForm() {
                 <IconPackage className="h-7 w-7 text-primary animate-pulse" />
               </div>
             </div>
-            <CardTitle className="text-2xl">
-              Vérification...
-            </CardTitle>
+            <CardTitle className="text-2xl">Vérification...</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -270,9 +268,7 @@ export default function LoginPage() {
                 <IconPackage className="h-7 w-7 text-primary animate-pulse" />
               </div>
             </div>
-            <CardTitle className="text-2xl">
-              Chargement...
-            </CardTitle>
+            <CardTitle className="text-2xl">Chargement...</CardTitle>
           </CardHeader>
         </Card>
       }

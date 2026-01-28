@@ -15,7 +15,10 @@ interface PackagePhotosGalleryProps {
   className?: string
 }
 
-export function PackagePhotosGallery({ photos, className }: PackagePhotosGalleryProps) {
+export function PackagePhotosGallery({
+  photos,
+  className,
+}: PackagePhotosGalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
 
   if (!photos || photos.length === 0) {
@@ -48,7 +51,10 @@ export function PackagePhotosGallery({ photos, className }: PackagePhotosGallery
         ))}
       </div>
 
-      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+      <Dialog
+        open={!!selectedPhoto}
+        onOpenChange={() => setSelectedPhoto(null)}
+      >
         <DialogContent className="max-w-4xl">
           <Button
             variant="ghost"
@@ -73,11 +79,3 @@ export function PackagePhotosGallery({ photos, className }: PackagePhotosGallery
     </>
   )
 }
-
-
-
-
-
-
-
-

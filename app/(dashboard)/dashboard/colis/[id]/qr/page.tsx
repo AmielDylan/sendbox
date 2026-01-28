@@ -4,7 +4,7 @@
 
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import { BookingQRCode } from '@/components/features/bookings/BookingQRCode'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent } from '@/components/ui/card'
@@ -90,21 +90,33 @@ async function QRCodePageContent({ params }: QRCodePageProps) {
           <Card>
             <CardContent className="pt-6">
               <h3 className="font-semibold mb-2">
-                {isSender ? 'Instructions pour l\'expéditeur' : 'Instructions pour le voyageur'}
+                {isSender
+                  ? "Instructions pour l'expéditeur"
+                  : 'Instructions pour le voyageur'}
               </h3>
               {isSender ? (
                 <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
-                  <li>Imprimez ou enregistrez ce QR code sur votre téléphone</li>
+                  <li>
+                    Imprimez ou enregistrez ce QR code sur votre téléphone
+                  </li>
                   <li>Présentez-le au voyageur lors de la remise du colis</li>
-                  <li>Le voyageur scannera ce code pour confirmer la prise en charge</li>
+                  <li>
+                    Le voyageur scannera ce code pour confirmer la prise en
+                    charge
+                  </li>
                   <li>Conservez une copie pour le suivi de votre envoi</li>
                 </ul>
               ) : (
                 <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
                   <li>Scannez ce QR code lors de la récupération du colis</li>
-                  <li>Prenez une photo du colis et faites signer l'expéditeur</li>
+                  <li>
+                    Prenez une photo du colis et faites signer l'expéditeur
+                  </li>
                   <li>Scannez à nouveau ce code lors de la livraison</li>
-                  <li>Prenez une photo de la livraison et faites signer le destinataire</li>
+                  <li>
+                    Prenez une photo de la livraison et faites signer le
+                    destinataire
+                  </li>
                 </ul>
               )}
             </CardContent>
@@ -144,8 +156,3 @@ export default function QRCodePage({ params }: QRCodePageProps) {
     </Suspense>
   )
 }
-
-
-
-
-

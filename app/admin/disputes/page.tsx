@@ -5,9 +5,16 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { IconLoader2 } from '@tabler/icons-react'
 import { format } from 'date-fns'
@@ -76,7 +83,9 @@ export default function AdminDisputesPage() {
                     <TableCell>{dispute.total_price || 0} EUR</TableCell>
                     <TableCell>{dispute.disputed_reason || 'N/A'}</TableCell>
                     <TableCell>
-                      {format(new Date(dispute.created_at), 'PP', { locale: fr })}
+                      {format(new Date(dispute.created_at), 'PP', {
+                        locale: fr,
+                      })}
                     </TableCell>
                     <TableCell>
                       <Badge variant="destructive">À traiter</Badge>
@@ -91,4 +100,3 @@ export default function AdminDisputesPage() {
     </div>
   )
 }
-

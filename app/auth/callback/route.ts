@@ -10,7 +10,12 @@ import type { NextRequest } from 'next/server'
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const token_hash = requestUrl.searchParams.get('token_hash')
-  const type = requestUrl.searchParams.get('type') as 'signup' | 'email' | 'recovery' | 'magiclink' | null
+  const type = requestUrl.searchParams.get('type') as
+    | 'signup'
+    | 'email'
+    | 'recovery'
+    | 'magiclink'
+    | null
   const next = requestUrl.searchParams.get('next') ?? '/dashboard?verified=true'
 
   if (token_hash && type) {
@@ -25,7 +30,10 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('[Auth Callback] Error verifying OTP:', error)
       return NextResponse.redirect(
-        new URL(`/login?error=${encodeURIComponent(error.message)}`, requestUrl.origin)
+        new URL(
+          `/login?error=${encodeURIComponent(error.message)}`,
+          requestUrl.origin
+        )
       )
     }
 
@@ -34,5 +42,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Si pas de token_hash, rediriger vers login
-  return NextResponse.redirect(new URL('/login?error=missing_token', requestUrl.origin))
+  return NextResponse.redirect(
+    new URL('/login?error=missing_token', requestUrl.origin)
+  )
 }

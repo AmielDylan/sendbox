@@ -28,9 +28,13 @@ async function checkSchema() {
 
   console.log('Colonnes disponibles dans announcements:')
   if (announcement) {
-    Object.keys(announcement).sort().forEach(key => {
-      console.log(`  - ${key}: ${typeof announcement[key as keyof typeof announcement]}`)
-    })
+    Object.keys(announcement)
+      .sort()
+      .forEach(key => {
+        console.log(
+          `  - ${key}: ${typeof announcement[key as keyof typeof announcement]}`
+        )
+      })
   }
 
   // 2. Vérifier spécifiquement available_kg
@@ -41,7 +45,10 @@ async function checkSchema() {
     .limit(1)
 
   if (availableKgError) {
-    console.error('❌ Erreur lors de la sélection de available_kg:', availableKgError.message)
+    console.error(
+      '❌ Erreur lors de la sélection de available_kg:',
+      availableKgError.message
+    )
   } else {
     console.log('✅ La colonne available_kg existe et peut être sélectionnée')
     console.log('Valeur:', withAvailableKg)

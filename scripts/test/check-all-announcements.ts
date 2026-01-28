@@ -12,7 +12,9 @@ async function checkAnnouncements() {
   // Toutes les annonces sans filtre de statut
   const { data, error } = await supabase
     .from('announcements')
-    .select('id, departure_city, arrival_city, departure_date, status, created_at')
+    .select(
+      'id, departure_city, arrival_city, departure_date, status, created_at'
+    )
     .order('created_at', { ascending: false })
 
   if (error) {

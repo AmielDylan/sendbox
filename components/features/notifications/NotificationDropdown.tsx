@@ -55,7 +55,7 @@ export function NotificationDropdown() {
             </div>
           ) : (
             <div className="py-2">
-              {recentNotifications.map((notification) => (
+              {recentNotifications.map(notification => (
                 <NotificationItem
                   key={notification.id}
                   notification={notification}
@@ -68,7 +68,10 @@ export function NotificationDropdown() {
         <Separator />
         <div className="p-2">
           <Button variant="outline" className="w-full" asChild>
-            <Link href="/dashboard/messages?tab=notifications" onClick={() => setOpen(false)}>
+            <Link
+              href="/dashboard/messages?tab=notifications"
+              onClick={() => setOpen(false)}
+            >
               Voir tout
             </Link>
           </Button>

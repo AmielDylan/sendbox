@@ -68,11 +68,7 @@ export {
   SelectScrollDownButton,
 } from './select'
 export { Calendar } from './calendar'
-export {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from './popover'
+export { Popover, PopoverTrigger, PopoverContent } from './popover'
 export { Checkbox } from './checkbox'
 export { Label } from './label'
 export {
@@ -93,14 +89,3 @@ export { Separator } from './separator'
 export { LoadingSpinner } from './loading-spinner'
 export { PageHeader } from './page-header'
 export { ThemeToggle } from './theme-toggle'
-
-
-
-
-
-
-
-
-
-
-

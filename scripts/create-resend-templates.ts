@@ -39,7 +39,7 @@ const resend = new Resend(RESEND_API_KEY)
 type Action = 'upsert' | 'update' | 'delete' | 'reset'
 
 function getArgValue(flag: string): string | undefined {
-  const directMatch = process.argv.find((entry) => entry.startsWith(`${flag}=`))
+  const directMatch = process.argv.find(entry => entry.startsWith(`${flag}=`))
   if (directMatch) {
     return directMatch.slice(flag.length + 1)
   }
@@ -71,13 +71,19 @@ const action: Action = actionValues.includes(actionArg as Action)
     : deleteFlag
       ? 'delete'
       : 'upsert'
-const hasInvalidAction = Boolean(actionArg && !actionValues.includes(actionArg as Action))
+const hasInvalidAction = Boolean(
+  actionArg && !actionValues.includes(actionArg as Action)
+)
 const dryRun = process.argv.includes('--dry-run')
 const confirmDelete =
-  process.argv.includes('--confirm-delete') || process.argv.includes('--confirm-delete-all')
+  process.argv.includes('--confirm-delete') ||
+  process.argv.includes('--confirm-delete-all')
 const onlyArg = getArgValue('--only')
 const onlyKeys = onlyArg ? onlyArg.split(',').map(normalizeTemplateKey) : null
-const TEMPLATE_IDS_PATH = path.resolve(process.cwd(), 'resend-template-ids.json')
+const TEMPLATE_IDS_PATH = path.resolve(
+  process.cwd(),
+  'resend-template-ids.json'
+)
 
 // Template HTML pour Booking Request
 const BOOKING_REQUEST_HTML = `<!DOCTYPE html>
@@ -238,17 +244,30 @@ const templates: TemplateConfig[] = [
   {
     name: 'booking_request',
     alias: 'booking_request',
-    subject: 'Nouvelle demande de réservation - {{{DEPARTURE_CITY}}} vers {{{ARRIVAL_CITY}}}',
+    subject:
+      'Nouvelle demande de réservation - {{{DEPARTURE_CITY}}} vers {{{ARRIVAL_CITY}}}',
     from: 'Sendbox <support@gosendbox.com>',
     html: BOOKING_REQUEST_HTML,
     variables: [
       { key: 'KILOS_REQUESTED', type: 'number', fallbackValue: 0 },
       { key: 'TOTAL_PRICE', type: 'string', fallbackValue: '0.00' },
-      { key: 'PACKAGE_DESCRIPTION', type: 'string', fallbackValue: 'Non précisée' },
-      { key: 'DEPARTURE_CITY', type: 'string', fallbackValue: 'Ville de départ' },
+      {
+        key: 'PACKAGE_DESCRIPTION',
+        type: 'string',
+        fallbackValue: 'Non précisée',
+      },
+      {
+        key: 'DEPARTURE_CITY',
+        type: 'string',
+        fallbackValue: 'Ville de départ',
+      },
       { key: 'ARRIVAL_CITY', type: 'string', fallbackValue: 'Ville d’arrivée' },
       { key: 'BOOKING_ID', type: 'string', fallbackValue: 'inconnu' },
-      { key: 'APP_URL', type: 'string', fallbackValue: 'https://www.gosendbox.com' },
+      {
+        key: 'APP_URL',
+        type: 'string',
+        fallbackValue: 'https://www.gosendbox.com',
+      },
     ],
   },
   // Vous pouvez ajouter d'autres templates ici
@@ -270,11 +289,13 @@ function matchesOnlyFilter(config: TemplateConfig): boolean {
     .filter((value): value is string => Boolean(value))
     .map(normalizeTemplateKey)
 
-  return normalizedKeys.some((key) => onlyKeys.includes(key))
+  return normalizedKeys.some(key => onlyKeys.includes(key))
 }
 
-function mapTemplateVariables(config: TemplateConfig): TemplateVariableConfig[] {
-  return config.variables.map((variable) => ({ ...variable }))
+function mapTemplateVariables(
+  config: TemplateConfig
+): TemplateVariableConfig[] {
+  return config.variables.map(variable => ({ ...variable }))
 }
 
 function buildTemplatePayload(config: TemplateConfig): ResendTemplatePayload {
@@ -329,7 +350,10 @@ async function listTemplates(): Promise<TemplateListItem[]> {
     const result = await resend.templates.list({ limit: 100, after })
 
     if (result.error) {
-      console.error('❌ Erreur lors de la récupération des templates:', result.error)
+      console.error(
+        '❌ Erreur lors de la récupération des templates:',
+        result.error
+      )
       break
     }
 
@@ -350,7 +374,10 @@ async function listTemplates(): Promise<TemplateListItem[]> {
   return templatesList
 }
 
-async function resolveTemplateId(config: TemplateConfig, templateIds: Record<string, string>): Promise<string | null> {
+async function resolveTemplateId(
+  config: TemplateConfig,
+  templateIds: Record<string, string>
+): Promise<string | null> {
   const knownId = templateIds[config.name]
   if (knownId) {
     return knownId
@@ -363,13 +390,16 @@ async function resolveTemplateId(config: TemplateConfig, templateIds: Record<str
   }
 
   if (aliasLookup.error.name !== 'not_found') {
-    console.error(`❌ Erreur lors de la récupération du template "${alias}":`, aliasLookup.error)
+    console.error(
+      `❌ Erreur lors de la récupération du template "${alias}":`,
+      aliasLookup.error
+    )
     return null
   }
 
   const templatesList = await listTemplates()
   const targetKey = normalizeTemplateKey(alias)
-  const match = templatesList.find((item) => {
+  const match = templatesList.find(item => {
     const nameKey = normalizeTemplateKey(item.name)
     const aliasKey = item.alias ? normalizeTemplateKey(item.alias) : null
     return nameKey === targetKey || aliasKey === targetKey
@@ -379,7 +409,7 @@ async function resolveTemplateId(config: TemplateConfig, templateIds: Record<str
 }
 
 function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 /**
@@ -393,7 +423,10 @@ async function createTemplate(config: TemplateConfig): Promise<string | null> {
     const result = await resend.templates.create(buildTemplatePayload(config))
 
     if (result.error) {
-      console.error(`❌ Erreur lors de la création du template "${config.name}":`, result.error)
+      console.error(
+        `❌ Erreur lors de la création du template "${config.name}":`,
+        result.error
+      )
       return null
     }
 
@@ -417,14 +450,25 @@ async function createTemplate(config: TemplateConfig): Promise<string | null> {
 /**
  * Met à jour un template via l'API Resend
  */
-async function updateTemplate(templateId: string, config: TemplateConfig): Promise<boolean> {
-  console.log(`\n✏️ Mise à jour du template "${config.name}" (ID: ${templateId})...`)
+async function updateTemplate(
+  templateId: string,
+  config: TemplateConfig
+): Promise<boolean> {
+  console.log(
+    `\n✏️ Mise à jour du template "${config.name}" (ID: ${templateId})...`
+  )
 
   try {
-    const result = await resend.templates.update(templateId, buildTemplatePayload(config))
+    const result = await resend.templates.update(
+      templateId,
+      buildTemplatePayload(config)
+    )
 
     if (result.error) {
-      console.error(`❌ Erreur lors de la mise à jour du template "${config.name}":`, result.error)
+      console.error(
+        `❌ Erreur lors de la mise à jour du template "${config.name}":`,
+        result.error
+      )
       return false
     }
 
@@ -439,14 +483,22 @@ async function updateTemplate(templateId: string, config: TemplateConfig): Promi
 /**
  * Supprime un template via l'API Resend
  */
-async function removeTemplate(templateId: string, config: TemplateConfig): Promise<boolean> {
-  console.log(`\n🗑️ Suppression du template "${config.name}" (ID: ${templateId})...`)
+async function removeTemplate(
+  templateId: string,
+  config: TemplateConfig
+): Promise<boolean> {
+  console.log(
+    `\n🗑️ Suppression du template "${config.name}" (ID: ${templateId})...`
+  )
 
   try {
     const result = await resend.templates.remove(templateId)
 
     if (result.error) {
-      console.error(`❌ Erreur lors de la suppression du template "${config.name}":`, result.error)
+      console.error(
+        `❌ Erreur lors de la suppression du template "${config.name}":`,
+        result.error
+      )
       return false
     }
 
@@ -461,7 +513,9 @@ async function removeTemplate(templateId: string, config: TemplateConfig): Promi
 /**
  * Supprime tous les templates via l'API Resend
  */
-async function deleteAllTemplates(dryRunMode: boolean): Promise<{ deleted: number; failed: number }> {
+async function deleteAllTemplates(
+  dryRunMode: boolean
+): Promise<{ deleted: number; failed: number }> {
   console.log('\n🧹 Suppression de tous les templates Resend...')
 
   const allTemplates = await listTemplates()
@@ -481,7 +535,10 @@ async function deleteAllTemplates(dryRunMode: boolean): Promise<{ deleted: numbe
     } else {
       const result = await resend.templates.remove(template.id)
       if (result.error) {
-        console.error(`❌ Erreur suppression template "${template.name}" (${template.id}):`, result.error)
+        console.error(
+          `❌ Erreur suppression template "${template.name}" (${template.id}):`,
+          result.error
+        )
         failed++
       } else {
         console.log(`✅ Template supprimé: ${template.name} (${template.id})`)
@@ -501,7 +558,11 @@ async function deleteAllTemplates(dryRunMode: boolean): Promise<{ deleted: numbe
  */
 function saveTemplateIds(templateIds: Record<string, string>) {
   try {
-    fs.writeFileSync(TEMPLATE_IDS_PATH, JSON.stringify(templateIds, null, 2), 'utf-8')
+    fs.writeFileSync(
+      TEMPLATE_IDS_PATH,
+      JSON.stringify(templateIds, null, 2),
+      'utf-8'
+    )
     console.log(`\n💾 IDs des templates sauvegardés dans: ${TEMPLATE_IDS_PATH}`)
   } catch (err) {
     console.error(`❌ Erreur lors de la sauvegarde des IDs:`, err)
@@ -520,7 +581,9 @@ function displayUpdateInstructions(templateIds: Record<string, string>) {
   console.log('')
   console.log('2. Localisez la fonction getResendTemplateId() (ligne ~121)')
   console.log('')
-  console.log('3. Remplacez les valeurs par les IDs suivants (aussi dans resend-template-ids.json):')
+  console.log(
+    '3. Remplacez les valeurs par les IDs suivants (aussi dans resend-template-ids.json):'
+  )
   console.log('')
   console.log('   const templateIds: Record<string, string> = {')
   Object.entries(templateIds).forEach(([name, id]) => {
@@ -531,7 +594,7 @@ function displayUpdateInstructions(templateIds: Record<string, string>) {
   console.log('4. Dans lib/core/notifications/actions.ts (ligne ~109):')
   console.log('   Décommentez: useResendTemplate: true')
   console.log('')
-  console.log('5. Testez l\'envoi d\'email en créant une réservation')
+  console.log("5. Testez l'envoi d'email en créant une réservation")
   console.log('')
   console.log('='.repeat(70))
   console.log('')
@@ -548,7 +611,9 @@ async function main() {
   console.log('')
 
   if (hasInvalidAction) {
-    console.error(`❌ Action invalide: ${actionArg}. Utilisez upsert, update, delete ou reset.`)
+    console.error(
+      `❌ Action invalide: ${actionArg}. Utilisez upsert, update, delete ou reset.`
+    )
     process.exit(1)
   }
 
@@ -588,14 +653,20 @@ async function main() {
   const forceCreate = action === 'reset'
 
   for (const template of templatesToProcess) {
-    const templateId = forceCreate ? null : await resolveTemplateId(template, templateIds)
+    const templateId = forceCreate
+      ? null
+      : await resolveTemplateId(template, templateIds)
 
     if (action === 'delete') {
       if (!templateId) {
-        console.warn(`⚠️ Template "${template.name}" introuvable, suppression ignorée.`)
+        console.warn(
+          `⚠️ Template "${template.name}" introuvable, suppression ignorée.`
+        )
         summary.skipped++
       } else if (dryRun) {
-        console.log(`🧪 Suppression simulée pour "${template.name}" (ID: ${templateId}).`)
+        console.log(
+          `🧪 Suppression simulée pour "${template.name}" (ID: ${templateId}).`
+        )
         delete templateIds[template.name]
         summary.deleted++
       } else if (await removeTemplate(templateId, template)) {
@@ -606,7 +677,9 @@ async function main() {
       }
     } else if (templateId) {
       if (dryRun) {
-        console.log(`🧪 Mise à jour simulée pour "${template.name}" (ID: ${templateId}).`)
+        console.log(
+          `🧪 Mise à jour simulée pour "${template.name}" (ID: ${templateId}).`
+        )
         templateIds[template.name] = templateId
         summary.updated++
       } else if (await updateTemplate(templateId, template)) {
@@ -624,7 +697,9 @@ async function main() {
         summary.failed++
       }
     } else if (action === 'update') {
-      console.error(`❌ Template "${template.name}" introuvable pour mise à jour.`)
+      console.error(
+        `❌ Template "${template.name}" introuvable pour mise à jour.`
+      )
       summary.failed++
     } else if (dryRun) {
       console.log(`🧪 Création simulée pour "${template.name}".`)
@@ -648,7 +723,7 @@ async function main() {
   console.log('='.repeat(70))
   console.log('')
   console.log(
-    `✅ Créés: ${summary.created}, mis à jour: ${summary.updated}, supprimés: ${summary.deleted}, ignorés: ${summary.skipped}, échecs: ${summary.failed}`,
+    `✅ Créés: ${summary.created}, mis à jour: ${summary.updated}, supprimés: ${summary.deleted}, ignorés: ${summary.skipped}, échecs: ${summary.failed}`
   )
 
   if (!dryRun) {
@@ -673,7 +748,7 @@ async function main() {
   console.log('')
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error('❌ Erreur fatale:', error)
   process.exit(1)
 })

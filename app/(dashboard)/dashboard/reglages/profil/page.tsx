@@ -10,8 +10,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   updateProfileSchema,
   type UpdateProfileInput,
-} from "@/lib/core/profile/validations"
-import { updateProfile, getCurrentProfile, removeAvatar } from "@/lib/core/profile/actions"
+} from '@/lib/core/profile/validations'
+import {
+  updateProfile,
+  getCurrentProfile,
+  removeAvatar,
+} from '@/lib/core/profile/actions'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +31,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import { IconLoader2, IconUpload } from '@tabler/icons-react'
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 import { useAuth } from '@/hooks/use-auth'
 
 export default function ProfilePage() {
@@ -184,7 +188,9 @@ export default function ProfilePage() {
       {/* Vue d'ensemble */}
       <Card className="border-border/70 bg-background">
         <CardHeader className="space-y-1.5">
-          <CardTitle className="text-base font-semibold">Vue d'ensemble</CardTitle>
+          <CardTitle className="text-base font-semibold">
+            Vue d'ensemble
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -210,7 +216,9 @@ export default function ProfilePage() {
       {/* Formulaire de modification */}
       <Card className="border-border/70 bg-background">
         <CardHeader className="space-y-1.5">
-          <CardTitle className="text-base font-semibold">Informations personnelles</CardTitle>
+          <CardTitle className="text-base font-semibold">
+            Informations personnelles
+          </CardTitle>
           <CardDescription className="text-sm">
             Mettez à jour vos informations personnelles
           </CardDescription>

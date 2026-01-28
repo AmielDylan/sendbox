@@ -9,7 +9,7 @@ import { join } from 'path'
 function loadEnvFile() {
   try {
     const envFile = readFileSync(join(process.cwd(), '.env.local'), 'utf-8')
-    envFile.split('\n').forEach((line) => {
+    envFile.split('\n').forEach(line => {
       const match = line.match(/^([^=:#]+)=(.*)$/)
       if (match) {
         const key = match[1].trim()
@@ -71,7 +71,9 @@ async function test() {
   if (searchError) {
     console.log(`   ❌ Erreur: ${searchError.message}`)
     console.log(`   📝 Code: ${searchError.code}`)
-    console.log(`   💡 Suggestion: Vérifiez que la colonne traveler_id existe dans announcements`)
+    console.log(
+      `   💡 Suggestion: Vérifiez que la colonne traveler_id existe dans announcements`
+    )
   } else {
     console.log(`   ✅ Fonction fonctionne`)
     console.log(`   📊 Résultats: ${searchData?.length || 0} annonces`)
@@ -92,12 +94,3 @@ async function test() {
 }
 
 test().catch(console.error)
-
-
-
-
-
-
-
-
-

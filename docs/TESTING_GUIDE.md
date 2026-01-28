@@ -1,56 +1,203 @@
-# Guide de test - Option complète déployée ✅
+# 📋 Guide des Tests
 
-## ✅ Ce qui a été implémenté
+## Vue d'ensemble
 
-### 1. Configuration React Query optimisée
-- ✅ Fichier créé: `lib/shared/query/config.ts`
-- ✅ Configuration adaptée par type de données
-- ✅ Retry intelligent avec backoff exponentiel
-- ✅ Clés de requêtes standardisées
+Ce projet utilise **Vitest** pour les tests unitaires et d'intégration avec une couverture progressive.
 
-### 2. AuthProvider optimisé
-- ✅ Fichier créé: `components/providers/optimized-auth-provider.tsx`
-- ✅ Écoute `onAuthStateChange` pour toute l'app
-- ✅ Synchronisation multi-onglets via BroadcastChannel
-- ✅ Invalidation ciblée (pas de perte de données)
+## Structure des tests
 
-### 3. Hook centralisé pour requêtes
-- ✅ Fichier créé: `hooks/use-authenticated-query.ts`
-- ✅ Timeout intelligent avec AbortController
-- ✅ Pas de double-fetch de session
-
-### 4. Intégration dans l'app
-- ✅ `app/providers.tsx` mis à jour avec `createQueryClient()`
-- ✅ `OptimizedAuthProvider` utilisé au lieu de `AuthProvider`
-- ✅ Page Colis optimisée avec `useAuthenticatedQuery`
-
-### 5. Build
-- ✅ Build Next.js réussi sans erreurs TypeScript
-- ✅ Toutes les pages compilées correctement
-
----
-
-## 🧪 Plan de test
-
-### Test 1: Temps de chargement de la page Colis
-
-**Objectif:** Vérifier que le timeout est résolu
-
-**Procédure:**
-1. Démarrer l'app: `npm run dev`
-2. Se connecter avec un compte utilisateur
-3. Naviguer vers `/dashboard/colis`
-4. Chronométrer le temps de chargement
-
-**Résultat attendu:**
-- ✅ Page charge en **2-5 secondes** (au lieu de 12-36s)
-- ✅ Spinner affiché avec message "Chargement de vos réservations..."
-- ✅ Données affichées sans erreur
-
-**Résultat réel:**
 ```
-Temps de chargement: _____ secondes
-Erreur: Oui / Non
+__tests__/
+├── unit/                  # Tests unitaires
+│   ├── announcements.test.ts
+│   ├── auth.test.ts
+│   └── bookings.test.ts
+├── integration/          # Tests d'intégration
+│   ├── auth-flow.test.ts
+│   └── announcements-flow.test.ts
+└── setup/               # Configuration des tests
+    └── test-utils.ts
+```
+
+## Commandes disponibles
+
+```bash
+# Exécuter tous les tests
+npm run test
+
+# Exécuter en mode watch (recharge automatique)
+npm run test:ui
+
+# Tests par catégorie
+npm run test:unit          # Tests unitaires uniquement
+npm run test:integration   # Tests d'intégration uniquement
+
+# Coverage
+npm run test:coverage      # Générer un rapport de couverture
+```
+
+## Écrire des tests
+
+### Test unitaire basique
+
+```typescript
+import { describe, it, expect } from 'vitest'
+
+describe('Mon module', () => {
+  it('devrait faire quelque chose', () => {
+    const result = myFunction()
+    expect(result).toBe(expectedValue)
+  })
+})
+```
+
+### Test avec mocks
+
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+
+describe('API Call', () => {
+  it("devrait appeler l'API", () => {
+    const mockFn = vi.fn()
+    mockFn('test')
+    expect(mockFn).toHaveBeenCalledWith('test')
+  })
+})
+```
+
+### Test d'intégration
+
+```typescript
+import { describe, it, expect, beforeEach } from 'vitest'
+
+describe('Flux utilisateur', () => {
+  beforeEach(() => {
+    // Setup avant chaque test
+  })
+
+  it('devrait compléter le flux', () => {
+    // Tester un flux complet
+  })
+})
+```
+
+## GitHub Actions CI/CD
+
+### Workflow CI (`.github/workflows/ci.yml`)
+
+Exécuté sur chaque **push** et **pull request** :
+
+- ✅ Vérification du format (ESLint, Prettier)
+- ✅ Tests unitaires
+- ✅ Tests d'intégration
+- ✅ Build TypeScript
+- ✅ Upload de couverture à Codecov
+
+### Workflow Deploy (`.github/workflows/deploy.yml`)
+
+Exécuté uniquement sur **main** :
+
+- ✅ Tous les tests
+- ✅ Build de production
+- ✅ Déploiement sur Vercel
+
+## Configuration Vercel requise
+
+Ajouter les secrets GitHub Actions :
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+Et les variables d'environnement :
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `STRIPE_SECRET_KEY`
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- `RESEND_API_KEY`
+
+## Bonnes pratiques
+
+### ✅ À faire
+
+- Utiliser des descriptifs clairs : `it('should validate email format')`
+- Grouper avec `describe`
+- Utiliser `beforeEach` pour le setup commun
+- Tester un comportement à la fois
+- Utiliser les mocks pour les dépendances externes
+
+### ❌ À éviter
+
+- Tests trop complexes
+- Dépendre d'autres tests
+- Utiliser des données en dur (hardcoded)
+- Ignorer les erreurs edge case
+- Tests flaky (non-déterministes)
+
+## Exécution locale
+
+```bash
+# Installation
+npm ci
+
+# Tests en mode watch
+npm run test
+
+# Tests avec UI interactive
+npm run test:ui
+
+# Coverage report
+npm run test:coverage
+```
+
+## Debugger les tests
+
+```bash
+# Avec node inspector
+node --inspect-brk ./node_modules/.bin/vitest
+
+# Puis ouvrir chrome://inspect
+```
+
+## Couverture minimale
+
+Cibles recommandées :
+
+- **Statements**: 70%+
+- **Branches**: 65%+
+- **Functions**: 70%+
+- **Lines**: 70%+
+
+## Troubleshooting
+
+### Les tests prennent trop longtemps
+
+- Utiliser `--run` pour sortir après exécution
+- Vérifier les mocks (ne pas appeler les APIs réelles)
+
+### Tests qui échouent aléatoirement
+
+- Éviter les dépendances de temps
+- Utiliser des dates mockées
+- Nettoyer les timers : `vi.clearAllTimers()`
+
+### Couverture manquante
+
+```bash
+npm run test:coverage
+# Ouvrir coverage/index.html
+```
+
+## Resources
+
+- [Vitest Documentation](https://vitest.dev)
+- [Testing Library](https://testing-library.com)
+- [Jest Matchers](https://vitest.dev/api/expect.html)
+  Temps de chargement: **\_** secondes
+  Erreur: Oui / Non
+
 ```
 
 ---
@@ -73,9 +220,11 @@ Erreur: Oui / Non
 
 **Résultat réel:**
 ```
-Temps de retour: _____ secondes
+
+Temps de retour: **\_** secondes
 Données préservées: Oui / Non
-Nombre de réservations: _____
+Nombre de réservations: **\_**
+
 ```
 
 ---
@@ -97,9 +246,11 @@ Nombre de réservations: _____
 
 **Résultat réel:**
 ```
-Temps "Tous" (1ère fois): _____ s
-Temps "En attente": _____ s
-Temps "Tous" (retour): _____ s
+
+Temps "Tous" (1ère fois): **\_** s
+Temps "En attente": **\_** s
+Temps "Tous" (retour): **\_** s
+
 ```
 
 ---
@@ -122,9 +273,11 @@ Temps "Tous" (retour): _____ s
 
 **Résultat réel:**
 ```
+
 Synchronisation connexion: Oui / Non
 Synchronisation déconnexion: Oui / Non
-Délai de sync: _____ secondes
+Délai de sync: **\_** secondes
+
 ```
 
 ---
@@ -147,9 +300,11 @@ Délai de sync: _____ secondes
 
 **Résultat réel:**
 ```
+
 Message d'erreur affiché: Oui / Non
-Texte du message: _____________________________
+Texte du message: **************\_**************
 Bouton Réessayer fonctionne: Oui / Non
+
 ```
 
 ---
@@ -171,10 +326,12 @@ Bouton Réessayer fonctionne: Oui / Non
 
 **Résultat réel:**
 ```
-Temps total: _____ secondes
-Nombre de retries visible: _____
+
+Temps total: **\_** secondes
+Nombre de retries visible: **\_**
 Données chargées: Oui / Non
-```
+
+````
 
 ---
 
@@ -240,13 +397,14 @@ Données chargées: Oui / Non
 3. Augmenter le timeout dans la page si nécessaire:
    ```typescript
    { timeout: 10000 } // 10 secondes
-   ```
+````
 
 ### Problème: Données obsolètes
 
 **Cause:** Cache trop long
 
 **Solution:**
+
 1. Invalider manuellement: `queryClient.invalidateQueries({ queryKey: ['user-bookings'] })`
 2. Ajuster `staleTime` dans la configuration
 3. Forcer un refetch: cliquer sur "Réessayer"
@@ -258,11 +416,13 @@ Données chargées: Oui / Non
 ### Activer les logs
 
 Dans `components/providers/optimized-auth-provider.tsx`, les logs sont déjà activés:
+
 ```typescript
 console.log('[Auth] State change:', event, currentSession?.user?.id)
 ```
 
 Dans la console, vous devriez voir:
+
 - `[Auth] State change: SIGNED_IN user-id-xxx` → Connexion
 - `[Auth] State change: TOKEN_REFRESHED user-id-xxx` → Refresh token
 - `[Auth] State change: SIGNED_OUT null` → Déconnexion
@@ -320,6 +480,6 @@ Une fois les tests validés:
 
 ---
 
-**Date du test:** _______________
-**Testeur:** _______________
+**Date du test:** ******\_\_\_******
+**Testeur:** ******\_\_\_******
 **Version:** 1.0.0 (Option complète)

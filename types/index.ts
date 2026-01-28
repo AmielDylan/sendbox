@@ -113,7 +113,9 @@ export function createBooking(
   booking: BookingBase,
   pricePerKg?: number
 ): Booking {
-  const totalPrice = pricePerKg ? (booking.kilos_requested || 0) * pricePerKg : 0
+  const totalPrice = pricePerKg
+    ? (booking.kilos_requested || 0) * pricePerKg
+    : 0
 
   return {
     ...booking,
@@ -215,7 +217,9 @@ export interface Notification extends NotificationBase {
 export function createNotification(
   notification: NotificationBase
 ): Notification {
-  const createdAt = new Date(notification.created_at || new Date().toISOString())
+  const createdAt = new Date(
+    notification.created_at || new Date().toISOString()
+  )
   const now = new Date()
   const diffMs = now.getTime() - createdAt.getTime()
   const diffMins = Math.floor(diffMs / 60000)
@@ -278,7 +282,9 @@ export interface Rating extends RatingBase {
 export function createRating(rating: RatingBase): Rating {
   return {
     ...rating,
-    formatted_date: new Date(rating.created_at || new Date().toISOString()).toLocaleDateString('fr-FR', {
+    formatted_date: new Date(
+      rating.created_at || new Date().toISOString()
+    ).toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -306,16 +312,15 @@ export function createTransaction(transaction: TransactionBase): Transaction {
   return {
     ...transaction,
     formatted_amount: `${transaction.currency === 'EUR' ? '€' : transaction.currency}${transaction.amount.toFixed(2)}`,
-    formatted_date: new Date(transaction.created_at || new Date().toISOString()).toLocaleDateString(
-      'fr-FR',
-      {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }
-    ),
+    formatted_date: new Date(
+      transaction.created_at || new Date().toISOString()
+    ).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
   }
 }
 

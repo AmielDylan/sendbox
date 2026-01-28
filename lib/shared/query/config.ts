@@ -18,29 +18,29 @@ export const QUERY_CONFIG = {
   // Données utilisateur (profil, paramètres) - changent rarement
   USER_DATA: {
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 30 * 60 * 1000,   // 30 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: false,
   },
 
   // Listes (annonces, réservations) - mises à jour fréquentes
   LISTS: {
-    staleTime: 30 * 1000,     // 30 secondes
-    gcTime: 15 * 60 * 1000,   // 15 minutes
+    staleTime: 30 * 1000, // 30 secondes
+    gcTime: 15 * 60 * 1000, // 15 minutes
     refetchOnWindowFocus: false,
   },
 
   // Conversations et notifications - temps réel via Realtime
   REALTIME: {
-    staleTime: 60 * 1000,     // 1 minute (le realtime met à jour)
-    gcTime: 10 * 60 * 1000,   // 10 minutes
+    staleTime: 60 * 1000, // 1 minute (le realtime met à jour)
+    gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
-    refetchInterval: false,   // Désactivé - le realtime gère
+    refetchInterval: false, // Désactivé - le realtime gère
   },
 
   // Données de session/auth - critiques
   AUTH: {
     staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 60 * 60 * 1000,   // 1 heure
+    gcTime: 60 * 60 * 1000, // 1 heure
     refetchOnWindowFocus: true, // Important pour détecter les changements d'auth
     retry: 3,
   },
@@ -48,7 +48,7 @@ export const QUERY_CONFIG = {
   // Données statiques (types, catégories) - changent très rarement
   STATIC: {
     staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 60 * 60 * 1000,    // 1 heure
+    gcTime: 60 * 60 * 1000, // 1 heure
     refetchOnWindowFocus: false,
   },
 } as const
@@ -60,7 +60,8 @@ export const QUERY_KEYS = {
   // Auth
   auth: ['auth'] as const,
   session: () => [...QUERY_KEYS.auth, 'session'] as const,
-  profile: (userId?: string) => [...QUERY_KEYS.auth, 'profile', userId] as const,
+  profile: (userId?: string) =>
+    [...QUERY_KEYS.auth, 'profile', userId] as const,
 
   // Annonces
   announcements: ['announcements'] as const,
@@ -169,11 +170,16 @@ export function createQueryClient(): QueryClient {
 /**
  * Helper pour invalider intelligemment les queries liées à l'auth
  */
-export function invalidateAuthQueries(queryClient: QueryClient, userId?: string) {
+export function invalidateAuthQueries(
+  queryClient: QueryClient,
+  userId?: string
+) {
   // Invalider seulement les données liées au profil utilisateur
   if (userId) {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile(userId) })
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userAnnouncements(userId) })
+    queryClient.invalidateQueries({
+      queryKey: QUERY_KEYS.userAnnouncements(userId),
+    })
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userBookings(userId) })
   }
 
@@ -193,14 +199,18 @@ export function invalidateAfterMutation(
     case 'announcement':
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.announcements })
       if (userId) {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userAnnouncements(userId) })
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.userAnnouncements(userId),
+        })
       }
       break
 
     case 'booking':
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bookings })
       if (userId) {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userBookings(userId) })
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.userBookings(userId),
+        })
       }
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.pendingRequests() })
       break

@@ -11,7 +11,7 @@ const escapeMap: Record<string, string> = {
 }
 
 function escapeHTML(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => escapeMap[char] || char)
+  return value.replace(/[&<>"']/g, char => escapeMap[char] || char)
 }
 
 /**
@@ -51,11 +51,3 @@ export function sanitizeURL(url: string): string | null {
 export function sanitizeMessageContent(text: string): string {
   return escapeHTML(text).trim()
 }
-
-
-
-
-
-
-
-

@@ -8,9 +8,16 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { IconUser, IconIdBadge2, IconShield, IconCircleCheck, IconAlertCircle, IconClock } from '@tabler/icons-react'
-import { cn } from "@/lib/utils"
-import { isFeatureEnabled } from "@/lib/shared/config/features"
+import {
+  IconUser,
+  IconIdBadge2,
+  IconShield,
+  IconCircleCheck,
+  IconAlertCircle,
+  IconClock,
+} from '@tabler/icons-react'
+import { cn } from '@/lib/utils'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { createClient } from '@/lib/shared/db/client'
 import { useAuth } from '@/hooks/use-auth'
 
@@ -22,9 +29,9 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
   const pathname = usePathname()
   const { user } = useAuth()
   const supabase = useMemo(() => createClient(), [])
-  const [kycStatus, setKycStatus] = useState<'pending' | 'approved' | 'rejected' | 'incomplete' | null>(
-    initialKycStatus || null
-  )
+  const [kycStatus, setKycStatus] = useState<
+    'pending' | 'approved' | 'rejected' | 'incomplete' | null
+  >(initialKycStatus || null)
 
   // Charger le statut initial si non fourni
   useEffect(() => {
@@ -49,7 +56,10 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
   useEffect(() => {
     if (!user?.id) return
 
-    console.log('🔔 [SettingsNav] Subscribing to KYC updates for user:', user.id)
+    console.log(
+      '🔔 [SettingsNav] Subscribing to KYC updates for user:',
+      user.id
+    )
 
     const channel = supabase
       .channel(`settings-nav-kyc:${user.id}`)
@@ -61,14 +71,24 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
           table: 'profiles',
           filter: `id=eq.${user.id}`,
         },
-        (payload) => {
+        payload => {
           console.log('🔔 [SettingsNav] Realtime UPDATE received:', payload)
-          const nextProfile = payload.new as { kyc_status?: 'pending' | 'approved' | 'rejected' | 'incomplete' | null }
-          console.log('📊 [SettingsNav] New KYC status:', nextProfile.kyc_status)
+          const nextProfile = payload.new as {
+            kyc_status?:
+              | 'pending'
+              | 'approved'
+              | 'rejected'
+              | 'incomplete'
+              | null
+          }
+          console.log(
+            '📊 [SettingsNav] New KYC status:',
+            nextProfile.kyc_status
+          )
           setKycStatus(nextProfile.kyc_status ?? null)
         }
       )
-      .subscribe((status) => {
+      .subscribe(status => {
         console.log('📡 [SettingsNav] Realtime subscription status:', status)
       })
 
@@ -92,7 +112,7 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
       description: 'Informations personnelles',
     },
     {
-      label: 'Vérification d\'identité',
+      label: "Vérification d'identité",
       href: '/dashboard/reglages/kyc',
       icon: IconShield,
       description: 'KYC et documents',
@@ -112,7 +132,10 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
   const getKYCBadge = () => {
     if (kycStatus === 'approved') {
       return (
-        <Badge variant="secondary" className="ml-auto bg-emerald-50 text-emerald-700">
+        <Badge
+          variant="secondary"
+          className="ml-auto bg-emerald-50 text-emerald-700"
+        >
           <IconCircleCheck className="mr-1 h-3 w-3" />
           Validé
         </Badge>
@@ -139,10 +162,10 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
 
   return (
     <nav className="space-y-1 p-2">
-      {navItems.map((item) => {
+      {navItems.map(item => {
         const Icon = item.icon
         const isActive = pathname === item.href
-        
+
         return (
           <Link
             key={item.href}
@@ -169,6 +192,3 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
     </nav>
   )
 }
-
-
-

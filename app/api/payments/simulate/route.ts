@@ -3,12 +3,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from "@/lib/shared/db/server"
-import { calculateBookingAmounts } from "@/lib/core/payments/calculations"
-import { getPaymentsMode, isFeatureEnabled } from "@/lib/shared/config/features"
-import { generateTransportContract } from "@/lib/shared/services/pdf/generation"
-import { generateBookingQRCode } from "@/lib/core/bookings/qr-codes"
-import { createSystemNotification } from "@/lib/core/notifications/system"
+import { createClient } from '@/lib/shared/db/server'
+import { calculateBookingAmounts } from '@/lib/core/payments/calculations'
+import { getPaymentsMode, isFeatureEnabled } from '@/lib/shared/config/features'
+import { generateTransportContract } from '@/lib/shared/services/pdf/generation'
+import { generateBookingQRCode } from '@/lib/core/bookings/qr-codes'
+import { createSystemNotification } from '@/lib/core/notifications/system'
 
 export async function POST(req: NextRequest) {
   if (getPaymentsMode() !== 'simulation') {
@@ -26,19 +26,13 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return NextResponse.json(
-      { error: 'Non authentifié' },
-      { status: 401 }
-    )
+    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
   }
 
   const { booking_id } = await req.json()
 
   if (!booking_id) {
-    return NextResponse.json(
-      { error: 'booking_id requis' },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: 'booking_id requis' }, { status: 400 })
   }
 
   const { data: booking, error: bookingError } = await supabase
@@ -68,10 +62,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (booking.sender_id !== user.id) {
-    return NextResponse.json(
-      { error: 'Non autorisé' },
-      { status: 403 }
-    )
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
   }
 
   if (isFeatureEnabled('KYC_ENABLED')) {
@@ -82,27 +73,27 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (profileError || !profile) {
-      return NextResponse.json(
-        { error: 'Profil introuvable' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'Profil introuvable' }, { status: 404 })
     }
 
     if (profile.kyc_status !== 'approved') {
-      let errorMessage = 'Vérification d\'identité requise pour continuer'
-      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour effectuer un paiement.'
+      let errorMessage = "Vérification d'identité requise pour continuer"
+      let errorDetails =
+        "Veuillez compléter votre vérification d'identité pour effectuer un paiement."
 
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
-        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez effectuer un paiement une fois celle-ci approuvée (24-48h).'
+        errorDetails =
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez effectuer un paiement une fois celle-ci approuvée (24-48h)."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason
           ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
           : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
       } else if (profile.kyc_status === 'incomplete') {
-        errorMessage = 'Vérification d\'identité incomplète'
-        errorDetails = 'Veuillez soumettre vos documents d\'identité pour effectuer un paiement.'
+        errorMessage = "Vérification d'identité incomplète"
+        errorDetails =
+          "Veuillez soumettre vos documents d'identité pour effectuer un paiement."
       }
 
       return NextResponse.json(

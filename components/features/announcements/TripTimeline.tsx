@@ -28,7 +28,8 @@ export function TripTimeline({
   departureDate,
   arrivalDate,
 }: TripTimelineProps) {
-  const depDate = typeof departureDate === 'string' ? new Date(departureDate) : departureDate
+  const depDate =
+    typeof departureDate === 'string' ? new Date(departureDate) : departureDate
   const arrDate = arrivalDate
     ? typeof arrivalDate === 'string'
       ? new Date(arrivalDate)
@@ -61,7 +62,9 @@ export function TripTimeline({
           <div className="h-0.5 w-16 bg-primary" />
           <div className="text-2xl my-2">→</div>
           {duration && (
-            <p className="text-xs text-muted-foreground whitespace-nowrap">{duration} jour{duration > 1 ? 's' : ''}</p>
+            <p className="text-xs text-muted-foreground whitespace-nowrap">
+              {duration} jour{duration > 1 ? 's' : ''}
+            </p>
           )}
         </div>
 
@@ -69,14 +72,18 @@ export function TripTimeline({
         <div className="flex sm:hidden flex-col items-center py-2">
           <IconArrowDown className="h-6 w-6 text-primary" />
           {duration && (
-            <p className="text-xs text-muted-foreground mt-1">{duration} jour{duration > 1 ? 's' : ''}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {duration} jour{duration > 1 ? 's' : ''}
+            </p>
           )}
         </div>
 
         {/* Arrivée */}
         <div className="flex-1 min-w-0 text-center sm:text-right">
           <div className="flex items-center gap-2 mb-2 justify-center sm:justify-end">
-            <h3 className="font-semibold text-lg truncate sm:order-1">{destinationCity}</h3>
+            <h3 className="font-semibold text-lg truncate sm:order-1">
+              {destinationCity}
+            </h3>
             <span className="text-2xl flex-shrink-0 sm:order-2">
               {COUNTRY_FLAGS[destinationCountry] || '📍'}
             </span>
@@ -92,15 +99,3 @@ export function TripTimeline({
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

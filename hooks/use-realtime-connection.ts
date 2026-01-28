@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 
 export type ConnectionStatus =
   | 'connecting'
@@ -23,7 +23,10 @@ export function useRealtimeConnection() {
       const supabase = createClient()
 
       // Vérifier l'état de la session
-      const { data: { session }, error } = await supabase.auth.getSession()
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession()
 
       if (error || !session) {
         setStatus('disconnected')
@@ -37,29 +40,28 @@ export function useRealtimeConnection() {
         },
       })
 
-      return new Promise<boolean>((resolve) => {
+      return new Promise<boolean>(resolve => {
         const timeout = setTimeout(() => {
           supabase.removeChannel(testChannel)
           setStatus('error')
           resolve(false)
         }, 5000)
 
-        testChannel
-          .subscribe((status) => {
-            clearTimeout(timeout)
+        testChannel.subscribe(status => {
+          clearTimeout(timeout)
 
-            if (status === 'SUBSCRIBED') {
-              setStatus('connected')
-              setLastConnectedAt(new Date())
-              setReconnectAttempts(0)
-              supabase.removeChannel(testChannel)
-              resolve(true)
-            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-              setStatus('error')
-              supabase.removeChannel(testChannel)
-              resolve(false)
-            }
-          })
+          if (status === 'SUBSCRIBED') {
+            setStatus('connected')
+            setLastConnectedAt(new Date())
+            setReconnectAttempts(0)
+            supabase.removeChannel(testChannel)
+            resolve(true)
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            setStatus('error')
+            supabase.removeChannel(testChannel)
+            resolve(false)
+          }
+        })
       })
     } catch (error) {
       console.error('[RealtimeConnection] Error checking connection:', error)
@@ -70,7 +72,7 @@ export function useRealtimeConnection() {
 
   const reconnect = useCallback(async () => {
     setStatus('connecting')
-    setReconnectAttempts((prev) => prev + 1)
+    setReconnectAttempts(prev => prev + 1)
 
     const connected = await checkConnection()
 
