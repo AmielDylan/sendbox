@@ -116,7 +116,6 @@ export default function AdminUsersPage() {
                 <TableHead>Nom</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Rôle</TableHead>
-                <TableHead>KYC</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead>Inscription</TableHead>
                 <TableHead>Actions</TableHead>
@@ -140,19 +139,6 @@ export default function AdminUsersPage() {
                   <TableCell>
                     <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                       {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        user.kyc_status === 'approved'
-                          ? 'default'
-                          : user.kyc_status === 'pending'
-                          ? 'secondary'
-                          : 'destructive'
-                      }
-                    >
-                      {user.kyc_status || 'non soumis'}
                     </Badge>
                   </TableCell>
                   <TableCell>

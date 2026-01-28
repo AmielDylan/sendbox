@@ -20,14 +20,9 @@ import {
   IconCreditCard,
   IconMenu2,
   IconLoader2,
-  IconSettings,
   IconLogout,
-  IconUser,
-  IconSearch,
   IconRosetteDiscountCheck,
   IconCheck,
-  IconClock,
-  IconAlertCircle,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from "@/lib/utils"
@@ -164,15 +159,8 @@ function SidebarContent({
         <LogoLink className="h-6" onClick={onNavigate} />
       </div>
 
-      {/* Badge ADMIN + Navigation */}
+      {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4" aria-label="Navigation administration">
-        {/* Badge ADMIN */}
-        <div className="mb-4 px-3">
-          <Badge variant="destructive" className="text-[10px] font-semibold px-2 py-0.5">
-            ADMIN
-          </Badge>
-        </div>
-
         {adminNavItems.map(item => {
           const Icon = item.icon
           const isActive =
@@ -208,8 +196,8 @@ function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
       {/* Badge ADMIN à la place de la recherche */}
-      <Badge variant="destructive" className="text-[10px] font-semibold px-2 py-1">
-        Admin
+      <Badge variant="destructive" className="h-8 text-[10px] font-semibold px-3">
+        ADMIN
       </Badge>
 
       <ClientOnly>
