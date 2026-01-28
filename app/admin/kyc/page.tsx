@@ -5,7 +5,6 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/shared/db/client'
 import {
