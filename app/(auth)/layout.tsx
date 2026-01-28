@@ -7,6 +7,9 @@ import { PublicFooter } from '@/components/layouts/PublicFooter'
 import { PublicHeader } from '@/components/layouts/PublicHeader'
 import { AuthSidebar } from '@/components/auth/AuthSidebar'
 
+// Force dynamic rendering for auth pages (use auth context)
+export const dynamic = 'force-dynamic'
+
 export default function AuthLayout({
   children,
 }: {
