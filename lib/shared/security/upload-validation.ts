@@ -72,7 +72,7 @@ export async function validateUpload(
       if (!fileType || !fileType.mime.startsWith('image/')) {
         return {
           valid: false,
-          error: 'Le fichier n\'est pas une image valide',
+          error: "Le fichier n'est pas une image valide",
         }
       }
     }
@@ -84,7 +84,7 @@ export async function validateUpload(
       if (pdfHeader !== '%PDF') {
         return {
           valid: false,
-          error: 'Le fichier n\'est pas un PDF valide',
+          error: "Le fichier n'est pas un PDF valide",
         }
       }
     }
@@ -131,12 +131,3 @@ export async function validateKYCDocument(file: File, maxSizeMB: number = 5) {
     allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
   })
 }
-
-
-
-
-
-
-
-
-

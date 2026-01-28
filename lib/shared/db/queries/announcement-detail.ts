@@ -2,11 +2,11 @@
  * Queries pour récupérer les détails d'une annonce
  */
 
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import {
   getPublicProfiles,
   mapPublicProfilesById,
-} from "@/lib/shared/db/queries/public-profiles"
+} from '@/lib/shared/db/queries/public-profiles'
 
 export interface AnnouncementDetail {
   id: string
@@ -74,7 +74,11 @@ export async function getAnnouncementDetail(
     .in('status', ['accepted', 'in_transit'])
 
   const reservedWeight =
-    bookings?.reduce((sum: number, booking: any) => sum + ((booking.kilos_requested || booking.weight_kg) || 0), 0) || 0
+    bookings?.reduce(
+      (sum: number, booking: any) =>
+        sum + (booking.kilos_requested || booking.weight_kg || 0),
+      0
+    ) || 0
 
   // Calculer le rating et le nombre de services du voyageur
   const { data: ratings } = await supabase
@@ -84,7 +88,8 @@ export async function getAnnouncementDetail(
 
   const travelerRating =
     ratings && ratings.length > 0
-      ? ratings.reduce((sum: number, r: any) => sum + r.rating, 0) / ratings.length
+      ? ratings.reduce((sum: number, r: any) => sum + r.rating, 0) /
+        ratings.length
       : 0
 
   const { count: servicesCount } = await supabase

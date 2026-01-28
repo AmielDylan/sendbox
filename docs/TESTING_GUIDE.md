@@ -57,7 +57,7 @@ describe('Mon module', () => {
 import { describe, it, expect, vi } from 'vitest'
 
 describe('API Call', () => {
-  it('devrait appeler l\'API', () => {
+  it("devrait appeler l'API", () => {
     const mockFn = vi.fn()
     mockFn('test')
     expect(mockFn).toHaveBeenCalledWith('test')
@@ -86,6 +86,7 @@ describe('Flux utilisateur', () => {
 ### Workflow CI (`.github/workflows/ci.yml`)
 
 Exécuté sur chaque **push** et **pull request** :
+
 - ✅ Vérification du format (ESLint, Prettier)
 - ✅ Tests unitaires
 - ✅ Tests d'intégration
@@ -95,6 +96,7 @@ Exécuté sur chaque **push** et **pull request** :
 ### Workflow Deploy (`.github/workflows/deploy.yml`)
 
 Exécuté uniquement sur **main** :
+
 - ✅ Tous les tests
 - ✅ Build de production
 - ✅ Déploiement sur Vercel
@@ -102,11 +104,13 @@ Exécuté uniquement sur **main** :
 ## Configuration Vercel requise
 
 Ajouter les secrets GitHub Actions :
+
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`
 
 Et les variables d'environnement :
+
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
@@ -160,6 +164,7 @@ node --inspect-brk ./node_modules/.bin/vitest
 ## Couverture minimale
 
 Cibles recommandées :
+
 - **Statements**: 70%+
 - **Branches**: 65%+
 - **Functions**: 70%+
@@ -168,15 +173,18 @@ Cibles recommandées :
 ## Troubleshooting
 
 ### Les tests prennent trop longtemps
+
 - Utiliser `--run` pour sortir après exécution
 - Vérifier les mocks (ne pas appeler les APIs réelles)
 
 ### Tests qui échouent aléatoirement
+
 - Éviter les dépendances de temps
 - Utiliser des dates mockées
 - Nettoyer les timers : `vi.clearAllTimers()`
 
 ### Couverture manquante
+
 ```bash
 npm run test:coverage
 # Ouvrir coverage/index.html
@@ -187,8 +195,9 @@ npm run test:coverage
 - [Vitest Documentation](https://vitest.dev)
 - [Testing Library](https://testing-library.com)
 - [Jest Matchers](https://vitest.dev/api/expect.html)
-Temps de chargement: _____ secondes
-Erreur: Oui / Non
+  Temps de chargement: **\_** secondes
+  Erreur: Oui / Non
+
 ```
 
 ---
@@ -211,9 +220,11 @@ Erreur: Oui / Non
 
 **Résultat réel:**
 ```
-Temps de retour: _____ secondes
+
+Temps de retour: **\_** secondes
 Données préservées: Oui / Non
-Nombre de réservations: _____
+Nombre de réservations: **\_**
+
 ```
 
 ---
@@ -235,9 +246,11 @@ Nombre de réservations: _____
 
 **Résultat réel:**
 ```
-Temps "Tous" (1ère fois): _____ s
-Temps "En attente": _____ s
-Temps "Tous" (retour): _____ s
+
+Temps "Tous" (1ère fois): **\_** s
+Temps "En attente": **\_** s
+Temps "Tous" (retour): **\_** s
+
 ```
 
 ---
@@ -260,9 +273,11 @@ Temps "Tous" (retour): _____ s
 
 **Résultat réel:**
 ```
+
 Synchronisation connexion: Oui / Non
 Synchronisation déconnexion: Oui / Non
-Délai de sync: _____ secondes
+Délai de sync: **\_** secondes
+
 ```
 
 ---
@@ -285,9 +300,11 @@ Délai de sync: _____ secondes
 
 **Résultat réel:**
 ```
+
 Message d'erreur affiché: Oui / Non
-Texte du message: _____________________________
+Texte du message: **************\_**************
 Bouton Réessayer fonctionne: Oui / Non
+
 ```
 
 ---
@@ -309,10 +326,12 @@ Bouton Réessayer fonctionne: Oui / Non
 
 **Résultat réel:**
 ```
-Temps total: _____ secondes
-Nombre de retries visible: _____
+
+Temps total: **\_** secondes
+Nombre de retries visible: **\_**
 Données chargées: Oui / Non
-```
+
+````
 
 ---
 
@@ -378,13 +397,14 @@ Données chargées: Oui / Non
 3. Augmenter le timeout dans la page si nécessaire:
    ```typescript
    { timeout: 10000 } // 10 secondes
-   ```
+````
 
 ### Problème: Données obsolètes
 
 **Cause:** Cache trop long
 
 **Solution:**
+
 1. Invalider manuellement: `queryClient.invalidateQueries({ queryKey: ['user-bookings'] })`
 2. Ajuster `staleTime` dans la configuration
 3. Forcer un refetch: cliquer sur "Réessayer"
@@ -396,11 +416,13 @@ Données chargées: Oui / Non
 ### Activer les logs
 
 Dans `components/providers/optimized-auth-provider.tsx`, les logs sont déjà activés:
+
 ```typescript
 console.log('[Auth] State change:', event, currentSession?.user?.id)
 ```
 
 Dans la console, vous devriez voir:
+
 - `[Auth] State change: SIGNED_IN user-id-xxx` → Connexion
 - `[Auth] State change: TOKEN_REFRESHED user-id-xxx` → Refresh token
 - `[Auth] State change: SIGNED_OUT null` → Déconnexion
@@ -458,6 +480,6 @@ Une fois les tests validés:
 
 ---
 
-**Date du test:** _______________
-**Testeur:** _______________
+**Date du test:** ******\_\_\_******
+**Testeur:** ******\_\_\_******
 **Version:** 1.0.0 (Option complète)

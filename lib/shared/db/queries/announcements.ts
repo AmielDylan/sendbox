@@ -2,8 +2,8 @@
  * Queries Supabase pour les annonces
  */
 
-import { createClient } from "@/lib/shared/db/client"
-import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
+import { createClient } from '@/lib/shared/db/client'
+import { getPublicProfiles } from '@/lib/shared/db/queries/public-profiles'
 
 /**
  * Formate une date en YYYY-MM-DD sans décalage de fuseau horaire
@@ -67,9 +67,16 @@ export async function searchAnnouncementsClient(filters: SearchFilters) {
 
   console.log('searchAnnouncementsClient - params:', params)
 
-  const { data, error } = await (supabase.rpc as any)('search_announcements', params)
+  const { data, error } = await (supabase.rpc as any)(
+    'search_announcements',
+    params
+  )
 
-  console.log('searchAnnouncementsClient - result:', { data, error, count: data?.length })
+  console.log('searchAnnouncementsClient - result:', {
+    data,
+    error,
+    count: data?.length,
+  })
 
   if (error) {
     console.error('Search announcements error:', error)
@@ -85,14 +92,17 @@ export async function searchAnnouncementsClient(filters: SearchFilters) {
 export async function countSearchAnnouncements(filters: SearchFilters) {
   const supabase = createClient()
 
-  const { data, error } = await (supabase.rpc as any)('count_search_announcements', {
-    p_departure_country: filters.departureCountry || null,
-    p_arrival_country: filters.arrivalCountry || null,
-    p_departure_date: filters.departureDate
-      ? formatDateLocal(filters.departureDate)
-      : null,
-    p_min_kg: filters.minKg || null,
-  })
+  const { data, error } = await (supabase.rpc as any)(
+    'count_search_announcements',
+    {
+      p_departure_country: filters.departureCountry || null,
+      p_arrival_country: filters.arrivalCountry || null,
+      p_departure_date: filters.departureDate
+        ? formatDateLocal(filters.departureDate)
+        : null,
+      p_min_kg: filters.minKg || null,
+    }
+  )
 
   if (error) {
     console.error('Count announcements error:', error)

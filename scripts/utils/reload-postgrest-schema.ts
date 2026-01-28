@@ -18,28 +18,44 @@ async function reloadSchema() {
   // Endpoint: POST /rpc/pgrst_reload_schema (sur certaines installations)
   // Ou: envoyer un signal SIGUSR1 au processus PostgREST (nécessite accès serveur)
 
-  console.log('Note: Le rechargement du schéma PostgREST nécessite généralement:')
-  console.log('1. Un redémarrage de l\'instance PostgREST (via le dashboard Supabase)')
-  console.log('2. Ou attendre le rechargement automatique du cache (peut prendre quelques minutes)')
-  console.log('3. Ou utiliser la clé service pour appeler un endpoint de rechargement')
+  console.log(
+    'Note: Le rechargement du schéma PostgREST nécessite généralement:'
+  )
+  console.log(
+    "1. Un redémarrage de l'instance PostgREST (via le dashboard Supabase)"
+  )
+  console.log(
+    '2. Ou attendre le rechargement automatique du cache (peut prendre quelques minutes)'
+  )
+  console.log(
+    '3. Ou utiliser la clé service pour appeler un endpoint de rechargement'
+  )
 
   console.log('\n📋 ACTIONS RECOMMANDÉES:\n')
-  console.log('1. Aller sur https://app.supabase.com/project/tpvjycjlzxlbrtbvyfsx/settings/api')
-  console.log('2. Redémarrer le projet (Project Settings > General > Restart project)')
-  console.log('3. Ou attendre 5-10 minutes pour que le cache se rafraîchisse automatiquement')
+  console.log(
+    '1. Aller sur https://app.supabase.com/project/tpvjycjlzxlbrtbvyfsx/settings/api'
+  )
+  console.log(
+    '2. Redémarrer le projet (Project Settings > General > Restart project)'
+  )
+  console.log(
+    '3. Ou attendre 5-10 minutes pour que le cache se rafraîchisse automatiquement'
+  )
 
   console.log('\n💡 SOLUTION ALTERNATIVE:\n')
-  console.log('Créer une vue matérialisée ou une fonction qui force le rechargement:')
-  console.log('NOTIFY pgrst, \'reload schema\';')
+  console.log(
+    'Créer une vue matérialisée ou une fonction qui force le rechargement:'
+  )
+  console.log("NOTIFY pgrst, 'reload schema';")
 
   // Test de connexion
   console.log('\n🧪 Test de connexion...')
   try {
     const response = await fetch(`${supabaseUrl}/rest/v1/`, {
       headers: {
-        'apikey': supabaseAnonKey,
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-      }
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
     })
     console.log('✅ Connexion à PostgREST: OK (status', response.status, ')')
   } catch (error) {

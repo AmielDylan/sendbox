@@ -7,8 +7,11 @@
 import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
-import { getUserConversations } from "@/lib/core/messages/actions"
-import { getUserNotifications, getUnreadNotificationsCount } from "@/lib/shared/db/queries/notifications"
+import { getUserConversations } from '@/lib/core/messages/actions'
+import {
+  getUserNotifications,
+  getUnreadNotificationsCount,
+} from '@/lib/shared/db/queries/notifications'
 import { PageHeader } from '@/components/ui/page-header'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -16,11 +19,16 @@ import { ConversationList } from '@/components/features/messages/ConversationLis
 import { ChatWindow } from '@/components/features/messages/ChatWindow'
 import { ConnectionIndicator } from '@/components/features/messages/ConnectionIndicator'
 import { BookingRequestCard } from '@/components/features/bookings/BookingRequestCard'
-import { getPendingBookingRequests } from "@/lib/core/bookings/requests"
-import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
+import { getPendingBookingRequests } from '@/lib/core/bookings/requests'
+import { getPublicProfiles } from '@/lib/shared/db/queries/public-profiles'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconLoader2, IconBell, IconInbox, IconMessageCircle } from '@tabler/icons-react'
-import { createClient } from "@/lib/shared/db/client"
+import {
+  IconLoader2,
+  IconBell,
+  IconInbox,
+  IconMessageCircle,
+} from '@tabler/icons-react'
+import { createClient } from '@/lib/shared/db/client'
 
 type ConversationSummary = {
   booking_id: string
@@ -39,19 +47,24 @@ function MessagesPageContent() {
   const bookingIdFromUrl = searchParams.get('booking')
   const tabFromUrl = searchParams.get('tab')
   const resolvedTab =
-    tabFromUrl === 'notifications' || tabFromUrl === 'requests' || tabFromUrl === 'chat'
+    tabFromUrl === 'notifications' ||
+    tabFromUrl === 'requests' ||
+    tabFromUrl === 'chat'
       ? tabFromUrl
       : null
 
   const [unreadCount, setUnreadCount] = useState(0)
-  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(bookingIdFromUrl)
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    bookingIdFromUrl
+  )
   const [selectedConversation, setSelectedConversation] = useState<{
     bookingId: string
     otherUserId: string
     otherUserName: string
     otherUserAvatar: string | null
   } | null>(null)
-  const [pendingConversation, setPendingConversation] = useState<ConversationSummary | null>(null)
+  const [pendingConversation, setPendingConversation] =
+    useState<ConversationSummary | null>(null)
   const [activeTab, setActiveTab] = useState(resolvedTab || 'chat')
 
   useEffect(() => {
@@ -124,27 +137,37 @@ function MessagesPageContent() {
   })
 
   // Mettre à jour la conversation sélectionnée quand on clique sur une conversation
-  const handleSelectConversation = useCallback(async (bookingId: string) => {
-    setSelectedBookingId(bookingId)
+  const handleSelectConversation = useCallback(
+    async (bookingId: string) => {
+      setSelectedBookingId(bookingId)
 
-    // Récupérer les détails de la conversation
-    const baseConversations = conversationsData || []
-    const conversationList =
-      pendingConversation && !baseConversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
-        ? [pendingConversation, ...baseConversations]
-        : baseConversations
-    const conversation = conversationList.find((c: any) => c.booking_id === bookingId)
+      // Récupérer les détails de la conversation
+      const baseConversations = conversationsData || []
+      const conversationList =
+        pendingConversation &&
+        !baseConversations.some(
+          (c: any) => c.booking_id === pendingConversation.booking_id
+        )
+          ? [pendingConversation, ...baseConversations]
+          : baseConversations
+      const conversation = conversationList.find(
+        (c: any) => c.booking_id === bookingId
+      )
 
-    if (conversation) {
-      setSelectedConversation({
-        bookingId,
-        otherUserId: conversation.other_user_id,
-        otherUserName: `${conversation.other_user_firstname || ''} ${conversation.other_user_lastname || ''
-          }`.trim() || 'Utilisateur',
-        otherUserAvatar: conversation.other_user_avatar_url,
-      })
-    }
-  }, [conversationsData, pendingConversation])
+      if (conversation) {
+        setSelectedConversation({
+          bookingId,
+          otherUserId: conversation.other_user_id,
+          otherUserName:
+            `${conversation.other_user_firstname || ''} ${
+              conversation.other_user_lastname || ''
+            }`.trim() || 'Utilisateur',
+          otherUserAvatar: conversation.other_user_avatar_url,
+        })
+      }
+    },
+    [conversationsData, pendingConversation]
+  )
 
   // Auto-sélectionner la conversation si booking_id dans l'URL
   useEffect(() => {
@@ -153,7 +176,9 @@ function MessagesPageContent() {
 
       // D'abord essayer de trouver dans les conversations existantes
       if (conversationsData) {
-        const conversation = conversationsData.find((c: any) => c.booking_id === bookingIdFromUrl)
+        const conversation = conversationsData.find(
+          (c: any) => c.booking_id === bookingIdFromUrl
+        )
         if (conversation) {
           handleSelectConversation(bookingIdFromUrl)
           return
@@ -162,7 +187,9 @@ function MessagesPageContent() {
 
       // Si pas trouvé, récupérer les détails de la réservation
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
       if (!user) return
 
@@ -175,7 +202,9 @@ function MessagesPageContent() {
       if (booking) {
         // Déterminer l'autre utilisateur
         const isUserSender = booking.sender_id === user.id
-        const otherUserId = isUserSender ? booking.traveler_id : booking.sender_id
+        const otherUserId = isUserSender
+          ? booking.traveler_id
+          : booking.sender_id
 
         // Récupérer les infos de l'autre utilisateur
         const { data: publicProfiles } = await getPublicProfiles(supabase, [
@@ -183,7 +212,8 @@ function MessagesPageContent() {
         ])
         const otherUserProfile = publicProfiles?.[0] || null
         const otherUserName = otherUserProfile
-          ? `${otherUserProfile.firstname || ''} ${otherUserProfile.lastname || ''}`.trim() || 'Utilisateur'
+          ? `${otherUserProfile.firstname || ''} ${otherUserProfile.lastname || ''}`.trim() ||
+            'Utilisateur'
           : 'Utilisateur'
 
         setSelectedBookingId(bookingIdFromUrl)
@@ -200,7 +230,8 @@ function MessagesPageContent() {
           other_user_lastname: otherUserProfile?.lastname || null,
           other_user_avatar_url: otherUserProfile?.avatar_url || null,
           last_message_content: 'Nouvelle conversation',
-          last_message_created_at: booking.created_at || new Date().toISOString(),
+          last_message_created_at:
+            booking.created_at || new Date().toISOString(),
           last_message_sender_id: '',
           unread_count: 0,
         })
@@ -211,7 +242,12 @@ function MessagesPageContent() {
   }, [bookingIdFromUrl, conversationsData, handleSelectConversation])
 
   useEffect(() => {
-    if (pendingConversation && conversationsData?.some((c: any) => c.booking_id === pendingConversation.booking_id)) {
+    if (
+      pendingConversation &&
+      conversationsData?.some(
+        (c: any) => c.booking_id === pendingConversation.booking_id
+      )
+    ) {
       setPendingConversation(null)
     }
   }, [conversationsData, pendingConversation])
@@ -240,7 +276,9 @@ function MessagesPageContent() {
 
     // Obtenir l'userId pour filtrer correctement
     const setupRealtimeSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
       const channel = supabase
@@ -292,7 +330,9 @@ function MessagesPageContent() {
     }
 
     const setupRealtimeSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
       channel = supabase
@@ -353,7 +393,9 @@ function MessagesPageContent() {
     }
 
     const setupRealtimeSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
       channel = supabase
@@ -425,7 +467,10 @@ function MessagesPageContent() {
   const notifications = notificationsData || []
   const conversations = conversationsData || []
   const mergedConversations =
-    pendingConversation && !conversations.some((c: any) => c.booking_id === pendingConversation.booking_id)
+    pendingConversation &&
+    !conversations.some(
+      (c: any) => c.booking_id === pendingConversation.booking_id
+    )
       ? [pendingConversation, ...conversations]
       : conversations
 
@@ -440,17 +485,27 @@ function MessagesPageContent() {
         ]}
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
           <TabsTrigger value="chat" className="gap-2">
             <IconMessageCircle className="h-4 w-4" />
             <span className="hidden sm:inline">Chat</span>
           </TabsTrigger>
-          <TabsTrigger value="requests" className="gap-1 sm:gap-2 flex items-center justify-center">
+          <TabsTrigger
+            value="requests"
+            className="gap-1 sm:gap-2 flex items-center justify-center"
+          >
             <IconInbox className="h-4 w-4" />
             <span className="hidden sm:inline">Demandes</span>
             {bookings.length > 0 && (
-              <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-xs sm:ml-2">
+              <Badge
+                variant="secondary"
+                className="h-5 min-w-5 px-1.5 text-xs sm:ml-2"
+              >
                 {bookings.length}
               </Badge>
             )}
@@ -478,49 +533,55 @@ function MessagesPageContent() {
 
             <div className="flex flex-1 overflow-hidden">
               {/* Sidebar: Liste conversations */}
-              <div className={`
+              <div
+                className={`
                 ${selectedConversation ? 'hidden md:flex' : 'flex'}
                 w-full md:w-80 lg:w-96 border-r flex-col
-              `}>
+              `}
+              >
                 <div className="p-4 border-b">
                   <h3 className="font-semibold text-lg">Conversations</h3>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                <ConversationList
-                  conversations={mergedConversations}
-                  isLoading={isLoadingConversations}
-                  isError={isErrorConversations}
-                  onRetry={refetchConversations}
-                  selectedBookingId={selectedBookingId}
-                  onSelectConversation={handleSelectConversation}
-                />
+                  <ConversationList
+                    conversations={mergedConversations}
+                    isLoading={isLoadingConversations}
+                    isError={isErrorConversations}
+                    onRetry={refetchConversations}
+                    selectedBookingId={selectedBookingId}
+                    onSelectConversation={handleSelectConversation}
+                  />
                 </div>
               </div>
 
               {/* Zone principale: Chat */}
-              <div className={`
+              <div
+                className={`
                 ${selectedConversation ? 'flex' : 'hidden md:flex'}
                 flex-1 flex-col
-              `}>
+              `}
+              >
                 {selectedConversation ? (
-                <ChatWindow
-                  bookingId={selectedConversation.bookingId}
-                  otherUserId={selectedConversation.otherUserId}
-                  otherUserName={selectedConversation.otherUserName}
-                  otherUserAvatar={selectedConversation.otherUserAvatar}
-                  onMessagesRead={refetchConversations}
-                  onBack={() => {
-                    setSelectedConversation(null)
-                    setSelectedBookingId(null)
-                  }}
-                />
+                  <ChatWindow
+                    bookingId={selectedConversation.bookingId}
+                    otherUserId={selectedConversation.otherUserId}
+                    otherUserName={selectedConversation.otherUserName}
+                    otherUserAvatar={selectedConversation.otherUserAvatar}
+                    onMessagesRead={refetchConversations}
+                    onBack={() => {
+                      setSelectedConversation(null)
+                      setSelectedBookingId(null)
+                    }}
+                  />
                 ) : (
                   <div className="flex-1 flex items-center justify-center text-muted-foreground">
                     <div className="text-center p-6">
                       <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mb-4 mx-auto">
                         <IconMessageCircle className="h-8 w-8 text-muted-foreground/50" />
                       </div>
-                      <h3 className="font-semibold text-lg mb-1">Vos messages</h3>
+                      <h3 className="font-semibold text-lg mb-1">
+                        Vos messages
+                      </h3>
                       <p className="max-w-xs text-sm">
                         Sélectionnez une conversation pour commencer
                       </p>
@@ -579,11 +640,12 @@ function MessagesPageContent() {
             </Card>
           ) : (
             <div className="space-y-2">
-              {notifications.map((notification) => (
+              {notifications.map(notification => (
                 <Card
                   key={notification.id}
-                  className={`cursor-pointer hover:bg-muted/50 transition-colors ${notification.read_at ? 'opacity-60' : ''
-                    }`}
+                  className={`cursor-pointer hover:bg-muted/50 transition-colors ${
+                    notification.read_at ? 'opacity-60' : ''
+                  }`}
                 >
                   <CardContent className="pt-6">
                     <div className="flex items-start justify-between">
@@ -593,13 +655,16 @@ function MessagesPageContent() {
                           {notification.content}
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">
-                          {new Date(notification.created_at).toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {new Date(notification.created_at).toLocaleDateString(
+                            'fr-FR',
+                            {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }
+                          )}
                         </p>
                       </div>
                       {!notification.read_at && (
@@ -621,11 +686,13 @@ function MessagesPageContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[400px]">
-        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[400px]">
+          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
       <MessagesPageContent />
     </Suspense>
   )

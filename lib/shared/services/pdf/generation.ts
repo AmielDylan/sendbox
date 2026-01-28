@@ -4,8 +4,8 @@
 
 'use server'
 
-import { createClient } from "@/lib/shared/db/server"
-import { createAdminClient } from "@/lib/shared/db/admin"
+import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
 import { pdf } from '@react-pdf/renderer'
 import { TransportContract } from '@/lib/shared/services/pdf/transport-contract'
 import { DepositProof } from '@/lib/shared/services/pdf/deposit-proof'
@@ -117,7 +117,7 @@ export async function generateTransportContract(bookingId: string) {
     if (uploadError) {
       console.error('Error uploading contract PDF:', uploadError)
       return {
-        error: 'Erreur lors de l\'upload du contrat',
+        error: "Erreur lors de l'upload du contrat",
       }
     }
 
@@ -129,7 +129,7 @@ export async function generateTransportContract(bookingId: string) {
     if (urlError || !urlData) {
       console.error('Error creating signed URL:', urlError)
       return {
-        error: 'Erreur lors de la génération de l\'URL',
+        error: "Erreur lors de la génération de l'URL",
       }
     }
 
@@ -192,7 +192,7 @@ export async function generateDepositProof(bookingId: string) {
 
     if (!booking.deposited_at) {
       return {
-        error: 'Le colis n\'a pas encore été déposé',
+        error: "Le colis n'a pas encore été déposé",
       }
     }
 
@@ -226,7 +226,7 @@ export async function generateDepositProof(bookingId: string) {
     if (uploadError) {
       console.error('Error uploading deposit proof PDF:', uploadError)
       return {
-        error: 'Erreur lors de l\'upload de la preuve',
+        error: "Erreur lors de l'upload de la preuve",
       }
     }
 
@@ -237,7 +237,7 @@ export async function generateDepositProof(bookingId: string) {
 
     if (urlError || !urlData) {
       return {
-        error: 'Erreur lors de la génération de l\'URL',
+        error: "Erreur lors de la génération de l'URL",
       }
     }
 
@@ -301,7 +301,7 @@ export async function generateDeliveryProof(bookingId: string) {
 
     if (!booking.delivered_at) {
       return {
-        error: 'Le colis n\'a pas encore été livré',
+        error: "Le colis n'a pas encore été livré",
       }
     }
 
@@ -335,7 +335,7 @@ export async function generateDeliveryProof(bookingId: string) {
     if (uploadError) {
       console.error('Error uploading delivery proof PDF:', uploadError)
       return {
-        error: 'Erreur lors de l\'upload de la preuve',
+        error: "Erreur lors de l'upload de la preuve",
       }
     }
 
@@ -346,7 +346,7 @@ export async function generateDeliveryProof(bookingId: string) {
 
     if (urlError || !urlData) {
       return {
-        error: 'Erreur lors de la génération de l\'URL',
+        error: "Erreur lors de la génération de l'URL",
       }
     }
 
@@ -366,7 +366,10 @@ export async function generateDeliveryProof(bookingId: string) {
 /**
  * Récupère l'URL d'un contrat PDF
  */
-export async function getContractUrl(bookingId: string, type: 'contract' | 'deposit' | 'delivery' = 'contract') {
+export async function getContractUrl(
+  bookingId: string,
+  type: 'contract' | 'deposit' | 'delivery' = 'contract'
+) {
   const supabase = await createClient()
   const adminClient = getAdminClient()
   const storageClient = adminClient ?? supabase
@@ -419,7 +422,7 @@ export async function getContractUrl(bookingId: string, type: 'contract' | 'depo
 
   if (error || !urlData) {
     return {
-      error: 'Document introuvable ou erreur lors de la génération de l\'URL',
+      error: "Document introuvable ou erreur lors de la génération de l'URL",
     }
   }
 

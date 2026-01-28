@@ -41,9 +41,7 @@ export function BookingForm({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="weight">
-            Combien de kilos ? ({weight} kg)
-          </Label>
+          <Label htmlFor="weight">Combien de kilos ? ({weight} kg)</Label>
           <Slider
             id="weight"
             min={1}
@@ -85,15 +83,3 @@ export function BookingForm({
     </Card>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

@@ -102,7 +102,8 @@
 
 /* New Landing V2 Animations */
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -111,7 +112,8 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
@@ -131,7 +133,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -183,7 +186,8 @@
 
 /* Grid pattern background */
 .bg-grid-pattern {
-  background-image: linear-gradient(hsl(var(--color-border)) 1px, transparent 1px),
+  background-image:
+    linear-gradient(hsl(var(--color-border)) 1px, transparent 1px),
     linear-gradient(90deg, hsl(var(--color-border)) 1px, transparent 1px);
   background-size: 50px 50px;
 }

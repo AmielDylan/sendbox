@@ -8,11 +8,13 @@ Ce répertoire contient les workflows automatisés pour CI/CD du projet Sendbox.
 
 ### 1. CI Pipeline (`ci.yml`)
 
-**Déclenché par:** 
+**Déclenché par:**
+
 - Push sur `main` ou `develop`
 - Pull requests vers `main` ou `develop`
 
 **Étapes:**
+
 1. **Lint** - Vérifie ESLint et Prettier
 2. **Unit Tests** - Exécute les tests unitaires
 3. **Integration Tests** - Exécute les tests d'intégration
@@ -22,10 +24,12 @@ Ce répertoire contient les workflows automatisés pour CI/CD du projet Sendbox.
 ### 2. Pre-Deploy Quality Checks (`deploy.yml`)
 
 **Déclenché par:**
+
 - Push sur `main` (production)
 - Manuelle via workflow_dispatch
 
 **Étapes:**
+
 1. **Tests** - Exécute tous les tests
 2. **TypeScript Check** - Vérifie les types
 3. **Build** - Compile Next.js (dry run)
@@ -53,6 +57,7 @@ RESEND_API_KEY                  # Clé API Resend
 ```
 
 **Optionnel (si tu veux contrôler le déploiement depuis GitHub):**
+
 - `VERCEL_TOKEN` - Token Vercel (pour déploiement manuel via GitHub)
 
 ## 🚀 Utilisation
@@ -73,6 +78,7 @@ RESEND_API_KEY                  # Clé API Resend
 ### Déboguer les erreurs
 
 **Les tests échouent:**
+
 ```bash
 # Exécuter localement
 npm run test:all
@@ -82,6 +88,7 @@ npm run test -- --reporter=verbose
 ```
 
 **Le build échoue:**
+
 ```bash
 # Vérifier TypeScript
 npx tsc --noEmit
@@ -120,20 +127,24 @@ Affichés directement dans le PR en tant que check.
 ## 🐛 Troubleshooting
 
 ### "Secrets not found"
+
 - Vérifier que les secrets existent dans Settings
 - Vérifier l'orthographe exacte
 - Les secrets sont sensibles à la casse
 
 ### "Node modules not found"
+
 - `npm ci` installe exactement les versions du lock file
 - Utiliser `npm ci` plutôt que `npm install` en CI
 
 ### "Type errors on deploy"
+
 - Vérifier `tsconfig.json`
 - Vérifier que toutes les dépendances sont installées
 - Vérifier les types manquants : `npm i --save-dev @types/xxx`
 
 ### Déploiement lent
+
 - Utiliser le cache npm
 - Les dépendances sont mises en cache entre les runs
 - Vérifier les étapes qui prennent du temps

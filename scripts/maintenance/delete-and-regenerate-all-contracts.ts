@@ -19,7 +19,7 @@ async function deleteAllContracts() {
     .from('contracts')
     .list('', {
       limit: 1000,
-      sortBy: { column: 'name', order: 'asc' }
+      sortBy: { column: 'name', order: 'asc' },
     })
 
   if (listError) {
@@ -45,7 +45,10 @@ async function deleteAllContracts() {
       .list(folder.name)
 
     if (folderListError) {
-      console.warn(`⚠️  Erreur lors du listage du dossier ${folder.name}:`, folderListError)
+      console.warn(
+        `⚠️  Erreur lors du listage du dossier ${folder.name}:`,
+        folderListError
+      )
       continue
     }
 
@@ -58,7 +61,9 @@ async function deleteAllContracts() {
 
     if (contractFiles.length === 0) continue
 
-    console.log(`  📄 Suppression de ${contractFiles.length} contrat(s) dans ${folder.name}`)
+    console.log(
+      `  📄 Suppression de ${contractFiles.length} contrat(s) dans ${folder.name}`
+    )
 
     const { error: deleteError } = await supabase.storage
       .from('contracts')
@@ -74,15 +79,19 @@ async function deleteAllContracts() {
 
   console.log('')
   console.log(`✅ Terminé! ${totalDeleted} contrat(s) supprimé(s)`)
-  console.log('ℹ️  Les contrats seront régénérés automatiquement lors du prochain accès')
+  console.log(
+    'ℹ️  Les contrats seront régénérés automatiquement lors du prochain accès'
+  )
   console.log('ℹ️  avec les noms de pays complets (France, Bénin, etc.)')
 
   process.exit(0)
 }
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('❌ Erreur: Variables d\'environnement manquantes')
-  console.log('Assurez-vous que NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont définis')
+  console.error("❌ Erreur: Variables d'environnement manquantes")
+  console.log(
+    'Assurez-vous que NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont définis'
+  )
   process.exit(1)
 }
 

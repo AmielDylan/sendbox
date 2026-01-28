@@ -66,11 +66,3 @@ export const deleteAccountSchema = z.object({
 })
 
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>
-
-
-
-
-
-
-
-

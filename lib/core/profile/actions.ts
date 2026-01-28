@@ -5,7 +5,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import {
   updateProfileSchema,
   changePasswordSchema,
@@ -15,10 +15,17 @@ import {
   type ChangePasswordInput,
   type ChangeEmailInput,
   type DeleteAccountInput,
-} from "@/lib/core/profile/validations"
-import { generateAvatarFileName, validateAvatarFile, getAvatarUrl } from "@/lib/core/profile/utils"
-import { sensitiveActionRateLimit, uploadRateLimit } from "@/lib/shared/security/rate-limit"
-import { validateImageUpload } from "@/lib/shared/security/upload-validation"
+} from '@/lib/core/profile/validations'
+import {
+  generateAvatarFileName,
+  validateAvatarFile,
+  getAvatarUrl,
+} from '@/lib/core/profile/utils'
+import {
+  sensitiveActionRateLimit,
+  uploadRateLimit,
+} from '@/lib/shared/security/rate-limit'
+import { validateImageUpload } from '@/lib/shared/security/upload-validation'
 import sharp from 'sharp'
 
 const AVATAR_SIZE = 200 // 200x200px

@@ -8,14 +8,13 @@ import { createProfile } from '@/types'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
-  const setUser = useAuthStore((state) => state.setUser)
-  const setProfile = useAuthStore((state) => state.setProfile)
-  const setInitialized = useAuthStore((state) => state.setInitialized)
-  const clear = useAuthStore((state) => state.clear)
-  const user = useAuthStore((state) => state.user)
+  const setUser = useAuthStore(state => state.setUser)
+  const setProfile = useAuthStore(state => state.setProfile)
+  const setInitialized = useAuthStore(state => state.setInitialized)
+  const clear = useAuthStore(state => state.clear)
+  const user = useAuthStore(state => state.user)
   const listenerSetup = useRef(false)
   const supabaseRef = useRef(createClient())
-
 
   useEffect(() => {
     const supabase = supabaseRef.current
@@ -30,19 +29,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       for (let i = 0; i < retries; i++) {
         try {
-          const { data: profile, error } = await Promise.race([
-            supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', userId)
-              .single(),
+          const { data: profile, error } = (await Promise.race([
+            supabase.from('profiles').select('*').eq('id', userId).single(),
             new Promise(resolve =>
               setTimeout(
-                () => resolve({ data: null, error: new Error('Profile query timeout') }),
+                () =>
+                  resolve({
+                    data: null,
+                    error: new Error('Profile query timeout'),
+                  }),
                 timeoutMs
               )
-            )
-          ]) as any
+            ),
+          ])) as any
 
           if (!error && profile) {
             return profile
@@ -57,13 +56,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (lastError) {
-        console.warn('[AuthProvider] Profile fetch failed after retries:', lastError)
+        console.warn(
+          '[AuthProvider] Profile fetch failed after retries:',
+          lastError
+        )
       }
 
       return null
     }
 
-    const applySession = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
+    const applySession = async (
+      session: Awaited<
+        ReturnType<typeof supabase.auth.getSession>
+      >['data']['session']
+    ) => {
       if (session?.user) {
         setUser(session.user)
 
@@ -128,21 +134,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Listener auth state changes
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-            await applySession(session || null)
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          await applySession(session || null)
 
-            // Invalider seulement les queries pertinentes (pas toutes!)
-            // Évite boucle infinie avec onAuthStateChange
-            queryClient.invalidateQueries({ queryKey: ['user'] })
-            queryClient.invalidateQueries({ queryKey: ['profile'] })
-          } else if (event === 'SIGNED_OUT') {
-            clear()
-            queryClient.clear()
-          }
+          // Invalider seulement les queries pertinentes (pas toutes!)
+          // Évite boucle infinie avec onAuthStateChange
+          queryClient.invalidateQueries({ queryKey: ['user'] })
+          queryClient.invalidateQueries({ queryKey: ['profile'] })
+        } else if (event === 'SIGNED_OUT') {
+          clear()
+          queryClient.clear()
         }
-      )
+      })
 
       return () => {
         subscription.unsubscribe()

@@ -25,10 +25,15 @@ import {
   IconCheck,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +47,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
-import { getAvatarUrl } from "@/lib/core/profile/utils"
+import { getAvatarUrl } from '@/lib/core/profile/utils'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -103,7 +108,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <ClientOnly>
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Ouvrir le menu admin">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Ouvrir le menu admin"
+              >
                 <IconMenu2 className="h-5 w-5" />
                 <span className="sr-only">Ouvrir le menu</span>
               </Button>
@@ -160,7 +169,10 @@ function SidebarContent({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4" aria-label="Navigation administration">
+      <nav
+        className="flex-1 space-y-1 p-4"
+        aria-label="Navigation administration"
+      >
         {adminNavItems.map(item => {
           const Icon = item.icon
           const isActive =
@@ -196,7 +208,10 @@ function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
       {/* Badge ADMIN à la place de la recherche */}
-      <Badge variant="destructive" className="h-8 text-[10px] font-semibold px-3">
+      <Badge
+        variant="destructive"
+        className="h-8 text-[10px] font-semibold px-3"
+      >
         ADMIN
       </Badge>
 
@@ -297,11 +312,13 @@ function AdminUserMenu() {
   }
 
   const displayName = profile
-    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() || 'Admin'
+    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() ||
+      'Admin'
     : 'Admin'
 
   const initials = profile
-    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() || 'A'
+    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() ||
+      'A'
     : 'A'
 
   const avatarUrl = getAvatarUrl(
@@ -334,7 +351,10 @@ function AdminUserMenu() {
             className="absolute -bottom-0.5 -right-0.5"
             aria-label="Administrateur"
           >
-            <IconRosetteDiscountCheck className="h-4 w-4 text-red-500 fill-red-500" strokeWidth={1.5} />
+            <IconRosetteDiscountCheck
+              className="h-4 w-4 text-red-500 fill-red-500"
+              strokeWidth={1.5}
+            />
           </span>
         </Button>
       </DropdownMenuTrigger>

@@ -6,10 +6,21 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from "@/lib/shared/db/client"
-import { forceRefund, releasePayment, markAsDispute } from "@/lib/core/admin/actions"
+import { createClient } from '@/lib/shared/db/client'
+import {
+  forceRefund,
+  releasePayment,
+  markAsDispute,
+} from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -23,7 +34,12 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { IconLoader2, IconCurrencyDollar, IconLockOpen, IconAlertTriangle } from '@tabler/icons-react'
+import {
+  IconLoader2,
+  IconCurrencyDollar,
+  IconLockOpen,
+  IconAlertTriangle,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -35,7 +51,11 @@ export default function AdminBookingsPage() {
 
   const supabase = createClient()
 
-  const { data: bookings, isLoading, refetch } = useQuery({
+  const {
+    data: bookings,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['adminBookings'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -204,14 +224,17 @@ export default function AdminBookingsPage() {
               <Textarea
                 id="refund-reason"
                 value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                onChange={e => setReason(e.target.value)}
                 placeholder="Raison du remboursement..."
                 className="mt-2"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRefundDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setRefundDialogOpen(false)}
+            >
               Annuler
             </Button>
             <Button variant="destructive" onClick={handleRefund}>
@@ -236,14 +259,17 @@ export default function AdminBookingsPage() {
               <Textarea
                 id="dispute-reason"
                 value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                onChange={e => setReason(e.target.value)}
                 placeholder="Raison du litige..."
                 className="mt-2"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDisputeDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setDisputeDialogOpen(false)}
+            >
               Annuler
             </Button>
             <Button variant="destructive" onClick={handleDispute}>
@@ -255,15 +281,3 @@ export default function AdminBookingsPage() {
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

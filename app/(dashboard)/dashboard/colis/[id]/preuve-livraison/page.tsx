@@ -4,12 +4,19 @@
 
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/server"
-import { getContractUrl, generateDeliveryProof } from "@/lib/shared/services/pdf/generation"
+import { createClient } from '@/lib/shared/db/server'
+import {
+  getContractUrl,
+  generateDeliveryProof,
+} from '@/lib/shared/services/pdf/generation'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconDownload, IconExternalLink, IconLoader2 } from '@tabler/icons-react'
+import {
+  IconDownload,
+  IconExternalLink,
+  IconLoader2,
+} from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface DeliveryProofPageProps {
@@ -144,8 +151,3 @@ export default function DeliveryProofPage({ params }: DeliveryProofPageProps) {
     </Suspense>
   )
 }
-
-
-
-
-

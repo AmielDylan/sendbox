@@ -15,16 +15,21 @@ async function testBookingCreation() {
   console.log('\n=== TEST CRÉATION RÉSERVATION ===\n')
 
   // 1. Trouver une annonce active
-  console.log('1. Recherche d\'une annonce active...')
+  console.log("1. Recherche d'une annonce active...")
   const { data: announcement, error: announcementError } = await supabase
     .from('announcements')
-    .select('id, traveler_id, available_kg, status, departure_city, arrival_city, price_per_kg')
+    .select(
+      'id, traveler_id, available_kg, status, departure_city, arrival_city, price_per_kg'
+    )
     .eq('status', 'active')
     .limit(1)
     .single()
 
   if (announcementError || !announcement) {
-    console.error('❌ Erreur:', announcementError?.message || 'Aucune annonce trouvée')
+    console.error(
+      '❌ Erreur:',
+      announcementError?.message || 'Aucune annonce trouvée'
+    )
     return
   }
 
@@ -38,7 +43,8 @@ async function testBookingCreation() {
   console.log('\n2. Test de la requête avec jointure...')
   const { data: bookings, error: joinError } = await supabase
     .from('bookings')
-    .select(`
+    .select(
+      `
       *,
       announcements:announcement_id (
         id,
@@ -46,7 +52,8 @@ async function testBookingCreation() {
         available_kg,
         status
       )
-    `)
+    `
+    )
     .limit(1)
 
   if (joinError) {
@@ -54,10 +61,15 @@ async function testBookingCreation() {
     console.error('Détails:', joinError)
   } else {
     console.log('✅ Jointure réussie')
-    console.log('Exemple:', bookings?.[0] ? {
-      booking_id: bookings[0].id,
-      announcement: (bookings[0] as any).announcements
-    } : 'Aucune réservation')
+    console.log(
+      'Exemple:',
+      bookings?.[0]
+        ? {
+            booking_id: bookings[0].id,
+            announcement: (bookings[0] as any).announcements,
+          }
+        : 'Aucune réservation'
+    )
   }
 
   // 3. Calculer le poids réservé (comme dans le code)
@@ -71,10 +83,11 @@ async function testBookingCreation() {
   if (existingError) {
     console.error('❌ Erreur:', existingError.message)
   } else {
-    const reservedWeight = existingBookings?.reduce(
-      (sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0),
-      0
-    ) || 0
+    const reservedWeight =
+      existingBookings?.reduce(
+        (sum: number, b: any) => sum + (b.kilos_requested || b.weight_kg || 0),
+        0
+      ) || 0
     const availableWeight = (announcement.available_kg || 0) - reservedWeight
 
     console.log('✅ Calcul réussi:', {

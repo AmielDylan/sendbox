@@ -3,14 +3,23 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/shared/db/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { IconTrendingUp, IconChevronDown, IconChevronUp, IconLoader2 } from '@tabler/icons-react'
+import {
+  IconTrendingUp,
+  IconChevronDown,
+  IconChevronUp,
+  IconLoader2,
+} from '@tabler/icons-react'
 import {
   calculateTravelerFinancials,
   calculateRequesterFinancials,
   type TravelerFinancials,
   type RequesterFinancials,
 } from '@/lib/core/bookings/financial-calculations'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import type { Database } from '@/types/database.types'
 
 type Booking = Database['public']['Tables']['bookings']['Row']
@@ -21,9 +30,9 @@ interface Props {
 }
 
 export function FinancialSummaryCard({ userId, role }: Props) {
-  const [financials, setFinancials] = useState<TravelerFinancials | RequesterFinancials | null>(
-    null
-  )
+  const [financials, setFinancials] = useState<
+    TravelerFinancials | RequesterFinancials | null
+  >(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -69,11 +78,15 @@ export function FinancialSummaryCard({ userId, role }: Props) {
     }
 
     const setup = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
       const filter =
-        role === 'traveler' ? `traveler_id=eq.${userId}` : `sender_id=eq.${userId}`
+        role === 'traveler'
+          ? `traveler_id=eq.${userId}`
+          : `sender_id=eq.${userId}`
 
       channel = supabase
         .channel(getChannelName(userId, role))
@@ -121,13 +134,16 @@ export function FinancialSummaryCard({ userId, role }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Aucun colis pour le moment</p>
+          <p className="text-sm text-muted-foreground">
+            Aucun colis pour le moment
+          </p>
         </CardContent>
       </Card>
     )
   }
 
-  const isTravelerFinancials = (f: any): f is TravelerFinancials => role === 'traveler'
+  const isTravelerFinancials = (f: any): f is TravelerFinancials =>
+    role === 'traveler'
 
   return (
     <Card>
@@ -161,12 +177,19 @@ export function FinancialSummaryCard({ userId, role }: Props) {
                 </p>
                 <div className="text-xs text-muted-foreground mt-2 space-y-1">
                   {financials.inTransitAmount > 0 && (
-                    <div>• {financials.inTransitAmount.toFixed(2)} € en transit</div>
+                    <div>
+                      • {financials.inTransitAmount.toFixed(2)} € en transit
+                    </div>
                   )}
                   {financials.awaitingPickupAmount > 0 && (
-                    <div>• {financials.awaitingPickupAmount.toFixed(2)} € en attente de dépôt</div>
+                    <div>
+                      • {financials.awaitingPickupAmount.toFixed(2)} € en
+                      attente de dépôt
+                    </div>
                   )}
-                  {financials.pendingAmount === 0 && <div>Aucun montant en attente.</div>}
+                  {financials.pendingAmount === 0 && (
+                    <div>Aucun montant en attente.</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -191,7 +214,8 @@ export function FinancialSummaryCard({ userId, role }: Props) {
                   {financials.totalPaid.toFixed(2)} €
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {financials.bookings.length} colis concernés (commission déjà retirée).
+                  {financials.bookings.length} colis concernés (commission déjà
+                  retirée).
                 </p>
               </div>
             </div>
@@ -207,11 +231,15 @@ export function FinancialSummaryCard({ userId, role }: Props) {
               )}
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-4 space-y-3">
-              {financials.bookings.map((booking) => (
-                <div key={booking.bookingId} className="rounded border p-3 space-y-2">
+              {financials.bookings.map(booking => (
+                <div
+                  key={booking.bookingId}
+                  className="rounded border p-3 space-y-2"
+                >
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">
-                      {booking.trackingNumber || `#${booking.bookingId.slice(0, 8)}`}
+                      {booking.trackingNumber ||
+                        `#${booking.bookingId.slice(0, 8)}`}
                     </span>
                     <span className="text-sm font-bold">
                       {role === 'traveler'
@@ -222,7 +250,9 @@ export function FinancialSummaryCard({ userId, role }: Props) {
                   </div>
                   {role === 'traveler' && (
                     <div className="text-[10px] text-muted-foreground">
-                      {booking.deliveryConfirmedAt ? 'Confirmé' : 'En attente de confirmation'}
+                      {booking.deliveryConfirmedAt
+                        ? 'Confirmé'
+                        : 'En attente de confirmation'}
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground space-y-1">

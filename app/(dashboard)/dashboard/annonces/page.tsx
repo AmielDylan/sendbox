@@ -6,12 +6,12 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getUserAnnouncements } from "@/lib/shared/db/queries/announcements"
+import { getUserAnnouncements } from '@/lib/shared/db/queries/announcements'
 import {
   deleteAnnouncement,
   markAnnouncementAsCompleted,
   toggleAnnouncementStatus,
-} from "@/lib/core/announcements/management"
+} from '@/lib/core/announcements/management'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -41,7 +41,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import { useAuth } from '@/hooks/use-auth'
 import { ClientOnly } from '@/components/ui/client-only'
 import { getCountryName } from '@/lib/utils/countries'
@@ -51,8 +51,7 @@ type AnnouncementStatus = 'active' | 'draft' | 'completed' | 'cancelled'
 export default function MyAnnouncementsPage() {
   const router = useRouter()
   const { user } = useAuth()
-  const [activeTab, setActiveTab] =
-    useState<AnnouncementStatus | 'all'>('all')
+  const [activeTab, setActiveTab] = useState<AnnouncementStatus | 'all'>('all')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [announcementToDelete, setAnnouncementToDelete] = useState<
     string | null
@@ -65,7 +64,9 @@ export default function MyAnnouncementsPage() {
     queryKey: ['user-announcements', activeTab],
     queryFn: async () => {
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       let effectiveUserId = user?.id || session?.user?.id
 
       if (!effectiveUserId) {
@@ -82,13 +83,14 @@ export default function MyAnnouncementsPage() {
   })
 
   const announcements = data?.data || []
-  const emptyTitle = activeTab === 'draft'
-    ? 'Aucun brouillon'
-    : activeTab === 'completed'
-      ? 'Aucune annonce terminée'
-      : activeTab === 'active'
-        ? 'Aucune annonce publiée'
-        : 'Aucune annonce'
+  const emptyTitle =
+    activeTab === 'draft'
+      ? 'Aucun brouillon'
+      : activeTab === 'completed'
+        ? 'Aucune annonce terminée'
+        : activeTab === 'active'
+          ? 'Aucune annonce publiée'
+          : 'Aucune annonce'
 
   // Gérer le rafraîchissement après création (Safari)
   useEffect(() => {
@@ -142,7 +144,9 @@ export default function MyAnnouncementsPage() {
       }
 
       if (result.success) {
-        toast.success('Annonce marquée comme terminée. Elle est maintenant dans l\'onglet "Terminées".')
+        toast.success(
+          'Annonce marquée comme terminée. Elle est maintenant dans l\'onglet "Terminées".'
+        )
         // Changer vers l'onglet "Terminées" pour montrer le résultat
         setActiveTab('completed')
       }
@@ -198,12 +202,14 @@ export default function MyAnnouncementsPage() {
         />
       </div>
 
-      <ClientOnly fallback={
-        <div className="flex items-center justify-center min-h-[400px]">
-          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      }>
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <ClientOnly
+        fallback={
+          <div className="flex items-center justify-center min-h-[400px]">
+            <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        }
+      >
+        <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)}>
           <TabsList>
             <TabsTrigger value="all">Toutes</TabsTrigger>
             <TabsTrigger value="active">Publiées</TabsTrigger>
@@ -224,9 +230,7 @@ export default function MyAnnouncementsPage() {
                       <IconPackage className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-lg text-foreground">
-                        {emptyTitle}
-                      </p>
+                      <p className="text-lg text-foreground">{emptyTitle}</p>
                       <p className="text-sm text-muted-foreground max-w-sm">
                         Créez votre première annonce pour proposer un trajet
                       </p>
@@ -242,30 +246,47 @@ export default function MyAnnouncementsPage() {
               </Card>
             ) : (
               <div className="grid gap-4">
-                {announcements.map((announcement) => (
-                  <Card key={announcement.id} className="rounded-xl border border-border/60 shadow-none hover:border-primary/40 hover:bg-muted/30 transition-all duration-300 group overflow-hidden flex flex-col">
+                {announcements.map(announcement => (
+                  <Card
+                    key={announcement.id}
+                    className="rounded-xl border border-border/60 shadow-none hover:border-primary/40 hover:bg-muted/30 transition-all duration-300 group overflow-hidden flex flex-col"
+                  >
                     <CardHeader className="p-5 pb-3">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div className="space-y-1">
                           <h3 className="font-bold text-xl sm:text-2xl text-foreground flex flex-wrap items-center gap-2 group-hover:text-primary transition-colors">
                             <span>{announcement.departure_city}</span>
-                            <span className="text-muted-foreground font-normal text-base mx-1">({getCountryName(announcement.departure_country)})</span>
-                            <IconArrowNarrowRight className="h-6 w-6 text-muted-foreground/50" stroke={1} />
+                            <span className="text-muted-foreground font-normal text-base mx-1">
+                              ({getCountryName(announcement.departure_country)})
+                            </span>
+                            <IconArrowNarrowRight
+                              className="h-6 w-6 text-muted-foreground/50"
+                              stroke={1}
+                            />
                             <span>{announcement.arrival_city}</span>
-                            <span className="text-muted-foreground font-normal text-base mx-1">({getCountryName(announcement.arrival_country)})</span>
+                            <span className="text-muted-foreground font-normal text-base mx-1">
+                              ({getCountryName(announcement.arrival_country)})
+                            </span>
                           </h3>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span className="font-medium text-primary">{announcement.price_per_kg} €</span> / kg
+                            <span className="font-medium text-primary">
+                              {announcement.price_per_kg} €
+                            </span>{' '}
+                            / kg
                             <span>•</span>
-                            <span>{announcement.available_kg} kg disponibles</span>
+                            <span>
+                              {announcement.available_kg} kg disponibles
+                            </span>
                           </div>
                         </div>
 
                         <Badge
                           variant={
-                            announcement.status === 'active' || announcement.status === 'partially_booked'
+                            announcement.status === 'active' ||
+                            announcement.status === 'partially_booked'
                               ? 'default'
-                              : announcement.status === 'fully_booked' || announcement.status === 'completed'
+                              : announcement.status === 'fully_booked' ||
+                                  announcement.status === 'completed'
                                 ? 'secondary'
                                 : announcement.status === 'cancelled'
                                   ? 'destructive'
@@ -295,28 +316,41 @@ export default function MyAnnouncementsPage() {
                       <div className="flex flex-wrap gap-2 w-full">
                         {/* Date Badge */}
                         <div className="flex flex-col items-start justify-center px-3 py-2 rounded-lg bg-background/50 border border-border/50 min-w-[120px]">
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Départ</span>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">
+                            Départ
+                          </span>
                           <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
                             <IconCalendar className="h-3.5 w-3.5 text-primary/70" />
-                            {format(new Date(announcement.departure_date), 'd MMM yyyy', { locale: fr })}
+                            {format(
+                              new Date(announcement.departure_date),
+                              'd MMM yyyy',
+                              { locale: fr }
+                            )}
                           </div>
                         </div>
 
                         {/* Arrival Date if exists (simulated or real) */}
                         <div className="flex flex-col items-start justify-center px-3 py-2 rounded-lg bg-background/50 border border-border/50 min-w-[120px]">
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Arrivée</span>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">
+                            Arrivée
+                          </span>
                           <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
                             <IconCalendar className="h-3.5 w-3.5 text-primary/70" />
                             {announcement.arrival_date
-                              ? format(new Date(announcement.arrival_date), 'd MMM yyyy', { locale: fr })
-                              : '-'
-                            }
+                              ? format(
+                                  new Date(announcement.arrival_date),
+                                  'd MMM yyyy',
+                                  { locale: fr }
+                                )
+                              : '-'}
                           </div>
                         </div>
 
                         {/* Views Badge */}
                         <div className="flex flex-col items-start justify-center px-3 py-2 rounded-lg bg-background/50 border border-border/50 min-w-[80px]">
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Vues</span>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">
+                            Vues
+                          </span>
                           <div className="flex items-center gap-1.5 font-bold text-sm text-foreground">
                             <IconEye className="h-3.5 w-3.5 text-muted-foreground" />
                             {announcement.views_count || 0}
@@ -347,7 +381,11 @@ export default function MyAnnouncementsPage() {
                             variant="outline"
                             size="sm"
                             className="h-9 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all font-medium"
-                            onClick={() => router.push(`/dashboard/annonces/${announcement.id}/edit`)}
+                            onClick={() =>
+                              router.push(
+                                `/dashboard/annonces/${announcement.id}/edit`
+                              )
+                            }
                           >
                             <IconEdit className="mr-2 h-3.5 w-3.5" />
                             Modifier
@@ -360,7 +398,11 @@ export default function MyAnnouncementsPage() {
                             variant="outline"
                             size="sm"
                             className="h-9 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all font-medium"
-                            onClick={() => router.push(`/dashboard/annonces/${announcement.id}/edit`)}
+                            onClick={() =>
+                              router.push(
+                                `/dashboard/annonces/${announcement.id}/edit`
+                              )
+                            }
                           >
                             <IconEdit className="mr-2 h-3.5 w-3.5" />
                             Modifier

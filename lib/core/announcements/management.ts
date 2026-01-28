@@ -5,12 +5,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import {
   updateAnnouncementSchema,
   type CreateAnnouncementInput,
-} from "@/lib/core/announcements/validations"
-import { isFeatureEnabled } from "@/lib/shared/config/features"
+} from '@/lib/core/announcements/validations'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 /**
  * Met à jour une annonce existante
@@ -64,7 +64,11 @@ export async function updateAnnouncement(
   }
 
   const acceptedWeight =
-    bookings?.reduce((sum: number, booking: any) => sum + ((booking.kilos_requested || booking.weight_kg) || 0), 0) || 0
+    bookings?.reduce(
+      (sum: number, booking: any) =>
+        sum + (booking.kilos_requested || booking.weight_kg || 0),
+      0
+    ) || 0
 
   // Validation Zod (sans contrainte de date future pour les mises à jour)
   const validation = updateAnnouncementSchema.safeParse(formData)
@@ -148,106 +152,129 @@ export async function deleteAnnouncement(announcementId: string) {
       }
     }
 
-  // Vérifier que l'annonce appartient à l'utilisateur et récupérer les informations complètes
-  const { data: announcement, error: fetchError } = await supabase
-    .from('announcements')
-    .select('*')
-    .eq('id', announcementId)
-    .single()
+    // Vérifier que l'annonce appartient à l'utilisateur et récupérer les informations complètes
+    const { data: announcement, error: fetchError } = await supabase
+      .from('announcements')
+      .select('*')
+      .eq('id', announcementId)
+      .single()
 
-  if (fetchError || !announcement) {
-    return {
-      error: 'Annonce introuvable',
-    }
-  }
-
-  if (announcement.traveler_id !== user.id) {
-    return {
-      error: "Vous n'êtes pas autorisé à supprimer cette annonce",
-    }
-  }
-
-  // Debug: logger les valeurs des champs
-  console.log('deleteAnnouncement - announcement data:', {
-    id: announcement.id,
-    // Colonnes principales (utilisées dans la création)
-    departure_country: announcement.departure_country,
-    departure_city: announcement.departure_city,
-    arrival_country: announcement.arrival_country,
-    arrival_city: announcement.arrival_city,
-    available_kg: announcement.available_kg,
-    departure_date: announcement.departure_date,
-    arrival_date: announcement.arrival_date,
-    status: announcement.status,
-  })
-
-  // Vérifier que l'annonce a au moins les informations de base (trajet et date)
-  const hasBasicInfo = announcement.departure_country && announcement.departure_city &&
-                       announcement.arrival_country && announcement.arrival_city &&
-                       announcement.departure_date
-
-  if (!hasBasicInfo) {
-    console.warn('deleteAnnouncement - annonce incomplète détectée:', announcement.id)
-    // Pour les annonces très anciennes ou corrompues, permettre la suppression si pas de réservations
-    // Mais d'abord vérifier les réservations
-  }
-
-  // Vérifier qu'il n'y a pas de bookings actifs
-  const { data: bookings, error: bookingsError } = await supabase
-    .from('bookings')
-    .select('id, status')
-    .eq('announcement_id', announcementId)
-    .in('status', ['pending', 'accepted', 'paid', 'deposited', 'in_transit', 'delivered'])
-
-  if (bookingsError) {
-    console.error('Erreur lors de la vérification des réservations:', bookingsError)
-    return {
-      error: `Erreur lors de la vérification des réservations: ${bookingsError.message}. Veuillez réessayer.`,
-    }
-  }
-
-  if (bookings && bookings.length > 0) {
-    const hasPending = bookings.some((booking) => booking.status === 'pending')
-    const hasAccepted = bookings.some((booking) =>
-      ['accepted', 'paid', 'deposited', 'in_transit', 'delivered'].includes(booking.status)
-    )
-
-    if (hasAccepted) {
+    if (fetchError || !announcement) {
       return {
-        error: "Impossible de supprimer cette annonce car elle a des demandes acceptées ou en cours.",
+        error: 'Annonce introuvable',
       }
     }
 
-    if (hasPending) {
+    if (announcement.traveler_id !== user.id) {
       return {
-        error: 'Veuillez refuser les demandes en attente avant de supprimer cette annonce.',
+        error: "Vous n'êtes pas autorisé à supprimer cette annonce",
       }
     }
 
-    const bookingStatuses = bookings.map(b => b.status).join(', ')
-    return {
-      error: `Impossible de supprimer cette annonce car elle a des réservations actives (statut: ${bookingStatuses})`,
+    // Debug: logger les valeurs des champs
+    console.log('deleteAnnouncement - announcement data:', {
+      id: announcement.id,
+      // Colonnes principales (utilisées dans la création)
+      departure_country: announcement.departure_country,
+      departure_city: announcement.departure_city,
+      arrival_country: announcement.arrival_country,
+      arrival_city: announcement.arrival_city,
+      available_kg: announcement.available_kg,
+      departure_date: announcement.departure_date,
+      arrival_date: announcement.arrival_date,
+      status: announcement.status,
+    })
+
+    // Vérifier que l'annonce a au moins les informations de base (trajet et date)
+    const hasBasicInfo =
+      announcement.departure_country &&
+      announcement.departure_city &&
+      announcement.arrival_country &&
+      announcement.arrival_city &&
+      announcement.departure_date
+
+    if (!hasBasicInfo) {
+      console.warn(
+        'deleteAnnouncement - annonce incomplète détectée:',
+        announcement.id
+      )
+      // Pour les annonces très anciennes ou corrompues, permettre la suppression si pas de réservations
+      // Mais d'abord vérifier les réservations
     }
-  }
 
-  // Si l'annonce semble incomplète mais n'a pas de réservations, permettre la suppression avec un avertissement
-  if (!hasBasicInfo) {
-    console.warn('Suppression d\'une annonce potentiellement incomplète:', announcement.id)
-    // On permet quand même la suppression car l'annonce n'a pas de réservations actives
-  }
+    // Vérifier qu'il n'y a pas de bookings actifs
+    const { data: bookings, error: bookingsError } = await supabase
+      .from('bookings')
+      .select('id, status')
+      .eq('announcement_id', announcementId)
+      .in('status', [
+        'pending',
+        'accepted',
+        'paid',
+        'deposited',
+        'in_transit',
+        'delivered',
+      ])
 
-  // Supprimer l'annonce
-  const { error: deleteError } = await supabase
-    .from('announcements')
-    .delete()
-    .eq('id', announcementId)
-
-  if (deleteError) {
-    console.error('Erreur lors de la suppression de l\'annonce:', deleteError)
-    return {
-      error: `Erreur lors de la suppression de l'annonce: ${deleteError.message}`,
+    if (bookingsError) {
+      console.error(
+        'Erreur lors de la vérification des réservations:',
+        bookingsError
+      )
+      return {
+        error: `Erreur lors de la vérification des réservations: ${bookingsError.message}. Veuillez réessayer.`,
+      }
     }
-  }
+
+    if (bookings && bookings.length > 0) {
+      const hasPending = bookings.some(booking => booking.status === 'pending')
+      const hasAccepted = bookings.some(booking =>
+        ['accepted', 'paid', 'deposited', 'in_transit', 'delivered'].includes(
+          booking.status
+        )
+      )
+
+      if (hasAccepted) {
+        return {
+          error:
+            'Impossible de supprimer cette annonce car elle a des demandes acceptées ou en cours.',
+        }
+      }
+
+      if (hasPending) {
+        return {
+          error:
+            'Veuillez refuser les demandes en attente avant de supprimer cette annonce.',
+        }
+      }
+
+      const bookingStatuses = bookings.map(b => b.status).join(', ')
+      return {
+        error: `Impossible de supprimer cette annonce car elle a des réservations actives (statut: ${bookingStatuses})`,
+      }
+    }
+
+    // Si l'annonce semble incomplète mais n'a pas de réservations, permettre la suppression avec un avertissement
+    if (!hasBasicInfo) {
+      console.warn(
+        "Suppression d'une annonce potentiellement incomplète:",
+        announcement.id
+      )
+      // On permet quand même la suppression car l'annonce n'a pas de réservations actives
+    }
+
+    // Supprimer l'annonce
+    const { error: deleteError } = await supabase
+      .from('announcements')
+      .delete()
+      .eq('id', announcementId)
+
+    if (deleteError) {
+      console.error("Erreur lors de la suppression de l'annonce:", deleteError)
+      return {
+        error: `Erreur lors de la suppression de l'annonce: ${deleteError.message}`,
+      }
+    }
 
     revalidatePath('/dashboard/annonces')
     return {
@@ -257,9 +284,13 @@ export async function deleteAnnouncement(announcementId: string) {
   } catch (error) {
     console.error('Erreur inattendue lors de la suppression:', error)
     if (error instanceof Error) {
-      if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+      if (
+        error.message.includes('timeout') ||
+        error.message.includes('ETIMEDOUT')
+      ) {
         return {
-          error: 'Délai d\'attente dépassé. Veuillez vérifier votre connexion et réessayer.',
+          error:
+            "Délai d'attente dépassé. Veuillez vérifier votre connexion et réessayer.",
         }
       }
       return {
@@ -362,8 +393,7 @@ export async function toggleAnnouncementStatus(announcementId: string) {
   }
 
   // Déterminer le nouveau statut
-  const newStatus =
-    announcement.status === 'draft' ? 'active' : 'draft'
+  const newStatus = announcement.status === 'draft' ? 'active' : 'draft'
 
   if (newStatus === 'active' && isFeatureEnabled('KYC_ENABLED')) {
     const { data: profile, error: profileError } = await supabase
@@ -379,20 +409,23 @@ export async function toggleAnnouncementStatus(announcementId: string) {
     }
 
     if (profile.kyc_status !== 'approved') {
-      let errorMessage = 'Vérification d\'identité requise pour continuer'
-      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour publier une annonce.'
+      let errorMessage = "Vérification d'identité requise pour continuer"
+      let errorDetails =
+        "Veuillez compléter votre vérification d'identité pour publier une annonce."
 
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
-        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez publier vos annonces une fois celle-ci approuvée (24-48h).'
+        errorDetails =
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez publier vos annonces une fois celle-ci approuvée (24-48h)."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason
           ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
           : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
       } else if (profile.kyc_status === 'incomplete') {
-        errorMessage = 'Vérification d\'identité incomplète'
-        errorDetails = 'Veuillez soumettre vos documents d\'identité pour publier une annonce.'
+        errorMessage = "Vérification d'identité incomplète"
+        errorDetails =
+          "Veuillez soumettre vos documents d'identité pour publier une annonce."
       }
 
       return {

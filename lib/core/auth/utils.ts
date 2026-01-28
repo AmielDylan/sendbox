@@ -1,9 +1,8 @@
-
 /**
  * Utilitaires pour l'authentification
  */
 
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import { redirect } from 'next/navigation'
 import type { Profile } from '@/types'
 
@@ -70,5 +69,3 @@ export function redirectToLogin(redirectPath?: string) {
     : '/login'
   redirect(path)
 }
-
-

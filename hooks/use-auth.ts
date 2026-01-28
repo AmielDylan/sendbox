@@ -5,7 +5,12 @@
 
 'use client'
 
-import { useAuthStore, selectUser, selectProfile, selectLoading } from '@/lib/stores/auth-store'
+import {
+  useAuthStore,
+  selectUser,
+  selectProfile,
+  selectLoading,
+} from '@/lib/stores/auth-store'
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/shared/db/client'
 import { signOutServer } from '@/lib/core/auth/actions'
@@ -26,7 +31,7 @@ export function useAuth(): UseAuthReturn {
   const user = useAuthStore(selectUser)
   const profile = useAuthStore(selectProfile)
   const loading = useAuthStore(selectLoading)
-  const clear = useAuthStore((state) => state.clear)
+  const clear = useAuthStore(state => state.clear)
 
   const signOut = async () => {
     try {
@@ -49,7 +54,9 @@ export function useAuth(): UseAuthReturn {
   const refetch = async () => {
     try {
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
 
       if (session?.user) {
         // Mettre à jour le store directement

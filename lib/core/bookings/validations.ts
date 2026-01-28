@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 // Schéma de création de réservation
 export const createBookingSchema = z.object({
-  announcement_id: z.string().uuid('ID d\'annonce invalide'),
+  announcement_id: z.string().uuid("ID d'annonce invalide"),
   kilos_requested: z
     .number()
     .min(0.5, 'Minimum 0.5 kg')

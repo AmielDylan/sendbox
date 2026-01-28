@@ -5,13 +5,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import {
   getPublicProfiles,
   mapPublicProfilesById,
-} from "@/lib/shared/db/queries/public-profiles"
-import { createSystemNotification } from "@/lib/core/notifications/system"
-import { isFeatureEnabled } from "@/lib/shared/config/features"
+} from '@/lib/shared/db/queries/public-profiles'
+import { createSystemNotification } from '@/lib/core/notifications/system'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 /**
  * Accepte une demande de réservation
@@ -59,7 +59,7 @@ export async function acceptBooking(bookingId: string) {
   // Vérifier que l'utilisateur est le voyageur
   if (announcement.traveler_id !== user.id) {
     return {
-      error: 'Vous n\'êtes pas autorisé à accepter cette demande',
+      error: "Vous n'êtes pas autorisé à accepter cette demande",
     }
   }
 
@@ -77,20 +77,23 @@ export async function acceptBooking(bookingId: string) {
     }
 
     if (profile.kyc_status !== 'approved') {
-      let errorMessage = 'Vérification d\'identité requise pour continuer'
-      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour accepter cette demande.'
+      let errorMessage = "Vérification d'identité requise pour continuer"
+      let errorDetails =
+        "Veuillez compléter votre vérification d'identité pour accepter cette demande."
 
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
-        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez accepter les demandes une fois celle-ci approuvée (24-48h).'
+        errorDetails =
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez accepter les demandes une fois celle-ci approuvée (24-48h)."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason
           ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
           : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
       } else if (profile.kyc_status === 'incomplete') {
-        errorMessage = 'Vérification d\'identité incomplète'
-        errorDetails = 'Veuillez soumettre vos documents d\'identité pour accepter cette demande.'
+        errorMessage = "Vérification d'identité incomplète"
+        errorDetails =
+          "Veuillez soumettre vos documents d'identité pour accepter cette demande."
       }
 
       return {
@@ -104,14 +107,14 @@ export async function acceptBooking(bookingId: string) {
   // Vérifier que le booking est en attente
   if (booking.status !== 'pending') {
     return {
-      error: 'Cette demande n\'est plus en attente',
+      error: "Cette demande n'est plus en attente",
     }
   }
 
   // Vérifier que l'annonce est toujours active
   if (announcement.status !== 'active') {
     return {
-      error: 'Cette annonce n\'est plus disponible',
+      error: "Cette annonce n'est plus disponible",
     }
   }
 
@@ -124,8 +127,14 @@ export async function acceptBooking(bookingId: string) {
     .in('status', ['accepted', 'paid', 'deposited', 'in_transit', 'delivered'])
 
   const reservedWeight =
-    existingBookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
-  const availableWeight = Math.max(0, (announcement.available_kg || 0) - reservedWeight)
+    existingBookings?.reduce(
+      (sum: number, b: any) => sum + (b.kilos_requested || b.weight_kg || 0),
+      0
+    ) || 0
+  const availableWeight = Math.max(
+    0,
+    (announcement.available_kg || 0) - reservedWeight
+  )
   const requestedWeight = booking.kilos_requested || 0
   const epsilon = 0.0001
 
@@ -149,7 +158,7 @@ export async function acceptBooking(bookingId: string) {
     if (updateError) {
       console.error('Error accepting booking:', updateError)
       return {
-        error: 'Erreur lors de l\'acceptation de la demande',
+        error: "Erreur lors de l'acceptation de la demande",
       }
     }
 
@@ -158,7 +167,8 @@ export async function acceptBooking(bookingId: string) {
       userId: booking.sender_id,
       type: 'booking_accepted',
       title: 'Demande acceptée',
-      content: 'Votre demande de réservation a été acceptée. Veuillez procéder au paiement.',
+      content:
+        'Votre demande de réservation a été acceptée. Veuillez procéder au paiement.',
       bookingId,
       announcementId: announcement.id,
     })
@@ -227,14 +237,14 @@ export async function refuseBooking(bookingId: string, reason: string) {
   // Vérifier que l'utilisateur est le voyageur
   if (announcement.traveler_id !== user.id) {
     return {
-      error: 'Vous n\'êtes pas autorisé à refuser cette demande',
+      error: "Vous n'êtes pas autorisé à refuser cette demande",
     }
   }
 
   // Vérifier que le booking est en attente
   if (booking.status !== 'pending') {
     return {
-      error: 'Cette demande n\'est plus en attente',
+      error: "Cette demande n'est plus en attente",
     }
   }
 
@@ -320,7 +330,7 @@ export async function getPendingBookingRequests() {
     }
   }
 
-  const announcementIds = announcements.map((a) => a.id)
+  const announcementIds = announcements.map(a => a.id)
 
   // Récupérer les bookings actifs pour ces annonces
   const { data: bookings, error } = await supabase
@@ -414,9 +424,12 @@ export async function getUnreadNotificationsCount() {
     }
   }
 
-  const { data, error } = await (supabase.rpc as any)('count_unread_notifications', {
-    p_user_id: user.id,
-  })
+  const { data, error } = await (supabase.rpc as any)(
+    'count_unread_notifications',
+    {
+      p_user_id: user.id,
+    }
+  )
 
   if (error) {
     return {

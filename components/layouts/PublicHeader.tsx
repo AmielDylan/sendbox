@@ -4,10 +4,24 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { IconMenu2, IconSearch, IconLoader2, IconLayoutDashboard, IconUser, IconSettings, IconShield, IconLogout } from '@tabler/icons-react'
+import {
+  IconMenu2,
+  IconSearch,
+  IconLoader2,
+  IconLayoutDashboard,
+  IconUser,
+  IconSettings,
+  IconShield,
+  IconLogout,
+} from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -21,8 +35,8 @@ import {
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import { ClientOnly } from '@/components/ui/client-only'
-import { getAvatarUrl } from "@/lib/core/profile/utils"
-import { isFeatureEnabled } from "@/lib/shared/config/features"
+import { getAvatarUrl } from '@/lib/core/profile/utils'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -57,7 +71,7 @@ export function PublicHeader() {
     navItems.push({
       label: 'Dashboard',
       href: isAdmin ? '/admin/dashboard' : '/dashboard',
-      icon: IconLayoutDashboard
+      icon: IconLayoutDashboard,
     })
   }
 
@@ -67,19 +81,25 @@ export function PublicHeader() {
   }
 
   const displayName = profile
-    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() || 'Utilisateur'
+    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() ||
+      'Utilisateur'
     : 'Utilisateur'
 
   const initials = profile
-    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() || 'U'
+    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() ||
+      'U'
     : 'U'
   const avatarUrl = getAvatarUrl(
     (profile as any)?.avatar_url || null,
     (profile as any)?.id || user?.id || displayName
   )
   const profileId = (profile as any)?.id || user?.id
-  const profileLink = profileId ? `/profil/${profileId}` : '/dashboard/reglages/profil'
-  const showKycLink = isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status !== 'approved'
+  const profileLink = profileId
+    ? `/profil/${profileId}`
+    : '/dashboard/reglages/profil'
+  const showKycLink =
+    isFeatureEnabled('KYC_ENABLED') &&
+    (profile as any)?.kyc_status !== 'approved'
 
   const handleLogout = async () => {
     try {
@@ -101,10 +121,10 @@ export function PublicHeader() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b transition-all duration-300",
+        'sticky top-0 z-50 w-full border-b transition-all duration-300',
         scrolled
-          ? "bg-background/95 shadow-md backdrop-blur-xl supports-[backdrop-filter]:bg-background/80"
-          : "bg-background/80 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-background/60"
+          ? 'bg-background/95 shadow-md backdrop-blur-xl supports-[backdrop-filter]:bg-background/80'
+          : 'bg-background/80 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-background/60'
       )}
     >
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
@@ -134,7 +154,7 @@ export function PublicHeader() {
         {/* Desktop Navigation & Actions */}
         <div className="hidden md:flex items-center gap-8">
           <nav className="flex items-center gap-8">
-            {navItems.map((item) => (
+            {navItems.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -153,23 +173,30 @@ export function PublicHeader() {
           <div className="h-5 w-px bg-gradient-to-b from-transparent via-border to-transparent" />
 
           <div className="flex items-center gap-3">
-            <ClientOnly fallback={
-              <Button variant="ghost" disabled size="sm">
-                <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                Chargement...
-              </Button>
-            }>
+            <ClientOnly
+              fallback={
+                <Button variant="ghost" disabled size="sm">
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Chargement...
+                </Button>
+              }
+            >
               {!user ? (
                 <>
-                  <Button asChild variant="ghost" size="sm" className="hover:bg-accent">
-                    <Link href="/login">
-                      Se connecter
-                    </Link>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="hover:bg-accent"
+                  >
+                    <Link href="/login">Se connecter</Link>
                   </Button>
-                  <Button asChild size="sm" className="bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
-                    <Link href="/register">
-                      S'inscrire
-                    </Link>
+                  <Button
+                    asChild
+                    size="sm"
+                    className="bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+                  >
+                    <Link href="/register">S'inscrire</Link>
                   </Button>
                 </>
               ) : (
@@ -192,7 +219,9 @@ export function PublicHeader() {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{displayName}</p>
+                        <p className="text-sm font-medium leading-none">
+                          {displayName}
+                        </p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {user?.email || 'email@example.com'}
                         </p>
@@ -200,9 +229,14 @@ export function PublicHeader() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href={isAdmin ? '/admin/dashboard' : '/dashboard'} className="cursor-pointer">
+                      <Link
+                        href={isAdmin ? '/admin/dashboard' : '/dashboard'}
+                        className="cursor-pointer"
+                      >
                         <IconLayoutDashboard className="mr-2 h-4 w-4" />
-                        <span>{isAdmin ? 'Dashboard admin' : 'Tableau de bord'}</span>
+                        <span>
+                          {isAdmin ? 'Dashboard admin' : 'Tableau de bord'}
+                        </span>
                       </Link>
                     </DropdownMenuItem>
                     {!isAdmin && (
@@ -217,7 +251,10 @@ export function PublicHeader() {
                         {showKycLink && (
                           <>
                             <DropdownMenuItem asChild>
-                              <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
+                              <Link
+                                href="/dashboard/reglages/kyc"
+                                className="cursor-pointer"
+                              >
                                 <IconShield className="mr-2 h-4 w-4" />
                                 <span>Vérifier mon identité</span>
                               </Link>
@@ -226,7 +263,10 @@ export function PublicHeader() {
                           </>
                         )}
                         <DropdownMenuItem asChild>
-                          <Link href="/dashboard/reglages" className="cursor-pointer">
+                          <Link
+                            href="/dashboard/reglages"
+                            className="cursor-pointer"
+                          >
                             <IconSettings className="mr-2 h-4 w-4" />
                             <span>Paramètres</span>
                           </Link>
@@ -262,7 +302,7 @@ export function PublicHeader() {
               <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
               <div className="flex flex-col gap-4 mt-8">
                 <nav className="flex flex-col gap-2">
-                  {navItems.map((item) => {
+                  {navItems.map(item => {
                     const Icon = item.icon
                     return (
                       <Link
@@ -283,28 +323,29 @@ export function PublicHeader() {
                   })}
                 </nav>
                 <div className="border-t pt-4 flex flex-col gap-2">
-                  <ClientOnly fallback={
-                    <Button variant="outline" className="w-full" disabled>
-                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Chargement...
-                    </Button>
-                  }>
+                  <ClientOnly
+                    fallback={
+                      <Button variant="outline" className="w-full" disabled>
+                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Chargement...
+                      </Button>
+                    }
+                  >
                     {!user ? (
                       <>
-                        <Button
-                          asChild
-                          variant="outline"
-                          className="w-full"
-                        >
-                          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                        <Button asChild variant="outline" className="w-full">
+                          <Link
+                            href="/login"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
                             Se connecter
                           </Link>
                         </Button>
-                        <Button
-                          asChild
-                          className="w-full"
-                        >
-                          <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                        <Button asChild className="w-full">
+                          <Link
+                            href="/register"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
                             S'inscrire
                           </Link>
                         </Button>
@@ -320,31 +361,61 @@ export function PublicHeader() {
                           </Avatar>
                           <div className="flex flex-col">
                             <p className="text-sm font-medium">{displayName}</p>
-                            <p className="text-xs text-muted-foreground">{user?.email}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {user?.email}
+                            </p>
                           </div>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <Button asChild variant="ghost" className="w-full justify-start">
-                            <Link href={isAdmin ? '/admin/dashboard' : '/dashboard'} onClick={() => setMobileMenuOpen(false)}>
+                          <Button
+                            asChild
+                            variant="ghost"
+                            className="w-full justify-start"
+                          >
+                            <Link
+                              href={isAdmin ? '/admin/dashboard' : '/dashboard'}
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
                               {isAdmin ? 'Dashboard admin' : 'Tableau de bord'}
                             </Link>
                           </Button>
                           {!isAdmin && (
                             <>
-                              <Button asChild variant="ghost" className="w-full justify-start">
-                                <Link href={profileLink} onClick={() => setMobileMenuOpen(false)}>
+                              <Button
+                                asChild
+                                variant="ghost"
+                                className="w-full justify-start"
+                              >
+                                <Link
+                                  href={profileLink}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                >
                                   Mon profil
                                 </Link>
                               </Button>
                               {showKycLink && (
-                                <Button asChild variant="ghost" className="w-full justify-start">
-                                  <Link href="/dashboard/reglages/kyc" onClick={() => setMobileMenuOpen(false)}>
+                                <Button
+                                  asChild
+                                  variant="ghost"
+                                  className="w-full justify-start"
+                                >
+                                  <Link
+                                    href="/dashboard/reglages/kyc"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
                                     Vérifier mon identité
                                   </Link>
                                 </Button>
                               )}
-                              <Button asChild variant="ghost" className="w-full justify-start">
-                                <Link href="/dashboard/reglages" onClick={() => setMobileMenuOpen(false)}>
+                              <Button
+                                asChild
+                                variant="ghost"
+                                className="w-full justify-start"
+                              >
+                                <Link
+                                  href="/dashboard/reglages"
+                                  onClick={() => setMobileMenuOpen(false)}
+                                >
                                   Paramètres
                                 </Link>
                               </Button>

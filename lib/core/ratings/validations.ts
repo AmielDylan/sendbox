@@ -29,12 +29,3 @@ export const RATING_SUGGESTIONS = [
   'Très satisfait ✓',
   'Recommandé ✓',
 ] as const
-
-
-
-
-
-
-
-
-

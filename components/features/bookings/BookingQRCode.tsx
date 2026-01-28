@@ -41,8 +41,11 @@ export function BookingQRCode({ qrCode, bookingId }: BookingQRCodeProps) {
   return (
     <Card>
       <CardContent className="pt-6 space-y-4">
-        <div ref={qrRef} className="flex justify-center p-6 bg-white rounded-lg">
-            <QRCodeCanvas
+        <div
+          ref={qrRef}
+          className="flex justify-center p-6 bg-white rounded-lg"
+        >
+          <QRCodeCanvas
             value={qrCode}
             size={256}
             level="H"

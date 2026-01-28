@@ -23,22 +23,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <QueryClientProvider client={queryClient}>
-        <OptimizedAuthProvider>
-          {children}
-        </OptimizedAuthProvider>
+        <OptimizedAuthProvider>{children}</OptimizedAuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

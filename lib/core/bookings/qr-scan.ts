@@ -5,9 +5,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import { notifyUser } from '@/lib/core/notifications/actions'
-import { generateDepositProof, generateDeliveryProof } from '@/lib/shared/services/pdf/generation'
+import {
+  generateDepositProof,
+  generateDeliveryProof,
+} from '@/lib/shared/services/pdf/generation'
 
 /**
  * Gère le scan QR code pour le dépôt du colis
@@ -54,7 +57,7 @@ export async function handleDepositScan(
     // Vérifier que l'utilisateur est autorisé (expéditeur ou voyageur)
     if (booking.sender_id !== user.id && booking.traveler_id !== user.id) {
       return {
-        error: 'Vous n\'êtes pas autorisé à effectuer ce scan',
+        error: "Vous n'êtes pas autorisé à effectuer ce scan",
       }
     }
 
@@ -77,7 +80,7 @@ export async function handleDepositScan(
     if (photoError) {
       console.error('Error uploading photo:', photoError)
       return {
-        error: 'Erreur lors de l\'upload de la photo',
+        error: "Erreur lors de l'upload de la photo",
       }
     }
 
@@ -87,7 +90,9 @@ export async function handleDepositScan(
 
     // Upload signature
     const signatureFileName = `${user.id}/deposit_signature_${bookingId}_${Date.now()}.png`
-    const signatureBase64 = signatureDataURL.includes(',') ? signatureDataURL.split(',')[1] : signatureDataURL
+    const signatureBase64 = signatureDataURL.includes(',')
+      ? signatureDataURL.split(',')[1]
+      : signatureDataURL
     const signatureBuffer = Buffer.from(signatureBase64, 'base64')
     const { error: signatureError } = await supabase.storage
       .from('signatures')
@@ -98,7 +103,7 @@ export async function handleDepositScan(
     if (signatureError) {
       console.error('Error uploading signature:', signatureError)
       return {
-        error: 'Erreur lors de l\'upload de la signature',
+        error: "Erreur lors de l'upload de la signature",
       }
     }
 
@@ -220,7 +225,7 @@ export async function handleDeliveryScan(
     // À adapter selon votre logique métier
     if (booking.sender_id !== user.id && booking.traveler_id !== user.id) {
       return {
-        error: 'Vous n\'êtes pas autorisé à effectuer ce scan',
+        error: "Vous n'êtes pas autorisé à effectuer ce scan",
       }
     }
 
@@ -233,7 +238,9 @@ export async function handleDeliveryScan(
 
     // Upload photo
     const photoFileName = `${user.id}/delivery_${bookingId}_${Date.now()}.png`
-    const photoBase64 = photoDataURL.includes(',') ? photoDataURL.split(',')[1] : photoDataURL
+    const photoBase64 = photoDataURL.includes(',')
+      ? photoDataURL.split(',')[1]
+      : photoDataURL
     const photoBuffer = Buffer.from(photoBase64, 'base64')
     const { error: photoError } = await supabase.storage
       .from('package-photos')
@@ -244,7 +251,7 @@ export async function handleDeliveryScan(
     if (photoError) {
       console.error('Error uploading photo:', photoError)
       return {
-        error: 'Erreur lors de l\'upload de la photo',
+        error: "Erreur lors de l'upload de la photo",
       }
     }
 
@@ -254,7 +261,9 @@ export async function handleDeliveryScan(
 
     // Upload signature
     const signatureFileName = `${user.id}/delivery_signature_${bookingId}_${Date.now()}.png`
-    const signatureBase64 = signatureDataURL.includes(',') ? signatureDataURL.split(',')[1] : signatureDataURL
+    const signatureBase64 = signatureDataURL.includes(',')
+      ? signatureDataURL.split(',')[1]
+      : signatureDataURL
     const signatureBuffer = Buffer.from(signatureBase64, 'base64')
     const { error: signatureError } = await supabase.storage
       .from('signatures')
@@ -265,7 +274,7 @@ export async function handleDeliveryScan(
     if (signatureError) {
       console.error('Error uploading signature:', signatureError)
       return {
-        error: 'Erreur lors de l\'upload de la signature',
+        error: "Erreur lors de l'upload de la signature",
       }
     }
 
@@ -310,7 +319,8 @@ export async function handleDeliveryScan(
       user_id: booking.sender_id,
       type: 'delivery_reminder',
       title: 'Colis livré',
-      content: 'Votre colis a été livré avec succès. Vous pouvez maintenant noter le voyageur.',
+      content:
+        'Votre colis a été livré avec succès. Vous pouvez maintenant noter le voyageur.',
       booking_id: bookingId,
     })
 
@@ -318,7 +328,8 @@ export async function handleDeliveryScan(
       user_id: booking.traveler_id,
       type: 'system_alert',
       title: 'Livraison confirmée',
-      content: 'La livraison a été confirmée. Votre paiement sera traité prochainement.',
+      content:
+        'La livraison a été confirmée. Votre paiement sera traité prochainement.',
       booking_id: bookingId,
     })
 
@@ -391,7 +402,7 @@ export async function getBookingByQRCode(qrCode: string) {
   // Vérifier que l'utilisateur a accès à ce booking
   if (booking.sender_id !== user.id && booking.traveler_id !== user.id) {
     return {
-      error: 'Vous n\'êtes pas autorisé à accéder à cette réservation',
+      error: "Vous n'êtes pas autorisé à accéder à cette réservation",
     }
   }
 

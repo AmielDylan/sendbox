@@ -10,7 +10,10 @@
  *   npx tsx scripts/test-kyc-webhook.ts abc123 requires_input
  */
 
-async function testKYCWebhook(userId: string, eventType: 'verified' | 'requires_input' | 'processing') {
+async function testKYCWebhook(
+  userId: string,
+  eventType: 'verified' | 'requires_input' | 'processing'
+) {
   const webhookUrl = 'http://localhost:3000/api/webhooks/stripe'
 
   const eventTypes = {
@@ -126,7 +129,10 @@ async function testKYCWebhook(userId: string, eventType: 'verified' | 'requires_
 // Parse arguments
 const args = process.argv.slice(2)
 const userId = args[0]
-const eventType = (args[1] || 'verified') as 'verified' | 'requires_input' | 'processing'
+const eventType = (args[1] || 'verified') as
+  | 'verified'
+  | 'requires_input'
+  | 'processing'
 
 if (!userId) {
   console.error('❌ Missing user_id argument')

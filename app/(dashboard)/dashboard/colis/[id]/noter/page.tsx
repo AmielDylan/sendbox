@@ -16,8 +16,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/ui/page-header'
 import { StarRating } from '@/components/features/ratings/StarRating'
-import { ratingSchema, RATING_SUGGESTIONS, type RatingInput } from "@/lib/core/ratings/validations"
-import { submitRating, canRateBooking } from "@/lib/core/ratings/actions"
+import {
+  ratingSchema,
+  RATING_SUGGESTIONS,
+  type RatingInput,
+} from '@/lib/core/ratings/validations'
+import { submitRating, canRateBooking } from '@/lib/core/ratings/actions'
 
 function RatingPageContent() {
   const params = useParams()
@@ -31,7 +35,9 @@ function RatingPageContent() {
     alreadyRated?: boolean
   } | null>(null)
   const [isPending, startTransition] = useTransition()
-  const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null)
+  const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(
+    null
+  )
 
   const form = useForm<RatingInput>({
     resolver: zodResolver(ratingSchema),
@@ -74,7 +80,7 @@ function RatingPageContent() {
 
   const onSubmit = async (data: RatingInput) => {
     if (data.rating === 0) {
-      toast.error('Veuillez sélectionner un nombre d\'étoiles')
+      toast.error("Veuillez sélectionner un nombre d'étoiles")
       return
     }
 
@@ -115,9 +121,7 @@ function RatingPageContent() {
         />
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              {canRate.error}
-            </p>
+            <p className="text-center text-muted-foreground">{canRate.error}</p>
             {canRate.alreadyRated && (
               <div className="mt-4 text-center">
                 <Button variant="outline" onClick={() => router.back()}>
@@ -158,7 +162,9 @@ function RatingPageContent() {
                 size="lg"
               />
               {errors.rating && (
-                <p className="text-sm text-destructive">{errors.rating.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.rating.message}
+                </p>
               )}
             </div>
 
@@ -166,10 +172,12 @@ function RatingPageContent() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Suggestions rapides</label>
               <div className="flex flex-wrap gap-2">
-                {RATING_SUGGESTIONS.map((suggestion) => (
+                {RATING_SUGGESTIONS.map(suggestion => (
                   <Badge
                     key={suggestion}
-                    variant={selectedSuggestion === suggestion ? 'default' : 'outline'}
+                    variant={
+                      selectedSuggestion === suggestion ? 'default' : 'outline'
+                    }
                     className="cursor-pointer"
                     onClick={() => handleSuggestionClick(suggestion)}
                   >
@@ -192,11 +200,11 @@ function RatingPageContent() {
                 maxLength={500}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>
-                  {comment?.length || 0} / 500 caractères
-                </span>
+                <span>{comment?.length || 0} / 500 caractères</span>
                 {errors.comment && (
-                  <span className="text-destructive">{errors.comment.message}</span>
+                  <span className="text-destructive">
+                    {errors.comment.message}
+                  </span>
                 )}
               </div>
             </div>
@@ -240,6 +248,3 @@ export default function RatingPage() {
     </Suspense>
   )
 }
-
-
-

@@ -7,7 +7,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { verifyEmail } from "@/lib/core/auth/actions"
+import { verifyEmail } from '@/lib/core/auth/actions'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -24,7 +24,9 @@ function VerifyEmailForm() {
   const router = useRouter()
   const token = searchParams.get('token_hash') || searchParams.get('token')
   const type = searchParams.get('type')
-  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'pending'>(() => {
+  const [status, setStatus] = useState<
+    'loading' | 'success' | 'error' | 'pending'
+  >(() => {
     // Si pas de token, c'est que l'utilisateur vient de s'inscrire: on affiche juste le message d'attente.
     if (!token && !type) {
       return 'pending'
@@ -55,7 +57,7 @@ function VerifyEmailForm() {
           }, 1500)
         } else {
           setStatus('error')
-          toast.error('La vérification n\'a pas pu être complétée.')
+          toast.error("La vérification n'a pas pu être complétée.")
         }
       } catch {
         setStatus('error')
@@ -105,7 +107,9 @@ function VerifyEmailForm() {
             <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Vérifiez votre boîte de réception</li>
               <li>Cliquez sur le lien de vérification</li>
-              <li>Vous serez automatiquement redirigé vers votre tableau de bord</li>
+              <li>
+                Vous serez automatiquement redirigé vers votre tableau de bord
+              </li>
             </ol>
           </div>
           <Button
@@ -127,19 +131,14 @@ function VerifyEmailForm() {
           <div className="flex justify-center mb-4">
             <IconCheck className="h-12 w-12 text-green-500" />
           </div>
-          <CardTitle className="text-2xl font-bold">
-            Email vérifié !
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">Email vérifié !</CardTitle>
           <CardDescription>
             Votre compte a été vérifié avec succès. Vous allez être redirigé
             vers votre tableau de bord.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button
-            onClick={() => router.push('/dashboard')}
-            className="w-full"
-          >
+          <Button onClick={() => router.push('/dashboard')} className="w-full">
             Accéder au tableau de bord
           </Button>
         </CardContent>
@@ -157,8 +156,8 @@ function VerifyEmailForm() {
           Vérification échouée
         </CardTitle>
         <CardDescription>
-          Le lien de vérification est invalide ou a expiré. Veuillez demander
-          un nouveau lien.
+          Le lien de vérification est invalide ou a expiré. Veuillez demander un
+          nouveau lien.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -192,9 +191,7 @@ export default function VerifyEmailPage() {
             <div className="flex justify-center mb-4">
               <IconLoader2 className="h-12 w-12 text-primary animate-spin" />
             </div>
-            <CardTitle className="text-2xl font-bold">
-              Chargement...
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold">Chargement...</CardTitle>
           </CardHeader>
         </Card>
       }

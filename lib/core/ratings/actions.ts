@@ -5,13 +5,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
-import { ratingSchema, type RatingInput } from "@/lib/core/ratings/validations"
+import { createClient } from '@/lib/shared/db/server'
+import { ratingSchema, type RatingInput } from '@/lib/core/ratings/validations'
 import { notifyUser } from '@/lib/core/notifications/actions'
 import {
   getPublicProfiles,
   mapPublicProfilesById,
-} from "@/lib/shared/db/queries/public-profiles"
+} from '@/lib/shared/db/queries/public-profiles'
 
 /**
  * Soumet un rating pour un service terminé
@@ -69,7 +69,7 @@ export async function submitRating(data: RatingInput) {
     // Vérifier que l'utilisateur fait partie du booking
     if (raterId !== booking.sender_id && raterId !== booking.traveler_id) {
       return {
-        error: 'Vous n\'êtes pas autorisé à noter ce service',
+        error: "Vous n'êtes pas autorisé à noter ce service",
       }
     }
 
@@ -107,7 +107,7 @@ export async function submitRating(data: RatingInput) {
     if (insertError) {
       console.error('Error inserting rating:', insertError)
       return {
-        error: 'Erreur lors de l\'enregistrement du rating',
+        error: "Erreur lors de l'enregistrement du rating",
       }
     }
 
@@ -228,9 +228,15 @@ export async function getUserRatingStats(userId: string) {
     .select('rating')
     .eq('rated_id', userId)
 
-  const distributionMap: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  const distributionMap: Record<number, number> = {
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+  }
 
-  distribution?.forEach((r) => {
+  distribution?.forEach(r => {
     distributionMap[r.rating] = (distributionMap[r.rating] || 0) + 1
   })
 

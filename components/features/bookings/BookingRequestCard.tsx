@@ -25,12 +25,21 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { IconStar, IconPackage, IconCalendar, IconMapPin, IconCircleCheck, IconCircleX, IconMessageCircle, IconPhoto } from '@tabler/icons-react'
+import {
+  IconStar,
+  IconPackage,
+  IconCalendar,
+  IconMapPin,
+  IconCircleCheck,
+  IconCircleX,
+  IconMessageCircle,
+  IconPhoto,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
-import { formatPrice } from "@/lib/core/bookings/calculations"
-import { acceptBooking, refuseBooking } from "@/lib/core/bookings/requests"
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import { formatPrice } from '@/lib/core/bookings/calculations'
+import { acceptBooking, refuseBooking } from '@/lib/core/bookings/requests'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -81,13 +90,19 @@ const STATUS_LABELS: Record<BookingRequestStatus, string> = {
   paid: 'Payé',
 }
 
-const STATUS_VARIANTS: Record<BookingRequestStatus, 'default' | 'secondary' | 'outline'> = {
+const STATUS_VARIANTS: Record<
+  BookingRequestStatus,
+  'default' | 'secondary' | 'outline'
+> = {
   pending: 'secondary',
   accepted: 'default',
   paid: 'default',
 }
 
-export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProps) {
+export function BookingRequestCard({
+  booking,
+  onUpdate,
+}: BookingRequestCardProps) {
   const router = useRouter()
   const [showAcceptModal, setShowAcceptModal] = useState(false)
   const [showRefuseModal, setShowRefuseModal] = useState(false)
@@ -95,20 +110,25 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
   const [refusalReason, setRefusalReason] = useState('')
   const [refusalReasonOther, setRefusalReasonOther] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(
+    null
+  )
 
   const senderFirstName = booking.sender?.firstname ?? null
   const senderLastName = booking.sender?.lastname ?? null
-  const senderName = `${senderFirstName || ''} ${senderLastName || ''}`.trim() || 'Expéditeur'
+  const senderName =
+    `${senderFirstName || ''} ${senderLastName || ''}`.trim() || 'Expéditeur'
   const senderInitials = generateInitials(senderFirstName, senderLastName)
   const senderAvatarUrl = booking.sender?.avatar_url ?? null
   const senderAvatar = getAvatarUrl(senderAvatarUrl, senderName)
-  const isNew = new Date(booking.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const isNew =
+    new Date(booking.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
   const announcement = booking.announcements
 
   // Support pour les deux colonnes: kilos_requested (nouveau) et weight_kg (ancien)
   const weightKg = booking.kilos_requested || 0
-  const packageDescription = booking.package_description || booking.description || null
+  const packageDescription =
+    booking.package_description || booking.description || null
   const statusLabel = STATUS_LABELS[booking.status]
   const statusVariant = STATUS_VARIANTS[booking.status]
 
@@ -143,7 +163,10 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
   }
 
   const handleRefuse = async () => {
-    const reason = refusalReason === 'other' ? refusalReasonOther : REFUSAL_REASONS.find(r => r.value === refusalReason)?.label || ''
+    const reason =
+      refusalReason === 'other'
+        ? refusalReasonOther
+        : REFUSAL_REASONS.find(r => r.value === refusalReason)?.label || ''
 
     if (!reason || reason.trim().length < 5) {
       toast.error('Veuillez fournir une raison de refus')
@@ -182,10 +205,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <Avatar>
-                <AvatarImage
-                  src={senderAvatar}
-                  alt={senderName}
-                />
+                <AvatarImage src={senderAvatar} alt={senderName} />
                 <AvatarFallback>{senderInitials}</AvatarFallback>
               </Avatar>
               <div>
@@ -302,11 +322,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
                 <IconCircleX className="mr-2 h-4 w-4" />
                 Refuser
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-              >
+              <Button variant="outline" size="sm" asChild>
                 <Link href={`/dashboard/messages?booking=${booking.id}`}>
                   <IconMessageCircle className="h-4 w-4" />
                 </Link>
@@ -316,7 +332,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
             <div className="space-y-2 pt-2">
               <div className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                 {booking.status === 'accepted'
-                  ? 'Demande acceptée. En attente du paiement de l\'expéditeur.'
+                  ? "Demande acceptée. En attente du paiement de l'expéditeur."
                   : 'Paiement confirmé. Vous pouvez organiser la prise en charge.'}
               </div>
               <div className="flex gap-2">
@@ -328,11 +344,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
                 >
                   Voir la réservation
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                >
+                <Button variant="outline" size="sm" asChild>
                   <Link href={`/dashboard/messages?booking=${booking.id}`}>
                     <IconMessageCircle className="h-4 w-4" />
                   </Link>
@@ -375,9 +387,12 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
               <Checkbox
                 id="accept_terms_booking"
                 checked={acceptedTerms}
-                onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                onCheckedChange={checked => setAcceptedTerms(checked === true)}
               />
-              <Label htmlFor="accept_terms_booking" className="cursor-pointer text-sm">
+              <Label
+                htmlFor="accept_terms_booking"
+                className="cursor-pointer text-sm"
+              >
                 J'ai lu et j'accepte les conditions de transport
               </Label>
             </div>
@@ -414,15 +429,12 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="refusal_reason">Raison du refus</Label>
-              <Select
-                value={refusalReason}
-                onValueChange={setRefusalReason}
-              >
+              <Select value={refusalReason} onValueChange={setRefusalReason}>
                 <SelectTrigger id="refusal_reason">
                   <SelectValue placeholder="Sélectionnez une raison" />
                 </SelectTrigger>
                 <SelectContent>
-                  {REFUSAL_REASONS.map((reason) => (
+                  {REFUSAL_REASONS.map(reason => (
                     <SelectItem key={reason.value} value={reason.value}>
                       {reason.label}
                     </SelectItem>
@@ -437,7 +449,7 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
                   id="refusal_reason_other"
                   placeholder="Expliquez la raison du refus..."
                   value={refusalReasonOther}
-                  onChange={(e) => setRefusalReasonOther(e.target.value)}
+                  onChange={e => setRefusalReasonOther(e.target.value)}
                   rows={3}
                 />
               </div>
@@ -457,7 +469,11 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
             <Button
               variant="destructive"
               onClick={handleRefuse}
-              disabled={!refusalReason || (refusalReason === 'other' && !refusalReasonOther.trim()) || isProcessing}
+              disabled={
+                !refusalReason ||
+                (refusalReason === 'other' && !refusalReasonOther.trim()) ||
+                isProcessing
+              }
             >
               {isProcessing ? 'Traitement...' : 'Confirmer le refus'}
             </Button>
@@ -467,14 +483,20 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
 
       {/* Modal Galerie Photos */}
       {selectedPhotoIndex !== null && booking.package_photos && (
-        <Dialog open={selectedPhotoIndex !== null} onOpenChange={() => setSelectedPhotoIndex(null)}>
+        <Dialog
+          open={selectedPhotoIndex !== null}
+          onOpenChange={() => setSelectedPhotoIndex(null)}
+        >
           <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>Photos du colis</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {booking.package_photos.map((photo, index) => (
-                <div key={index} className="relative aspect-square rounded-md overflow-hidden border">
+                <div
+                  key={index}
+                  className="relative aspect-square rounded-md overflow-hidden border"
+                >
                   <Image
                     src={photo}
                     alt={`Photo ${index + 1}`}
@@ -490,7 +512,3 @@ export function BookingRequestCard({ booking, onUpdate }: BookingRequestCardProp
     </>
   )
 }
-
-
-
-

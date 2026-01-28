@@ -6,7 +6,7 @@
 
 import { use, useCallback, useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import Image from 'next/image'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
@@ -19,8 +19,13 @@ import {
   SignatureCanvas,
   type SignatureCanvasRef,
 } from '@/components/features/bookings/SignatureCanvas'
-import { markAsInTransit } from "@/lib/core/bookings/workflow"
-import { IconLoader2, IconCamera, IconMapPin, IconCircleCheck } from '@tabler/icons-react'
+import { markAsInTransit } from '@/lib/core/bookings/workflow'
+import {
+  IconLoader2,
+  IconCamera,
+  IconMapPin,
+  IconCircleCheck,
+} from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface ScanDepositPageProps {
@@ -38,15 +43,19 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
   const [isDecodingQr, setIsDecodingQr] = useState(false)
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string>('')
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    null
+  )
   const qrFileInputRef = useRef<HTMLInputElement | null>(null)
   const signatureRef = useRef<SignatureCanvasRef>(null)
 
   const loadBooking = useCallback(async () => {
     try {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
       if (!user) {
         toast.error('Vous devez être connecté')
         router.push('/login')
@@ -96,15 +105,15 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
   const getCurrentLocation = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        position => {
           setLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           })
         },
-        (error) => {
+        error => {
           console.error('Error getting location:', error)
-          toast.error('Impossible d\'obtenir la géolocalisation')
+          toast.error("Impossible d'obtenir la géolocalisation")
         }
       )
     }
@@ -141,7 +150,9 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
     }
   }
 
-  const handleQrImageScan = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleQrImageScan = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0]
     event.target.value = ''
 
@@ -158,7 +169,9 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
 
     try {
       const bitmap = await createImageBitmap(file)
-      const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] })
+      const detector = new (window as any).BarcodeDetector({
+        formats: ['qr_code'],
+      })
       const codes = await detector.detect(bitmap)
 
       if (!codes.length) {
@@ -175,7 +188,10 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
     }
   }
 
-  const uploadFile = async (file: File | Blob, path: string): Promise<string | null> => {
+  const uploadFile = async (
+    file: File | Blob,
+    path: string
+  ): Promise<string | null> => {
     try {
       const supabase = createClient()
       const { data, error } = await supabase.storage
@@ -190,9 +206,9 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
         return null
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('package-proofs')
-        .getPublicUrl(data.path)
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('package-proofs').getPublicUrl(data.path)
 
       return publicUrl
     } catch (error) {
@@ -221,7 +237,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
     }
 
     if (!signatureRef.current || signatureRef.current.isEmpty()) {
-      toast.error('Veuillez faire signer l\'expéditeur')
+      toast.error("Veuillez faire signer l'expéditeur")
       return
     }
 
@@ -238,7 +254,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
       const photoUrl = await uploadFile(photo, photoPath)
 
       if (!photoUrl) {
-        toast.error('Erreur lors de l\'upload de la photo')
+        toast.error("Erreur lors de l'upload de la photo")
         return
       }
 
@@ -252,7 +268,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
       const signatureUrl = await uploadFile(signatureBlob, signaturePath)
 
       if (!signatureUrl) {
-        toast.error('Erreur lors de l\'upload de la signature')
+        toast.error("Erreur lors de l'upload de la signature")
         return
       }
 
@@ -324,12 +340,14 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
                   id="qr-code"
                   placeholder="Scannez ou saisissez le code"
                   value={scannedCode}
-                  onChange={(e) => setScannedCode(e.target.value)}
+                  onChange={e => setScannedCode(e.target.value)}
                   disabled={isSubmitting}
                   className="flex-1"
                 />
                 {qrStatus !== 'idle' && (
-                  <Badge variant={qrStatus === 'valid' ? 'default' : 'destructive'}>
+                  <Badge
+                    variant={qrStatus === 'valid' ? 'default' : 'destructive'}
+                  >
                     {qrStatus === 'valid' ? 'Valide' : 'Incorrect'}
                   </Badge>
                 )}
@@ -423,9 +441,7 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
         {/* Actions */}
         <div className="flex gap-3">
           <Button variant="outline" asChild className="flex-1">
-            <Link href={`/dashboard/colis/${booking_id}`}>
-              Annuler
-            </Link>
+            <Link href={`/dashboard/colis/${booking_id}`}>Annuler</Link>
           </Button>
           <Button
             onClick={handleSubmit}

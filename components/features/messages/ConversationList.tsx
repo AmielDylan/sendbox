@@ -8,11 +8,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { IconLoader2 } from '@tabler/icons-react'
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 import { useAuth } from '@/hooks/use-auth'
 import { usePresence } from '@/hooks/use-presence'
@@ -49,7 +49,10 @@ export function ConversationList({
   const { user } = useAuth()
 
   // Hook de présence global pour voir qui est en ligne dans toutes les conversations
-  const { isUserOnline } = usePresence('conversations-presence', user?.id || null)
+  const { isUserOnline } = usePresence(
+    'conversations-presence',
+    user?.id || null
+  )
 
   if (isLoading) {
     return (
@@ -81,8 +84,10 @@ export function ConversationList({
   return (
     <ScrollArea className="h-full">
       <div className="space-y-1 p-2">
-        {conversations.map((conversation) => {
-          const otherUserName = `${conversation.other_user_firstname || ''} ${conversation.other_user_lastname || ''
+        {conversations.map(conversation => {
+          const otherUserName =
+            `${conversation.other_user_firstname || ''} ${
+              conversation.other_user_lastname || ''
             }`.trim() || 'Utilisateur'
           const otherUserInitials = generateInitials(
             conversation.other_user_firstname,
@@ -96,8 +101,10 @@ export function ConversationList({
 
           // Logic: Show unread only if count > 0 AND (we don't know who sent it OR it wasn't us)
           // Ideally unread_count is 0 if we sent it, but to be safe per user request:
-          const isLastMessageFromMe = user?.id === conversation.last_message_sender_id
-          const hasUnread = conversation.unread_count > 0 && !isLastMessageFromMe && !isSelected
+          const isLastMessageFromMe =
+            user?.id === conversation.last_message_sender_id
+          const hasUnread =
+            conversation.unread_count > 0 && !isLastMessageFromMe && !isSelected
 
           return (
             <button
@@ -110,17 +117,16 @@ export function ConversationList({
                 isSelected
                   ? 'bg-primary text-primary-foreground shadow-md'
                   : 'hover:bg-muted active:bg-muted/80',
-                hasUnread && !isSelected && 'bg-muted/50 border-l-4 border-primary'
+                hasUnread &&
+                  !isSelected &&
+                  'bg-muted/50 border-l-4 border-primary'
               )}
               aria-label={`Conversation avec ${otherUserName}, ${hasUnread ? `${conversation.unread_count} message(s) non lu(s)` : 'aucun nouveau message'}`}
               aria-current={isSelected ? 'true' : 'false'}
             >
               <div className="relative">
                 <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0 border-2 border-background">
-                  <AvatarImage
-                    src={otherUserAvatar}
-                    alt={otherUserName}
-                  />
+                  <AvatarImage src={otherUserAvatar} alt={otherUserName} />
                   <AvatarFallback>{otherUserInitials}</AvatarFallback>
                 </Avatar>
                 {/* Indicateur de présence en ligne */}
@@ -186,10 +192,3 @@ export function ConversationList({
     </ScrollArea>
   )
 }
-
-
-
-
-
-
-

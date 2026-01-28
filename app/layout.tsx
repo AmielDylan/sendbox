@@ -60,7 +60,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="fr" className={`${fraunces.variable} ${spaceGrotesk.variable} light`} suppressHydrationWarning>
+    <html
+      lang="fr"
+      className={`${fraunces.variable} ${spaceGrotesk.variable} light`}
+      suppressHydrationWarning
+    >
       <body className="font-sans antialiased" suppressHydrationWarning>
         <Providers>
           {children}

@@ -23,15 +23,16 @@ async function checkTriggerFunctions() {
     'update_bookings_updated_at',
     'notify_rating_requests',
     'log_audit',
-    'update_updated_at_column'
+    'update_updated_at_column',
   ]
 
   console.log('Recherche de la définition des fonctions...\n')
 
   for (const funcName of functions) {
     // Essayer d'obtenir la définition de la fonction via pg_proc
-    const { data, error } = await supabase.rpc('sql', {
-      query: `
+    const { data, error } = await supabase
+      .rpc('sql', {
+        query: `
         SELECT
           p.proname as function_name,
           pg_get_functiondef(p.oid) as definition
@@ -40,8 +41,9 @@ async function checkTriggerFunctions() {
         WHERE n.nspname = 'public'
           AND p.proname = '${funcName}'
         LIMIT 1;
-      `
-    } as any).single()
+      `,
+      } as any)
+      .single()
 
     if (error) {
       // La fonction rpc 'sql' n'existe peut-être pas, essayons une approche différente

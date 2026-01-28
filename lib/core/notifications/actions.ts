@@ -5,9 +5,9 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
-import { createAdminClient } from "@/lib/shared/db/admin"
-import { sendEmail } from "@/lib/shared/services/email/client"
+import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
+import { sendEmail } from '@/lib/shared/services/email/client'
 
 export type NotificationType =
   | 'booking_request'
@@ -44,18 +44,19 @@ export async function notifyUser(params: NotifyUserParams) {
     if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
       try {
         const adminClient = createAdminClient()
-        const { data: insertedNotification, error: insertError } = await adminClient
-          .from('notifications')
-          .insert({
-            user_id: params.user_id,
-            type: params.type,
-            title: params.title,
-            content: params.content,
-            booking_id: params.booking_id || null,
-            announcement_id: params.announcement_id || null,
-          })
-          .select('id')
-          .single()
+        const { data: insertedNotification, error: insertError } =
+          await adminClient
+            .from('notifications')
+            .insert({
+              user_id: params.user_id,
+              type: params.type,
+              title: params.title,
+              content: params.content,
+              booking_id: params.booking_id || null,
+              announcement_id: params.announcement_id || null,
+            })
+            .select('id')
+            .single()
 
         if (insertError) {
           notificationError = insertError
@@ -71,14 +72,17 @@ export async function notifyUser(params: NotifyUserParams) {
     }
 
     if (!notificationId) {
-      const { data, error } = await (supabase.rpc as any)('create_notification', {
-        p_user_id: params.user_id,
-        p_type: params.type,
-        p_title: params.title,
-        p_content: params.content,
-        p_booking_id: params.booking_id || null,
-        p_announcement_id: params.announcement_id || null,
-      })
+      const { data, error } = await (supabase.rpc as any)(
+        'create_notification',
+        {
+          p_user_id: params.user_id,
+          p_type: params.type,
+          p_title: params.title,
+          p_content: params.content,
+          p_booking_id: params.booking_id || null,
+          p_announcement_id: params.announcement_id || null,
+        }
+      )
 
       if (error) {
         notificationError = error
@@ -97,9 +101,8 @@ export async function notifyUser(params: NotifyUserParams) {
         if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
           try {
             const adminClient = createAdminClient()
-            const { data: authUser, error: adminError } = await adminClient.auth.admin.getUserById(
-              params.user_id
-            )
+            const { data: authUser, error: adminError } =
+              await adminClient.auth.admin.getUserById(params.user_id)
             if (adminError) {
               console.warn('Admin email lookup failed:', adminError)
             } else {
@@ -137,7 +140,8 @@ export async function notifyUser(params: NotifyUserParams) {
           if (params.type === 'booking_request' && params.booking_id) {
             const { data: bookingData } = await supabase
               .from('bookings')
-              .select(`
+              .select(
+                `
                 kilos_requested,
                 total_price,
                 package_description,
@@ -145,7 +149,8 @@ export async function notifyUser(params: NotifyUserParams) {
                   departure_city,
                   arrival_city
                 )
-              `)
+              `
+              )
               .eq('id', params.booking_id)
               .single()
 
@@ -155,11 +160,17 @@ export async function notifyUser(params: NotifyUserParams) {
                 // Variables en MAJUSCULES pour les templates Resend
                 KILOS_REQUESTED: bookingData.kilos_requested,
                 TOTAL_PRICE: bookingData.total_price?.toFixed(2) || '0.00',
-                PACKAGE_DESCRIPTION: bookingData.package_description || 'Non précisée',
-                DEPARTURE_CITY: (bookingData.announcements as any)?.departure_city || 'Ville de départ',
-                ARRIVAL_CITY: (bookingData.announcements as any)?.arrival_city || 'Ville d’arrivée',
+                PACKAGE_DESCRIPTION:
+                  bookingData.package_description || 'Non précisée',
+                DEPARTURE_CITY:
+                  (bookingData.announcements as any)?.departure_city ||
+                  'Ville de départ',
+                ARRIVAL_CITY:
+                  (bookingData.announcements as any)?.arrival_city ||
+                  'Ville d’arrivée',
                 BOOKING_ID: params.booking_id || 'inconnu',
-                APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+                APP_URL:
+                  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
               }
             }
           }
@@ -167,7 +178,10 @@ export async function notifyUser(params: NotifyUserParams) {
           await sendEmail({
             to: recipientEmail,
             subject: params.title,
-            template: params.type === 'booking_request' ? 'booking_request' : 'notification',
+            template:
+              params.type === 'booking_request'
+                ? 'booking_request'
+                : 'notification',
             data: emailData,
             useResendTemplate: true, // Utilise les templates Resend pour booking_request
           })

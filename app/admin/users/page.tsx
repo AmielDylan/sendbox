@@ -6,10 +6,17 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from "@/lib/shared/db/client"
-import { banUser, updateUserRole } from "@/lib/core/admin/actions"
+import { createClient } from '@/lib/shared/db/client'
+import { banUser, updateUserRole } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -30,7 +37,12 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { IconShield, IconBan, IconLockOpen, IconLoader2 } from '@tabler/icons-react'
+import {
+  IconShield,
+  IconBan,
+  IconLockOpen,
+  IconLoader2,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useAuth } from '@/hooks/use-auth'
@@ -45,7 +57,11 @@ export default function AdminUsersPage() {
   const supabase = createClient()
   const { user: currentUser } = useAuth()
 
-  const { data: users, isLoading, refetch } = useQuery({
+  const {
+    data: users,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['adminUsers'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -126,72 +142,85 @@ export default function AdminUsersPage() {
                 const isCurrentUser = currentUser?.id === user.id
 
                 return (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    {user.firstname} {user.lastname}
-                    {isCurrentUser && (
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        Vous
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>{user.email || 'N/A'}</TableCell>
-                  <TableCell>
-                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {user.is_banned ? (
-                      <Badge variant="destructive">Banni</Badge>
-                    ) : (
-                      <Badge variant="default">Actif</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(user.created_at), 'PP', { locale: fr })}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isCurrentUser}
-                        onClick={() => {
-                          setSelectedUser(user)
-                          setNewRole(user.role)
-                          setRoleDialogOpen(true)
-                        }}
-                        title={isCurrentUser ? 'Vous ne pouvez pas modifier votre propre rôle' : 'Modifier le rôle'}
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      {user.firstname} {user.lastname}
+                      {isCurrentUser && (
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          Vous
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>{user.email || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          user.role === 'admin' ? 'default' : 'secondary'
+                        }
                       >
-                        <IconShield className="h-4 w-4" />
-                      </Button>
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
                       {user.is_banned ? (
+                        <Badge variant="destructive">Banni</Badge>
+                      ) : (
+                        <Badge variant="default">Actif</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(user.created_at), 'PP', { locale: fr })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
                         <Button
                           variant="outline"
-                          size="sm"
-                          onClick={() => handleBan(user.id, false)}
-                        >
-                          <IconLockOpen className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="destructive"
                           size="sm"
                           disabled={isCurrentUser}
                           onClick={() => {
                             setSelectedUser(user)
-                            setBanDialogOpen(true)
+                            setNewRole(user.role)
+                            setRoleDialogOpen(true)
                           }}
-                          title={isCurrentUser ? 'Vous ne pouvez pas vous bannir vous-même' : 'Bannir l\'utilisateur'}
+                          title={
+                            isCurrentUser
+                              ? 'Vous ne pouvez pas modifier votre propre rôle'
+                              : 'Modifier le rôle'
+                          }
                         >
-                          <IconBan className="h-4 w-4" />
+                          <IconShield className="h-4 w-4" />
                         </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )})}
+                        {user.is_banned ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleBan(user.id, false)}
+                          >
+                            <IconLockOpen className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={isCurrentUser}
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setBanDialogOpen(true)
+                            }}
+                            title={
+                              isCurrentUser
+                                ? 'Vous ne pouvez pas vous bannir vous-même'
+                                : "Bannir l'utilisateur"
+                            }
+                          >
+                            <IconBan className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -213,7 +242,7 @@ export default function AdminUsersPage() {
               <Textarea
                 id="reason"
                 value={banReason}
-                onChange={(e) => setBanReason(e.target.value)}
+                onChange={e => setBanReason(e.target.value)}
                 placeholder="Raison du bannissement..."
                 className="mt-2"
               />
@@ -268,14 +297,3 @@ export default function AdminUsersPage() {
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-

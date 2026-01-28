@@ -6,13 +6,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuthenticatedQuery, queryWithAbort } from '@/hooks/use-authenticated-query'
+import {
+  useAuthenticatedQuery,
+  queryWithAbort,
+} from '@/hooks/use-authenticated-query'
 import { QUERY_CONFIG } from '@/lib/shared/query/config'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -67,7 +76,9 @@ export default function MyBookingsPage() {
   // ✅ Timeout intelligent de 5s (au lieu de 12s)
   // ✅ Retry automatique avec backoff
   // ✅ Cache persistant (30s stale, 15min gc)
-  const { data, isLoading, isError, error, refetch } = useAuthenticatedQuery<Booking[]>(
+  const { data, isLoading, isError, error, refetch } = useAuthenticatedQuery<
+    Booking[]
+  >(
     ['user-bookings', activeTab] as unknown[],
     async (userId, signal) => {
       const supabase = createClient()
@@ -136,7 +147,9 @@ export default function MyBookingsPage() {
     }
 
     const setupRealtimeSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
       channel = supabase
@@ -179,8 +192,13 @@ export default function MyBookingsPage() {
   }, [refetch])
 
   const getStatusBadge = (booking: Booking) => {
-    const status: BookingDisplayStatus = booking.delivery_confirmed_at ? 'confirmed' : booking.status
-    const variants: Record<BookingDisplayStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    const status: BookingDisplayStatus = booking.delivery_confirmed_at
+      ? 'confirmed'
+      : booking.status
+    const variants: Record<
+      BookingDisplayStatus,
+      'default' | 'secondary' | 'destructive' | 'outline'
+    > = {
       pending: 'secondary',
       accepted: 'default',
       paid: 'default',
@@ -245,14 +263,11 @@ export default function MyBookingsPage() {
                     Erreur lors du chargement
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {error?.message || 'Une erreur est survenue lors du chargement de vos réservations.'}
+                    {error?.message ||
+                      'Une erreur est survenue lors du chargement de vos réservations.'}
                   </p>
                 </div>
-                <Button
-                  onClick={() => refetch()}
-                  variant="outline"
-                  size="sm"
-                >
+                <Button onClick={() => refetch()} variant="outline" size="sm">
                   Réessayer
                 </Button>
               </div>
@@ -283,10 +298,16 @@ export default function MyBookingsPage() {
       {/* Dropdown sur mobile, Tabs sur tablet/desktop */}
       <div className="md:hidden">
         <div className="flex items-center gap-3">
-          <label htmlFor="booking-status-filter" className="text-sm font-medium whitespace-nowrap">
+          <label
+            htmlFor="booking-status-filter"
+            className="text-sm font-medium whitespace-nowrap"
+          >
             Statut:
           </label>
-          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as BookingStatus | 'all')}>
+          <Select
+            value={activeTab}
+            onValueChange={v => setActiveTab(v as BookingStatus | 'all')}
+          >
             <SelectTrigger id="booking-status-filter" className="w-full">
               <SelectValue placeholder="Sélectionner un statut" />
             </SelectTrigger>
@@ -303,7 +324,11 @@ export default function MyBookingsPage() {
       </div>
 
       {/* Tabs sur tablet/desktop */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BookingStatus | 'all')} className="hidden md:block">
+      <Tabs
+        value={activeTab}
+        onValueChange={v => setActiveTab(v as BookingStatus | 'all')}
+        className="hidden md:block"
+      >
         <TabsList className="flex w-full flex-wrap justify-start gap-2 md:inline-flex md:w-auto md:flex-nowrap">
           <TabsTrigger value="all">Tous</TabsTrigger>
           <TabsTrigger value="pending">En attente</TabsTrigger>
@@ -316,138 +341,153 @@ export default function MyBookingsPage() {
 
       <div className="space-y-4 mt-6">
         {bookings.length === 0 ? (
-            <Card className="border-2 border-dashed">
-              <CardContent className="pt-12 pb-12">
-                <div className="flex flex-col items-center gap-4 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
-                    <IconPackage className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">
-                      Aucun colis trouvé
-                    </h3>
-                    <p className="text-sm text-muted-foreground max-w-sm">
-                      {activeTab === 'all'
-                        ? 'Vous n\'avez pas encore de réservations.'
-                        : `Vous n'avez pas de colis avec le statut "${activeTab}".`}
-                    </p>
-                  </div>
-                  <Button asChild className="mt-2 shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5">
-                    <Link href="/dashboard/colis/new">
-                      <IconPlus className="mr-2 h-4 w-4" />
-                      Créer une réservation
-                    </Link>
-                  </Button>
+          <Card className="border-2 border-dashed">
+            <CardContent className="pt-12 pb-12">
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
+                  <IconPackage className="h-8 w-8 text-muted-foreground" />
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {bookings.map((booking) => {
-                const announcement = booking.announcements
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">Aucun colis trouvé</h3>
+                  <p className="text-sm text-muted-foreground max-w-sm">
+                    {activeTab === 'all'
+                      ? "Vous n'avez pas encore de réservations."
+                      : `Vous n'avez pas de colis avec le statut "${activeTab}".`}
+                  </p>
+                </div>
+                <Button
+                  asChild
+                  className="mt-2 shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5"
+                >
+                  <Link href="/dashboard/colis/new">
+                    <IconPlus className="mr-2 h-4 w-4" />
+                    Créer une réservation
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {bookings.map(booking => {
+              const announcement = booking.announcements
 
-                return (
-                  <Card key={booking.id} className="card-elevated hover:shadow-xl transition-all overflow-hidden">
-                    <CardHeader className="p-4 sm:p-6 bg-muted/20">
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                        <div className="space-y-1">
-                          <div className="flex items-start justify-between sm:block">
-                            <CardTitle className="text-base sm:text-lg leading-tight">
-                              {announcement
-                                ? `${announcement.departure_city} → ${announcement.arrival_city}`
-                                : 'Colis'}
-                            </CardTitle>
-                            {/* Badge visible only on mobile next to title to save space, hidden on sm */}
-                            <div className="sm:hidden ml-2 shrink-0">
-                              {getStatusBadge(booking)}
-                            </div>
+              return (
+                <Card
+                  key={booking.id}
+                  className="card-elevated hover:shadow-xl transition-all overflow-hidden"
+                >
+                  <CardHeader className="p-4 sm:p-6 bg-muted/20">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-start justify-between sm:block">
+                          <CardTitle className="text-base sm:text-lg leading-tight">
+                            {announcement
+                              ? `${announcement.departure_city} → ${announcement.arrival_city}`
+                              : 'Colis'}
+                          </CardTitle>
+                          {/* Badge visible only on mobile next to title to save space, hidden on sm */}
+                          <div className="sm:hidden ml-2 shrink-0">
+                            {getStatusBadge(booking)}
                           </div>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
-                            Créé le{' '}
-                            {format(new Date(booking.created_at), 'PPP', {
-                              locale: fr,
-                            })}
-                          </p>
                         </div>
-                        {/* Badge visible only on sm */}
-                        <div className="hidden sm:block shrink-0">
-                          {getStatusBadge(booking)}
-                        </div>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          Créé le{' '}
+                          {format(new Date(booking.created_at), 'PPP', {
+                            locale: fr,
+                          })}
+                        </p>
                       </div>
-                    </CardHeader>
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-3">
-                          {announcement && (
-                            <>
-                              <div className="flex items-start gap-2 text-sm">
-                                <IconMapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                                <span className="leading-tight">
-                                  {announcement.departure_city}, {getCountryName(announcement.departure_country)}
-                                  <br className="sm:hidden" />
-                                  <span className="hidden sm:inline"> → </span>
-                                  <span className="sm:hidden block mt-1">↓</span>
-                                  {announcement.arrival_city}, {getCountryName(announcement.arrival_country)}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm">
-                                <IconCalendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                                <span>
-                                  Départ:{' '}
-                                  {format(
-                                    new Date(announcement.departure_date),
-                                    'PPP',
-                                    { locale: fr }
-                                  )}
-                                </span>
-                              </div>
-                            </>
+                      {/* Badge visible only on sm */}
+                      <div className="hidden sm:block shrink-0">
+                        {getStatusBadge(booking)}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-3">
+                        {announcement && (
+                          <>
+                            <div className="flex items-start gap-2 text-sm">
+                              <IconMapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                              <span className="leading-tight">
+                                {announcement.departure_city},{' '}
+                                {getCountryName(announcement.departure_country)}
+                                <br className="sm:hidden" />
+                                <span className="hidden sm:inline"> → </span>
+                                <span className="sm:hidden block mt-1">↓</span>
+                                {announcement.arrival_city},{' '}
+                                {getCountryName(announcement.arrival_country)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <IconCalendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <span>
+                                Départ:{' '}
+                                {format(
+                                  new Date(announcement.departure_date),
+                                  'PPP',
+                                  { locale: fr }
+                                )}
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <div className="space-y-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
+                        <div className="flex items-center justify-between sm:justify-start sm:gap-6">
+                          <div className="flex items-center gap-2 text-sm">
+                            <IconPackage className="h-4 w-4 text-muted-foreground" />
+                            <span>{booking.kilos_requested} kg</span>
+                          </div>
+                          {booking.total_price && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-semibold text-base">
+                                {booking.total_price.toFixed(2)} €
+                              </span>
+                            </div>
                           )}
                         </div>
-                        <div className="space-y-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
-                          <div className="flex items-center justify-between sm:justify-start sm:gap-6">
-                            <div className="flex items-center gap-2 text-sm">
-                              <IconPackage className="h-4 w-4 text-muted-foreground" />
-                              <span>{booking.kilos_requested} kg</span>
-                            </div>
-                            {booking.total_price && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
-                                <span className="font-semibold text-base">
-                                  {booking.total_price.toFixed(2)} €
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t flex justify-end gap-2">
-                        {booking.status === 'cancelled' && (
-                          <DeleteBookingDialog
-                            bookingId={booking.id}
-                            redirectAfterDelete={false}
-                            onDeleted={refetch}
-                            trigger={
-                              <Button variant="destructive" size="sm" className="w-full sm:w-auto">
-                                <IconTrash className="mr-2 h-4 w-4" />
-                                Supprimer
-                              </Button>
-                            }
-                          />
-                        )}
-                        <Button variant="outline" size="sm" className="w-full sm:w-auto" asChild>
-                          <Link href={`/dashboard/colis/${booking.id}`}>
-                            <IconEye className="mr-2 h-4 w-4" />
-                            Voir les détails
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          )}
+                    </div>
+                    <div className="mt-4 pt-4 border-t flex justify-end gap-2">
+                      {booking.status === 'cancelled' && (
+                        <DeleteBookingDialog
+                          bookingId={booking.id}
+                          redirectAfterDelete={false}
+                          onDeleted={refetch}
+                          trigger={
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="w-full sm:w-auto"
+                            >
+                              <IconTrash className="mr-2 h-4 w-4" />
+                              Supprimer
+                            </Button>
+                          }
+                        />
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        asChild
+                      >
+                        <Link href={`/dashboard/colis/${booking.id}`}>
+                          <IconEye className="mr-2 h-4 w-4" />
+                          Voir les détails
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

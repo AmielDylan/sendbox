@@ -5,9 +5,16 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { IconLoader2, IconDownload } from '@tabler/icons-react'
@@ -78,7 +85,9 @@ export default function AdminTransactionsPage() {
             <CardTitle className="text-sm font-medium">CA Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRevenue.toFixed(2)} EUR</div>
+            <div className="text-2xl font-bold">
+              {totalRevenue.toFixed(2)} EUR
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -86,12 +95,16 @@ export default function AdminTransactionsPage() {
             <CardTitle className="text-sm font-medium">Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{transactions?.length || 0}</div>
+            <div className="text-2xl font-bold">
+              {transactions?.length || 0}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Taux de litige</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Taux de litige
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0%</div>
@@ -121,14 +134,18 @@ export default function AdminTransactionsPage() {
                   <TableCell>
                     <Badge
                       variant={
-                        transaction.status === 'completed' ? 'default' : 'secondary'
+                        transaction.status === 'completed'
+                          ? 'default'
+                          : 'secondary'
                       }
                     >
                       {transaction.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {format(new Date(transaction.created_at), 'PP', { locale: fr })}
+                    {format(new Date(transaction.created_at), 'PP', {
+                      locale: fr,
+                    })}
                   </TableCell>
                 </TableRow>
               ))}
@@ -139,15 +156,3 @@ export default function AdminTransactionsPage() {
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
