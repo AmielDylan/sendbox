@@ -9,6 +9,9 @@ import { isAdmin } from '@/lib/core/admin/actions'
 import { AdminLayout } from '@/components/layouts/AdminLayout'
 import { IconLoader2 } from '@tabler/icons-react'
 
+// Force dynamic rendering for all admin pages (require auth + admin role)
+export const dynamic = 'force-dynamic'
+
 export default async function AdminLayoutRoute({
   children,
 }: {
