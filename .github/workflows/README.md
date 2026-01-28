@@ -19,49 +19,41 @@ Ce répertoire contient les workflows automatisés pour CI/CD du projet Sendbox.
 4. **Build** - Compile TypeScript et Next.js
 5. **Test Summary** - Résumé final
 
-### 2. Deploy Pipeline (`deploy.yml`)
+### 2. Pre-Deploy Quality Checks (`deploy.yml`)
 
 **Déclenché par:**
 - Push sur `main` (production)
 - Manuelle via workflow_dispatch
 
 **Étapes:**
-1. **Quality Checks** - Exécute tous les tests
-2. **Build & Deploy** - Build et déploie sur Vercel
+1. **Tests** - Exécute tous les tests
+2. **TypeScript Check** - Vérifie les types
+3. **Build** - Compile Next.js (dry run)
+4. **Success Message** - Confirme que tout est OK
+
+**Puis Vercel déploie automatiquement** (via le webhook GitHub)
+
+**Note:** Ce workflow vérifie uniquement que tout fonctionne. Le déploiement réel est fait par Vercel (qui est déjà connecté à GitHub)
 
 ## ⚙️ Configuration requise
 
 ### Secrets GitHub Actions
 
+**Important:** Tu n'as probablement besoin que des secrets d'environnement. Les tokens Vercel ne sont pas nécessaires puisque Vercel est déjà connecté via GitHub OAuth.
+
 Ajouter les secrets dans `Settings > Secrets and variables > Actions` :
 
 ```
-VERCEL_TOKEN              # Token Vercel (https://vercel.com/account/tokens)
-VERCEL_ORG_ID             # ID organisation Vercel
-VERCEL_PROJECT_ID         # ID projet Vercel
-NEXT_PUBLIC_SUPABASE_URL  # URL Supabase public
-NEXT_PUBLIC_SUPABASE_ANON_KEY  # Clé Supabase publique
-SUPABASE_SERVICE_ROLE_KEY # Clé service Supabase
-STRIPE_SECRET_KEY         # Clé secrète Stripe
+NEXT_PUBLIC_SUPABASE_URL        # URL Supabase public
+NEXT_PUBLIC_SUPABASE_ANON_KEY   # Clé Supabase publique
+SUPABASE_SERVICE_ROLE_KEY       # Clé service Supabase
+STRIPE_SECRET_KEY               # Clé secrète Stripe
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY  # Clé publique Stripe
-RESEND_API_KEY            # Clé API Resend
+RESEND_API_KEY                  # Clé API Resend
 ```
 
-### Trouver les IDs Vercel
-
-```bash
-# Installer Vercel CLI
-npm i -g vercel
-
-# Se connecter et lier le projet
-vercel link
-
-# Dans .vercel/project.json
-{
-  "projectId": "xxx",
-  "orgId": "yyy"
-}
-```
+**Optionnel (si tu veux contrôler le déploiement depuis GitHub):**
+- `VERCEL_TOKEN` - Token Vercel (pour déploiement manuel via GitHub)
 
 ## 🚀 Utilisation
 
