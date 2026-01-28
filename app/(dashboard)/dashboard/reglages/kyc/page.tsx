@@ -85,7 +85,9 @@ export default function KYCPage() {
     let isActive = true
 
     const subscribeToProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       if (!user || !isActive) return
 
       console.log('🔔 Subscribing to KYC updates for user:', user.id)
@@ -105,15 +107,18 @@ export default function KYCPage() {
             table: 'profiles',
             filter: `id=eq.${user.id}`,
           },
-          (payload) => {
+          payload => {
             console.log('🔔 Realtime UPDATE received:', payload)
-            const nextProfile = payload.new as { kyc_status?: KYCStatus; kyc_submitted_at?: string | null }
+            const nextProfile = payload.new as {
+              kyc_status?: KYCStatus
+              kyc_submitted_at?: string | null
+            }
             console.log('📊 New KYC status:', nextProfile.kyc_status)
             setKycStatus(nextProfile.kyc_status ?? null)
             setSubmittedAt(nextProfile.kyc_submitted_at ?? null)
           }
         )
-        .subscribe((status) => {
+        .subscribe(status => {
           console.log('📡 Realtime subscription status:', status)
           if (status === 'CHANNEL_ERROR') {
             console.error('❌ Realtime KYC subscription error')
@@ -289,9 +294,7 @@ export default function KYCPage() {
               <Label htmlFor="documentType">Type de document</Label>
               <Select
                 value={documentType}
-                onValueChange={value =>
-                  setDocumentType(value as DocumentType)
-                }
+                onValueChange={value => setDocumentType(value as DocumentType)}
               >
                 <SelectTrigger id="documentType">
                   <SelectValue placeholder="Sélectionnez un document" />
@@ -312,7 +315,7 @@ export default function KYCPage() {
               </Label>
               <Popover
                 open={countryOpen}
-                onOpenChange={(open) => {
+                onOpenChange={open => {
                   setCountryOpen(open)
                   if (!open) {
                     setCountrySearch('')
@@ -363,9 +366,7 @@ export default function KYCPage() {
                     <Input
                       placeholder="Rechercher un pays..."
                       value={countrySearch}
-                      onChange={(event) =>
-                        setCountrySearch(event.target.value)
-                      }
+                      onChange={event => setCountrySearch(event.target.value)}
                       className="h-8 border-0 px-0 focus-visible:ring-0"
                     />
                   </div>

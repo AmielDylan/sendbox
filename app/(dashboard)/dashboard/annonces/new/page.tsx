@@ -12,9 +12,9 @@ import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
   COUNTRIES,
-} from "@/lib/core/announcements/validations"
-import { createAnnouncement } from "@/lib/core/announcements/actions"
-import { searchCities } from "@/lib/shared/utils/cities"
+} from '@/lib/core/announcements/validations'
+import { createAnnouncement } from '@/lib/core/announcements/actions'
+import { searchCities } from '@/lib/shared/utils/cities'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -129,7 +129,10 @@ export default function NewAnnouncementPage() {
   }, [debouncedArrivalCity, arrivalCountry])
 
   const handleNext = async () => {
-    console.log('[NewAnnouncement] handleNext called - currentStep:', currentStep)
+    console.log(
+      '[NewAnnouncement] handleNext called - currentStep:',
+      currentStep
+    )
 
     let fieldsToValidate: (keyof CreateAnnouncementInput)[] = []
 
@@ -252,13 +255,16 @@ export default function NewAnnouncementPage() {
             />
 
             <div className="relative z-10 grid grid-cols-3 gap-4">
-              {STEPS.map((step) => {
+              {STEPS.map(step => {
                 const StepIcon = step.icon
                 const isActive = currentStep === step.id
                 const isCompleted = currentStep > step.id
 
                 return (
-                  <div key={step.id} className="flex flex-col items-center text-center">
+                  <div
+                    key={step.id}
+                    className="flex flex-col items-center text-center"
+                  >
                     <div
                       className={`flex items-center justify-center w-9 h-9 rounded-full border-2 transition-colors ${
                         isActive
@@ -291,11 +297,13 @@ export default function NewAnnouncementPage() {
       {/* Formulaire */}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           // Bloquer Enter sauf si on est à l'étape 3 et qu'on est sur le bouton submit
           if (e.key === 'Enter' && currentStep !== 3) {
             e.preventDefault()
-            console.log('[NewAnnouncement] Enter key blocked - not on final step')
+            console.log(
+              '[NewAnnouncement] Enter key blocked - not on final step'
+            )
           }
         }}
       >
@@ -323,7 +331,7 @@ export default function NewAnnouncementPage() {
                     <IconMapPin className="h-5 w-5" />
                     Départ
                   </h3>
-                  
+
                   {/* Pays de départ */}
                   <div className="space-y-2">
                     <Label htmlFor="departure_country">Pays de départ</Label>
@@ -404,10 +412,16 @@ export default function NewAnnouncementPage() {
                           className="w-full justify-start text-left font-normal"
                         >
                           <IconCalendar className="mr-2 h-4 w-4" />
-                          {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                          {departureDate
+                            ? format(departureDate, 'PP', { locale: fr })
+                            : 'Sélectionner une date'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" side="bottom" align="start">
+                      <PopoverContent
+                        className="w-auto p-0"
+                        side="bottom"
+                        align="start"
+                      >
                         <Calendar
                           mode="single"
                           selected={departureDate}
@@ -522,10 +536,18 @@ export default function NewAnnouncementPage() {
                           className="w-full justify-start text-left font-normal"
                         >
                           <IconCalendar className="mr-2 h-4 w-4" />
-                          {watch('arrival_date') ? format(watch('arrival_date')!, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                          {watch('arrival_date')
+                            ? format(watch('arrival_date')!, 'PP', {
+                                locale: fr,
+                              })
+                            : 'Sélectionner une date'}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" side="bottom" align="start">
+                      <PopoverContent
+                        className="w-auto p-0"
+                        side="bottom"
+                        align="start"
+                      >
                         <Calendar
                           mode="single"
                           selected={watch('arrival_date')}

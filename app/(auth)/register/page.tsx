@@ -9,14 +9,18 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { registerSchema, type RegisterInput } from "@/lib/core/auth/validations"
-import { signUp } from "@/lib/core/auth/actions"
+import { registerSchema, type RegisterInput } from '@/lib/core/auth/validations'
+import { signUp } from '@/lib/core/auth/actions'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Card,
   CardContent,
@@ -25,18 +29,14 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import {
-  IconLoader2,
-  IconPackage,
-  IconChevronDown,
-} from '@tabler/icons-react'
+import { IconLoader2, IconPackage, IconChevronDown } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { getCountryFlagEmoji } from '@/lib/utils/countries'
 
 const PHONE_COUNTRIES = [
   { code: 'FR', name: 'France', dialCode: '+33' },
   { code: 'BJ', name: 'Bénin', dialCode: '+229' },
-  { code: 'CI', name: 'Côte d\'Ivoire', dialCode: '+225' },
+  { code: 'CI', name: "Côte d'Ivoire", dialCode: '+225' },
   { code: 'SN', name: 'Sénégal', dialCode: '+221' },
   { code: 'TG', name: 'Togo', dialCode: '+228' },
   { code: 'BF', name: 'Burkina Faso', dialCode: '+226' },
@@ -55,20 +55,30 @@ const PHONE_COUNTRIES = [
   { code: 'CA', name: 'Canada', dialCode: '+1' },
   { code: 'LU', name: 'Luxembourg', dialCode: '+352' },
   { code: 'MC', name: 'Monaco', dialCode: '+377' },
-].map(country => ({
-  ...country,
-  flag: getCountryFlagEmoji(country.code),
-})).sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+]
+  .map(country => ({
+    ...country,
+    flag: getCountryFlagEmoji(country.code),
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
 
 const DEFAULT_PHONE_COUNTRY =
   PHONE_COUNTRIES.find(country => country.code === 'FR') || PHONE_COUNTRIES[0]
 
 const PASSWORD_CHECKS = [
-  { key: 'length', label: '12+ caractères', test: (v: string) => v.length >= 12 },
+  {
+    key: 'length',
+    label: '12+ caractères',
+    test: (v: string) => v.length >= 12,
+  },
   { key: 'lower', label: '1 minuscule', test: (v: string) => /[a-z]/.test(v) },
   { key: 'upper', label: '1 majuscule', test: (v: string) => /[A-Z]/.test(v) },
   { key: 'number', label: '1 chiffre', test: (v: string) => /\d/.test(v) },
-  { key: 'special', label: '1 caractère spécial', test: (v: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(v) },
+  {
+    key: 'special',
+    label: '1 caractère spécial',
+    test: (v: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(v),
+  },
 ]
 
 function RegisterForm() {
@@ -156,9 +166,7 @@ function RegisterForm() {
                 <IconPackage className="h-7 w-7 text-primary animate-pulse" />
               </div>
             </div>
-            <CardTitle className="text-2xl">
-              Vérification...
-            </CardTitle>
+            <CardTitle className="text-2xl">Vérification...</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -196,7 +204,9 @@ function RegisterForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <CardTitle className="text-3xl font-bold">Créer un compte</CardTitle>
+            <CardTitle className="text-3xl font-bold">
+              Créer un compte
+            </CardTitle>
             <CardDescription className="text-base">
               Rejoignez la communauté Sendbox
             </CardDescription>
@@ -312,7 +322,8 @@ function RegisterForm() {
                               type="button"
                               className={cn(
                                 'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
-                                phoneCountry.code === country.code && 'bg-accent'
+                                phoneCountry.code === country.code &&
+                                  'bg-accent'
                               )}
                               onClick={() => {
                                 setPhoneCountry(country)
@@ -341,7 +352,7 @@ function RegisterForm() {
                       placeholder="612345678"
                       className="h-10"
                       value={phoneDigits}
-                      onChange={(event) => {
+                      onChange={event => {
                         const digits = event.target.value.replace(/\D/g, '')
                         setPhoneDigits(digits)
                         const nextValue = digits
@@ -367,8 +378,8 @@ function RegisterForm() {
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
-                Choisissez l&apos;indicatif puis entrez le numéro
-                (chiffres uniquement).
+                Choisissez l&apos;indicatif puis entrez le numéro (chiffres
+                uniquement).
               </p>
             </div>
 
@@ -397,8 +408,13 @@ function RegisterForm() {
               <div className="space-y-2">
                 <div className="h-2 w-full rounded-full bg-muted">
                   <div
-                    className={cn('h-2 rounded-full transition-all', passwordBarClass)}
-                    style={{ width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%` }}
+                    className={cn(
+                      'h-2 rounded-full transition-all',
+                      passwordBarClass
+                    )}
+                    style={{
+                      width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%`,
+                    }}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -415,9 +431,7 @@ function RegisterForm() {
                           isValid ? 'text-emerald-600' : 'text-muted-foreground'
                         )}
                       >
-                        <span aria-hidden="true">
-                          {isValid ? '✓' : '•'}
-                        </span>
+                        <span aria-hidden="true">{isValid ? '✓' : '•'}</span>
                         {check.label}
                       </span>
                     )
@@ -428,9 +442,7 @@ function RegisterForm() {
 
             {/* Confirmation mot de passe */}
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">
-                Confirmer le mot de passe
-              </Label>
+              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -438,9 +450,7 @@ function RegisterForm() {
                 {...register('confirmPassword')}
                 aria-invalid={errors.confirmPassword ? 'true' : 'false'}
                 aria-describedby={
-                  errors.confirmPassword
-                    ? 'confirmPassword-error'
-                    : undefined
+                  errors.confirmPassword ? 'confirmPassword-error' : undefined
                 }
               />
               {errors.confirmPassword && (
@@ -465,9 +475,7 @@ function RegisterForm() {
                     checked={field.value}
                     onCheckedChange={field.onChange}
                     aria-invalid={errors.terms ? 'true' : 'false'}
-                    aria-describedby={
-                      errors.terms ? 'terms-error' : undefined
-                    }
+                    aria-describedby={errors.terms ? 'terms-error' : undefined}
                   />
                 )}
               />

@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import {
   Card,
   CardContent,
@@ -15,9 +15,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { IconLoader2, IconShieldCheck, IconClock, IconAlertCircle, IconInfoCircle } from '@tabler/icons-react'
+import {
+  IconLoader2,
+  IconShieldCheck,
+  IconClock,
+  IconAlertCircle,
+  IconInfoCircle,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -29,7 +42,9 @@ export default function AdminKYCPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, firstname, lastname, kyc_status, kyc_submitted_at, created_at')
+        .select(
+          'id, email, firstname, lastname, kyc_status, kyc_submitted_at, created_at'
+        )
         .order('kyc_submitted_at', { ascending: false, nullsFirst: false })
         .limit(100)
 
@@ -46,9 +61,12 @@ export default function AdminKYCPage() {
     )
   }
 
-  const pendingCount = kycStats?.filter(u => u.kyc_status === 'pending').length || 0
-  const approvedCount = kycStats?.filter(u => u.kyc_status === 'approved').length || 0
-  const rejectedCount = kycStats?.filter(u => u.kyc_status === 'rejected').length || 0
+  const pendingCount =
+    kycStats?.filter(u => u.kyc_status === 'pending').length || 0
+  const approvedCount =
+    kycStats?.filter(u => u.kyc_status === 'approved').length || 0
+  const rejectedCount =
+    kycStats?.filter(u => u.kyc_status === 'rejected').length || 0
 
   return (
     <div className="space-y-6">
@@ -69,9 +87,10 @@ export default function AdminKYCPage() {
                 Vérification automatique par Stripe Identity
               </p>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Les vérifications d'identité sont gérées automatiquement par Stripe Identity.
-                Les utilisateurs soumettent leurs documents via un flux sécurisé et les résultats
-                sont automatiquement synchronisés. Aucune action manuelle n'est requise.
+                Les vérifications d'identité sont gérées automatiquement par
+                Stripe Identity. Les utilisateurs soumettent leurs documents via
+                un flux sécurisé et les résultats sont automatiquement
+                synchronisés. Aucune action manuelle n'est requise.
               </p>
             </div>
           </div>
@@ -82,9 +101,7 @@ export default function AdminKYCPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              En attente
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">En attente</CardTitle>
             <IconClock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -94,9 +111,7 @@ export default function AdminKYCPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Approuvés
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Approuvés</CardTitle>
             <IconShieldCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -106,9 +121,7 @@ export default function AdminKYCPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Rejetés
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Rejetés</CardTitle>
             <IconAlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -149,21 +162,29 @@ export default function AdminKYCPage() {
                         user.kyc_status === 'approved'
                           ? 'default'
                           : user.kyc_status === 'pending'
-                          ? 'secondary'
-                          : user.kyc_status === 'rejected'
-                          ? 'destructive'
-                          : 'outline'
+                            ? 'secondary'
+                            : user.kyc_status === 'rejected'
+                              ? 'destructive'
+                              : 'outline'
                       }
                     >
-                      {user.kyc_status === 'approved' && <IconShieldCheck className="mr-1 h-3 w-3" />}
-                      {user.kyc_status === 'pending' && <IconClock className="mr-1 h-3 w-3" />}
-                      {user.kyc_status === 'rejected' && <IconAlertCircle className="mr-1 h-3 w-3" />}
+                      {user.kyc_status === 'approved' && (
+                        <IconShieldCheck className="mr-1 h-3 w-3" />
+                      )}
+                      {user.kyc_status === 'pending' && (
+                        <IconClock className="mr-1 h-3 w-3" />
+                      )}
+                      {user.kyc_status === 'rejected' && (
+                        <IconAlertCircle className="mr-1 h-3 w-3" />
+                      )}
                       {user.kyc_status || 'Non soumis'}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     {user.kyc_submitted_at
-                      ? format(new Date(user.kyc_submitted_at), 'PP', { locale: fr })
+                      ? format(new Date(user.kyc_submitted_at), 'PP', {
+                          locale: fr,
+                        })
                       : '-'}
                   </TableCell>
                   <TableCell>

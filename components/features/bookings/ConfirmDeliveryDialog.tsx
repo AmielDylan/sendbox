@@ -27,7 +27,10 @@ interface ConfirmDeliveryDialogProps {
   trigger?: React.ReactNode
 }
 
-export function ConfirmDeliveryDialog({ bookingId, trigger }: ConfirmDeliveryDialogProps) {
+export function ConfirmDeliveryDialog({
+  bookingId,
+  trigger,
+}: ConfirmDeliveryDialogProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -71,13 +74,14 @@ export function ConfirmDeliveryDialog({ bookingId, trigger }: ConfirmDeliveryDia
         <AlertDialogHeader>
           <AlertDialogTitle>Confirmer la réception du colis ?</AlertDialogTitle>
           <AlertDialogDescription>
-            En confirmant, vous validez la remise et le déblocage des fonds pour le voyageur.
+            En confirmant, vous validez la remise et le déblocage des fonds pour
+            le voyageur.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>Retour</AlertDialogCancel>
           <AlertDialogAction
-            onClick={(event) => {
+            onClick={event => {
               event.preventDefault()
               handleConfirm()
             }}

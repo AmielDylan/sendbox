@@ -5,8 +5,8 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
-import { createSystemNotification } from "@/lib/core/notifications/system"
+import { createClient } from '@/lib/shared/db/server'
+import { createSystemNotification } from '@/lib/core/notifications/system'
 import { z } from 'zod'
 
 const sendMessageSchema = z.object({
@@ -69,12 +69,14 @@ export async function sendMessage(data: SendMessageInput) {
     }
   }
 
-  const { booking_id, receiver_id, content, attachments, tempId } = validation.data
+  const { booking_id, receiver_id, content, attachments, tempId } =
+    validation.data
 
   // Rate limiting
   if (!checkRateLimit(user.id)) {
     return {
-      error: 'Vous avez atteint la limite de messages. Veuillez réessayer plus tard.',
+      error:
+        'Vous avez atteint la limite de messages. Veuillez réessayer plus tard.',
     }
   }
 
@@ -94,7 +96,8 @@ export async function sendMessage(data: SendMessageInput) {
   // Vérifier que l'utilisateur est soit le sender soit le traveler
   if (booking.sender_id !== user.id && booking.traveler_id !== user.id) {
     return {
-      error: 'Vous n\'êtes pas autorisé à envoyer un message pour cette réservation',
+      error:
+        "Vous n'êtes pas autorisé à envoyer un message pour cette réservation",
     }
   }
 
@@ -134,7 +137,7 @@ export async function sendMessage(data: SendMessageInput) {
     if (insertError) {
       console.error('Error sending message:', insertError)
       return {
-        error: 'Erreur lors de l\'envoi du message',
+        error: "Erreur lors de l'envoi du message",
       }
     }
 
@@ -150,9 +153,10 @@ export async function sendMessage(data: SendMessageInput) {
       : 'Un utilisateur'
 
     // Créer un aperçu du message (max 50 caractères)
-    const messagePreview = cleanContent.length > 50
-      ? cleanContent.substring(0, 50) + '...'
-      : cleanContent
+    const messagePreview =
+      cleanContent.length > 50
+        ? cleanContent.substring(0, 50) + '...'
+        : cleanContent
 
     // Créer une notification pour le destinataire (non-bloquant)
     const { error: notifError } = await createSystemNotification({
@@ -245,9 +249,12 @@ export async function getUserConversations() {
   }
 
   try {
-    const { data, error } = await (supabase.rpc as any)('get_user_conversations', {
-      p_user_id: user.id,
-    })
+    const { data, error } = await (supabase.rpc as any)(
+      'get_user_conversations',
+      {
+        p_user_id: user.id,
+      }
+    )
 
     if (error) {
       console.error('Error fetching conversations:', error)

@@ -6,7 +6,7 @@ import {
   COMMISSION_RATE,
   INSURANCE_RATE,
   INSURANCE_BASE_FEE,
-} from "@/lib/core/bookings/validations"
+} from '@/lib/core/bookings/validations'
 
 /**
  * Calcule les montants pour un booking
@@ -52,11 +52,3 @@ export function toStripeAmount(amount: number): number {
 export function fromStripeAmount(amount: number): number {
   return amount / 100
 }
-
-
-
-
-
-
-
-

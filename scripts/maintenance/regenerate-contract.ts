@@ -42,7 +42,10 @@ async function regenerateContract(bookingId: string) {
     .remove([filePath])
 
   if (deleteError) {
-    console.warn('⚠️  Attention: Erreur lors de la suppression (le fichier n\'existe peut-être pas):', deleteError.message)
+    console.warn(
+      "⚠️  Attention: Erreur lors de la suppression (le fichier n'existe peut-être pas):",
+      deleteError.message
+    )
   } else {
     console.log('✅ Ancien contrat supprimé')
   }
@@ -73,8 +76,10 @@ if (!bookingId) {
 }
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('❌ Erreur: Variables d\'environnement manquantes')
-  console.log('Assurez-vous que NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont définis')
+  console.error("❌ Erreur: Variables d'environnement manquantes")
+  console.log(
+    'Assurez-vous que NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont définis'
+  )
   process.exit(1)
 }
 

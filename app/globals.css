@@ -1,8 +1,8 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "./animations.css";
-@import "./design-system.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import './animations.css';
+@import './design-system.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -45,7 +45,7 @@
   /* Teal/Lyra - Modern & Professional */
 
   /* Primary - Teal/Cyan */
-  --primary: oklch(0.60 0.10 185);
+  --primary: oklch(0.6 0.1 185);
   --primary-foreground: oklch(0.98 0.01 181);
 
   /* Secondary - Neutral gray */
@@ -67,7 +67,7 @@
   --popover-foreground: oklch(0.145 0 0);
 
   --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.60 0.015 286);
+  --muted-foreground: oklch(0.6 0.015 286);
 
   /* Success - Keep green for positive states */
   --success: oklch(0.55 0.15 145);
@@ -80,14 +80,14 @@
   /* Borders & Focus */
   --border: oklch(0.88 0.01 286);
   --input: oklch(0.88 0.01 286);
-  --ring: oklch(0.60 0.10 185);
+  --ring: oklch(0.6 0.1 185);
 
   /* Chart colors - Teal palette */
-  --chart-1: oklch(0.60 0.10 185);
-  --chart-2: oklch(0.70 0.12 183);
+  --chart-1: oklch(0.6 0.1 185);
+  --chart-2: oklch(0.7 0.12 183);
   --chart-3: oklch(0.55 0.08 180);
   --chart-4: oklch(0.65 0.15 175);
-  --chart-5: oklch(0.50 0.12 190);
+  --chart-5: oklch(0.5 0.12 190);
 
   --radius: 0.625rem;
 }
@@ -97,14 +97,14 @@
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
 
-  --card: oklch(0.20 0.01 286);
+  --card: oklch(0.2 0.01 286);
   --card-foreground: oklch(0.985 0 0);
 
-  --popover: oklch(0.20 0.01 286);
+  --popover: oklch(0.2 0.01 286);
   --popover-foreground: oklch(0.985 0 0);
 
   /* Primary teal - slightly brighter in dark mode */
-  --primary: oklch(0.70 0.12 183);
+  --primary: oklch(0.7 0.12 183);
   --primary-foreground: oklch(0.28 0.04 193);
 
   --secondary: oklch(0.274 0.006 286.033);
@@ -124,14 +124,14 @@
 
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 18%);
-  --ring: oklch(0.70 0.12 183);
+  --ring: oklch(0.7 0.12 183);
 
   /* Chart colors - Same as light mode */
-  --chart-1: oklch(0.60 0.10 185);
-  --chart-2: oklch(0.70 0.12 183);
+  --chart-1: oklch(0.6 0.1 185);
+  --chart-2: oklch(0.7 0.12 183);
   --chart-3: oklch(0.55 0.08 180);
   --chart-4: oklch(0.65 0.15 175);
-  --chart-5: oklch(0.50 0.12 190);
+  --chart-5: oklch(0.5 0.12 190);
 }
 
 @layer base {

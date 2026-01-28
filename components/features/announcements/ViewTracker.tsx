@@ -15,7 +15,7 @@ interface ViewTrackerProps {
 export function ViewTracker({ announcementId }: ViewTrackerProps) {
   useEffect(() => {
     // Incrémenter les vues après le montage du composant
-    incrementAnnouncementViews(announcementId).catch((error) => {
+    incrementAnnouncementViews(announcementId).catch(error => {
       console.error('Error tracking view:', error)
     })
   }, [announcementId])

@@ -15,7 +15,9 @@ const ContentSecurityPolicy = `
   form-action 'self';
   frame-ancestors 'self';
   ${isDevelopment ? '' : 'upgrade-insecure-requests;'}
-`.replace(/\s{2,}/g, ' ').trim()
+`
+  .replace(/\s{2,}/g, ' ')
+  .trim()
 
 const securityHeaders = [
   {

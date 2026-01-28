@@ -11,16 +11,16 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { useMessages, type Message } from '@/hooks/use-messages'
 import { usePresence } from '@/hooks/use-presence'
-import { sendMessage, markMessagesAsRead } from "@/lib/core/messages/actions"
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
+import { sendMessage, markMessagesAsRead } from '@/lib/core/messages/actions'
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { IconSend, IconLoader2, IconArrowLeft } from '@tabler/icons-react'
 import { toast } from 'sonner'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 interface ChatWindowProps {
   bookingId: string | null
@@ -40,67 +40,65 @@ interface MessageItemProps {
  * Composant optimisé pour le rendu d'un message individuel
  * Utilise React.memo pour éviter re-renders inutiles
  */
-const MessageItem = memo(({ message, currentUserId }: MessageItemProps) => {
-  const isOwnMessage = message.sender_id === currentUserId
+const MessageItem = memo(
+  ({ message, currentUserId }: MessageItemProps) => {
+    const isOwnMessage = message.sender_id === currentUserId
 
-  return (
-    <div
-      className={cn(
-        'flex',
-        isOwnMessage ? 'justify-end' : 'justify-start'
-      )}
-    >
+    return (
       <div
-        className={cn(
-          'flex flex-col max-w-[70%]',
-          isOwnMessage ? 'items-end' : 'items-start'
-        )}
+        className={cn('flex', isOwnMessage ? 'justify-end' : 'justify-start')}
       >
         <div
           className={cn(
-            'rounded-lg px-4 py-2',
-            isOwnMessage
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted'
+            'flex flex-col max-w-[70%]',
+            isOwnMessage ? 'items-end' : 'items-start'
           )}
         >
-          <p className="text-sm whitespace-pre-wrap break-words">
-            {message.content}
+          <div
+            className={cn(
+              'rounded-lg px-4 py-2',
+              isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-muted'
+            )}
+          >
+            <p className="text-sm whitespace-pre-wrap break-words">
+              {message.content}
+            </p>
+            {message.attachments && message.attachments.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {message.attachments.map((attachment, idx) => (
+                  <div
+                    key={idx}
+                    className="relative w-full max-w-[min(300px,calc(100vw-12rem))] sm:max-w-xs rounded-md overflow-hidden"
+                  >
+                    <Image
+                      src={attachment}
+                      alt={`Pièce jointe ${idx + 1}`}
+                      width={300}
+                      height={200}
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {format(new Date(message.created_at), 'HH:mm', { locale: fr })}
           </p>
-          {message.attachments && message.attachments.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {message.attachments.map((attachment, idx) => (
-                <div
-                  key={idx}
-                  className="relative w-full max-w-[min(300px,calc(100vw-12rem))] sm:max-w-xs rounded-md overflow-hidden"
-                >
-                  <Image
-                    src={attachment}
-                    alt={`Pièce jointe ${idx + 1}`}
-                    width={300}
-                    height={200}
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          {format(new Date(message.created_at), 'HH:mm', { locale: fr })}
-        </p>
       </div>
-    </div>
-  )
-}, (prevProps, nextProps) => {
-  // Comparer seulement les props qui affectent le rendu
-  return (
-    prevProps.message.id === nextProps.message.id &&
-    prevProps.message.content === nextProps.message.content &&
-    prevProps.message.is_read === nextProps.message.is_read &&
-    prevProps.currentUserId === nextProps.currentUserId
-  )
-})
+    )
+  },
+  (prevProps, nextProps) => {
+    // Comparer seulement les props qui affectent le rendu
+    return (
+      prevProps.message.id === nextProps.message.id &&
+      prevProps.message.content === nextProps.message.content &&
+      prevProps.message.is_read === nextProps.message.is_read &&
+      prevProps.currentUserId === nextProps.currentUserId
+    )
+  }
+)
 
 MessageItem.displayName = 'MessageItem'
 
@@ -112,21 +110,21 @@ export function ChatWindow({
   onBack,
   onMessagesRead,
 }: ChatWindowProps) {
-  const { messages, isLoading, addOptimisticMessage, removeOptimisticMessage } = useMessages(bookingId)
+  const { messages, isLoading, addOptimisticMessage, removeOptimisticMessage } =
+    useMessages(bookingId)
   const [messageContent, setMessageContent] = useState('')
   const [isPending, startTransition] = useTransition()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const otherAvatar = getAvatarUrl(otherUserAvatar, otherUserId || otherUserName)
+  const otherAvatar = getAvatarUrl(
+    otherUserAvatar,
+    otherUserId || otherUserName
+  )
 
   // Hook de présence pour le statut en ligne et typing indicators
-  const {
-    isUserOnline,
-    isUserTyping,
-    sendTypingStatus,
-    stopTyping,
-  } = usePresence(bookingId ? `presence:${bookingId}` : '', currentUserId)
+  const { isUserOnline, isUserTyping, sendTypingStatus, stopTyping } =
+    usePresence(bookingId ? `presence:${bookingId}` : '', currentUserId)
 
   // Marquer les messages comme lus quand la conversation est ouverte
   useEffect(() => {
@@ -145,7 +143,12 @@ export function ChatWindow({
   }, [messages])
 
   const handleSendMessage = () => {
-    if (!bookingId || !otherUserId || !messageContent.trim() || !currentUserId) {
+    if (
+      !bookingId ||
+      !otherUserId ||
+      !messageContent.trim() ||
+      !currentUserId
+    ) {
       return
     }
 
@@ -158,7 +161,8 @@ export function ChatWindow({
     stopTyping()
 
     // Récupérer les infos sender depuis les messages existants OU créer un objet minimal
-    const senderInfo = messages.find(m => m.sender_id === currentUserId)?.sender || {
+    const senderInfo = messages.find(m => m.sender_id === currentUserId)
+      ?.sender || {
       firstname: null,
       lastname: null,
       avatar_url: null,
@@ -271,7 +275,9 @@ export function ChatWindow({
               ) : otherUserId && isUserOnline(otherUserId) ? (
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-xs text-muted-foreground">En ligne</span>
+                  <span className="text-xs text-muted-foreground">
+                    En ligne
+                  </span>
                 </div>
               ) : (
                 <Link
@@ -298,7 +304,7 @@ export function ChatWindow({
           </div>
         ) : (
           <div className="space-y-4">
-            {messages.map((message) => (
+            {messages.map(message => (
               <MessageItem
                 key={message.id}
                 message={message}

@@ -5,9 +5,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { IconShield, IconPackage } from '@tabler/icons-react'
-import type { BookingCalculation } from "@/lib/core/bookings/calculations"
-import { formatPrice } from "@/lib/core/bookings/calculations"
-import { MAX_INSURANCE_COVERAGE } from "@/lib/core/bookings/validations"
+import type { BookingCalculation } from '@/lib/core/bookings/calculations'
+import { formatPrice } from '@/lib/core/bookings/calculations'
+import { MAX_INSURANCE_COVERAGE } from '@/lib/core/bookings/validations'
 
 interface PriceCalculationProps {
   calculation: BookingCalculation
@@ -37,7 +37,11 @@ export function PriceCalculation({
           </span>
         </div>
         <p className="text-xs text-muted-foreground ml-6">
-          {weightKg.toFixed(1)} kg × {weightKg > 0 ? (calculation.transportPrice / weightKg).toFixed(2) : '0.00'} €/kg
+          {weightKg.toFixed(1)} kg ×{' '}
+          {weightKg > 0
+            ? (calculation.transportPrice / weightKg).toFixed(2)
+            : '0.00'}{' '}
+          €/kg
         </p>
 
         {/* Commission */}
@@ -45,7 +49,9 @@ export function PriceCalculation({
           <span className="text-sm text-muted-foreground">
             Commission Sendbox (12%)
           </span>
-          <span className="font-medium">{formatPrice(calculation.commission)}</span>
+          <span className="font-medium">
+            {formatPrice(calculation.commission)}
+          </span>
         </div>
 
         <Separator />
@@ -53,7 +59,9 @@ export function PriceCalculation({
         {/* Sous-total */}
         <div className="flex items-center justify-between">
           <span className="font-medium">Sous-total</span>
-          <span className="font-semibold">{formatPrice(calculation.subtotal)}</span>
+          <span className="font-semibold">
+            {formatPrice(calculation.subtotal)}
+          </span>
         </div>
 
         {/* Protection du colis */}
@@ -64,7 +72,9 @@ export function PriceCalculation({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <IconShield className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Protection du colis</span>
+                  <span className="text-sm font-medium">
+                    Protection du colis
+                  </span>
                 </div>
                 <span className="font-medium">
                   {formatPrice(calculation.insurancePremium)}
@@ -100,9 +110,3 @@ export function PriceCalculation({
     </Card>
   )
 }
-
-
-
-
-
-

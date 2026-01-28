@@ -53,7 +53,9 @@ export function SignaturePad({
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        {description && (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
@@ -84,15 +86,3 @@ export function SignaturePad({
     </Card>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

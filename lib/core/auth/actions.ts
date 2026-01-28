@@ -7,8 +7,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/server"
-import { createAdminClient } from "@/lib/shared/db/admin"
+import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
 import {
   registerSchema,
   loginSchema,
@@ -18,8 +18,8 @@ import {
   type LoginInput,
   type ResetPasswordRequestInput,
   type ResetPasswordInput,
-} from "@/lib/core/auth/validations"
-import { authRateLimit } from "@/lib/shared/security/rate-limit"
+} from '@/lib/core/auth/validations'
+import { authRateLimit } from '@/lib/shared/security/rate-limit'
 
 // Messages d'erreur génériques pour éviter l'énumération
 const GENERIC_ERROR_MESSAGE =
@@ -224,7 +224,7 @@ export async function signIn(formData: LoginInput) {
     // Supabase gère cela via les cookies
 
     revalidatePath('/', 'layout')
-    
+
     // Retourner succès pour redirection côté client
     // (redirect() ne fonctionne pas depuis Server Action appelée côté client)
     return {
@@ -378,10 +378,11 @@ export async function verifyEmail(token?: string, type?: string) {
     // Si pas d'utilisateur connecté, essayer de vérifier avec le token
     if ((userError || !user) && token && type) {
       // Essayer de vérifier avec le token directement
-      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-        token_hash: token,
-        type: type as 'email',
-      })
+      const { data: verifyData, error: verifyError } =
+        await supabase.auth.verifyOtp({
+          token_hash: token,
+          type: type as 'email',
+        })
 
       if (verifyError) {
         return {
@@ -438,10 +439,10 @@ export async function verifyEmail(token?: string, type?: string) {
     // Si pas de token mais utilisateur connecté, vérifier l'état
     if (user) {
       revalidatePath('/', 'layout')
-      
+
       // Attendre un peu pour que la session soit mise à jour
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       const {
         data: { user: finalUser },
       } = await supabase.auth.getUser()
@@ -455,7 +456,7 @@ export async function verifyEmail(token?: string, type?: string) {
     }
 
     return {
-      error: 'La vérification n\'a pas pu être complétée. Veuillez réessayer.',
+      error: "La vérification n'a pas pu être complétée. Veuillez réessayer.",
     }
   } catch (error) {
     console.error('Verify email error:', error)

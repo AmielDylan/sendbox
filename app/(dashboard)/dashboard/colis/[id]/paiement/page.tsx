@@ -7,8 +7,8 @@
 import { useCallback, useEffect, useState, Suspense } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Elements } from '@stripe/react-stripe-js'
-import { getStripeClient } from "@/lib/shared/services/stripe/config"
-import { createClient } from "@/lib/shared/db/client"
+import { getStripeClient } from '@/lib/shared/services/stripe/config'
+import { createClient } from '@/lib/shared/db/client'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,9 +25,12 @@ import {
   IconInfoCircle,
   IconCreditCard,
 } from '@tabler/icons-react'
-import { formatPrice } from "@/lib/core/bookings/calculations"
-import { calculateBookingAmounts } from "@/lib/core/payments/calculations"
-import { INSURANCE_RATE, MAX_INSURANCE_COVERAGE } from "@/lib/core/bookings/validations"
+import { formatPrice } from '@/lib/core/bookings/calculations'
+import { calculateBookingAmounts } from '@/lib/core/payments/calculations'
+import {
+  INSURANCE_RATE,
+  MAX_INSURANCE_COVERAGE,
+} from '@/lib/core/bookings/validations'
 import { PaymentForm } from '@/components/features/payments/PaymentForm'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import Link from 'next/link'
@@ -44,7 +47,7 @@ function PaymentPageContent() {
   const isSimulation = paymentsMode === 'simulation'
   const paymentsEnabled = paymentsMode !== 'disabled'
   const protectionTooltip =
-    'Cette option ne constitue pas un contrat d\'assurance et n\'implique aucune indemnisation automatique. Toute prise en charge éventuelle relève d\'une décision discrétionnaire de Sendbox. L\'utilisateur ne peut pas dire qu\'il ne savait pas. Plafond : 500 € max. Prix : 3% du montant déclaré.'
+    "Cette option ne constitue pas un contrat d'assurance et n'implique aucune indemnisation automatique. Toute prise en charge éventuelle relève d'une décision discrétionnaire de Sendbox. L'utilisateur ne peut pas dire qu'il ne savait pas. Plafond : 500 € max. Prix : 3% du montant déclaré."
 
   const [isLoading, setIsLoading] = useState(true)
   const [booking, setBooking] = useState<any>(null)
@@ -95,7 +98,9 @@ function PaymentPageContent() {
 
       const computedAmounts = calculateBookingAmounts(
         bookingData.kilos_requested || 0,
-        bookingData.price_per_kg || bookingData.announcements?.price_per_kg || 0,
+        bookingData.price_per_kg ||
+          bookingData.announcements?.price_per_kg ||
+          0,
         bookingData.package_value || 0,
         bookingData.insurance_opted || false
       )
@@ -155,7 +160,7 @@ function PaymentPageContent() {
 
     try {
       const delayMs = 2000 + Math.floor(Math.random() * 2000)
-      await new Promise((resolve) => setTimeout(resolve, delayMs))
+      await new Promise(resolve => setTimeout(resolve, delayMs))
 
       const response = await fetch('/api/payments/simulate', {
         method: 'POST',
@@ -229,12 +234,19 @@ function PaymentPageContent() {
 
   const announcement = booking.announcements as any
   const totalPrice = Number(amounts?.totalPrice ?? booking.total_price ?? 0)
-  const commissionAmount = Number(amounts?.commissionAmount ?? booking.commission_amount ?? 0)
+  const commissionAmount = Number(
+    amounts?.commissionAmount ?? booking.commission_amount ?? 0
+  )
   const protectionAmount = booking.insurance_opted
     ? Number(amounts?.insurancePremium ?? booking.insurance_premium ?? 0)
     : 0
-  const totalAmount = Number(amounts?.totalAmount ?? totalPrice + commissionAmount + protectionAmount)
-  const protectionCoverage = Math.min(booking.package_value || 0, MAX_INSURANCE_COVERAGE)
+  const totalAmount = Number(
+    amounts?.totalAmount ?? totalPrice + commissionAmount + protectionAmount
+  )
+  const protectionCoverage = Math.min(
+    booking.package_value || 0,
+    MAX_INSURANCE_COVERAGE
+  )
   const protectionRateLabel = `${(INSURANCE_RATE * 100).toFixed(0)}%`
 
   return (
@@ -272,7 +284,9 @@ function PaymentPageContent() {
               <Separator />
               <div>
                 <p className="text-sm text-muted-foreground">Valeur déclarée</p>
-                <p className="font-medium">{formatPrice(booking.package_value || 0)}</p>
+                <p className="font-medium">
+                  {formatPrice(booking.package_value || 0)}
+                </p>
               </div>
               {booking.insurance_opted && (
                 <>
@@ -309,7 +323,9 @@ function PaymentPageContent() {
                 <Checkbox
                   id="accept_terms"
                   checked={acceptedTerms}
-                  onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                  onCheckedChange={checked =>
+                    setAcceptedTerms(checked === true)
+                  }
                 />
                 <div className="flex-1 space-y-1">
                   <Label htmlFor="accept_terms" className="cursor-pointer">
@@ -318,7 +334,10 @@ function PaymentPageContent() {
                       Conditions Générales de Vente
                     </Link>{' '}
                     et la{' '}
-                    <Link href="/politique-confidentialite" className="text-primary underline">
+                    <Link
+                      href="/politique-confidentialite"
+                      className="text-primary underline"
+                    >
                       Politique de Confidentialité
                     </Link>
                   </Label>
@@ -343,7 +362,8 @@ function PaymentPageContent() {
                         />
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Assistance limitée en cas de litige. Plafond : {formatPrice(protectionCoverage)}.
+                        Assistance limitée en cas de litige. Plafond :{' '}
+                        {formatPrice(protectionCoverage)}.
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Prix : {protectionRateLabel} du montant déclaré.
@@ -379,7 +399,9 @@ function PaymentPageContent() {
                       amount={totalAmount}
                       acceptedTerms={acceptedTerms}
                       onSuccess={() => {
-                        router.push(`/dashboard/colis/${bookingId}?payment=success`)
+                        router.push(
+                          `/dashboard/colis/${bookingId}?payment=success`
+                        )
                       }}
                     />
                   </Elements>
@@ -443,10 +465,10 @@ function PaymentPageContent() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Transport</span>
-                  <span className="font-medium">
-                    {formatPrice(totalPrice)}
+                  <span className="text-sm text-muted-foreground">
+                    Transport
                   </span>
+                  <span className="font-medium">{formatPrice(totalPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">
@@ -503,8 +525,9 @@ function PaymentPageContent() {
                       confirmation de livraison par le demandeur.
                     </p>
                     <p>
-                      Si le voyageur confirme la livraison et que vous ne répondez
-                      pas malgré les relances, les fonds sont libérés après 7 jours.
+                      Si le voyageur confirme la livraison et que vous ne
+                      répondez pas malgré les relances, les fonds sont libérés
+                      après 7 jours.
                     </p>
                   </div>
                 </div>

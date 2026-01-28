@@ -5,20 +5,20 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
-import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
+import { createClient } from '@/lib/shared/db/server'
+import { getPublicProfiles } from '@/lib/shared/db/queries/public-profiles'
 import {
   createBookingSchema,
   type CreateBookingInput,
-} from "@/lib/core/bookings/validations"
+} from '@/lib/core/bookings/validations'
 import {
   generatePackagePhotoFileName,
   validatePackagePhoto,
-} from "@/lib/core/bookings/photos"
-import { validateImageUpload } from "@/lib/shared/security/upload-validation"
-import { uploadRateLimit } from "@/lib/shared/security/rate-limit"
-import { isFeatureEnabled } from "@/lib/shared/config/features"
-import { notifyUser } from "@/lib/core/notifications/actions"
+} from '@/lib/core/bookings/photos'
+import { validateImageUpload } from '@/lib/shared/security/upload-validation'
+import { uploadRateLimit } from '@/lib/shared/security/rate-limit'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { notifyUser } from '@/lib/core/notifications/actions'
 import sharp from 'sharp'
 
 /**
@@ -52,9 +52,11 @@ const MAX_PENDING_BOOKINGS = 5
 /**
  * Crée une nouvelle réservation
  */
-export async function createBooking(formData: CreateBookingInput & {
-  package_photos?: File[]
-}) {
+export async function createBooking(
+  formData: CreateBookingInput & {
+    package_photos?: File[]
+  }
+) {
   const supabase = await createClient()
 
   // Vérifier l'authentification
@@ -84,22 +86,25 @@ export async function createBooking(formData: CreateBookingInput & {
 
   // Vérifier que le KYC est approuvé SEULEMENT si feature activée
   if (isFeatureEnabled('KYC_ENABLED') && profile.kyc_status !== 'approved') {
-    let errorMessage = 'Vérification d\'identité requise pour continuer'
-    let errorDetails = 'Veuillez compléter votre vérification d\'identité pour créer une réservation.'
-    
+    let errorMessage = "Vérification d'identité requise pour continuer"
+    let errorDetails =
+      "Veuillez compléter votre vérification d'identité pour créer une réservation."
+
     if (profile.kyc_status === 'pending') {
       errorMessage = 'Vérification en cours'
-      errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez créer des réservations une fois celle-ci approuvée (24-48h).'
+      errorDetails =
+        "Votre vérification d'identité est en cours d'examen. Vous pourrez créer des réservations une fois celle-ci approuvée (24-48h)."
     } else if (profile.kyc_status === 'rejected') {
       errorMessage = 'Vérification refusée'
-      errorDetails = profile.kyc_rejection_reason 
+      errorDetails = profile.kyc_rejection_reason
         ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
         : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
     } else if (profile.kyc_status === 'incomplete') {
-      errorMessage = 'Vérification d\'identité incomplète'
-      errorDetails = 'Veuillez soumettre vos documents d\'identité pour créer une réservation.'
+      errorMessage = "Vérification d'identité incomplète"
+      errorDetails =
+        "Veuillez soumettre vos documents d'identité pour créer une réservation."
     }
-    
+
     return {
       error: errorMessage,
       errorDetails,
@@ -130,7 +135,9 @@ export async function createBooking(formData: CreateBookingInput & {
   // Récupérer l'annonce et vérifier la capacité
   const { data: announcement, error: announcementError } = await supabase
     .from('announcements')
-    .select('id, traveler_id, available_kg, status, departure_city, arrival_city, price_per_kg')
+    .select(
+      'id, traveler_id, available_kg, status, departure_city, arrival_city, price_per_kg'
+    )
     .eq('id', formData.announcement_id)
     .single()
 
@@ -145,7 +152,7 @@ export async function createBooking(formData: CreateBookingInput & {
   // Vérifier que l'annonce est active
   if (announcement.status !== 'active') {
     return {
-      error: 'Cette annonce n\'est plus disponible',
+      error: "Cette annonce n'est plus disponible",
     }
   }
 
@@ -164,7 +171,10 @@ export async function createBooking(formData: CreateBookingInput & {
     .in('status', ['pending', 'accepted', 'in_transit'])
 
   const reservedWeight =
-    existingBookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
+    existingBookings?.reduce(
+      (sum: number, b: any) => sum + (b.kilos_requested || b.weight_kg || 0),
+      0
+    ) || 0
   const maxWeight = (announcement as any).available_kg || 0
   const availableWeight = Math.max(0, maxWeight - reservedWeight)
 
@@ -207,14 +217,21 @@ export async function createBooking(formData: CreateBookingInput & {
 
     if (createError || !booking) {
       console.error('Create booking error:', createError)
-      console.error('Create booking error details:', JSON.stringify(createError, null, 2))
+      console.error(
+        'Create booking error details:',
+        JSON.stringify(createError, null, 2)
+      )
       console.error('Booking data attempted:', {
         announcement_id: validation.data.announcement_id,
         sender_id: user.id,
         traveler_id: announcement.traveler_id,
         kilos_requested: validation.data.kilos_requested,
       })
-      const errorMessage = createError?.message || createError?.details || createError?.hint || 'Erreur inconnue'
+      const errorMessage =
+        createError?.message ||
+        createError?.details ||
+        createError?.hint ||
+        'Erreur inconnue'
       return {
         error: `Erreur lors de la création de la réservation: ${errorMessage}`,
       }
@@ -278,7 +295,7 @@ export async function createBooking(formData: CreateBookingInput & {
           // Supprimer la réservation si l'upload échoue
           await supabase.from('bookings').delete().eq('id', booking.id)
           return {
-            error: 'Erreur lors de l\'upload des photos',
+            error: "Erreur lors de l'upload des photos",
             field: 'package_photos',
           }
         }
@@ -378,7 +395,7 @@ export async function getAnnouncementForBooking(announcementId: string) {
   // Vérifier que l'annonce est active
   if (announcement.status !== 'active') {
     return {
-      error: 'Cette annonce n\'est plus disponible',
+      error: "Cette annonce n'est plus disponible",
     }
   }
 
@@ -397,7 +414,10 @@ export async function getAnnouncementForBooking(announcementId: string) {
     .in('status', ['pending', 'accepted', 'in_transit'])
 
   const reservedWeight =
-    bookings?.reduce((sum: number, b: any) => sum + ((b.kilos_requested || b.weight_kg) || 0), 0) || 0
+    bookings?.reduce(
+      (sum: number, b: any) => sum + (b.kilos_requested || b.weight_kg || 0),
+      0
+    ) || 0
   const maxWeight = (announcement as any).available_kg || 0
   const availableWeight = Math.max(0, maxWeight - reservedWeight)
 

@@ -5,7 +5,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import { headers } from 'next/headers'
 
 /**
@@ -61,7 +61,10 @@ async function createAuditLog(
   }
 
   const headersList = await headers()
-  const ipAddress = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown'
+  const ipAddress =
+    headersList.get('x-forwarded-for') ||
+    headersList.get('x-real-ip') ||
+    'unknown'
   const userAgent = headersList.get('user-agent') || 'unknown'
 
   await (supabase.rpc as any)('create_admin_audit_log', {
@@ -78,7 +81,11 @@ async function createAuditLog(
 /**
  * Bannit ou débannit un utilisateur
  */
-export async function banUser(userId: string, banned: boolean, reason?: string) {
+export async function banUser(
+  userId: string,
+  banned: boolean,
+  reason?: string
+) {
   if (!(await isAdmin())) {
     return {
       error: 'Non autorisé',
@@ -263,7 +270,10 @@ export async function markAsDispute(bookingId: string, reason: string) {
 /**
  * Rejette une annonce
  */
-export async function rejectAnnouncement(announcementId: string, reason: string) {
+export async function rejectAnnouncement(
+  announcementId: string,
+  reason: string
+) {
   if (!(await isAdmin())) {
     return {
       error: 'Non autorisé',
@@ -282,7 +292,7 @@ export async function rejectAnnouncement(announcementId: string, reason: string)
   if (error) {
     console.error('Error rejecting announcement:', error)
     return {
-      error: 'Erreur lors du rejet de l\'annonce',
+      error: "Erreur lors du rejet de l'annonce",
     }
   }
 
@@ -347,4 +357,3 @@ export async function getAdminStats() {
     monthlyRevenue,
   }
 }
-

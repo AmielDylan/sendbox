@@ -47,14 +47,17 @@ export const createAnnouncementSchema = z
     message: "Pays de départ et d'arrivée doivent être différents",
     path: ['arrival_country'],
   })
-  .refine(data => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return data.departure_date >= today
-  }, {
-    message: 'La date de départ doit être aujourd\'hui ou dans le futur',
-    path: ['departure_date'],
-  })
+  .refine(
+    data => {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return data.departure_date >= today
+    },
+    {
+      message: "La date de départ doit être aujourd'hui ou dans le futur",
+      path: ['departure_date'],
+    }
+  )
 
 // Schéma de mise à jour d'annonce (sans validation de date future pour permettre la modification)
 export const updateAnnouncementSchema = z

@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import { IconStar } from '@tabler/icons-react'
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 interface StarRatingProps {
   rating: number
@@ -37,11 +37,9 @@ export function StarRating({
 
   return (
     <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((value) => {
+      {[1, 2, 3, 4, 5].map(value => {
         const isFilled =
-          hoveredRating !== null
-            ? value <= hoveredRating
-            : value <= rating
+          hoveredRating !== null ? value <= hoveredRating : value <= rating
 
         return (
           <button
@@ -53,7 +51,9 @@ export function StarRating({
             disabled={disabled}
             className={cn(
               'transition-colors',
-              disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-110',
+              disabled
+                ? 'cursor-not-allowed'
+                : 'cursor-pointer hover:scale-110',
               sizeClasses[size]
             )}
           >
@@ -72,15 +72,3 @@ export function StarRating({
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

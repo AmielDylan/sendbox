@@ -7,8 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconStar, IconCircleCheck, IconBriefcase, IconCalendar } from '@tabler/icons-react'
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
+import {
+  IconStar,
+  IconCircleCheck,
+  IconBriefcase,
+  IconCalendar,
+} from '@tabler/icons-react'
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -64,7 +69,8 @@ export function TravelerSection({
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <IconCalendar className="h-4 w-4" />
                 <span>
-                  Membre depuis {format(new Date(memberSince), 'MMMM yyyy', { locale: fr })}
+                  Membre depuis{' '}
+                  {format(new Date(memberSince), 'MMMM yyyy', { locale: fr })}
                 </span>
               </div>
             )}
@@ -95,12 +101,3 @@ export function TravelerSection({
     </Card>
   )
 }
-
-
-
-
-
-
-
-
-

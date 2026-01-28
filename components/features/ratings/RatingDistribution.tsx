@@ -10,14 +10,12 @@ interface RatingDistributionProps {
   distribution: Record<number, number>
 }
 
-export function RatingDistribution({
-  distribution,
-}: RatingDistributionProps) {
+export function RatingDistribution({ distribution }: RatingDistributionProps) {
   const maxCount = Math.max(...Object.values(distribution), 0)
 
   return (
     <div className="space-y-2">
-      {[5, 4, 3, 2, 1].map((stars) => {
+      {[5, 4, 3, 2, 1].map(stars => {
         const count = distribution[stars] || 0
         const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0
 
@@ -44,13 +42,3 @@ export function RatingDistribution({
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-

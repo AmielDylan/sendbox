@@ -16,7 +16,3 @@ export * from './validations'
 export * from './calculations'
 export * from './photos'
 export * from './qr-codes'
-
-
-
-

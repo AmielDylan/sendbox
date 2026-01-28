@@ -38,7 +38,8 @@ export function BookingTimeline({
           <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
             <IconCalendar className="h-3 w-3" />
             <span>
-              Départ : {format(new Date(departureDate), 'dd MMMM yyyy', { locale: fr })}
+              Départ :{' '}
+              {format(new Date(departureDate), 'dd MMMM yyyy', { locale: fr })}
             </span>
           </div>
         </div>
@@ -61,7 +62,8 @@ export function BookingTimeline({
             <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
               <IconCalendar className="h-3 w-3" />
               <span>
-                Arrivée : {format(new Date(arrivalDate), 'dd MMMM yyyy', { locale: fr })}
+                Arrivée :{' '}
+                {format(new Date(arrivalDate), 'dd MMMM yyyy', { locale: fr })}
               </span>
             </div>
           )}
@@ -70,11 +72,3 @@ export function BookingTimeline({
     </div>
   )
 }
-
-
-
-
-
-
-
-

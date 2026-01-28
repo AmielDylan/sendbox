@@ -5,7 +5,7 @@
 
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
-import { isAdmin } from "@/lib/core/admin/actions"
+import { isAdmin } from '@/lib/core/admin/actions'
 import { AdminLayout } from '@/components/layouts/AdminLayout'
 import { IconLoader2 } from '@tabler/icons-react'
 
@@ -33,14 +33,3 @@ export default async function AdminLayoutRoute({
     </Suspense>
   )
 }
-
-
-
-
-
-
-
-
-
-
-

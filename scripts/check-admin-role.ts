@@ -7,11 +7,15 @@ import { createClient } from '@supabase/supabase-js'
 import type { Database } from '../types/database.types'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Variables d\'environnement manquantes')
-  console.error('Besoin de: NEXT_PUBLIC_SUPABASE_URL et (SUPABASE_SERVICE_ROLE_KEY ou NEXT_PUBLIC_SUPABASE_ANON_KEY)')
+  console.error("❌ Variables d'environnement manquantes")
+  console.error(
+    'Besoin de: NEXT_PUBLIC_SUPABASE_URL et (SUPABASE_SERVICE_ROLE_KEY ou NEXT_PUBLIC_SUPABASE_ANON_KEY)'
+  )
   process.exit(1)
 }
 
@@ -32,16 +36,22 @@ async function checkAdminRole() {
   } else if (adminAccount) {
     console.log('✅ Compte trouvé:')
     console.log(`   Email: ${adminAccount.email}`)
-    console.log(`   Nom: ${adminAccount.firstname || 'N/A'} ${adminAccount.lastname || 'N/A'}`)
+    console.log(
+      `   Nom: ${adminAccount.firstname || 'N/A'} ${adminAccount.lastname || 'N/A'}`
+    )
     console.log(`   Role: ${adminAccount.role}`)
     console.log(`   ID: ${adminAccount.id}`)
 
     if (adminAccount.role === 'admin') {
       console.log('\n✅ Le role est bien "admin" !\n')
     } else {
-      console.log(`\n⚠️  PROBLÈME: Le role est "${adminAccount.role}" au lieu de "admin"\n`)
+      console.log(
+        `\n⚠️  PROBLÈME: Le role est "${adminAccount.role}" au lieu de "admin"\n`
+      )
       console.log('Pour corriger, exécute cette requête SQL:')
-      console.log(`UPDATE profiles SET role = 'admin' WHERE email = 'admin@gosendbox.com';\n`)
+      console.log(
+        `UPDATE profiles SET role = 'admin' WHERE email = 'admin@gosendbox.com';\n`
+      )
     }
   } else {
     console.log('⚠️  Compte admin@gosendbox.com non trouvé\n')
@@ -62,11 +72,15 @@ async function checkAdminRole() {
   if (!allAdmins || allAdmins.length === 0) {
     console.log('⚠️  Aucun compte admin trouvé dans la base de données\n')
     console.log('Pour créer un admin, exécute cette requête SQL:')
-    console.log(`UPDATE profiles SET role = 'admin' WHERE email = 'admin@gosendbox.com';\n`)
+    console.log(
+      `UPDATE profiles SET role = 'admin' WHERE email = 'admin@gosendbox.com';\n`
+    )
   } else {
     console.log(`✅ ${allAdmins.length} compte(s) admin trouvé(s):\n`)
     allAdmins.forEach(profile => {
-      console.log(`   - ${profile.firstname || 'N/A'} ${profile.lastname || 'N/A'}`)
+      console.log(
+        `   - ${profile.firstname || 'N/A'} ${profile.lastname || 'N/A'}`
+      )
       console.log(`     Email: ${profile.email}`)
       console.log(`     Role: ${profile.role}`)
       console.log(`     ID: ${profile.id}\n`)

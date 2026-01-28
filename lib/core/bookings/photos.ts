@@ -43,4 +43,3 @@ export function generatePackagePhotoFileName(
 }
 
 export { MAX_FILE_SIZE, MAX_PHOTOS, ACCEPTED_TYPES }
-

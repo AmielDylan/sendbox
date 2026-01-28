@@ -9,7 +9,7 @@ import { join } from 'path'
 function loadEnvFile() {
   try {
     const envFile = readFileSync(join(process.cwd(), '.env.local'), 'utf-8')
-    envFile.split('\n').forEach((line) => {
+    envFile.split('\n').forEach(line => {
       const match = line.match(/^([^=:#]+)=(.*)$/)
       if (match) {
         const key = match[1].trim()
@@ -37,11 +37,14 @@ async function checkSchema() {
   // Tester announcements
   console.log('📋 Table announcements:')
   try {
-    const { data, error } = await supabase.from('announcements').select('*').limit(1)
+    const { data, error } = await supabase
+      .from('announcements')
+      .select('*')
+      .limit(1)
     if (error) {
       console.log(`   ❌ Erreur: ${error.message}`)
       if (error.message.includes('traveler_id')) {
-        console.log('   💡 La colonne traveler_id n\'existe peut-être pas')
+        console.log("   💡 La colonne traveler_id n'existe peut-être pas")
       }
     } else {
       console.log('   ✅ Table accessible')
@@ -58,7 +61,10 @@ async function checkSchema() {
   // Tester profiles
   console.log('\n📋 Table profiles:')
   try {
-    const { data, error } = await supabase.from('profiles').select('id, user_id').limit(1)
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, user_id')
+      .limit(1)
     if (error) {
       console.log(`   ❌ Erreur: ${error.message}`)
     } else {
@@ -76,13 +82,18 @@ async function checkSchema() {
   try {
     // Essayer avec différents noms de colonnes possibles
     const testQueries = [
-      { name: 'traveler_id', query: 'SELECT traveler_id FROM announcements LIMIT 1' },
+      {
+        name: 'traveler_id',
+        query: 'SELECT traveler_id FROM announcements LIMIT 1',
+      },
       { name: 'user_id', query: 'SELECT user_id FROM announcements LIMIT 1' },
     ]
 
     for (const test of testQueries) {
       try {
-        const { data, error } = await supabase.rpc('exec_sql', { query: test.query })
+        const { data, error } = await supabase.rpc('exec_sql', {
+          query: test.query,
+        })
         if (!error) {
           console.log(`   ✅ Colonne '${test.name}' existe`)
         }
@@ -96,12 +107,3 @@ async function checkSchema() {
 }
 
 checkSchema().catch(console.error)
-
-
-
-
-
-
-
-
-

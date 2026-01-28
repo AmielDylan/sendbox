@@ -3,13 +3,13 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { markMessagesAsRead } from '@/lib/core/messages/actions'
 
 export interface Message {
   id: string
-  tempId?: string  // ID temporaire pour matching optimiste
+  tempId?: string // ID temporaire pour matching optimiste
   booking_id: string
   sender_id: string
   receiver_id: string
@@ -43,20 +43,32 @@ export function useMessages(bookingId: string | null) {
   const channelRef = useRef<RealtimeChannel | null>(null)
 
   // Map pour stocker temporairement le mapping hash → tempId des messages en attente
-  const pendingMessagesMap = useRef<Map<string, {tempId: string, timestamp: number}>>(new Map())
+  const pendingMessagesMap = useRef<
+    Map<string, { tempId: string; timestamp: number }>
+  >(new Map())
 
   // Fonction pour ajouter un message optimiste (affichage immédiat)
-  const addOptimisticMessage = (message: Partial<Message> & {
-    content: string
-    sender_id: string
-    receiver_id: string
-    tempId?: string
-    sender?: { firstname: string | null; lastname: string | null; avatar_url: string | null }
-    receiver?: { firstname: string | null; lastname: string | null; avatar_url: string | null }
-  }) => {
+  const addOptimisticMessage = (
+    message: Partial<Message> & {
+      content: string
+      sender_id: string
+      receiver_id: string
+      tempId?: string
+      sender?: {
+        firstname: string | null
+        lastname: string | null
+        avatar_url: string | null
+      }
+      receiver?: {
+        firstname: string | null
+        lastname: string | null
+        avatar_url: string | null
+      }
+    }
+  ) => {
     const optimisticMessage: Message = {
       id: `optimistic-${Date.now()}`,
-      tempId: message.tempId,  // ID unique pour le matching
+      tempId: message.tempId, // ID unique pour le matching
       booking_id: bookingId || '',
       sender_id: message.sender_id,
       receiver_id: message.receiver_id,
@@ -75,7 +87,7 @@ export function useMessages(bookingId: string | null) {
       const contentHash = hashContent(message.content, message.sender_id)
       pendingMessagesMap.current.set(contentHash, {
         tempId: message.tempId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       // Auto-nettoyage après 30 secondes (au cas où le message Realtime ne revient jamais)
@@ -84,7 +96,7 @@ export function useMessages(bookingId: string | null) {
       }, 30000)
     }
 
-    setMessages((prev) => [...prev, optimisticMessage])
+    setMessages(prev => [...prev, optimisticMessage])
 
     // Auto-scroll
     setTimeout(() => {
@@ -96,15 +108,18 @@ export function useMessages(bookingId: string | null) {
   }
 
   // Fonction pour remplacer un message optimiste par le message réel
-  const replaceOptimisticMessage = (optimisticId: string, realMessage: Message) => {
-    setMessages((prev) =>
-      prev.map((msg) => msg.id === optimisticId ? realMessage : msg)
+  const replaceOptimisticMessage = (
+    optimisticId: string,
+    realMessage: Message
+  ) => {
+    setMessages(prev =>
+      prev.map(msg => (msg.id === optimisticId ? realMessage : msg))
     )
   }
 
   // Fonction pour supprimer un message optimiste (en cas d'erreur)
   const removeOptimisticMessage = (optimisticId: string) => {
-    setMessages((prev) => prev.filter((msg) => msg.id !== optimisticId))
+    setMessages(prev => prev.filter(msg => msg.id !== optimisticId))
   }
 
   useEffect(() => {
@@ -195,24 +210,30 @@ export function useMessages(bookingId: string | null) {
               table: 'messages',
               filter: `booking_id=eq.${bookingId}`,
             },
-            async (payload) => {
+            async payload => {
               const newMessageData = payload.new as any
 
-              setMessages((prev) => {
+              setMessages(prev => {
                 // Éviter doublons par ID réel
-                if (prev.some((m) => m.id === newMessageData.id)) {
+                if (prev.some(m => m.id === newMessageData.id)) {
                   return prev
                 }
 
                 // Calculer le hash du message reçu pour chercher le tempId correspondant
-                const contentHash = hashContent(newMessageData.content, newMessageData.sender_id)
-                const pendingMessage = pendingMessagesMap.current.get(contentHash)
+                const contentHash = hashContent(
+                  newMessageData.content,
+                  newMessageData.sender_id
+                )
+                const pendingMessage =
+                  pendingMessagesMap.current.get(contentHash)
 
                 if (pendingMessage) {
                   // On a trouvé le tempId correspondant dans notre Map!
                   // C'est un message qu'on vient d'envoyer nous-mêmes
                   const optimisticIndex = prev.findIndex(
-                    (m) => m.id.startsWith('optimistic-') && m.tempId === pendingMessage.tempId
+                    m =>
+                      m.id.startsWith('optimistic-') &&
+                      m.tempId === pendingMessage.tempId
                   )
 
                   if (optimisticIndex !== -1) {
@@ -240,11 +261,14 @@ export function useMessages(bookingId: string | null) {
 
                 // FALLBACK: Matcher par contenu + timestamp (pour messages sans tempId)
                 const fallbackIndex = prev.findIndex(
-                  (m) =>
+                  m =>
                     m.id.startsWith('optimistic-') &&
                     m.content === newMessageData.content &&
                     m.sender_id === newMessageData.sender_id &&
-                    Math.abs(new Date(m.created_at).getTime() - new Date(newMessageData.created_at).getTime()) < 5000
+                    Math.abs(
+                      new Date(m.created_at).getTime() -
+                        new Date(newMessageData.created_at).getTime()
+                    ) < 5000
                 )
 
                 if (fallbackIndex !== -1) {
@@ -263,7 +287,9 @@ export function useMessages(bookingId: string | null) {
                 // On doit fetch les infos sender/receiver de manière asynchrone
                 // MAIS on ajoute d'abord le message sans ces infos pour affichage immédiat
                 ;(async () => {
-                  const { data: fullMessage, error: detailsError } = await (supabase as any)
+                  const { data: fullMessage, error: detailsError } = await (
+                    supabase as any
+                  )
                     .from('messages')
                     .select(
                       `
@@ -284,13 +310,18 @@ export function useMessages(bookingId: string | null) {
                     .single()
 
                   if (detailsError) {
-                    console.error('[Realtime] Error fetching message details:', detailsError)
+                    console.error(
+                      '[Realtime] Error fetching message details:',
+                      detailsError
+                    )
                   }
 
                   if (fullMessage) {
-                    setMessages((current) =>
-                      current.map((m) =>
-                        m.id === newMessageData.id ? (fullMessage as unknown as Message) : m
+                    setMessages(current =>
+                      current.map(m =>
+                        m.id === newMessageData.id
+                          ? (fullMessage as unknown as Message)
+                          : m
                       )
                     )
                   }
@@ -298,7 +329,9 @@ export function useMessages(bookingId: string | null) {
 
                 // Ajouter immédiatement le message (sans sender/receiver complet)
                 setTimeout(() => {
-                  const messagesEnd = document.querySelector('[data-messages-end]')
+                  const messagesEnd = document.querySelector(
+                    '[data-messages-end]'
+                  )
                   messagesEnd?.scrollIntoView({ behavior: 'smooth' })
                 }, 100)
                 return [...prev, newMessageData as Message]
@@ -319,10 +352,10 @@ export function useMessages(bookingId: string | null) {
               table: 'messages',
               filter: `booking_id=eq.${bookingId}`,
             },
-            (payload) => {
+            payload => {
               // Mettre à jour le message si modifié (ex: marqué comme lu)
-              setMessages((prev) =>
-                prev.map((msg) =>
+              setMessages(prev =>
+                prev.map(msg =>
                   msg.id === payload.new.id ? (payload.new as Message) : msg
                 )
               )

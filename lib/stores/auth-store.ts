@@ -30,28 +30,29 @@ const initialState: AuthState = {
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    set => ({
       ...initialState,
 
-      setUser: (user) => set({ user }),
-      setProfile: (profile) => set({ profile }),
-      setLoading: (loading) => set({ loading }),
-      setInitialized: (initialized) => set({ initialized }),
+      setUser: user => set({ user }),
+      setProfile: profile => set({ profile }),
+      setLoading: loading => set({ loading }),
+      setInitialized: initialized => set({ initialized }),
 
-      clear: () => set({
-        user: null,
-        profile: null,
-        loading: false,
-        initialized: true,
-      }),
+      clear: () =>
+        set({
+          user: null,
+          profile: null,
+          loading: false,
+          initialized: true,
+        }),
     }),
     {
       name: 'sendbox-auth-storage',
       storage: createJSONStorage(() => localStorage),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => state => {
         state?.setInitialized(true)
       },
-      partialize: (state) => ({
+      partialize: state => ({
         // Persister seulement user et profile, pas loading/initialized
         user: state.user,
         profile: state.profile,

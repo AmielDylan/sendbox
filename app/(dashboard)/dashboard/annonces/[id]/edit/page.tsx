@@ -12,9 +12,9 @@ import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
   COUNTRIES,
-} from "@/lib/core/announcements/validations"
-import { updateAnnouncement } from "@/lib/core/announcements/management"
-import { searchCities } from "@/lib/shared/utils/cities"
+} from '@/lib/core/announcements/validations'
+import { updateAnnouncement } from '@/lib/core/announcements/management'
+import { searchCities } from '@/lib/shared/utils/cities'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,7 +53,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { useDebounce } from '@/hooks/use-debounce'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 
 export default function EditAnnouncementPage({
   params,
@@ -148,8 +148,13 @@ export default function EditAnnouncementPage({
 
   // Recherche autocomplete pour ville de départ
   useEffect(() => {
-    if (debouncedDepartureCity && debouncedDepartureCity.length >= 2 && departureCountry && departureCityTyped) {
-      searchCities(departureCountry, debouncedDepartureCity).then((cities) => {
+    if (
+      debouncedDepartureCity &&
+      debouncedDepartureCity.length >= 2 &&
+      departureCountry &&
+      departureCityTyped
+    ) {
+      searchCities(departureCountry, debouncedDepartureCity).then(cities => {
         setDepartureCitySuggestions(cities)
         setShowDepartureSuggestions(true)
       })
@@ -161,8 +166,13 @@ export default function EditAnnouncementPage({
 
   // Recherche autocomplete pour ville d'arrivée
   useEffect(() => {
-    if (debouncedArrivalCity && debouncedArrivalCity.length >= 2 && arrivalCountry && arrivalCityTyped) {
-      searchCities(arrivalCountry, debouncedArrivalCity).then((cities) => {
+    if (
+      debouncedArrivalCity &&
+      debouncedArrivalCity.length >= 2 &&
+      arrivalCountry &&
+      arrivalCityTyped
+    ) {
+      searchCities(arrivalCountry, debouncedArrivalCity).then(cities => {
         setArrivalCitySuggestions(cities)
         setShowArrivalSuggestions(true)
       })
@@ -226,9 +236,9 @@ export default function EditAnnouncementPage({
               <IconMapPin className="h-5 w-5" />
               Trajet
             </CardTitle>
-	            <CardDescription>
-	              Modifiez les villes de départ et d’arrivée
-	            </CardDescription>
+            <CardDescription>
+              Modifiez les villes de départ et d’arrivée
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,7 +255,7 @@ export default function EditAnnouncementPage({
                     <SelectValue placeholder="Sélectionnez un pays" />
                   </SelectTrigger>
                   <SelectContent>
-                    {COUNTRIES.map((country) => (
+                    {COUNTRIES.map(country => (
                       <SelectItem key={country} value={country}>
                         {country === 'FR' ? 'France' : 'Bénin'}
                       </SelectItem>
@@ -264,8 +274,12 @@ export default function EditAnnouncementPage({
                 <Input
                   {...register('departure_city')}
                   placeholder="Paris, Cotonou..."
-                  onFocus={() => setShowDepartureSuggestions(departureCityTyped && departureCitySuggestions.length > 0)}
-                  onChange={(e) => {
+                  onFocus={() =>
+                    setShowDepartureSuggestions(
+                      departureCityTyped && departureCitySuggestions.length > 0
+                    )
+                  }
+                  onChange={e => {
                     register('departure_city').onChange(e)
                     setDepartureCityTyped(true)
                   }}
@@ -275,28 +289,29 @@ export default function EditAnnouncementPage({
                     {errors.departure_city.message}
                   </p>
                 )}
-                {showDepartureSuggestions && departureCitySuggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
-                    {departureCitySuggestions.map((city, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        className="w-full px-4 py-2 text-left hover:bg-accent"
-                        onClick={() => {
-                          setValue('departure_city', city)
-                          setShowDepartureSuggestions(false)
-                        }}
-                      >
-                        {city}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {showDepartureSuggestions &&
+                  departureCitySuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
+                      {departureCitySuggestions.map((city, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className="w-full px-4 py-2 text-left hover:bg-accent"
+                          onClick={() => {
+                            setValue('departure_city', city)
+                            setShowDepartureSuggestions(false)
+                          }}
+                        >
+                          {city}
+                        </button>
+                      ))}
+                    </div>
+                  )}
               </div>
 
               {/* Arrivée */}
               <div className="space-y-2">
-	                <Label htmlFor="arrival_country">Pays d’arrivée</Label>
+                <Label htmlFor="arrival_country">Pays d’arrivée</Label>
                 <Select
                   value={arrivalCountry}
                   onValueChange={(value: 'FR' | 'BJ') =>
@@ -307,7 +322,7 @@ export default function EditAnnouncementPage({
                     <SelectValue placeholder="Sélectionnez un pays" />
                   </SelectTrigger>
                   <SelectContent>
-                    {COUNTRIES.map((country) => (
+                    {COUNTRIES.map(country => (
                       <SelectItem key={country} value={country}>
                         {country === 'FR' ? 'France' : 'Bénin'}
                       </SelectItem>
@@ -322,12 +337,16 @@ export default function EditAnnouncementPage({
               </div>
 
               <div className="space-y-2 relative">
-	                <Label htmlFor="arrival_city">Ville d’arrivée</Label>
+                <Label htmlFor="arrival_city">Ville d’arrivée</Label>
                 <Input
                   {...register('arrival_city')}
                   placeholder="Paris, Cotonou..."
-                  onFocus={() => setShowArrivalSuggestions(arrivalCityTyped && arrivalCitySuggestions.length > 0)}
-                  onChange={(e) => {
+                  onFocus={() =>
+                    setShowArrivalSuggestions(
+                      arrivalCityTyped && arrivalCitySuggestions.length > 0
+                    )
+                  }
+                  onChange={e => {
                     register('arrival_city').onChange(e)
                     setArrivalCityTyped(true)
                   }}
@@ -337,23 +356,24 @@ export default function EditAnnouncementPage({
                     {errors.arrival_city.message}
                   </p>
                 )}
-                {showArrivalSuggestions && arrivalCitySuggestions.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
-                    {arrivalCitySuggestions.map((city, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        className="w-full px-4 py-2 text-left hover:bg-accent"
-                        onClick={() => {
-                          setValue('arrival_city', city)
-                          setShowArrivalSuggestions(false)
-                        }}
-                      >
-                        {city}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {showArrivalSuggestions &&
+                  arrivalCitySuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
+                      {arrivalCitySuggestions.map((city, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className="w-full px-4 py-2 text-left hover:bg-accent"
+                          onClick={() => {
+                            setValue('arrival_city', city)
+                            setShowArrivalSuggestions(false)
+                          }}
+                        >
+                          {city}
+                        </button>
+                      ))}
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -367,14 +387,20 @@ export default function EditAnnouncementPage({
                     className="w-full justify-start text-left font-normal"
                   >
                     <IconCalendar className="mr-2 h-4 w-4" />
-                    {departureDate ? format(departureDate, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                    {departureDate
+                      ? format(departureDate, 'PP', { locale: fr })
+                      : 'Sélectionner une date'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" side="bottom" align="start">
+                <PopoverContent
+                  className="w-auto p-0"
+                  side="bottom"
+                  align="start"
+                >
                   <Calendar
                     mode="single"
                     selected={departureDate}
-                    onSelect={(date) => {
+                    onSelect={date => {
                       setValue('departure_date', date || new Date())
                       // Ajuster la date d'arrivée si elle devient invalide
                       const currentArrival = watch('arrival_date')
@@ -405,14 +431,22 @@ export default function EditAnnouncementPage({
                     className="w-full justify-start text-left font-normal"
                   >
                     <IconCalendar className="mr-2 h-4 w-4" />
-                    {watch('arrival_date') ? format(watch('arrival_date')!, 'PP', { locale: fr }) : 'Sélectionner une date'}
+                    {watch('arrival_date')
+                      ? format(watch('arrival_date')!, 'PP', { locale: fr })
+                      : 'Sélectionner une date'}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" side="bottom" align="start">
+                <PopoverContent
+                  className="w-auto p-0"
+                  side="bottom"
+                  align="start"
+                >
                   <Calendar
                     mode="single"
                     selected={watch('arrival_date')}
-                    onSelect={date => setValue('arrival_date', date || new Date())}
+                    onSelect={date =>
+                      setValue('arrival_date', date || new Date())
+                    }
                     disabled={date => {
                       if (!departureDate) return date < new Date()
                       const minDate = new Date(departureDate)
@@ -438,9 +472,7 @@ export default function EditAnnouncementPage({
               <IconPackage className="h-5 w-5" />
               Capacité et Prix
             </CardTitle>
-            <CardDescription>
-              Ajustez la capacité et le tarif
-            </CardDescription>
+            <CardDescription>Ajustez la capacité et le tarif</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Capacité disponible */}
@@ -451,7 +483,7 @@ export default function EditAnnouncementPage({
               </div>
               <Slider
                 value={[availableKg || 5]}
-                onValueChange={(value) => setValue('available_kg', value[0])}
+                onValueChange={value => setValue('available_kg', value[0])}
                 max={30}
                 min={1}
                 step={1}
@@ -470,7 +502,10 @@ export default function EditAnnouncementPage({
             {/* Prix par kg */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="price_per_kg" className="flex items-center gap-2">
+                <Label
+                  htmlFor="price_per_kg"
+                  className="flex items-center gap-2"
+                >
                   <IconCurrencyEuro className="h-4 w-4" />
                   Prix par kilogramme
                 </Label>
@@ -478,7 +513,7 @@ export default function EditAnnouncementPage({
               </div>
               <Slider
                 value={[pricePerKg || 10]}
-                onValueChange={(value) => setValue('price_per_kg', value[0])}
+                onValueChange={value => setValue('price_per_kg', value[0])}
                 max={50}
                 min={5}
                 step={1}

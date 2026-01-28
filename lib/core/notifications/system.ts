@@ -27,7 +27,9 @@ export async function createSystemNotification(
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return {
       id: null,
-      error: new Error('SUPABASE_SERVICE_ROLE_KEY is required to create notifications'),
+      error: new Error(
+        'SUPABASE_SERVICE_ROLE_KEY is required to create notifications'
+      ),
     }
   }
 

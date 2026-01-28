@@ -5,11 +5,7 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
-import {
-  PaymentElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js'
+import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
 import { IconLoader2 } from '@tabler/icons-react'
 import { toast } from 'sonner'
@@ -57,9 +53,7 @@ export function PaymentForm({
       })
 
       if (error) {
-        toast.error(
-          error.message || 'Une erreur est survenue lors du paiement'
-        )
+        toast.error(error.message || 'Une erreur est survenue lors du paiement')
         setIsProcessing(false)
         return
       }
@@ -92,7 +86,10 @@ export function PaymentForm({
         >
           Annuler
         </Button>
-        <Button type="submit" disabled={!stripe || !acceptedTerms || isProcessing}>
+        <Button
+          type="submit"
+          disabled={!stripe || !acceptedTerms || isProcessing}
+        >
           {isProcessing ? (
             <>
               <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -106,15 +103,3 @@ export function PaymentForm({
     </form>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

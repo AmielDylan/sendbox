@@ -3,23 +3,20 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
 
-const cardVariants = cva(
-  "rounded-md border bg-card text-card-foreground",
-  {
-    variants: {
-      elevation: {
-        flat: "",
-        sm: "shadow-sm",
-        md: "shadow-md",
-        lg: "shadow-lg",
-        elevated: "shadow-md",
-      },
+const cardVariants = cva('rounded-md border bg-card text-card-foreground', {
+  variants: {
+    elevation: {
+      flat: '',
+      sm: 'shadow-sm',
+      md: 'shadow-md',
+      lg: 'shadow-lg',
+      elevated: 'shadow-md',
     },
-    defaultVariants: {
-      elevation: "flat",
-    },
-  }
-)
+  },
+  defaultVariants: {
+    elevation: 'flat',
+  },
+})
 
 const Card = React.forwardRef<
   HTMLDivElement,

@@ -5,12 +5,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
-} from "@/lib/core/announcements/validations"
-import { isFeatureEnabled } from "@/lib/shared/config/features"
+} from '@/lib/core/announcements/validations'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 const MAX_ACTIVE_ANNOUNCEMENTS = 10
 
@@ -48,23 +48,30 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
   const intent = formData.intent === 'draft' ? 'draft' : 'publish'
 
   // Vérifier que le KYC est approuvé SEULEMENT si feature activée
-  if (isFeatureEnabled('KYC_ENABLED') && profile.kyc_status !== 'approved' && intent !== 'draft') {
-    let errorMessage = 'Vérification d\'identité requise pour continuer'
-    let errorDetails = 'Veuillez compléter votre vérification d\'identité pour publier une annonce.'
-    
+  if (
+    isFeatureEnabled('KYC_ENABLED') &&
+    profile.kyc_status !== 'approved' &&
+    intent !== 'draft'
+  ) {
+    let errorMessage = "Vérification d'identité requise pour continuer"
+    let errorDetails =
+      "Veuillez compléter votre vérification d'identité pour publier une annonce."
+
     if (profile.kyc_status === 'pending') {
       errorMessage = 'Vérification en cours'
-      errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez publier vos annonces une fois celle-ci approuvée (24-48h).'
+      errorDetails =
+        "Votre vérification d'identité est en cours d'examen. Vous pourrez publier vos annonces une fois celle-ci approuvée (24-48h)."
     } else if (profile.kyc_status === 'rejected') {
       errorMessage = 'Vérification refusée'
-      errorDetails = profile.kyc_rejection_reason 
+      errorDetails = profile.kyc_rejection_reason
         ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
         : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
     } else if (profile.kyc_status === 'incomplete') {
-      errorMessage = 'Vérification d\'identité incomplète'
-      errorDetails = 'Veuillez soumettre vos documents d\'identité pour publier une annonce.'
+      errorMessage = "Vérification d'identité incomplète"
+      errorDetails =
+        "Veuillez soumettre vos documents d'identité pour publier une annonce."
     }
-    
+
     return {
       error: errorMessage,
       errorDetails,
@@ -196,5 +203,3 @@ export async function getActiveAnnouncementsCount() {
     maxAllowed: MAX_ACTIVE_ANNOUNCEMENTS,
   }
 }
-
-

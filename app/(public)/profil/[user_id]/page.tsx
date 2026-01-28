@@ -4,9 +4,9 @@
 
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/server"
-import { getPublicProfiles } from "@/lib/shared/db/queries/public-profiles"
-import { getUserRatings, getUserRatingStats } from "@/lib/core/ratings/actions"
+import { createClient } from '@/lib/shared/db/server'
+import { getPublicProfiles } from '@/lib/shared/db/queries/public-profiles'
+import { getUserRatings, getUserRatingStats } from '@/lib/core/ratings/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -23,7 +23,7 @@ import {
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 
 interface ProfilePageProps {
   params: Promise<{ user_id: string }>
@@ -111,19 +111,29 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                       {profile.firstname} {profile.lastname}
                     </h2>
                     {profile.bio && (
-                      <p className="text-sm text-muted-foreground">{profile.bio}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {profile.bio}
+                      </p>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {badges.map((badge) => (
+                    {badges.map(badge => (
                       <Badge
                         key={badge}
-                        variant={badge === 'Nouveau voyageur' ? 'info' : 'secondary'}
+                        variant={
+                          badge === 'Nouveau voyageur' ? 'info' : 'secondary'
+                        }
                         className="text-xs"
                       >
-                        {badge === '5 étoiles' && <IconAward className="h-3 w-3 mr-1" />}
-                        {badge === 'Vérifié' && <IconCircleCheck className="h-3 w-3 mr-1" />}
-                        {badge === 'Expert' && <IconBriefcase className="h-3 w-3 mr-1" />}
+                        {badge === '5 étoiles' && (
+                          <IconAward className="h-3 w-3 mr-1" />
+                        )}
+                        {badge === 'Vérifié' && (
+                          <IconCircleCheck className="h-3 w-3 mr-1" />
+                        )}
+                        {badge === 'Expert' && (
+                          <IconBriefcase className="h-3 w-3 mr-1" />
+                        )}
                         {badge}
                       </Badge>
                     ))}
@@ -155,7 +165,9 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                 {memberSince && (
                   <div className="flex items-center justify-between gap-4">
                     <span>Membre depuis</span>
-                    <span className="font-medium text-foreground">{memberSince}</span>
+                    <span className="font-medium text-foreground">
+                      {memberSince}
+                    </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-4">
@@ -179,7 +191,9 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
           {/* Section Réputation */}
           <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
             <CardHeader className="p-5 pb-2">
-              <CardTitle className="text-sm font-semibold">Réputation</CardTitle>
+              <CardTitle className="text-sm font-semibold">
+                Réputation
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-5 pt-0 space-y-5">
               {/* Rating moyen */}
@@ -192,7 +206,8 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                   <span className="text-base text-muted-foreground">/ 5.0</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {stats.totalRatings} avis • {stats.completedServices} services complétés
+                  {stats.totalRatings} avis • {stats.completedServices} services
+                  complétés
                 </p>
               </div>
 
@@ -202,9 +217,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                   <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Distribution des avis
                   </h3>
-                  <RatingDistribution
-                    distribution={stats.distribution}
-                  />
+                  <RatingDistribution distribution={stats.distribution} />
                 </div>
               )}
             </CardContent>
@@ -213,7 +226,9 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
           {/* Liste des avis */}
           <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
             <CardHeader className="p-5 pb-2">
-              <CardTitle className="text-sm font-semibold">Avis ({stats.totalRatings})</CardTitle>
+              <CardTitle className="text-sm font-semibold">
+                Avis ({stats.totalRatings})
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-5 pt-0">
               {ratingsData.ratings.length === 0 ? (
@@ -225,7 +240,9 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
               ) : (
                 <div className="space-y-4">
                   {ratingsData.ratings.map((rating: any) => {
-                    const raterName = `${rating.rater?.firstname || ''} ${rating.rater?.lastname || ''}`.trim() || 'Utilisateur'
+                    const raterName =
+                      `${rating.rater?.firstname || ''} ${rating.rater?.lastname || ''}`.trim() ||
+                      'Utilisateur'
                     const raterAvatar = getAvatarUrl(
                       rating.rater?.avatar_url || null,
                       rating.rater?.id || raterName
@@ -237,10 +254,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                         className="rounded-xl border border-border/50 bg-background/70 p-4 flex items-start gap-3"
                       >
                         <Avatar className="h-9 w-9">
-                          <AvatarImage
-                            src={raterAvatar}
-                            alt={raterName}
-                          />
+                          <AvatarImage src={raterAvatar} alt={raterName} />
                           <AvatarFallback>
                             {generateInitials(
                               rating.rater?.firstname,
@@ -252,10 +266,13 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                           <div className="flex items-center justify-between gap-2">
                             <div>
                               <p className="text-sm font-semibold">
-                                {rating.rater?.firstname} {rating.rater?.lastname}
+                                {rating.rater?.firstname}{' '}
+                                {rating.rater?.lastname}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {format(new Date(rating.created_at), 'PP', { locale: fr })}
+                                {format(new Date(rating.created_at), 'PP', {
+                                  locale: fr,
+                                })}
                               </p>
                             </div>
                             <div className="flex items-center gap-1 text-sm font-semibold">
@@ -276,13 +293,21 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                   {/* Pagination */}
                   {ratingsData.totalPages && ratingsData.totalPages > 1 && (
                     <div className="flex items-center justify-center gap-2 rounded-xl border bg-card/40 px-4 py-3">
-                      <Button variant="outline" disabled className="h-8 w-8 p-0">
+                      <Button
+                        variant="outline"
+                        disabled
+                        className="h-8 w-8 p-0"
+                      >
                         <IconChevronLeft className="h-4 w-4" />
                       </Button>
                       <span className="text-sm text-muted-foreground font-medium">
                         Page 1 sur {ratingsData.totalPages || 1}
                       </span>
-                      <Button variant="outline" disabled className="h-8 w-8 p-0">
+                      <Button
+                        variant="outline"
+                        disabled
+                        className="h-8 w-8 p-0"
+                      >
                         <IconChevronRight className="h-4 w-4" />
                       </Button>
                     </div>

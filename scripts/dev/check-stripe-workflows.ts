@@ -1,13 +1,13 @@
 #!/usr/bin/env tsx
 /**
  * Script pour vérifier tous les workflows Stripe dans le projet
- * 
+ *
  * Ce script analyse le code pour identifier:
  * - Les événements webhook gérés
  * - Les appels API Stripe
  * - Les fonctions admin utilisant Stripe
  * - Les TODOs liés à Stripe
- * 
+ *
  * Usage: npx tsx scripts/check-stripe-workflows.ts
  */
 
@@ -26,11 +26,11 @@ const results: StripeUsage[] = []
 
 function scanFile(filePath: string) {
   if (!existsSync(filePath)) return
-  
+
   const content = readFileSync(filePath, 'utf-8')
   const lines = content.split('\n')
   const relativePath = filePath.replace(process.cwd() + '/', '')
-  
+
   // Chercher les webhooks
   if (filePath.includes('webhook')) {
     const webhookMatches = content.matchAll(/case\s+['"]([^'"]+)['"]/g)
@@ -42,14 +42,14 @@ function scanFile(filePath: string) {
       })
     }
   }
-  
+
   // Chercher les appels API Stripe
   const stripeApiCalls = [
     /stripe\.(paymentIntents|charges|refunds|transfers|payouts)\./g,
     /stripe\.customers\./g,
     /stripe\.connect\./g,
   ]
-  
+
   stripeApiCalls.forEach((regex, index) => {
     const matches = content.matchAll(regex)
     for (const match of matches) {
@@ -62,10 +62,12 @@ function scanFile(filePath: string) {
       })
     }
   })
-  
+
   // Chercher les fonctions admin avec Stripe
   if (filePath.includes('admin') && content.includes('stripe')) {
-    const functionMatches = content.matchAll(/export\s+async\s+function\s+(\w+)/g)
+    const functionMatches = content.matchAll(
+      /export\s+async\s+function\s+(\w+)/g
+    )
     for (const match of functionMatches) {
       results.push({
         file: relativePath,
@@ -74,7 +76,7 @@ function scanFile(filePath: string) {
       })
     }
   }
-  
+
   // Chercher les TODOs liés à Stripe
   const todoMatches = content.matchAll(/TODO.*stripe/gi)
   for (const match of todoMatches) {
@@ -90,17 +92,20 @@ function scanFile(filePath: string) {
 
 function scanDirectory(dir: string) {
   const entries = readdirSync(dir)
-  
+
   for (const entry of entries) {
     const fullPath = join(dir, entry)
     const stat = statSync(fullPath)
-    
+
     if (stat.isDirectory()) {
       // Ignorer node_modules, .next, etc.
       if (!['node_modules', '.next', '.git', 'dist', 'build'].includes(entry)) {
         scanDirectory(fullPath)
       }
-    } else if (stat.isFile() && (entry.endsWith('.ts') || entry.endsWith('.tsx'))) {
+    } else if (
+      stat.isFile() &&
+      (entry.endsWith('.ts') || entry.endsWith('.tsx'))
+    ) {
       scanFile(fullPath)
     }
   }
@@ -108,15 +113,15 @@ function scanDirectory(dir: string) {
 
 function printResults() {
   console.log('📊 Analyse des workflows Stripe dans le projet\n')
-  console.log('=' .repeat(60))
-  
+  console.log('='.repeat(60))
+
   const byType = {
     webhook: results.filter(r => r.type === 'webhook'),
     api_call: results.filter(r => r.type === 'api_call'),
     admin_function: results.filter(r => r.type === 'admin_function'),
     todo: results.filter(r => r.type === 'todo'),
   }
-  
+
   // Webhooks
   console.log('\n🔔 Événements Webhook gérés:')
   if (byType.webhook.length === 0) {
@@ -127,7 +132,7 @@ function printResults() {
       console.log(`  ✅ ${desc}`)
     })
   }
-  
+
   // Appels API
   console.log('\n📡 Appels API Stripe:')
   if (byType.api_call.length === 0) {
@@ -145,20 +150,22 @@ function printResults() {
       }
     })
   }
-  
+
   // Fonctions admin
   console.log('\n👤 Fonctions Admin avec Stripe:')
   if (byType.admin_function.length === 0) {
     console.log('  ⚠️  Aucune fonction admin trouvée')
   } else {
-    const uniqueFunctions = [...new Set(byType.admin_function.map(f => f.description))]
+    const uniqueFunctions = [
+      ...new Set(byType.admin_function.map(f => f.description)),
+    ]
     uniqueFunctions.forEach(desc => {
       const file = byType.admin_function.find(f => f.description === desc)?.file
       console.log(`  ✅ ${desc}`)
       if (file) console.log(`    📁 ${file}`)
     })
   }
-  
+
   // TODOs
   console.log('\n📝 TODOs liés à Stripe:')
   if (byType.todo.length === 0) {
@@ -169,7 +176,7 @@ function printResults() {
       console.log(`     📁 ${todo.file}${todo.line ? `:${todo.line}` : ''}`)
     })
   }
-  
+
   console.log('\n' + '='.repeat(60))
   console.log(`\n📊 Résumé: ${results.length} éléments trouvés`)
   console.log(`   - ${byType.webhook.length} webhooks`)
@@ -188,9 +195,3 @@ srcDirs.forEach(dir => {
 })
 
 printResults()
-
-
-
-
-
-

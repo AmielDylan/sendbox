@@ -4,7 +4,14 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { IconBrandFacebook, IconBrandInstagram, IconBrandLinkedin, IconShieldCheck, IconMail, IconMapPin } from '@tabler/icons-react'
+import {
+  IconBrandFacebook,
+  IconBrandInstagram,
+  IconBrandLinkedin,
+  IconShieldCheck,
+  IconMail,
+  IconMapPin,
+} from '@tabler/icons-react'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 
@@ -38,8 +45,8 @@ export function PublicFooter() {
             </Link>
 
             <p className="text-base text-muted-foreground max-w-md leading-relaxed">
-              La plateforme de covalisage qui transforme chaque voyage en solution d'envoi sécurisée.
-              Économique, rapide et fiable.
+              La plateforme de covalisage qui transforme chaque voyage en
+              solution d'envoi sécurisée. Économique, rapide et fiable.
             </p>
 
             <div className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -141,7 +148,9 @@ export function PublicFooter() {
 
             {/* Contact */}
             <div className="pt-4">
-              <h4 className="font-medium text-sm mb-3 text-foreground">Contact</h4>
+              <h4 className="font-medium text-sm mb-3 text-foreground">
+                Contact
+              </h4>
               <a
                 href="mailto:contact@gosendbox.com"
                 className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 inline-flex items-center gap-2"
@@ -158,12 +167,15 @@ export function PublicFooter() {
         {/* Bottom bar */}
         <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
           <p className="text-sm text-muted-foreground text-center md:text-left">
-            © {currentYear} Sendbox. Tous droits réservés. Fait avec ❤️ pour connecter l'Europe et l'Afrique.
+            © {currentYear} Sendbox. Tous droits réservés. Fait avec ❤️ pour
+            connecter l'Europe et l'Afrique.
           </p>
 
           {/* Social links */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground mr-2">Suivez-nous</span>
+            <span className="text-sm text-muted-foreground mr-2">
+              Suivez-nous
+            </span>
             <a
               href="#"
               className="p-2 rounded-full hover:bg-primary/10 transition-all duration-200 cursor-not-allowed opacity-50 group"
