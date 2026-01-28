@@ -1,18 +1,13 @@
 /**
- * Page admin pour review des KYC
+ * Page admin pour voir les statuts KYC
+ * Note: La vérification KYC est gérée automatiquement par Stripe Identity
  */
 
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { kycReviewSchema, type KYCReviewInput } from "@/lib/core/kyc/validations"
-import { getPendingKYC, reviewKYC } from "@/lib/core/kyc/actions"
-import { PageHeader } from '@/components/ui/page-header'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useQuery } from '@tanstack/react-query'
+import { createClient } from "@/lib/shared/db/client"
 import {
   Card,
   CardContent,
@@ -20,107 +15,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { toast } from 'sonner'
-import { IconLoader2, IconCircleCheck, IconCircleX, IconClock } from '@tabler/icons-react'
+import { IconLoader2, IconShieldCheck, IconClock, IconAlertCircle, IconInfoCircle } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-interface PendingKYC {
-  id: string
-  firstname: string | null
-  lastname: string | null
-  kyc_status: string
-  kyc_submitted_at: string | null
-  kyc_document_type: string | null
-  kyc_nationality: string | null
-  kyc_rejection_reason: string | null
-}
-
 export default function AdminKYCPage() {
-  const [kycList, setKycList] = useState<PendingKYC[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedKYC, setSelectedKYC] = useState<PendingKYC | null>(null)
-  const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
-  const [isReviewing, setIsReviewing] = useState(false)
+  const supabase = createClient()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setValue,
-    watch,
-  } = useForm<KYCReviewInput>({
-    resolver: zodResolver(kycReviewSchema),
+  const { data: kycStats, isLoading } = useQuery({
+    queryKey: ['adminKYCStats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, firstname, lastname, kyc_status, kyc_submitted_at, created_at')
+        .order('kyc_submitted_at', { ascending: false, nullsFirst: false })
+        .limit(100)
+
+      if (error) throw error
+      return data
+    },
   })
-
-  useEffect(() => {
-    loadPendingKYC()
-  }, [])
-
-  const loadPendingKYC = async () => {
-    setIsLoading(true)
-    try {
-      const result = await getPendingKYC()
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        setKycList(result.kycList || [])
-      }
-    } catch {
-      toast.error('Erreur lors du chargement des KYC')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleReview = async (
-    kyc: PendingKYC,
-    action: 'approve' | 'reject'
-  ) => {
-    setSelectedKYC(kyc)
-    setValue('profileId', kyc.id)
-    setValue('action', action)
-    if (action === 'reject') {
-      setValue('rejectionReason', '')
-    }
-    setReviewDialogOpen(true)
-  }
-
-  const onSubmitReview = async (data: KYCReviewInput) => {
-    if (!selectedKYC) return
-
-    setIsReviewing(true)
-    try {
-      const result = await reviewKYC(data)
-
-      if (result.error) {
-        toast.error(result.error)
-        return
-      }
-
-      if (result.success) {
-        toast.success(result.message)
-        setReviewDialogOpen(false)
-        reset()
-        setSelectedKYC(null)
-        await loadPendingKYC()
-      }
-    } catch {
-      toast.error('Une erreur est survenue. Veuillez réessayer.')
-    } finally {
-      setIsReviewing(false)
-    }
-  }
 
   if (isLoading) {
     return (
@@ -130,169 +46,135 @@ export default function AdminKYCPage() {
     )
   }
 
+  const pendingCount = kycStats?.filter(u => u.kyc_status === 'pending').length || 0
+  const approvedCount = kycStats?.filter(u => u.kyc_status === 'approved').length || 0
+  const rejectedCount = kycStats?.filter(u => u.kyc_status === 'rejected').length || 0
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Review KYC"
-        description="Examinez et approuvez les demandes de vérification d'identité"
-        breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Admin', href: '/admin' },
-          { label: 'KYC' },
-        ]}
-      />
+      <div>
+        <h1 className="text-3xl font-bold">Statuts KYC</h1>
+        <p className="text-muted-foreground">
+          Vue d'ensemble des vérifications d'identité
+        </p>
+      </div>
 
-      {/* Liste des KYC en attente */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Demandes en attente</CardTitle>
-          <CardDescription>
-            {kycList.length === 0
-              ? 'Aucune demande KYC en attente'
-              : `${kycList.length} demande(s) en attente de review`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {kycList.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <IconClock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Aucune demande KYC en attente</p>
+      {/* Message info Stripe Identity */}
+      <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+        <CardContent className="pt-6">
+          <div className="flex gap-3">
+            <IconInfoCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                Vérification automatique par Stripe Identity
+              </p>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Les vérifications d'identité sont gérées automatiquement par Stripe Identity.
+                Les utilisateurs soumettent leurs documents via un flux sécurisé et les résultats
+                sont automatiquement synchronisés. Aucune action manuelle n'est requise.
+              </p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {kycList.map(kyc => (
-                <Card key={kyc.id} className="border">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">
-                            {kyc.firstname} {kyc.lastname}
-                          </h3>
-                          <Badge variant="secondary">
-                            <IconClock className="mr-1 h-3 w-3" />
-                            En attente
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p>User ID: {kyc.id.slice(0, 8)}...</p>
-                          <p>
-                            Type de document:{' '}
-                            {kyc.kyc_document_type === 'passport'
-                              ? 'Passeport'
-                              : kyc.kyc_document_type === 'national_id'
-                                ? 'Carte nationale'
-                                : 'Non renseigné'}
-                          </p>
-                          <p>Pays du document: {kyc.kyc_nationality || 'Non renseigné'}</p>
-                          {kyc.kyc_submitted_at && (
-                            <p>
-                              Soumis le{' '}
-                              {format(
-                                new Date(kyc.kyc_submitted_at),
-                                'PP à HH:mm',
-                                { locale: fr }
-                              )}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleReview(kyc, 'approve')}
-                          className="bg-green-500 hover:bg-green-600"
-                        >
-                          <IconCircleCheck className="mr-2 h-4 w-4" />
-                          Approuver
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleReview(kyc, 'reject')}
-                        >
-                          <IconCircleX className="mr-2 h-4 w-4" />
-                          Rejeter
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Dialog de review */}
-      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {selectedKYC &&
-                (watch('action') === 'approve'
-                  ? 'Approuver le KYC'
-                  : 'Rejeter le KYC')}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedKYC &&
-                (watch('action') === 'approve'
-                  ? `Approuver la demande KYC de ${selectedKYC.firstname} ${selectedKYC.lastname} ?`
-                  : `Rejeter la demande KYC de ${selectedKYC.firstname} ${selectedKYC.lastname} ?`)}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit(onSubmitReview)} className="space-y-4">
-            {watch('action') === 'reject' && (
-              <div className="space-y-2">
-                <Label htmlFor="rejectionReason">Raison du rejet</Label>
-                <Input
-                  id="rejectionReason"
-                  placeholder="Document illisible, informations manquantes..."
-                  {...register('rejectionReason')}
-                  aria-invalid={errors.rejectionReason ? 'true' : 'false'}
-                />
-                {errors.rejectionReason && (
-                  <p className="text-sm text-destructive" role="alert">
-                    {errors.rejectionReason.message}
-                  </p>
-                )}
-              </div>
-            )}
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setReviewDialogOpen(false)
-                  reset()
-                  setSelectedKYC(null)
-                }}
-              >
-                Annuler
-              </Button>
-              <Button
-                type="submit"
-                disabled={isReviewing}
-                variant={
-                  watch('action') === 'approve' ? 'default' : 'destructive'
-                }
-              >
-                {isReviewing ? (
-                  <>
-                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Traitement...
-                  </>
-                ) : watch('action') === 'approve' ? (
-                  'Approuver'
-                ) : (
-                  'Rejeter'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* Statistiques */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              En attente
+            </CardTitle>
+            <IconClock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Approuvés
+            </CardTitle>
+            <IconShieldCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{approvedCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Rejetés
+            </CardTitle>
+            <IconAlertCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{rejectedCount}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Liste des utilisateurs */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Utilisateurs ({kycStats?.length || 0})</CardTitle>
+          <CardDescription>
+            Liste des utilisateurs avec leur statut de vérification KYC
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Utilisateur</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Statut KYC</TableHead>
+                <TableHead>Soumis le</TableHead>
+                <TableHead>Inscrit le</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {kycStats?.map((user: any) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    {user.firstname} {user.lastname}
+                  </TableCell>
+                  <TableCell>{user.email || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        user.kyc_status === 'approved'
+                          ? 'default'
+                          : user.kyc_status === 'pending'
+                          ? 'secondary'
+                          : user.kyc_status === 'rejected'
+                          ? 'destructive'
+                          : 'outline'
+                      }
+                    >
+                      {user.kyc_status === 'approved' && <IconShieldCheck className="mr-1 h-3 w-3" />}
+                      {user.kyc_status === 'pending' && <IconClock className="mr-1 h-3 w-3" />}
+                      {user.kyc_status === 'rejected' && <IconAlertCircle className="mr-1 h-3 w-3" />}
+                      {user.kyc_status || 'Non soumis'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.kyc_submitted_at
+                      ? format(new Date(user.kyc_submitted_at), 'PP', { locale: fr })
+                      : '-'}
+                  </TableCell>
+                  <TableCell>
+                    {format(new Date(user.created_at), 'PP', { locale: fr })}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
