@@ -207,11 +207,11 @@ function SidebarContent({
 function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-        <Link href="/recherche" aria-label="Recherche">
-          <IconSearch className="h-4 w-4" />
-        </Link>
-      </Button>
+      {/* Badge ADMIN à la place de la recherche */}
+      <Badge variant="destructive" className="text-[10px] font-semibold px-2 py-1">
+        Admin
+      </Badge>
+
       <ClientOnly>
         <ThemeToggle />
       </ClientOnly>
@@ -369,13 +369,6 @@ function AdminUserMenu() {
           <Link href="/admin/dashboard" className="cursor-pointer">
             <IconLayoutDashboard className="mr-2 h-4 w-4" />
             <span>Dashboard admin</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard/reglages" className="cursor-pointer">
-            <IconSettings className="mr-2 h-4 w-4" />
-            <span>Paramètres</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
