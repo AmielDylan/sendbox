@@ -24,7 +24,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('❌ Variables d\'environnement manquantes:')
+  console.error("❌ Variables d'environnement manquantes:")
   console.error('   - NEXT_PUBLIC_SUPABASE_URL')
   console.error('   - SUPABASE_SERVICE_ROLE_KEY')
   process.exit(1)
@@ -53,11 +53,21 @@ interface TableStats {
  * Compte le nombre de lignes dans chaque table
  */
 async function getTableStats(): Promise<TableStats[]> {
-  const tables = ['announcements', 'bookings', 'transactions', 'ratings', 'messages', 'notifications', 'profiles']
+  const tables = [
+    'announcements',
+    'bookings',
+    'transactions',
+    'ratings',
+    'messages',
+    'notifications',
+    'profiles',
+  ]
   const stats: TableStats[] = []
 
   for (const table of tables) {
-    const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true })
+    const { count, error } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
 
     if (error) {
       console.error(`⚠️ Erreur lors du comptage de ${table}:`, error.message)
@@ -73,14 +83,19 @@ async function getTableStats(): Promise<TableStats[]> {
 /**
  * Supprime les données d'une table
  */
-async function cleanTable(tableName: string): Promise<{ success: boolean; count: number }> {
+async function cleanTable(
+  tableName: string
+): Promise<{ success: boolean; count: number }> {
   // D'abord, compter les lignes
   const { count: beforeCount, error: countError } = await supabase
     .from(tableName)
     .select('*', { count: 'exact', head: true })
 
   if (countError) {
-    console.error(`❌ Erreur lors du comptage de ${tableName}:`, countError.message)
+    console.error(
+      `❌ Erreur lors du comptage de ${tableName}:`,
+      countError.message
+    )
     return { success: false, count: 0 }
   }
 
@@ -92,16 +107,24 @@ async function cleanTable(tableName: string): Promise<{ success: boolean; count:
   }
 
   if (dryRun) {
-    console.log(`🧪 [DRY RUN] ${tableName}: ${rowCount} lignes seraient supprimées`)
+    console.log(
+      `🧪 [DRY RUN] ${tableName}: ${rowCount} lignes seraient supprimées`
+    )
     return { success: true, count: rowCount }
   }
 
   // Supprimer toutes les lignes
   // Note: Supabase ne permet pas de DELETE sans WHERE, donc on utilise une condition toujours vraie
-  const { error: deleteError } = await supabase.from(tableName).delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  const { error: deleteError } = await supabase
+    .from(tableName)
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000')
 
   if (deleteError) {
-    console.error(`❌ Erreur lors de la suppression de ${tableName}:`, deleteError.message)
+    console.error(
+      `❌ Erreur lors de la suppression de ${tableName}:`,
+      deleteError.message
+    )
     return { success: false, count: 0 }
   }
 
@@ -120,10 +143,15 @@ async function cleanStorage(): Promise<void> {
   for (const bucket of buckets) {
     try {
       // Lister tous les fichiers du bucket
-      const { data: files, error: listError } = await supabase.storage.from(bucket).list()
+      const { data: files, error: listError } = await supabase.storage
+        .from(bucket)
+        .list()
 
       if (listError) {
-        console.error(`⚠️ Erreur lors de la liste des fichiers de ${bucket}:`, listError.message)
+        console.error(
+          `⚠️ Erreur lors de la liste des fichiers de ${bucket}:`,
+          listError.message
+        )
         continue
       }
 
@@ -133,16 +161,23 @@ async function cleanStorage(): Promise<void> {
       }
 
       if (dryRun) {
-        console.log(`🧪 [DRY RUN] ${bucket}: ${files.length} fichiers seraient supprimés`)
+        console.log(
+          `🧪 [DRY RUN] ${bucket}: ${files.length} fichiers seraient supprimés`
+        )
         continue
       }
 
       // Supprimer tous les fichiers
-      const filePaths = files.map((file) => file.name)
-      const { error: deleteError } = await supabase.storage.from(bucket).remove(filePaths)
+      const filePaths = files.map(file => file.name)
+      const { error: deleteError } = await supabase.storage
+        .from(bucket)
+        .remove(filePaths)
 
       if (deleteError) {
-        console.error(`❌ Erreur lors de la suppression des fichiers de ${bucket}:`, deleteError.message)
+        console.error(
+          `❌ Erreur lors de la suppression des fichiers de ${bucket}:`,
+          deleteError.message
+        )
       } else {
         console.log(`✅ ${bucket}: ${files.length} fichiers supprimés`)
       }
@@ -161,11 +196,14 @@ function askConfirmation(): Promise<boolean> {
     output: process.stdout,
   })
 
-  return new Promise((resolve) => {
-    rl.question('\n⚠️ ATTENTION: Cette action va supprimer toutes les données sauf les utilisateurs.\nÊtes-vous sûr de vouloir continuer? (tapez "OUI" pour confirmer): ', (answer) => {
-      rl.close()
-      resolve(answer.trim().toUpperCase() === 'OUI')
-    })
+  return new Promise(resolve => {
+    rl.question(
+      '\n⚠️ ATTENTION: Cette action va supprimer toutes les données sauf les utilisateurs.\nÊtes-vous sûr de vouloir continuer? (tapez "OUI" pour confirmer): ',
+      answer => {
+        rl.close()
+        resolve(answer.trim().toUpperCase() === 'OUI')
+      }
+    )
   })
 }
 
@@ -176,28 +214,34 @@ async function main() {
   console.log('🧹 Script de nettoyage de la base de données Supabase\n')
 
   if (dryRun) {
-    console.log('🧪 Mode DRY RUN activé - Aucune suppression ne sera effectuée\n')
+    console.log(
+      '🧪 Mode DRY RUN activé - Aucune suppression ne sera effectuée\n'
+    )
   }
 
   // Afficher les statistiques avant nettoyage
   console.log('📊 État actuel de la base de données:')
   const beforeStats = await getTableStats()
-  beforeStats.forEach((stat) => {
+  beforeStats.forEach(stat => {
     console.log(`   - ${stat.tableName}: ${stat.rowCount} lignes`)
   })
 
   // Calculer le total (hors profiles)
   const totalToDelete = beforeStats
-    .filter((stat) => stat.tableName !== 'profiles')
+    .filter(stat => stat.tableName !== 'profiles')
     .reduce((sum, stat) => sum + stat.rowCount, 0)
 
   if (totalToDelete === 0) {
-    console.log('\n✨ La base de données est déjà propre (aucune donnée à supprimer).')
+    console.log(
+      '\n✨ La base de données est déjà propre (aucune donnée à supprimer).'
+    )
     return
   }
 
   console.log(`\n📝 Total de lignes à supprimer: ${totalToDelete}`)
-  console.log(`👤 Utilisateurs conservés: ${beforeStats.find((s) => s.tableName === 'profiles')?.rowCount ?? 0}`)
+  console.log(
+    `👤 Utilisateurs conservés: ${beforeStats.find(s => s.tableName === 'profiles')?.rowCount ?? 0}`
+  )
 
   // Demander confirmation si nécessaire
   if (!confirmFlag && !dryRun) {
@@ -211,7 +255,14 @@ async function main() {
   console.log('\n🚀 Début du nettoyage...\n')
 
   // Ordre de suppression respectant les dépendances (foreign keys)
-  const tablesToClean = ['notifications', 'messages', 'ratings', 'transactions', 'bookings', 'announcements']
+  const tablesToClean = [
+    'notifications',
+    'messages',
+    'ratings',
+    'transactions',
+    'bookings',
+    'announcements',
+  ]
 
   const results = {
     success: 0,
@@ -245,8 +296,9 @@ async function main() {
   if (!dryRun) {
     console.log('\n📊 État final de la base de données:')
     const afterStats = await getTableStats()
-    afterStats.forEach((stat) => {
-      const emoji = stat.tableName === 'profiles' ? '👤' : stat.rowCount === 0 ? '✅' : '⚠️'
+    afterStats.forEach(stat => {
+      const emoji =
+        stat.tableName === 'profiles' ? '👤' : stat.rowCount === 0 ? '✅' : '⚠️'
       console.log(`   ${emoji} ${stat.tableName}: ${stat.rowCount} lignes`)
     })
   }
@@ -254,12 +306,14 @@ async function main() {
   console.log('\n✨ Nettoyage terminé!')
 
   if (!includeStorage) {
-    console.log('\nℹ️ Les fichiers du storage n\'ont pas été supprimés.')
-    console.log('   Pour nettoyer aussi le storage, utilisez: --include-storage')
+    console.log("\nℹ️ Les fichiers du storage n'ont pas été supprimés.")
+    console.log(
+      '   Pour nettoyer aussi le storage, utilisez: --include-storage'
+    )
   }
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error('❌ Erreur fatale:', error)
   process.exit(1)
 })

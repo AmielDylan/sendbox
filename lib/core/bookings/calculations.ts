@@ -7,7 +7,7 @@ import {
   INSURANCE_RATE,
   INSURANCE_BASE_FEE,
   MAX_INSURANCE_COVERAGE,
-} from "@/lib/core/bookings/validations"
+} from '@/lib/core/bookings/validations'
 
 export interface BookingCalculation {
   transportPrice: number
@@ -71,11 +71,3 @@ export function calculateBookingPrice(
 export function formatPrice(amount: number): string {
   return `${amount.toFixed(2)} €`
 }
-
-
-
-
-
-
-
-

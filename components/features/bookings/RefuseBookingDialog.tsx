@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { refuseBooking } from "@/lib/core/bookings/requests"
+import { refuseBooking } from '@/lib/core/bookings/requests'
 import { IconLoader2, IconCircleX } from '@tabler/icons-react'
 
 interface RefuseBookingDialogProps {
@@ -27,7 +27,10 @@ interface RefuseBookingDialogProps {
   trigger?: React.ReactNode
 }
 
-export function RefuseBookingDialog({ bookingId, trigger }: RefuseBookingDialogProps) {
+export function RefuseBookingDialog({
+  bookingId,
+  trigger,
+}: RefuseBookingDialogProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [reason, setReason] = useState('')
@@ -84,13 +87,11 @@ export function RefuseBookingDialog({ bookingId, trigger }: RefuseBookingDialogP
             id="reason"
             placeholder="Ex: Capacité insuffisante, dates incompatibles, etc."
             value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            onChange={e => setReason(e.target.value)}
             rows={4}
             disabled={isSubmitting}
           />
-          <p className="text-sm text-muted-foreground">
-            Minimum 5 caractères
-          </p>
+          <p className="text-sm text-muted-foreground">Minimum 5 caractères</p>
         </div>
 
         <DialogFooter>
@@ -120,11 +121,3 @@ export function RefuseBookingDialog({ bookingId, trigger }: RefuseBookingDialogP
     </Dialog>
   )
 }
-
-
-
-
-
-
-
-

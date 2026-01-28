@@ -8,7 +8,7 @@ import {
   IconCircleCheck,
   IconTruck,
   IconPackageExport,
-  IconCircleX
+  IconCircleX,
 } from '@tabler/icons-react'
 
 type BookingStatus =
@@ -28,13 +28,19 @@ interface BookingStatusBadgeProps {
   className?: string
 }
 
-export function BookingStatusBadge({ status, className }: BookingStatusBadgeProps) {
-  const statusConfig: Record<string, {
-    label: string
-    variant: 'default' | 'secondary' | 'destructive'
-    icon: any
-    className: string
-  }> = {
+export function BookingStatusBadge({
+  status,
+  className,
+}: BookingStatusBadgeProps) {
+  const statusConfig: Record<
+    string,
+    {
+      label: string
+      variant: 'default' | 'secondary' | 'destructive'
+      icon: any
+      className: string
+    }
+  > = {
     pending: {
       label: 'En attente',
       variant: 'secondary',
@@ -107,16 +113,12 @@ export function BookingStatusBadge({ status, className }: BookingStatusBadgeProp
   const Icon = config.icon
 
   return (
-    <Badge variant={config.variant} className={`${config.className} ${className}`}>
+    <Badge
+      variant={config.variant}
+      className={`${config.className} ${className}`}
+    >
       <Icon className="mr-1 h-3 w-3" />
       {config.label}
     </Badge>
   )
 }
-
-
-
-
-
-
-

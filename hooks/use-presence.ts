@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export interface PresenceState {
@@ -37,7 +37,7 @@ export function usePresence(channelName: string, userId: string | null) {
 
       // Vérifier si au moins une présence est récente (< 30 secondes)
       const now = Date.now()
-      return userPresences.some((presence) => {
+      return userPresences.some(presence => {
         const onlineAt = new Date(presence.online_at).getTime()
         return now - onlineAt < 30000 // 30 secondes
       })
@@ -147,7 +147,7 @@ export function usePresence(channelName: string, userId: string | null) {
       // Écouter les événements de typing via broadcast
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         if (payload.user_id && payload.user_id !== userId) {
-          setIsTyping((prev) => ({
+          setIsTyping(prev => ({
             ...prev,
             [payload.user_id]: payload.typing || false,
           }))
@@ -155,7 +155,7 @@ export function usePresence(channelName: string, userId: string | null) {
           // Auto-nettoyer le statut typing après 5 secondes
           if (payload.typing) {
             setTimeout(() => {
-              setIsTyping((prev) => ({
+              setIsTyping(prev => ({
                 ...prev,
                 [payload.user_id]: false,
               }))
@@ -163,7 +163,7 @@ export function usePresence(channelName: string, userId: string | null) {
           }
         }
       })
-      .subscribe(async (status) => {
+      .subscribe(async status => {
         if (status === 'SUBSCRIBED') {
           // Envoyer notre présence initiale
           await channel.track({

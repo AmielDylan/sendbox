@@ -29,15 +29,18 @@ async function testSearch() {
 
   // Test 1: Recherche sans filtres (toutes les annonces actives)
   console.log('Test 1: Recherche sans filtres')
-  const { data: test1, error: error1 } = await supabase.rpc('search_announcements', {
-    p_departure_country: null,
-    p_arrival_country: null,
-    p_departure_date: null,
-    p_min_kg: null,
-    p_sort_by: 'date',
-    p_limit: 10,
-    p_offset: 0,
-  })
+  const { data: test1, error: error1 } = await supabase.rpc(
+    'search_announcements',
+    {
+      p_departure_country: null,
+      p_arrival_country: null,
+      p_departure_date: null,
+      p_min_kg: null,
+      p_sort_by: 'date',
+      p_limit: 10,
+      p_offset: 0,
+    }
+  )
 
   if (error1) {
     console.error('❌ Error:', error1)
@@ -58,15 +61,18 @@ async function testSearch() {
 
   // Test 2: Recherche France -> Bénin
   console.log('\nTest 2: Recherche France -> Bénin')
-  const { data: test2, error: error2 } = await supabase.rpc('search_announcements', {
-    p_departure_country: 'FR',
-    p_arrival_country: 'BJ',
-    p_departure_date: null,
-    p_min_kg: null,
-    p_sort_by: 'date',
-    p_limit: 10,
-    p_offset: 0,
-  })
+  const { data: test2, error: error2 } = await supabase.rpc(
+    'search_announcements',
+    {
+      p_departure_country: 'FR',
+      p_arrival_country: 'BJ',
+      p_departure_date: null,
+      p_min_kg: null,
+      p_sort_by: 'date',
+      p_limit: 10,
+      p_offset: 0,
+    }
+  )
 
   if (error2) {
     console.error('❌ Error:', error2)
@@ -85,12 +91,15 @@ async function testSearch() {
 
   // Test 3: Compter toutes les annonces
   console.log('\nTest 3: Count all announcements')
-  const { data: count, error: error3 } = await supabase.rpc('count_search_announcements', {
-    p_departure_country: null,
-    p_arrival_country: null,
-    p_departure_date: null,
-    p_min_kg: null,
-  })
+  const { data: count, error: error3 } = await supabase.rpc(
+    'count_search_announcements',
+    {
+      p_departure_country: null,
+      p_arrival_country: null,
+      p_departure_date: null,
+      p_min_kg: null,
+    }
+  )
 
   if (error3) {
     console.error('❌ Error:', error3)
@@ -102,7 +111,9 @@ async function testSearch() {
   console.log('\nTest 4: Direct query from announcements table')
   const { data: direct, error: error4 } = await supabase
     .from('announcements')
-    .select('id, departure_country, arrival_country, departure_city, arrival_city, status, departure_date')
+    .select(
+      'id, departure_country, arrival_country, departure_city, arrival_city, status, departure_date'
+    )
     .in('status', ['active', 'published', 'partially_booked'])
     .order('created_at', { ascending: false })
     .limit(5)
@@ -113,7 +124,9 @@ async function testSearch() {
     console.log(`✅ Found ${direct?.length || 0} announcements (direct query)`)
     if (direct && direct.length > 0) {
       direct.forEach((ann, i) => {
-        console.log(`  ${i + 1}. ${ann.departure_city} (${ann.departure_country}) -> ${ann.arrival_city} (${ann.arrival_country})`)
+        console.log(
+          `  ${i + 1}. ${ann.departure_city} (${ann.departure_country}) -> ${ann.arrival_city} (${ann.arrival_country})`
+        )
         console.log(`     Status: ${ann.status}, Date: ${ann.departure_date}`)
       })
     }
@@ -125,7 +138,7 @@ testSearch()
     console.log('\n✅ Tests completed')
     process.exit(0)
   })
-  .catch((err) => {
+  .catch(err => {
     console.error('\n❌ Test failed:', err)
     process.exit(1)
   })

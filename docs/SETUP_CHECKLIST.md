@@ -3,11 +3,13 @@
 ## 📋 Avant de commiter
 
 - [ ] Tous les tests passent localement
+
   ```bash
   npm run test:all -- --run
   ```
 
 - [ ] Aucune erreur TypeScript
+
   ```bash
   npx tsc --noEmit
   ```
@@ -20,6 +22,7 @@
 ## 🔐 Configuration GitHub
 
 ### 1. Ajouter les secrets
+
 - [ ] Aller à: **Settings > Secrets and variables > Actions**
 - [ ] Créer les secrets (voir liste ci-dessous)
 
@@ -39,17 +42,17 @@ cat .vercel/project.json
 
 ### 3. Ajouter chaque secret
 
-| Secret | Valeur | Source |
-|--------|--------|--------|
-| `VERCEL_TOKEN` | Token personnel | https://vercel.com/account/tokens |
-| `VERCEL_ORG_ID` | `orgId` de `.vercel/project.json` | `.vercel/project.json` |
-| `VERCEL_PROJECT_ID` | `projectId` de `.vercel/project.json` | `.vercel/project.json` |
-| `NEXT_PUBLIC_SUPABASE_URL` | URL publique Supabase | `.env.local` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique Supabase | `.env.local` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clé service Supabase | Supabase Dashboard |
-| `STRIPE_SECRET_KEY` | Clé secrète Stripe | Stripe Dashboard |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Clé publique Stripe | Stripe Dashboard |
-| `RESEND_API_KEY` | Clé API Resend | Resend Dashboard |
+| Secret                               | Valeur                                | Source                            |
+| ------------------------------------ | ------------------------------------- | --------------------------------- |
+| `VERCEL_TOKEN`                       | Token personnel                       | https://vercel.com/account/tokens |
+| `VERCEL_ORG_ID`                      | `orgId` de `.vercel/project.json`     | `.vercel/project.json`            |
+| `VERCEL_PROJECT_ID`                  | `projectId` de `.vercel/project.json` | `.vercel/project.json`            |
+| `NEXT_PUBLIC_SUPABASE_URL`           | URL publique Supabase                 | `.env.local`                      |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`      | Clé publique Supabase                 | `.env.local`                      |
+| `SUPABASE_SERVICE_ROLE_KEY`          | Clé service Supabase                  | Supabase Dashboard                |
+| `STRIPE_SECRET_KEY`                  | Clé secrète Stripe                    | Stripe Dashboard                  |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Clé publique Stripe                   | Stripe Dashboard                  |
+| `RESEND_API_KEY`                     | Clé API Resend                        | Resend Dashboard                  |
 
 ## 📝 Commandes de test
 
@@ -76,6 +79,7 @@ npm run test:ui
 ## 🚀 Premier déploiement
 
 ### Étape 1: Commiter les fichiers
+
 ```bash
 git add .
 git commit -m "feat: add complete CI/CD pipeline with tests
@@ -90,6 +94,7 @@ git push origin develop
 ```
 
 ### Étape 2: Créer une Pull Request
+
 ```bash
 # Depuis GitHub interface
 1. New pull request
@@ -99,6 +104,7 @@ git push origin develop
 ```
 
 ### Étape 3: Vérifier le déploiement
+
 - [ ] Aller à **Actions** dans GitHub
 - [ ] Voir le workflow `Deploy to Production`
 - [ ] Vérifier les logs
@@ -153,16 +159,19 @@ https://github.com/[owner]/sendbox/actions
 ## 🎯 Prochaines étapes
 
 ### Court terme (semaine)
+
 1. [ ] Configurer les secrets GitHub
 2. [ ] Faire le premier commit et PR
 3. [ ] Valider que les workflows passent
 
 ### Moyen terme (mois)
+
 1. [ ] Ajouter des tests métier
 2. [ ] Augmenter la couverture à 70%+
 3. [ ] Ajouter des tests d'API
 
 ### Long terme (backlog)
+
 1. [ ] Tests E2E avec Playwright
 2. [ ] Performance testing
 3. [ ] Security scanning
@@ -172,6 +181,7 @@ https://github.com/[owner]/sendbox/actions
 **✅ PRÊT POUR LA PRODUCTION**
 
 Tous les éléments sont en place. Prochaine étape:
+
 1. Configurer les secrets GitHub
 2. Faire le premier commit
 3. Observer les workflows s'exécuter 🚀
@@ -179,6 +189,7 @@ Tous les éléments sont en place. Prochaine étape:
 ---
 
 **Questions?**
+
 - Voir `docs/TESTING_GUIDE.md` pour les tests
 - Voir `.github/workflows/README.md` pour les workflows
 - Voir `docs/CI_CD_SETUP.md` pour le résumé complet

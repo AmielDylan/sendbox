@@ -23,9 +23,14 @@ import {
   IconSpeakerphone,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,10 +43,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
-import { isFeatureEnabled } from "@/lib/shared/config/features"
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
-import { getAvatarUrl } from "@/lib/core/profile/utils"
+import { getAvatarUrl } from '@/lib/core/profile/utils'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -325,20 +330,26 @@ function UserMenu() {
   }
 
   const displayName = profile
-    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() || 'Utilisateur'
+    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() ||
+      'Utilisateur'
     : 'Utilisateur'
 
   const initials = profile
-    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() || 'U'
+    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() ||
+      'U'
     : 'U'
   const avatarUrl = getAvatarUrl(
     (profile as any)?.avatar_url || null,
     (profile as any)?.id || user?.id || displayName
   )
   const profileId = (profile as any)?.id || user?.id
-  const profileLink = profileId ? `/profil/${profileId}` : '/dashboard/reglages/profil'
+  const profileLink = profileId
+    ? `/profil/${profileId}`
+    : '/dashboard/reglages/profil'
 
-  const isVerified = isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status === 'approved'
+  const isVerified =
+    isFeatureEnabled('KYC_ENABLED') &&
+    (profile as any)?.kyc_status === 'approved'
 
   return (
     <DropdownMenu>
@@ -365,7 +376,10 @@ function UserMenu() {
               className="absolute -bottom-0.5 -right-0.5"
               aria-label="Profil vérifié"
             >
-              <IconRosetteDiscountCheck className="h-4 w-4 text-emerald-500 fill-emerald-500" strokeWidth={1.5} />
+              <IconRosetteDiscountCheck
+                className="h-4 w-4 text-emerald-500 fill-emerald-500"
+                strokeWidth={1.5}
+              />
             </span>
           )}
         </Button>
@@ -378,24 +392,38 @@ function UserMenu() {
               {user?.email || 'email@example.com'}
             </p>
             {/* Badge statut KYC - SEULEMENT si feature activée */}
-            {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status === 'approved' && (
-              <Badge variant="outline" className="w-fit text-xs text-green-600 border-green-600 mt-2">
-                <IconCheck className="mr-1 h-3 w-3" />
-                Vérifié
-              </Badge>
-            )}
-            {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status === 'pending' && (
-              <Badge variant="outline" className="w-fit text-xs text-yellow-600 border-yellow-600 mt-2">
-                <IconClock className="mr-1 h-3 w-3" />
-                En cours
-              </Badge>
-            )}
-            {isFeatureEnabled('KYC_ENABLED') && (!(profile as any)?.kyc_status || (profile as any).kyc_status === 'rejected' || (profile as any).kyc_status === 'incomplete') && (
-              <Badge variant="outline" className="w-fit text-xs text-muted-foreground mt-2">
-                <IconAlertCircle className="mr-1 h-3 w-3" />
-                Non vérifié
-              </Badge>
-            )}
+            {isFeatureEnabled('KYC_ENABLED') &&
+              (profile as any)?.kyc_status === 'approved' && (
+                <Badge
+                  variant="outline"
+                  className="w-fit text-xs text-green-600 border-green-600 mt-2"
+                >
+                  <IconCheck className="mr-1 h-3 w-3" />
+                  Vérifié
+                </Badge>
+              )}
+            {isFeatureEnabled('KYC_ENABLED') &&
+              (profile as any)?.kyc_status === 'pending' && (
+                <Badge
+                  variant="outline"
+                  className="w-fit text-xs text-yellow-600 border-yellow-600 mt-2"
+                >
+                  <IconClock className="mr-1 h-3 w-3" />
+                  En cours
+                </Badge>
+              )}
+            {isFeatureEnabled('KYC_ENABLED') &&
+              (!(profile as any)?.kyc_status ||
+                (profile as any).kyc_status === 'rejected' ||
+                (profile as any).kyc_status === 'incomplete') && (
+                <Badge
+                  variant="outline"
+                  className="w-fit text-xs text-muted-foreground mt-2"
+                >
+                  <IconAlertCircle className="mr-1 h-3 w-3" />
+                  Non vérifié
+                </Badge>
+              )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -413,17 +441,18 @@ function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {/* Lien rapide vers KYC si non approuvé - SEULEMENT si feature activée */}
-        {isFeatureEnabled('KYC_ENABLED') && (profile as any)?.kyc_status !== 'approved' && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
-                <IconShield className="mr-2 h-4 w-4" />
-                <span>Vérifier mon identité</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
+        {isFeatureEnabled('KYC_ENABLED') &&
+          (profile as any)?.kyc_status !== 'approved' && (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
+                  <IconShield className="mr-2 h-4 w-4" />
+                  <span>Vérifier mon identité</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
         <DropdownMenuItem asChild>
           <Link href="/dashboard/reglages" className="cursor-pointer">
             <IconSettings className="mr-2 h-4 w-4" />

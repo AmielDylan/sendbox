@@ -34,9 +34,11 @@ export function QRScanner({
     const startScanning = async () => {
       try {
         // Demander la permission de la caméra
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+        })
         setHasPermission(true)
-        stream.getTracks().forEach((track) => track.stop()) // Libérer immédiatement pour réutiliser
+        stream.getTracks().forEach(track => track.stop()) // Libérer immédiatement pour réutiliser
 
         if (!videoRef.current) return
 
@@ -67,10 +69,10 @@ export function QRScanner({
         setIsScanning(false)
         const errorMessage =
           err.name === 'NotAllowedError'
-            ? 'Permission caméra refusée. Veuillez autoriser l\'accès à la caméra.'
+            ? "Permission caméra refusée. Veuillez autoriser l'accès à la caméra."
             : err.name === 'NotFoundError'
-            ? 'Aucune caméra trouvée.'
-            : 'Erreur lors de l\'initialisation du scanner.'
+              ? 'Aucune caméra trouvée.'
+              : "Erreur lors de l'initialisation du scanner."
         setError(errorMessage)
         onError?.(errorMessage)
       }
@@ -142,7 +144,9 @@ export function QRScanner({
             </div>
           )}
         </div>
-        <p className="text-center text-sm text-muted-foreground">{description}</p>
+        <p className="text-center text-sm text-muted-foreground">
+          {description}
+        </p>
         {isScanning && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <IconLoader2 className="h-4 w-4 animate-spin" />
@@ -153,4 +157,3 @@ export function QRScanner({
     </Card>
   )
 }
-

@@ -2,15 +2,9 @@
  * Template PDF : Contrat de transport
  */
 
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-} from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { getCountryName } from '@/lib/utils/countries'
-import { MAX_INSURANCE_COVERAGE } from "@/lib/core/bookings/validations"
+import { MAX_INSURANCE_COVERAGE } from '@/lib/core/bookings/validations'
 
 interface BookingWithRelations {
   id: string
@@ -148,22 +142,22 @@ export function TransportContract({ booking }: TransportContractProps) {
               <Text style={styles.text}>
                 Protection du colis : {booking.insurance_premium || 0} EUR
               </Text>
-              <Text style={styles.text}>
-                Plafond : {insuranceCoverage} EUR
-              </Text>
+              <Text style={styles.text}>Plafond : {insuranceCoverage} EUR</Text>
             </>
           )}
-          <Text style={styles.total}>TOTAL PAYÉ : {totalAmount.toFixed(2)} EUR</Text>
+          <Text style={styles.total}>
+            TOTAL PAYÉ : {totalAmount.toFixed(2)} EUR
+          </Text>
         </View>
 
         {/* Conditions */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>CONDITIONS</Text>
           <Text style={styles.small}>
-            - Le voyageur s'engage à transporter le colis avec soin{'\n'}
-            - L'expéditeur garantit la conformité du contenu{'\n'}
-            - Le paiement est bloqué jusqu'à livraison confirmée{'\n'}
-            - En cas de litige, contacter support@sendbox.io
+            - Le voyageur s'engage à transporter le colis avec soin{'\n'}-
+            L'expéditeur garantit la conformité du contenu{'\n'}- Le paiement
+            est bloqué jusqu'à livraison confirmée{'\n'}- En cas de litige,
+            contacter support@sendbox.io
           </Text>
         </View>
 
@@ -271,6 +265,3 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
-
-

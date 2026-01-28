@@ -28,19 +28,22 @@ import { LandingCta } from '@/components/landing/LandingCta'
 const features = [
   {
     title: 'Tarifs transparents',
-    description: 'Économisez jusqu\'à 60% sur vos envois avec des prix fixes et sans surprise.',
+    description:
+      "Économisez jusqu'à 60% sur vos envois avec des prix fixes et sans surprise.",
     icon: IconCurrencyEuro,
     accent: 'teal',
   },
   {
     title: 'Voyageurs vérifiés',
-    description: 'Chaque transporteur vérifié par KYC, avec évaluations et badges de confiance.',
+    description:
+      'Chaque transporteur vérifié par KYC, avec évaluations et badges de confiance.',
     icon: IconShieldCheck,
     accent: 'emerald',
   },
   {
     title: 'Livraison rapide',
-    description: 'Suivez votre colis en temps réel et communiquez directement avec le voyageur.',
+    description:
+      'Suivez votre colis en temps réel et communiquez directement avec le voyageur.',
     icon: IconClock,
     accent: 'amber',
   },
@@ -65,25 +68,29 @@ const steps = [
   {
     number: '01',
     title: 'Trouvez votre trajet',
-    description: 'Parcourez les annonces de voyageurs sur votre itinéraire France-Bénin.',
+    description:
+      'Parcourez les annonces de voyageurs sur votre itinéraire France-Bénin.',
     visual: 'search',
   },
   {
     number: '02',
-    title: 'Réservez l\'espace',
-    description: 'Sélectionnez le voyageur et indiquez les détails de votre colis.',
+    title: "Réservez l'espace",
+    description:
+      'Sélectionnez le voyageur et indiquez les détails de votre colis.',
     visual: 'book',
   },
   {
     number: '03',
     title: 'Remettez en personne',
-    description: 'Rencontrez le voyageur et confiez-lui votre colis en toute sécurité.',
+    description:
+      'Rencontrez le voyageur et confiez-lui votre colis en toute sécurité.',
     visual: 'handoff',
   },
   {
     number: '04',
     title: 'Suivez la livraison',
-    description: 'Recevez des notifications à chaque étape et chattez en direct.',
+    description:
+      'Recevez des notifications à chaque étape et chattez en direct.',
     visual: 'track',
   },
 ]
@@ -128,24 +135,40 @@ export default function HomePage() {
                   <span className="relative inline-block">
                     <span className="relative z-10 text-primary">voyagent</span>
                     <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
-                  </span>
-                  {' '}avec vous
+                  </span>{' '}
+                  avec vous
                 </h1>
 
                 <p className="text-xl sm:text-2xl text-muted-foreground leading-relaxed max-w-2xl">
-                  La plateforme de covalisage qui connecte voyageurs et expéditeurs
-                  pour des envois <span className="text-foreground font-semibold">économiques</span>,
-                  {' '}<span className="text-foreground font-semibold">rapides</span> et
-                  {' '}<span className="text-foreground font-semibold">sécurisés</span>.
+                  La plateforme de covalisage qui connecte voyageurs et
+                  expéditeurs pour des envois{' '}
+                  <span className="text-foreground font-semibold">
+                    économiques
+                  </span>
+                  ,{' '}
+                  <span className="text-foreground font-semibold">rapides</span>{' '}
+                  et{' '}
+                  <span className="text-foreground font-semibold">
+                    sécurisés
+                  </span>
+                  .
                 </p>
               </div>
 
               {/* Stats row */}
               <div className="flex flex-wrap gap-8 pt-4">
                 {stats.map((stat, i) => (
-                  <div key={stat.label} className="space-y-1 animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
-                    <div className="text-3xl sm:text-4xl font-bold text-primary">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  <div
+                    key={stat.label}
+                    className="space-y-1 animate-fade-in-up"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  >
+                    <div className="text-3xl sm:text-4xl font-bold text-primary">
+                      {stat.value}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {stat.label}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -173,7 +196,10 @@ export default function HomePage() {
                 <div className="relative aspect-square max-w-md mx-auto">
                   {/* Decorative ring */}
                   <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin-slow"></div>
-                  <div className="absolute inset-4 rounded-full border border-primary/10 animate-spin-slow animation-delay-1000" style={{ animationDirection: 'reverse' }}></div>
+                  <div
+                    className="absolute inset-4 rounded-full border border-primary/10 animate-spin-slow animation-delay-1000"
+                    style={{ animationDirection: 'reverse' }}
+                  ></div>
 
                   {/* Center image */}
                   <div className="absolute inset-8 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-emerald-500/20 backdrop-blur-sm border border-primary/30 shadow-2xl">
@@ -192,7 +218,9 @@ export default function HomePage() {
                     <div className="bg-background border-2 border-primary rounded-2xl px-4 py-3 shadow-xl">
                       <div className="flex items-center gap-2">
                         <IconPlane className="h-5 w-5 text-primary" />
-                        <span className="font-semibold text-sm">Vol direct</span>
+                        <span className="font-semibold text-sm">
+                          Vol direct
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -201,7 +229,9 @@ export default function HomePage() {
                     <div className="bg-background border-2 border-emerald-500 rounded-2xl px-4 py-3 shadow-xl">
                       <div className="flex items-center gap-2">
                         <IconPackage className="h-5 w-5 text-emerald-600" />
-                        <span className="font-semibold text-sm">-60% vs DHL</span>
+                        <span className="font-semibold text-sm">
+                          -60% vs DHL
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -218,14 +248,18 @@ export default function HomePage() {
 
         <div className="container-wide relative">
           <div className="text-center space-y-4 mb-16 animate-fade-in-up">
-            <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2">
+            <Badge
+              variant="outline"
+              className="text-xs uppercase tracking-widest font-semibold px-4 py-2"
+            >
               Nos avantages
             </Badge>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold">
               Pourquoi <span className="text-primary">Sendbox</span> ?
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Une solution pensée pour rendre vos envois simples, sûrs et abordables.
+              Une solution pensée pour rendre vos envois simples, sûrs et
+              abordables.
             </p>
           </div>
 
@@ -247,9 +281,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="space-y-3">
-                      <h3 className="text-2xl font-bold">
-                        {feature.title}
-                      </h3>
+                      <h3 className="text-2xl font-bold">{feature.title}</h3>
                       <p className="text-muted-foreground leading-relaxed">
                         {feature.description}
                       </p>
@@ -269,7 +301,10 @@ export default function HomePage() {
 
         <div className="container-wide relative">
           <div className="mb-16 animate-fade-in-up">
-            <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2 mb-6">
+            <Badge
+              variant="outline"
+              className="text-xs uppercase tracking-widest font-semibold px-4 py-2 mb-6"
+            >
               Simple & Efficace
             </Badge>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold max-w-3xl">
@@ -329,7 +364,10 @@ export default function HomePage() {
       <section className="py-20 sm:py-28 bg-muted/30 relative">
         <div className="container-wide">
           <div className="text-center space-y-4 mb-16 animate-fade-in-up">
-            <Badge variant="outline" className="text-xs uppercase tracking-widest font-semibold px-4 py-2">
+            <Badge
+              variant="outline"
+              className="text-xs uppercase tracking-widest font-semibold px-4 py-2"
+            >
               Pour tous
             </Badge>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold">
@@ -352,22 +390,30 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h3 className="text-3xl font-bold mb-2">Voyageurs</h3>
-                    <p className="text-muted-foreground">Rentabilisez vos trajets</p>
+                    <p className="text-muted-foreground">
+                      Rentabilisez vos trajets
+                    </p>
                   </div>
                 </div>
 
                 <ul className="space-y-4">
-                  {benefits.travelers.map((benefit) => (
+                  {benefits.travelers.map(benefit => (
                     <li key={benefit} className="flex items-start gap-3">
                       <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <IconCheck className="h-4 w-4 text-primary" />
                       </div>
-                      <span className="text-foreground font-medium">{benefit}</span>
+                      <span className="text-foreground font-medium">
+                        {benefit}
+                      </span>
                     </li>
                   ))}
                 </ul>
 
-                <Button asChild className="w-full sm:w-auto group/btn" variant="outline">
+                <Button
+                  asChild
+                  className="w-full sm:w-auto group/btn"
+                  variant="outline"
+                >
                   <Link href="/register">
                     Devenir transporteur
                     <IconArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
@@ -392,17 +438,22 @@ export default function HomePage() {
                 </div>
 
                 <ul className="space-y-4">
-                  {benefits.senders.map((benefit) => (
+                  {benefits.senders.map(benefit => (
                     <li key={benefit} className="flex items-start gap-3">
                       <div className="h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <IconCheck className="h-4 w-4 text-emerald-600" />
                       </div>
-                      <span className="text-foreground font-medium">{benefit}</span>
+                      <span className="text-foreground font-medium">
+                        {benefit}
+                      </span>
                     </li>
                   ))}
                 </ul>
 
-                <Button asChild className="w-full sm:w-auto group/btn bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button
+                  asChild
+                  className="w-full sm:w-auto group/btn bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
                   <Link href="/recherche">
                     <IconMapPin className="h-4 w-4" />
                     Rechercher un trajet
@@ -437,14 +488,23 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button asChild size="lg" className="w-full sm:w-auto text-base px-8 py-6 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300">
+              <Button
+                asChild
+                size="lg"
+                className="w-full sm:w-auto text-base px-8 py-6 shadow-xl shadow-primary/25 hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300"
+              >
                 <Link href="/register">
                   Créer mon compte gratuitement
                   <IconArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
 
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 py-6 border-2 hover:scale-105 transition-all duration-300">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto text-base px-8 py-6 border-2 hover:scale-105 transition-all duration-300"
+              >
                 <Link href="/recherche">
                   <IconMapPin className="h-5 w-5" />
                   Explorer les trajets

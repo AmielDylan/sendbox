@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { cancelBookingWithReason } from "@/lib/core/bookings/workflow"
+import { cancelBookingWithReason } from '@/lib/core/bookings/workflow'
 import { IconLoader2, IconCircleX } from '@tabler/icons-react'
 
 interface CancelBookingDialogProps {
@@ -75,7 +75,7 @@ export function CancelBookingDialog({
   return (
     <AlertDialog
       open={isOpen}
-      onOpenChange={(open) => {
+      onOpenChange={open => {
         setIsOpen(open)
         if (!open) {
           setReason('')
@@ -94,7 +94,8 @@ export function CancelBookingDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Annuler cette réservation ?</AlertDialogTitle>
           <AlertDialogDescription>
-            {description || 'Cette action est irréversible. La réservation sera annulée et l\'autre partie sera notifiée.'}
+            {description ||
+              "Cette action est irréversible. La réservation sera annulée et l'autre partie sera notifiée."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-2">
@@ -103,7 +104,7 @@ export function CancelBookingDialog({
             id="cancel_reason"
             placeholder="Expliquez brièvement la raison..."
             value={reason}
-            onChange={(event) => setReason(event.target.value)}
+            onChange={event => setReason(event.target.value)}
             rows={3}
             disabled={isSubmitting}
           />
@@ -112,11 +113,9 @@ export function CancelBookingDialog({
           )}
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isSubmitting}>
-            Retour
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isSubmitting}>Retour</AlertDialogCancel>
           <AlertDialogAction
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault()
               handleCancel()
             }}
@@ -129,7 +128,7 @@ export function CancelBookingDialog({
                 Annulation...
               </>
             ) : (
-              confirmLabel || 'Confirmer l\'annulation'
+              confirmLabel || "Confirmer l'annulation"
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -137,9 +136,3 @@ export function CancelBookingDialog({
     </AlertDialog>
   )
 }
-
-
-
-
-
-

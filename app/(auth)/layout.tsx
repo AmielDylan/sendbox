@@ -45,9 +45,7 @@ export default function AuthLayout({
           />
 
           <div className="relative flex items-center justify-center min-h-screen p-4 sm:p-8 lg:p-12">
-            <div className="w-full max-w-lg animate-fade-in-up">
-              {children}
-            </div>
+            <div className="w-full max-w-lg animate-fade-in-up">{children}</div>
           </div>
         </div>
       </main>

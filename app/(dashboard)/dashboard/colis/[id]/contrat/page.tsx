@@ -4,12 +4,19 @@
 
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/server"
-import { getContractUrl, generateTransportContract } from "@/lib/shared/services/pdf/generation"
+import { createClient } from '@/lib/shared/db/server'
+import {
+  getContractUrl,
+  generateTransportContract,
+} from '@/lib/shared/services/pdf/generation'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconDownload, IconExternalLink, IconLoader2 } from '@tabler/icons-react'
+import {
+  IconDownload,
+  IconExternalLink,
+  IconLoader2,
+} from '@tabler/icons-react'
 import Link from 'next/link'
 
 interface ContractPageProps {
@@ -17,7 +24,10 @@ interface ContractPageProps {
   searchParams?: { refresh?: string }
 }
 
-async function ContractPageContent({ params, searchParams }: ContractPageProps) {
+async function ContractPageContent({
+  params,
+  searchParams,
+}: ContractPageProps) {
   const { id: bookingId } = await params
   const supabase = await createClient()
 
@@ -98,7 +108,9 @@ async function ContractPageContent({ params, searchParams }: ContractPageProps) 
               </Button>
               {booking.paid_at && (
                 <Button asChild variant="outline">
-                  <Link href={`/dashboard/colis/${bookingId}/contrat?refresh=1`}>
+                  <Link
+                    href={`/dashboard/colis/${bookingId}/contrat?refresh=1`}
+                  >
                     Regénérer
                   </Link>
                 </Button>
@@ -124,7 +136,10 @@ async function ContractPageContent({ params, searchParams }: ContractPageProps) 
   )
 }
 
-export default function ContractPage({ params, searchParams }: ContractPageProps) {
+export default function ContractPage({
+  params,
+  searchParams,
+}: ContractPageProps) {
   return (
     <Suspense
       fallback={

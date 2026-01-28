@@ -14,12 +14,12 @@ import {
   type ChangePasswordInput,
   type ChangeEmailInput,
   type DeleteAccountInput,
-} from "@/lib/core/profile/validations"
+} from '@/lib/core/profile/validations'
 import {
   changePassword,
   changeEmail,
   deleteAccount,
-} from "@/lib/core/profile/actions"
+} from '@/lib/core/profile/actions'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,7 +41,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { IconLoader2, IconLock, IconMail, IconTrash, IconAlertTriangle } from '@tabler/icons-react'
+import {
+  IconLoader2,
+  IconLock,
+  IconMail,
+  IconTrash,
+  IconAlertTriangle,
+} from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 
 export default function AccountPage() {
@@ -143,7 +149,7 @@ export default function AccountPage() {
   }
 
   return (
-      <div className="space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title="Paramètres du compte"
         description="Gérez les paramètres de sécurité et votre compte"
@@ -470,4 +476,3 @@ export default function AccountPage() {
     </div>
   )
 }
-

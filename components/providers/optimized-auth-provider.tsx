@@ -11,7 +11,14 @@
 
 'use client'
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from 'react'
 import { createClient } from '@/lib/shared/db/client'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Session, User } from '@supabase/supabase-js'
@@ -53,7 +60,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   isAuthenticated: false,
   error: null,
-  refetchProfile: async () => { },
+  refetchProfile: async () => {},
 })
 
 export function useAuth() {
@@ -64,7 +71,11 @@ export function useAuth() {
   return context
 }
 
-export function OptimizedAuthProvider({ children }: { children: React.ReactNode }) {
+export function OptimizedAuthProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -75,9 +86,9 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   const supabase = createClient()
 
   // Accéder au store Zustand pour synchronisation
-  const setStoreUser = useAuthStore((state) => state.setUser)
-  const setStoreProfile = useAuthStore((state) => state.setProfile)
-  const setStoreLoading = useAuthStore((state) => state.setLoading)
+  const setStoreUser = useAuthStore(state => state.setUser)
+  const setStoreProfile = useAuthStore(state => state.setProfile)
+  const setStoreLoading = useAuthStore(state => state.setLoading)
 
   // Ref pour éviter les double-fetches
   const isFetchingProfile = useRef(false)
@@ -97,22 +108,23 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
       switch (status) {
         case 'approved':
           toast.success('Identité vérifiée', {
-            description: 'Toutes les actions sensibles sont désormais débloquées.',
+            description:
+              'Toutes les actions sensibles sont désormais débloquées.',
             duration: 5000,
           })
           break
         case 'pending':
           toast.info('Vérification en cours', {
-            description: "Votre vérification d'identité est en cours de traitement.",
+            description:
+              "Votre vérification d'identité est en cours de traitement.",
             duration: 5000,
           })
           break
         case 'rejected':
           toast.error('Vérification refusée', {
-            description:
-              rejectionReason
-                ? `Raison : ${rejectionReason}. Veuillez soumettre de nouveaux documents.`
-                : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents.',
+            description: rejectionReason
+              ? `Raison : ${rejectionReason}. Veuillez soumettre de nouveaux documents.`
+              : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents.',
             duration: 6000,
           })
           break
@@ -133,90 +145,104 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
   /**
    * Fetch du profil utilisateur avec gestion d'erreur robuste
    */
-  const fetchProfile = useCallback(async (userId: string) => {
-    // Éviter les double-fetches
-    if (isFetchingProfile.current) {
-      return
-    }
+  const fetchProfile = useCallback(
+    async (userId: string) => {
+      // Éviter les double-fetches
+      if (isFetchingProfile.current) {
+        return
+      }
 
-    // Si c'est le même utilisateur, ne pas refetch
-    if (lastUserId.current === userId && profile?.id === userId) {
-      return
-    }
+      // Si c'est le même utilisateur, ne pas refetch
+      if (lastUserId.current === userId && profile?.id === userId) {
+        return
+      }
 
-    isFetchingProfile.current = true
-    lastUserId.current = userId
-    if (profileRetryTimer.current) {
-      clearTimeout(profileRetryTimer.current)
-      profileRetryTimer.current = null
-    }
+      isFetchingProfile.current = true
+      lastUserId.current = userId
+      if (profileRetryTimer.current) {
+        clearTimeout(profileRetryTimer.current)
+        profileRetryTimer.current = null
+      }
 
-    try {
-      console.log('[Auth] Fetching profile for user:', userId)
+      try {
+        console.log('[Auth] Fetching profile for user:', userId)
 
-      const abortController = new AbortController()
-      const timeoutId = setTimeout(() => {
-        abortController.abort()
-      }, PROFILE_FETCH_TIMEOUT_MS)
+        const abortController = new AbortController()
+        const timeoutId = setTimeout(() => {
+          abortController.abort()
+        }, PROFILE_FETCH_TIMEOUT_MS)
 
-      const { data, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .abortSignal(abortController.signal)
-        .single()
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .abortSignal(abortController.signal)
+          .single()
 
-      clearTimeout(timeoutId)
+        clearTimeout(timeoutId)
 
-      console.log('[Auth] Profile query result:', { data: !!data, error: !!profileError })
+        console.log('[Auth] Profile query result:', {
+          data: !!data,
+          error: !!profileError,
+        })
 
-      if (profileError) {
-        // Si le profil n'existe pas, ce n'est pas une erreur critique
-        if (profileError.code === 'PGRST116') {
-          console.warn('[Auth] Profile not found for user:', userId)
-          setProfile(null)
-          setError(null)
+        if (profileError) {
+          // Si le profil n'existe pas, ce n'est pas une erreur critique
+          if (profileError.code === 'PGRST116') {
+            console.warn('[Auth] Profile not found for user:', userId)
+            setProfile(null)
+            setError(null)
+          } else {
+            console.error('[Auth] Error fetching profile:', profileError)
+            console.error('[Auth] Profile error details:', {
+              code: profileError.code,
+              message: profileError.message,
+              details: profileError.details,
+              hint: profileError.hint,
+            })
+            setError(new Error('Failed to load profile'))
+          }
         } else {
-          console.error('[Auth] Error fetching profile:', profileError)
-          console.error('[Auth] Profile error details:', {
-            code: profileError.code,
-            message: profileError.message,
-            details: profileError.details,
-            hint: profileError.hint,
+          console.log('[Auth] Profile loaded successfully:', {
+            id: data?.id,
+            firstname: data?.firstname,
           })
-          setError(new Error('Failed to load profile'))
+          const profileData = data as Profile
+          setProfile(profileData)
+          setError(null)
+          profileRetryCount.current = 0
+          // ✅ Synchroniser avec Zustand store (les deux interfaces sont compatibles)
+          setStoreProfile(profileData as any)
         }
-      } else {
-        console.log('[Auth] Profile loaded successfully:', { id: data?.id, firstname: data?.firstname })
-        const profileData = data as Profile
-        setProfile(profileData)
+      } catch (err) {
+        if ((err as Error)?.name === 'AbortError') {
+          console.warn(
+            `[Auth] Profile fetch aborted after ${PROFILE_FETCH_TIMEOUT_MS}ms`,
+            userId
+          )
+        } else {
+          console.error('[Auth] Unexpected error fetching profile:', err)
+        }
+
+        if (profileRetryCount.current < MAX_PROFILE_FETCH_RETRIES) {
+          const retryDelay =
+            PROFILE_RETRY_BASE_DELAY_MS * (profileRetryCount.current + 1)
+          profileRetryCount.current += 1
+          profileRetryTimer.current = setTimeout(() => {
+            fetchProfile(userId)
+          }, retryDelay)
+        }
+
         setError(null)
-        profileRetryCount.current = 0
-        // ✅ Synchroniser avec Zustand store (les deux interfaces sont compatibles)
-        setStoreProfile(profileData as any)
+      } finally {
+        console.log(
+          '[Auth] Finished fetching profile, setting isFetchingProfile to false'
+        )
+        isFetchingProfile.current = false
       }
-    } catch (err) {
-      if ((err as Error)?.name === 'AbortError') {
-        console.warn(`[Auth] Profile fetch aborted after ${PROFILE_FETCH_TIMEOUT_MS}ms`, userId)
-      } else {
-        console.error('[Auth] Unexpected error fetching profile:', err)
-      }
-
-      if (profileRetryCount.current < MAX_PROFILE_FETCH_RETRIES) {
-        const retryDelay =
-          PROFILE_RETRY_BASE_DELAY_MS * (profileRetryCount.current + 1)
-        profileRetryCount.current += 1
-        profileRetryTimer.current = setTimeout(() => {
-          fetchProfile(userId)
-        }, retryDelay)
-      }
-
-      setError(null)
-    } finally {
-      console.log('[Auth] Finished fetching profile, setting isFetchingProfile to false')
-      isFetchingProfile.current = false
-    }
-  }, [supabase, profile, setStoreProfile])
+    },
+    [supabase, profile, setStoreProfile]
+  )
 
   /**
    * Fonction publique pour refetch le profil
@@ -239,8 +265,10 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
         setIsLoading(true)
 
         // Récupérer la session depuis le storage
-        const { data: { session: initialSession }, error: sessionError } =
-          await supabase.auth.getSession()
+        const {
+          data: { session: initialSession },
+          error: sessionError,
+        } = await supabase.auth.getSession()
 
         if (!mounted) return
 
@@ -280,49 +308,49 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
    * Écouter les changements d'état d'authentification
    */
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log('[Auth] State change:', event, currentSession?.user?.id)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('[Auth] State change:', event, currentSession?.user?.id)
 
-        setSession(currentSession)
-        setUser(currentSession?.user ?? null)
+      setSession(currentSession)
+      setUser(currentSession?.user ?? null)
 
-        // Gérer les différents événements
-        switch (event) {
-          case 'SIGNED_IN':
-          case 'TOKEN_REFRESHED':
-          case 'USER_UPDATED':
-            if (currentSession?.user?.id) {
-              // Fetch le profil pour le nouvel utilisateur
-              await fetchProfile(currentSession.user.id)
+      // Gérer les différents événements
+      switch (event) {
+        case 'SIGNED_IN':
+        case 'TOKEN_REFRESHED':
+        case 'USER_UPDATED':
+          if (currentSession?.user?.id) {
+            // Fetch le profil pour le nouvel utilisateur
+            await fetchProfile(currentSession.user.id)
 
-              // Invalider seulement les queries liées à cet utilisateur
-              invalidateAuthQueries(queryClient, currentSession.user.id)
-            }
-            break
+            // Invalider seulement les queries liées à cet utilisateur
+            invalidateAuthQueries(queryClient, currentSession.user.id)
+          }
+          break
 
-          case 'SIGNED_OUT':
-            // Clear le profil
-            setProfile(null)
-            lastUserId.current = null
+        case 'SIGNED_OUT':
+          // Clear le profil
+          setProfile(null)
+          lastUserId.current = null
 
-            // Clear seulement les queries auth (pas tout le cache!)
-            queryClient.removeQueries({ queryKey: QUERY_KEYS.auth })
-            queryClient.removeQueries({ queryKey: QUERY_KEYS.announcements })
-            queryClient.removeQueries({ queryKey: QUERY_KEYS.bookings })
-            queryClient.removeQueries({ queryKey: QUERY_KEYS.messages })
-            queryClient.removeQueries({ queryKey: QUERY_KEYS.notifications })
-            break
+          // Clear seulement les queries auth (pas tout le cache!)
+          queryClient.removeQueries({ queryKey: QUERY_KEYS.auth })
+          queryClient.removeQueries({ queryKey: QUERY_KEYS.announcements })
+          queryClient.removeQueries({ queryKey: QUERY_KEYS.bookings })
+          queryClient.removeQueries({ queryKey: QUERY_KEYS.messages })
+          queryClient.removeQueries({ queryKey: QUERY_KEYS.notifications })
+          break
 
-          case 'PASSWORD_RECOVERY':
-            // Pas besoin de fetch le profil
-            break
+        case 'PASSWORD_RECOVERY':
+          // Pas besoin de fetch le profil
+          break
 
-          default:
-            console.log('[Auth] Unhandled event:', event)
-        }
+        default:
+          console.log('[Auth] Unhandled event:', event)
       }
-    )
+    })
 
     return () => {
       subscription.unsubscribe()
@@ -351,7 +379,7 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
           table: 'profiles',
           filter: `id=eq.${user.id}`,
         },
-        (payload) => {
+        payload => {
           const nextProfile = payload.new as Profile
           setProfile(nextProfile)
           setStoreProfile(nextProfile as any)
@@ -359,14 +387,21 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
           const nextKycStatus = (nextProfile as any)?.kyc_status ?? null
           const prevKycStatus = lastKycStatus.current
 
-          if (prevKycStatus && nextKycStatus && prevKycStatus !== nextKycStatus) {
-            showKycStatusToast(nextKycStatus, (nextProfile as any)?.kyc_rejection_reason ?? null)
+          if (
+            prevKycStatus &&
+            nextKycStatus &&
+            prevKycStatus !== nextKycStatus
+          ) {
+            showKycStatusToast(
+              nextKycStatus,
+              (nextProfile as any)?.kyc_rejection_reason ?? null
+            )
           }
 
           lastKycStatus.current = nextKycStatus
         }
       )
-      .subscribe((status) => {
+      .subscribe(status => {
         if (status === 'CHANNEL_ERROR') {
           console.error('❌ Realtime profile subscription error')
         }
@@ -385,7 +420,7 @@ export function OptimizedAuthProvider({ children }: { children: React.ReactNode 
 
     const channel = new BroadcastChannel('supabase-auth')
 
-    channel.onmessage = (event) => {
+    channel.onmessage = event => {
       if (event.data.type === 'SIGNED_OUT') {
         console.log('[Auth] Multi-tab signout detected')
         // Forcer un refresh de la session

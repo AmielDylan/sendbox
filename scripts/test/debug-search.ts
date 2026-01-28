@@ -23,7 +23,9 @@ async function debugSearch() {
   console.log('1. Toutes les annonces en base (lecture publique):')
   const { data: allAnnouncements, error: allError } = await supabase
     .from('announcements')
-    .select('id, departure_country, arrival_country, departure_date, available_kg, status')
+    .select(
+      'id, departure_country, arrival_country, departure_date, available_kg, status'
+    )
     .in('status', ['active', 'published', 'partially_booked'])
     .limit(10)
 
@@ -32,7 +34,9 @@ async function debugSearch() {
   } else {
     console.log(`Nombre total: ${allAnnouncements?.length || 0}`)
     allAnnouncements?.forEach((a: any) => {
-      console.log(`  - ${a.departure_country} → ${a.arrival_country}, ${a.departure_date}, ${a.available_kg}kg, status: ${a.status}`)
+      console.log(
+        `  - ${a.departure_country} → ${a.arrival_country}, ${a.departure_date}, ${a.available_kg}kg, status: ${a.status}`
+      )
     })
   }
 
@@ -108,7 +112,9 @@ async function debugSearch() {
   } else {
     console.log(`Résultats trouvés: ${noDateResults?.length || 0}`)
     noDateResults?.forEach((r: any) => {
-      console.log(`  - ${r.departure_country} → ${r.arrival_country}, ${r.departure_date}, ${r.status}`)
+      console.log(
+        `  - ${r.departure_country} → ${r.arrival_country}, ${r.departure_date}, ${r.status}`
+      )
     })
   }
 

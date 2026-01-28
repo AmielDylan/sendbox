@@ -3,6 +3,7 @@
 ## 🎯 Approche adoptée
 
 ### **Avant (compliqué):**
+
 ```
 git push/merge
     ↓
@@ -10,9 +11,11 @@ GitHub Actions build & déploie
     ↓
 Vercel reçoit le déploiement
 ```
+
 ❌ Double déploiement = lent et compliqué
 
 ### **Maintenant (simplifié):**
+
 ```
 git push/merge
     ↓
@@ -20,9 +23,11 @@ GitHub Actions: teste & valide ✅
     ↓
 Vercel: déploie automatiquement
 ```
+
 ✅ Chacun fait son travail correctement
 
 ### **Stratégie de merge:**
+
 ```
 Merge avec --no-ff (merge commits)
     ↓
@@ -38,8 +43,10 @@ Voir `docs/GIT_MERGE_STRATEGY.md` pour la configuration.
 ## 📊 Ce que fait chaque workflow
 
 ### 1. **CI Workflow** (`.github/workflows/ci.yml`)
+
 **Quand:** À chaque push/PR
 **Vérifie:**
+
 - ✅ Code format (ESLint + Prettier)
 - ✅ Tests unitaires
 - ✅ Tests intégration
@@ -48,8 +55,10 @@ Voir `docs/GIT_MERGE_STRATEGY.md` pour la configuration.
 **Résultat:** Si ❌ échoue = la PR peut pas être mergée
 
 ### 2. **Pre-Deploy Quality Checks** (`.github/workflows/deploy.yml`)
+
 **Quand:** Seulement sur `main` (après merge)
 **Vérifie:**
+
 - ✅ Tous les tests
 - ✅ TypeScript compile
 - ✅ Build Next.js fonctionne
@@ -134,12 +143,14 @@ RESEND_API_KEY
 ```
 
 **Où les ajouter:**
+
 1. Va à ton repo GitHub
 2. Settings > Secrets and variables > Actions
 3. "New repository secret"
 4. Ajoute chaque secret
 
 **Où les trouver:**
+
 - Vercel: Dashboard > Project > Settings > Environment Variables
 - Stripe: https://dashboard.stripe.com
 - Resend: https://resend.com/keys
@@ -148,6 +159,7 @@ RESEND_API_KEY
 ### Tokens Vercel (OPTIONNEL):
 
 Si tu veux contrôler le déploiement Vercel depuis GitHub:
+
 - `VERCEL_TOKEN` - Token personnel Vercel
 
 **Mais ce n'est pas nécessaire** puisque Vercel est déjà connecté via GitHub OAuth.
@@ -176,6 +188,7 @@ git push -u origin test/workflow-test
 ```
 
 **Vérifier:**
+
 1. Va à la PR sur GitHub
 2. Regarde l'onglet "Checks"
 3. Tu devrais voir:
@@ -208,21 +221,24 @@ git pull
 ## 🐛 Troubleshooting
 
 ### "Secrets not found"
+
 ```
 Erreur: "SUPABASE_URL is not defined"
 Solution: Ajouter le secret manquant dans GitHub Settings
 ```
 
 ### "Build failed in workflow"
+
 ```
 Erreur: "npm run build" échoue
-Solution: 
+Solution:
 1. Exécuter localement: npm run build
 2. Fixer l'erreur
 3. Pousser à nouveau
 ```
 
 ### "Tests passent localement mais échouent en CI"
+
 ```
 Probabilité: Différence d'environnement
 Solution:
@@ -232,6 +248,7 @@ Solution:
 ```
 
 ### "Vercel ne déploie pas"
+
 ```
 Probabilité: Vercel n'a pas reçu le webhook
 Solution:
@@ -245,17 +262,20 @@ Solution:
 ## 📈 Prochaines étapes
 
 ### Maintenant:
+
 1. ✅ Ajouter les 6 secrets GitHub
 2. ✅ Tester la CI sur une branche
 3. ✅ Tester le pre-deploy en mergant vers main
 
 ### Après validation:
+
 1. Pusher la branche `feat/test-vercel-deploy`
 2. Créer une PR vers develop
 3. Voir les workflows s'exécuter
 4. Merger et observer le déploiement
 
 ### Plus tard:
+
 1. Si tu veux plus de contrôle: ajouter des étapes au workflow
 2. Si tu veux des previews: activer Vercel Preview dans GitHub
 3. Si tu veux des notifications: ajouter Slack/Discord
@@ -268,6 +288,7 @@ Solution:
 **Vercel = Déploiement (production)**
 
 Ils travaillent ensemble:
+
 1. GitHub teste
 2. Si ✅ → Vercel déploie
 3. Si ❌ → Personne ne déploie (safety)

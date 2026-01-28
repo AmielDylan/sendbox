@@ -5,16 +5,19 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
-import { createAdminClient } from "@/lib/shared/db/admin"
-import { createSystemNotification } from "@/lib/core/notifications/system"
-import { isFeatureEnabled } from "@/lib/shared/config/features"
+import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
+import { createSystemNotification } from '@/lib/core/notifications/system'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 /**
  * Annule une réservation avec raison (acceptée non payée par les deux parties,
  * ou payée par le voyageur avec malus de réputation).
  */
-export async function cancelBookingWithReason(bookingId: string, reason: string) {
+export async function cancelBookingWithReason(
+  bookingId: string,
+  reason: string
+) {
   const supabase = await createClient()
   const normalizedReason = reason.trim()
 
@@ -52,7 +55,7 @@ export async function cancelBookingWithReason(bookingId: string, reason: string)
 
   if (!isSender && !isTraveler) {
     return {
-      error: 'Vous n\'êtes pas autorisé à annuler cette réservation',
+      error: "Vous n'êtes pas autorisé à annuler cette réservation",
     }
   }
 
@@ -86,15 +89,16 @@ export async function cancelBookingWithReason(bookingId: string, reason: string)
     if (updateError) {
       console.error('Error cancelling booking:', updateError)
       return {
-        error: 'Erreur lors de l\'annulation',
+        error: "Erreur lors de l'annulation",
       }
     }
 
     if (isPaid && isTraveler) {
       const REPUTATION_PENALTY = 0.3
       try {
-        const profileClient =
-          process.env.SUPABASE_SERVICE_ROLE_KEY ? createAdminClient() : supabase
+        const profileClient = process.env.SUPABASE_SERVICE_ROLE_KEY
+          ? createAdminClient()
+          : supabase
         const { data: profile } = await profileClient
           .from('profiles')
           .select('rating')
@@ -118,7 +122,7 @@ export async function cancelBookingWithReason(bookingId: string, reason: string)
     }
 
     const otherUserId = isSender ? booking.traveler_id : booking.sender_id
-    const cancelerLabel = isSender ? 'L\'expéditeur' : 'Le voyageur'
+    const cancelerLabel = isSender ? "L'expéditeur" : 'Le voyageur'
 
     const { error: notifError } = await createSystemNotification({
       userId: otherUserId,
@@ -180,7 +184,7 @@ export async function deleteCancelledBooking(bookingId: string) {
 
   if (booking.sender_id !== user.id && booking.traveler_id !== user.id) {
     return {
-      error: 'Vous n\'êtes pas autorisé à supprimer cette réservation',
+      error: "Vous n'êtes pas autorisé à supprimer cette réservation",
     }
   }
 
@@ -195,7 +199,7 @@ export async function deleteCancelledBooking(bookingId: string) {
     const photos = (booking.package_photos || []) as string[]
     const storagePrefix = '/storage/v1/object/public/package-photos/'
     const filePaths = photos
-      .map((url) => {
+      .map(url => {
         const index = url?.indexOf(storagePrefix) ?? -1
         if (index === -1) return null
         const path = url.slice(index + storagePrefix.length)
@@ -277,7 +281,7 @@ export async function markAsInTransit(
   // Vérifier que l'utilisateur est le voyageur
   if (booking.traveler_id !== user.id) {
     return {
-      error: 'Vous n\'êtes pas autorisé à effectuer cette action',
+      error: "Vous n'êtes pas autorisé à effectuer cette action",
     }
   }
 
@@ -295,20 +299,23 @@ export async function markAsInTransit(
     }
 
     if (profile.kyc_status !== 'approved') {
-      let errorMessage = 'Vérification d\'identité requise pour continuer'
-      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour déposer un colis.'
+      let errorMessage = "Vérification d'identité requise pour continuer"
+      let errorDetails =
+        "Veuillez compléter votre vérification d'identité pour déposer un colis."
 
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
-        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez déposer des colis une fois celle-ci approuvée (24-48h).'
+        errorDetails =
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez déposer des colis une fois celle-ci approuvée (24-48h)."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason
           ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
           : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
       } else if (profile.kyc_status === 'incomplete') {
-        errorMessage = 'Vérification d\'identité incomplète'
-        errorDetails = 'Veuillez soumettre vos documents d\'identité pour déposer un colis.'
+        errorMessage = "Vérification d'identité incomplète"
+        errorDetails =
+          "Veuillez soumettre vos documents d'identité pour déposer un colis."
       }
 
       return {
@@ -421,7 +428,7 @@ export async function markAsDelivered(
   // Vérifier que l'utilisateur est le voyageur
   if (booking.traveler_id !== user.id) {
     return {
-      error: 'Vous n\'êtes pas autorisé à effectuer cette action',
+      error: "Vous n'êtes pas autorisé à effectuer cette action",
     }
   }
 
@@ -439,20 +446,23 @@ export async function markAsDelivered(
     }
 
     if (profile.kyc_status !== 'approved') {
-      let errorMessage = 'Vérification d\'identité requise pour continuer'
-      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour livrer un colis.'
+      let errorMessage = "Vérification d'identité requise pour continuer"
+      let errorDetails =
+        "Veuillez compléter votre vérification d'identité pour livrer un colis."
 
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
-        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez livrer des colis une fois celle-ci approuvée (24-48h).'
+        errorDetails =
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez livrer des colis une fois celle-ci approuvée (24-48h)."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason
           ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
           : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
       } else if (profile.kyc_status === 'incomplete') {
-        errorMessage = 'Vérification d\'identité incomplète'
-        errorDetails = 'Veuillez soumettre vos documents d\'identité pour livrer un colis.'
+        errorMessage = "Vérification d'identité incomplète"
+        errorDetails =
+          "Veuillez soumettre vos documents d'identité pour livrer un colis."
       }
 
       return {
@@ -548,7 +558,9 @@ export async function confirmDeliveryReceipt(bookingId: string) {
 
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
-    .select('id, status, sender_id, traveler_id, delivery_confirmed_at, announcement_id')
+    .select(
+      'id, status, sender_id, traveler_id, delivery_confirmed_at, announcement_id'
+    )
     .eq('id', bookingId)
     .single()
 
@@ -560,7 +572,7 @@ export async function confirmDeliveryReceipt(bookingId: string) {
 
   if (booking.sender_id !== user.id) {
     return {
-      error: 'Vous n\'êtes pas autorisé à confirmer cette livraison',
+      error: "Vous n'êtes pas autorisé à confirmer cette livraison",
     }
   }
 
@@ -578,20 +590,23 @@ export async function confirmDeliveryReceipt(bookingId: string) {
     }
 
     if (profile.kyc_status !== 'approved') {
-      let errorMessage = 'Vérification d\'identité requise pour continuer'
-      let errorDetails = 'Veuillez compléter votre vérification d\'identité pour confirmer la réception.'
+      let errorMessage = "Vérification d'identité requise pour continuer"
+      let errorDetails =
+        "Veuillez compléter votre vérification d'identité pour confirmer la réception."
 
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
-        errorDetails = 'Votre vérification d\'identité est en cours d\'examen. Vous pourrez confirmer la réception une fois celle-ci approuvée (24-48h).'
+        errorDetails =
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez confirmer la réception une fois celle-ci approuvée (24-48h)."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason
           ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
           : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
       } else if (profile.kyc_status === 'incomplete') {
-        errorMessage = 'Vérification d\'identité incomplète'
-        errorDetails = 'Veuillez soumettre vos documents d\'identité pour confirmer la réception.'
+        errorMessage = "Vérification d'identité incomplète"
+        errorDetails =
+          "Veuillez soumettre vos documents d'identité pour confirmer la réception."
       }
 
       return {
@@ -631,9 +646,12 @@ export async function confirmDeliveryReceipt(bookingId: string) {
     }
   }
 
-  const { error: servicesError } = await (supabase.rpc as any)('increment_completed_services', {
-    p_user_id: booking.traveler_id,
-  })
+  const { error: servicesError } = await (supabase.rpc as any)(
+    'increment_completed_services',
+    {
+      p_user_id: booking.traveler_id,
+    }
+  )
   if (servicesError) {
     console.error('Error incrementing completed services:', servicesError)
   }

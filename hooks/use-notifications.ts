@@ -3,9 +3,9 @@
  */
 
 import { useState, useEffect } from 'react'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import { toast } from 'sonner'
-import { Notification } from "@/lib/shared/db/queries/notifications"
+import { Notification } from '@/lib/shared/db/queries/notifications'
 
 export function useNotifications(limit: number = 20) {
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -31,7 +31,9 @@ export function useNotifications(limit: number = 20) {
       }
 
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
 
         if (!user) {
           if (isActive) {
@@ -41,12 +43,13 @@ export function useNotifications(limit: number = 20) {
         }
 
         // Charger les notifications
-        const { data: notificationsData, error: notificationsError } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(limit)
+        const { data: notificationsData, error: notificationsError } =
+          await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(limit)
 
         if (notificationsError) {
           console.error('Error loading notifications:', notificationsError)
@@ -62,7 +65,9 @@ export function useNotifications(limit: number = 20) {
 
         setNotifications((notificationsData as unknown as Notification[]) || [])
 
-        const unread = (notificationsData || []).filter((n: any) => !n.read_at).length
+        const unread = (notificationsData || []).filter(
+          (n: any) => !n.read_at
+        ).length
         setUnreadCount(unread)
 
         // Souscrire aux notifications temps réel avec filtrage serveur
@@ -77,11 +82,11 @@ export function useNotifications(limit: number = 20) {
               table: 'notifications',
               filter: `user_id=eq.${user.id}`,
             },
-            (payload) => {
+            payload => {
               const newNotif = payload.new as Notification
 
-              setNotifications((prev) => [newNotif, ...prev.slice(0, limit - 1)])
-              setUnreadCount((prev) => prev + 1)
+              setNotifications(prev => [newNotif, ...prev.slice(0, limit - 1)])
+              setUnreadCount(prev => prev + 1)
 
               // Afficher toast
               toast.info(newNotif.title, {
@@ -106,21 +111,21 @@ export function useNotifications(limit: number = 20) {
               table: 'notifications',
               filter: `user_id=eq.${user.id}`,
             },
-            (payload) => {
+            payload => {
               const updatedNotif = payload.new as Notification
 
-              setNotifications((prev) =>
-                prev.map((n) => (n.id === updatedNotif.id ? updatedNotif : n))
+              setNotifications(prev =>
+                prev.map(n => (n.id === updatedNotif.id ? updatedNotif : n))
               )
 
-              setNotifications((current) => {
-                const unread = current.filter((n) => !n.read_at).length
+              setNotifications(current => {
+                const unread = current.filter(n => !n.read_at).length
                 setUnreadCount(unread)
                 return current
               })
             }
           )
-          .subscribe((status) => {
+          .subscribe(status => {
             if (status === 'SUBSCRIBED') {
               console.log('✅ Subscribed to notifications realtime')
             } else if (status === 'CHANNEL_ERROR') {

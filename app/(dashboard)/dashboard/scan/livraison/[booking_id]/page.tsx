@@ -6,7 +6,7 @@
 
 import { use, useCallback, useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from "@/lib/shared/db/client"
+import { createClient } from '@/lib/shared/db/client'
 import Image from 'next/image'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ import {
   SignatureCanvas,
   type SignatureCanvasRef,
 } from '@/components/features/bookings/SignatureCanvas'
-import { markAsDelivered } from "@/lib/core/bookings/workflow"
+import { markAsDelivered } from '@/lib/core/bookings/workflow'
 import { IconLoader2, IconMapPin, IconCircleCheck } from '@tabler/icons-react'
 import Link from 'next/link'
 
@@ -34,14 +34,18 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   const [booking, setBooking] = useState<any>(null)
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string>('')
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
+    null
+  )
   const signatureRef = useRef<SignatureCanvasRef>(null)
 
   const loadBooking = useCallback(async () => {
     try {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
       if (!user) {
         toast.error('Vous devez être connecté')
         router.push('/login')
@@ -84,15 +88,15 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
   const getCurrentLocation = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        position => {
           setLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           })
         },
-        (error) => {
+        error => {
           console.error('Error getting location:', error)
-          toast.error('Impossible d\'obtenir la géolocalisation')
+          toast.error("Impossible d'obtenir la géolocalisation")
         }
       )
     }
@@ -119,7 +123,10 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
     }
   }
 
-  const uploadFile = async (file: File | Blob, path: string): Promise<string | null> => {
+  const uploadFile = async (
+    file: File | Blob,
+    path: string
+  ): Promise<string | null> => {
     try {
       const supabase = createClient()
       const { data, error } = await supabase.storage
@@ -134,9 +141,9 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
         return null
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('package-proofs')
-        .getPublicUrl(data.path)
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('package-proofs').getPublicUrl(data.path)
 
       return publicUrl
     } catch (error) {
@@ -169,7 +176,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
       const photoUrl = await uploadFile(photo, photoPath)
 
       if (!photoUrl) {
-        toast.error('Erreur lors de l\'upload de la photo')
+        toast.error("Erreur lors de l'upload de la photo")
         return
       }
 
@@ -183,7 +190,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
       const signatureUrl = await uploadFile(signatureBlob, signaturePath)
 
       if (!signatureUrl) {
-        toast.error('Erreur lors de l\'upload de la signature')
+        toast.error("Erreur lors de l'upload de la signature")
         return
       }
 
@@ -297,9 +304,7 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
         {/* Actions */}
         <div className="flex gap-3">
           <Button variant="outline" asChild className="flex-1">
-            <Link href={`/dashboard/colis/${booking_id}`}>
-              Annuler
-            </Link>
+            <Link href={`/dashboard/colis/${booking_id}`}>Annuler</Link>
           </Button>
           <Button
             onClick={handleSubmit}

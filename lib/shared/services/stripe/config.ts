@@ -13,13 +13,10 @@ const stripeSecretKey =
   'sk_test_placeholder'
 
 // Instance Stripe côté serveur
-export const stripe = new Stripe(
-  stripeSecretKey,
-  {
-    apiVersion: '2025-11-17.clover',
-    typescript: true,
-  }
-)
+export const stripe = new Stripe(stripeSecretKey, {
+  apiVersion: '2025-11-17.clover',
+  typescript: true,
+})
 
 // Instance Stripe côté client
 export const getStripeClient = () => {

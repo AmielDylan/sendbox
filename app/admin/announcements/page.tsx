@@ -6,10 +6,17 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from "@/lib/shared/db/client"
-import { rejectAnnouncement } from "@/lib/core/admin/actions"
+import { createClient } from '@/lib/shared/db/client'
+import { rejectAnnouncement } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -34,7 +41,11 @@ export default function AdminAnnouncementsPage() {
 
   const supabase = createClient()
 
-  const { data: announcements, isLoading, refetch } = useQuery({
+  const {
+    data: announcements,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['adminAnnouncements'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -117,7 +128,9 @@ export default function AdminAnnouncementsPage() {
                   <TableCell>{announcement.available_kg} kg</TableCell>
                   <TableCell>{getStatusBadge(announcement.status)}</TableCell>
                   <TableCell>
-                    {format(new Date(announcement.created_at), 'PP', { locale: fr })}
+                    {format(new Date(announcement.created_at), 'PP', {
+                      locale: fr,
+                    })}
                   </TableCell>
                   <TableCell>
                     <Button
@@ -153,14 +166,17 @@ export default function AdminAnnouncementsPage() {
               <Textarea
                 id="reject-reason"
                 value={reason}
-                onChange={(e) => setReason(e.target.value)}
+                onChange={e => setReason(e.target.value)}
                 placeholder="Raison du rejet..."
                 className="mt-2"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setRejectDialogOpen(false)}
+            >
               Annuler
             </Button>
             <Button variant="destructive" onClick={handleReject}>
@@ -172,15 +188,3 @@ export default function AdminAnnouncementsPage() {
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-

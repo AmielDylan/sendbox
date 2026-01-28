@@ -17,7 +17,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { NotificationItem } from '@/components/features/notifications/NotificationItem'
-import { markAllNotificationsAsRead, getNotifications } from "@/lib/core/notifications/actions"
+import {
+  markAllNotificationsAsRead,
+  getNotifications,
+} from '@/lib/core/notifications/actions'
 import { IconLoader2, IconCheck } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/use-notifications'
@@ -97,15 +100,18 @@ export default function NotificationsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Mes notifications</CardTitle>
-            <Select value={selectedType} onValueChange={(value) => {
-              setSelectedType(value)
-              setPage(1)
-            }}>
+            <Select
+              value={selectedType}
+              onValueChange={value => {
+                setSelectedType(value)
+                setPage(1)
+              }}
+            >
               <SelectTrigger className="w-[200px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {NOTIFICATION_TYPES.map((type) => (
+                {NOTIFICATION_TYPES.map(type => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
                   </SelectItem>
@@ -127,7 +133,10 @@ export default function NotificationsPage() {
             <>
               <div className="space-y-2">
                 {notifications.map((notification: any) => (
-                  <NotificationItem key={notification.id} notification={notification} />
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                  />
                 ))}
               </div>
 
@@ -136,7 +145,7 @@ export default function NotificationsPage() {
                 <div className="flex items-center justify-between mt-6 pt-6 border-t">
                   <Button
                     variant="outline"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
                   >
                     Précédent
@@ -146,7 +155,7 @@ export default function NotificationsPage() {
                   </span>
                   <Button
                     variant="outline"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
                   >
                     Suivant

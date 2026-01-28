@@ -1,9 +1,9 @@
 /**
  * Script de test pour les fonctions RPC Supabase
- * 
+ *
  * Usage:
  *   npx tsx scripts/test-rpc.ts
- * 
+ *
  * Ou avec ts-node:
  *   ts-node scripts/test-rpc.ts
  */
@@ -16,7 +16,7 @@ import { join } from 'path'
 function loadEnvFile() {
   try {
     const envFile = readFileSync(join(process.cwd(), '.env.local'), 'utf-8')
-    envFile.split('\n').forEach((line) => {
+    envFile.split('\n').forEach(line => {
       const match = line.match(/^([^=:#]+)=(.*)$/)
       if (match) {
         const key = match[1].trim()
@@ -27,7 +27,9 @@ function loadEnvFile() {
       }
     })
   } catch (error) {
-    console.warn('Impossible de charger .env.local, utilisation des variables d\'environnement système')
+    console.warn(
+      "Impossible de charger .env.local, utilisation des variables d'environnement système"
+    )
   }
 }
 
@@ -37,8 +39,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Variables d\'environnement manquantes')
-  console.error('Assurez-vous que NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY sont définies dans .env.local')
+  console.error("❌ Variables d'environnement manquantes")
+  console.error(
+    'Assurez-vous que NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY sont définies dans .env.local'
+  )
   process.exit(1)
 }
 
@@ -75,7 +79,10 @@ async function testFunction(
     } else {
       console.log(`   ✅ Succès`)
       if (data !== null && data !== undefined) {
-        console.log(`   Résultat:`, Array.isArray(data) ? `${data.length} éléments` : data)
+        console.log(
+          `   Résultat:`,
+          Array.isArray(data) ? `${data.length} éléments` : data
+        )
       }
       results.push({
         name,
@@ -99,7 +106,7 @@ async function runTests() {
 
   // Test 1: search_announcements (sans filtres)
   await testFunction(
-    'Recherche d\'annonces (sans filtres)',
+    "Recherche d'annonces (sans filtres)",
     'search_announcements',
     {
       p_limit: 5,
@@ -108,26 +115,18 @@ async function runTests() {
   )
 
   // Test 2: search_announcements (avec filtres)
-  await testFunction(
-    'Recherche d\'annonces (FR → BJ)',
-    'search_announcements',
-    {
-      p_departure_country: 'FR',
-      p_arrival_country: 'BJ',
-      p_limit: 5,
-      p_offset: 0,
-    }
-  )
+  await testFunction("Recherche d'annonces (FR → BJ)", 'search_announcements', {
+    p_departure_country: 'FR',
+    p_arrival_country: 'BJ',
+    p_limit: 5,
+    p_offset: 0,
+  })
 
   // Test 3: count_search_announcements
-  await testFunction(
-    'Compte d\'annonces',
-    'count_search_announcements',
-    {
-      p_departure_country: 'FR',
-      p_arrival_country: 'BJ',
-    }
-  )
+  await testFunction("Compte d'annonces", 'count_search_announcements', {
+    p_departure_country: 'FR',
+    p_arrival_country: 'BJ',
+  })
 
   // Test 4: increment_announcement_views
   // Note: Nécessite un ID d'annonce valide
@@ -163,10 +162,10 @@ async function runTests() {
   console.log('\n' + '='.repeat(60))
   console.log('\n📊 Résumé des tests:\n')
 
-  const successCount = results.filter((r) => r.success).length
-  const failureCount = results.filter((r) => !r.success).length
+  const successCount = results.filter(r => r.success).length
+  const failureCount = results.filter(r => !r.success).length
 
-  results.forEach((result) => {
+  results.forEach(result => {
     const icon = result.success ? '✅' : '❌'
     console.log(`${icon} ${result.name}`)
     if (!result.success && result.error) {
@@ -191,8 +190,7 @@ async function runTests() {
 }
 
 // Exécuter les tests
-runTests().catch((error) => {
+runTests().catch(error => {
   console.error('\n❌ Erreur fatale:', error)
   process.exit(1)
 })
-

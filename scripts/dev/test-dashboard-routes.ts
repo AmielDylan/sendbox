@@ -44,10 +44,11 @@ async function testDashboardRoutes() {
   console.log('🔐 Authentification...')
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email: TEST_EMAIL,
-    password: TEST_PASSWORD,
-  })
+  const { data: authData, error: authError } =
+    await supabase.auth.signInWithPassword({
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+    })
 
   if (authError || !authData.session) {
     logResult({
@@ -109,8 +110,8 @@ async function testDashboardRoutes() {
   console.log('📊 RÉCAPITULATIF DES TESTS')
   console.log('='.repeat(80) + '\n')
 
-  const successes = results.filter((r) => r.success).length
-  const failures = results.filter((r) => !r.success).length
+  const successes = results.filter(r => r.success).length
+  const failures = results.filter(r => !r.success).length
 
   console.log(`✅ Succès: ${successes}`)
   console.log(`❌ Erreurs: ${failures}`)
@@ -120,8 +121,7 @@ async function testDashboardRoutes() {
   process.exit(failures > 0 ? 1 : 0)
 }
 
-testDashboardRoutes().catch((error) => {
+testDashboardRoutes().catch(error => {
   console.error('❌ Erreur fatale:', error)
   process.exit(1)
 })
-

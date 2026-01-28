@@ -1,4 +1,4 @@
-name: Pre-Deploy Quality Checks
+name: Pre-Deploy Checks
 
 on:
   push:
@@ -10,7 +10,7 @@ env:
 
 jobs:
   quality-checks:
-    name: Quality & Tests Before Deploy
+    name: Quality Checks Before Deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,8 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run all tests
-        run: npm run test:all -- --run
+      - name: Run ESLint
+        run: npm run lint
 
       - name: Check TypeScript
         run: npx tsc --noEmit

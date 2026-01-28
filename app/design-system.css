@@ -54,18 +54,18 @@
 
     /* === Spacing - 8px base === */
     --space-1: 0.25rem; /* 4px */
-    --space-2: 0.5rem;  /* 8px */
+    --space-2: 0.5rem; /* 8px */
     --space-3: 0.75rem; /* 12px */
-    --space-4: 1rem;    /* 16px */
+    --space-4: 1rem; /* 16px */
     --space-5: 1.25rem; /* 20px */
-    --space-6: 1.5rem;  /* 24px */
-    --space-8: 2rem;    /* 32px */
+    --space-6: 1.5rem; /* 24px */
+    --space-8: 2rem; /* 32px */
     --space-10: 2.5rem; /* 40px */
-    --space-12: 3rem;   /* 48px */
-    --space-16: 4rem;   /* 64px */
-    --space-20: 5rem;   /* 80px */
-    --space-24: 6rem;   /* 96px */
-    --space-32: 8rem;   /* 128px */
+    --space-12: 3rem; /* 48px */
+    --space-16: 4rem; /* 64px */
+    --space-20: 5rem; /* 80px */
+    --space-24: 6rem; /* 96px */
+    --space-32: 8rem; /* 128px */
 
     /* === Borders & Radius === */
     /* Lyra uses minimal radius - let globals.css handle this */
@@ -73,10 +73,13 @@
     /* === Shadows === */
     --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.05);
-    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.20);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    --shadow-xl:
+      0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.2);
     --shadow-teal: 0 8px 24px -4px rgb(51 194 194 / 0.12);
 
     /* === Transitions === */
@@ -101,9 +104,12 @@
 
     /* Ajuster shadows pour dark mode */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+    --shadow-xl:
+      0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
     --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
     --shadow-teal: 0 8px 24px -4px rgb(51 194 194 / 0.2);
   }
@@ -130,14 +136,24 @@
 }
 
 /* === Semantic Typography === */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-body);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
-p, li, td, th, label, span {
+p,
+li,
+td,
+th,
+label,
+span {
   font-family: var(--font-body);
   line-height: 1.6;
 }
@@ -182,8 +198,16 @@ p, li, td, th, label, span {
 
 .bg-map-grid {
   background-image:
-    linear-gradient(to right, hsl(var(--color-border) / 0.35) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(var(--color-border) / 0.35) 1px, transparent 1px);
+    linear-gradient(
+      to right,
+      hsl(var(--color-border) / 0.35) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      hsl(var(--color-border) / 0.35) 1px,
+      transparent 1px
+    );
   background-size: 48px 48px;
   background-position: center;
 }
@@ -236,7 +260,8 @@ p, li, td, th, label, span {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -245,7 +270,8 @@ p, li, td, th, label, span {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px hsl(var(--color-primary) / 0.3);
   }
   50% {
@@ -261,11 +287,21 @@ p, li, td, th, label, span {
   animation: fade-in-up-stagger 0.8s cubic-bezier(0.4, 0, 0.2, 1) backwards;
 }
 
-.stagger-1 { animation-delay: 100ms; }
-.stagger-2 { animation-delay: 200ms; }
-.stagger-3 { animation-delay: 300ms; }
-.stagger-4 { animation-delay: 400ms; }
-.stagger-5 { animation-delay: 500ms; }
+.stagger-1 {
+  animation-delay: 100ms;
+}
+.stagger-2 {
+  animation-delay: 200ms;
+}
+.stagger-3 {
+  animation-delay: 300ms;
+}
+.stagger-4 {
+  animation-delay: 400ms;
+}
+.stagger-5 {
+  animation-delay: 500ms;
+}
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {

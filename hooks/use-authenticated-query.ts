@@ -9,10 +9,17 @@
  * - Pas de double-fetch de session
  */
 
-import { useQuery, UseQueryOptions, UseQueryResult } from '@tanstack/react-query'
+import {
+  useQuery,
+  UseQueryOptions,
+  UseQueryResult,
+} from '@tanstack/react-query'
 import { useAuth } from '@/components/providers/optimized-auth-provider'
 
-export interface AuthenticatedQueryOptions<TData, TError = Error> extends Omit<UseQueryOptions<TData, TError>, 'queryKey' | 'queryFn'> {
+export interface AuthenticatedQueryOptions<TData, TError = Error> extends Omit<
+  UseQueryOptions<TData, TError>,
+  'queryKey' | 'queryFn'
+> {
   /**
    * Timeout en millisecondes (défaut: 8000ms = 8 secondes)
    */
@@ -29,7 +36,10 @@ export interface AuthenticatedQueryOptions<TData, TError = Error> extends Omit<U
  * Erreur personnalisée pour les timeouts
  */
 export class QueryTimeoutError extends Error {
-  constructor(message: string, public readonly duration: number) {
+  constructor(
+    message: string,
+    public readonly duration: number
+  ) {
     super(message)
     this.name = 'QueryTimeoutError'
   }

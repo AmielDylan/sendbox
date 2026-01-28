@@ -5,10 +5,14 @@
 import { Resend } from 'resend'
 
 if (!process.env.RESEND_API_KEY) {
-  console.warn('RESEND_API_KEY is not set. Email functionality will be disabled.')
+  console.warn(
+    'RESEND_API_KEY is not set. Email functionality will be disabled.'
+  )
 }
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@sendbox.io'
 const FROM_NAME = process.env.RESEND_FROM_NAME || 'Sendbox Support'
@@ -40,7 +44,13 @@ function checkEmailRateLimit(userId: string): boolean {
 interface SendEmailParams {
   to: string
   subject: string
-  template: 'notification' | 'booking_request' | 'booking_confirmed' | 'payment_received' | 'payment_receipt' | 'delivery_reminder'
+  template:
+    | 'notification'
+    | 'booking_request'
+    | 'booking_confirmed'
+    | 'payment_received'
+    | 'payment_receipt'
+    | 'delivery_reminder'
   data: Record<string, any>
   useResendTemplate?: boolean // Si true, utilise un template Resend au lieu de HTML embarqué
 }
@@ -94,14 +104,18 @@ export async function sendEmail(params: SendEmailParams) {
     const { data, error } = await resend.emails.send(emailPayload)
 
     if (error && params.useResendTemplate) {
-      console.warn('Resend template failed, falling back to inline HTML:', error)
+      console.warn(
+        'Resend template failed, falling back to inline HTML:',
+        error
+      )
       const fallbackPayload = {
         from: FROM_ADDRESS,
         to: params.to,
         subject: params.subject,
         html: getEmailTemplate(params.template, params.data),
       }
-      const { data: fallbackData, error: fallbackError } = await resend.emails.send(fallbackPayload)
+      const { data: fallbackData, error: fallbackError } =
+        await resend.emails.send(fallbackPayload)
 
       if (fallbackError) {
         console.error('Error sending fallback email:', fallbackError)
@@ -417,7 +431,3 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
       `
   }
 }
-
-
-
-

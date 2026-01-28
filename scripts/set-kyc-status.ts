@@ -18,13 +18,17 @@ import { resolve } from 'path'
 // Charger les variables d'environnement depuis .env.local
 config({ path: resolve(process.cwd(), '.env.local') })
 
-async function setKYCStatus(targetStatus: 'pending' | 'approved' | 'rejected' | 'incomplete') {
+async function setKYCStatus(
+  targetStatus: 'pending' | 'approved' | 'rejected' | 'incomplete'
+) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !supabaseServiceKey) {
     console.error('❌ Missing environment variables')
-    console.error('Make sure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set')
+    console.error(
+      'Make sure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set'
+    )
     process.exit(1)
   }
 
@@ -59,7 +63,9 @@ async function setKYCStatus(targetStatus: 'pending' | 'approved' | 'rejected' | 
 
   // Update the first profile for demo
   const targetProfile = profiles[0]
-  console.log(`👤 Updating: ${targetProfile.firstname} ${targetProfile.lastname}`)
+  console.log(
+    `👤 Updating: ${targetProfile.firstname} ${targetProfile.lastname}`
+  )
 
   const updateData: Record<string, unknown> = {
     kyc_status: targetStatus,
@@ -92,14 +98,19 @@ async function setKYCStatus(targetStatus: 'pending' | 'approved' | 'rejected' | 
   console.log(`✅ KYC status updated to: ${targetStatus}`)
   console.log('')
   console.log('🔄 Realtime should trigger automatically on the KYC page')
-  console.log('📱 Refresh http://localhost:3000/dashboard/reglages/kyc to see the change')
+  console.log(
+    '📱 Refresh http://localhost:3000/dashboard/reglages/kyc to see the change'
+  )
 }
 
 // Parse arguments
 const args = process.argv.slice(2)
 const status = args[0] as 'pending' | 'approved' | 'rejected' | 'incomplete'
 
-if (!status || !['pending', 'approved', 'rejected', 'incomplete'].includes(status)) {
+if (
+  !status ||
+  !['pending', 'approved', 'rejected', 'incomplete'].includes(status)
+) {
   console.error('❌ Invalid or missing status argument')
   console.log('')
   console.log('Usage:')

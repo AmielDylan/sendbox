@@ -4,10 +4,10 @@
 
 'use client'
 
-import { Notification } from "@/lib/shared/db/queries/notifications"
+import { Notification } from '@/lib/shared/db/queries/notifications'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 import {
   IconCircleCheck,
   IconCircleX,
@@ -20,7 +20,7 @@ import {
   IconShield,
 } from '@tabler/icons-react'
 import Link from 'next/link'
-import { markNotificationAsRead } from "@/lib/core/bookings/requests"
+import { markNotificationAsRead } from '@/lib/core/bookings/requests'
 
 interface NotificationItemProps {
   notification: Notification
@@ -55,12 +55,17 @@ const NOTIFICATION_COLORS = {
   system_alert: 'text-red-500',
 } as const
 
-export function NotificationItem({ notification, onClick }: NotificationItemProps) {
+export function NotificationItem({
+  notification,
+  onClick,
+}: NotificationItemProps) {
   const Icon =
-    NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] || IconBell
+    NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] ||
+    IconBell
   const iconColor =
-    NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] ||
-    'text-muted-foreground'
+    NOTIFICATION_COLORS[
+      notification.type as keyof typeof NOTIFICATION_COLORS
+    ] || 'text-muted-foreground'
 
   const isUnread = !notification.read_at
 

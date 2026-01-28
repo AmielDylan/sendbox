@@ -2,13 +2,15 @@
  * Utilitaires pour la génération et validation des QR codes
  */
 
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import { createHash, randomBytes } from 'crypto'
 
 /**
  * Génère un QR code unique pour un booking
  */
-export async function generateBookingQRCode(bookingId: string): Promise<string> {
+export async function generateBookingQRCode(
+  bookingId: string
+): Promise<string> {
   // Générer une chaîne unique
   const timestamp = Date.now()
   const random = randomBytes(16).toString('hex')
@@ -45,5 +47,3 @@ export function validateQRCode(
   // Comparaison stricte
   return scannedCode.trim().toUpperCase() === bookingQRCode.trim().toUpperCase()
 }
-
-

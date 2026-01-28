@@ -1,7 +1,7 @@
 /**
  * Proxy Next.js pour la gestion des sessions Supabase
  * Rafraîchit automatiquement les sessions expirées
- * 
+ *
  * Note: Next.js 16 utilise "proxy" au lieu de "middleware"
  */
 
@@ -23,7 +23,9 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
           supabaseResponse = NextResponse.next({
             request,
           })

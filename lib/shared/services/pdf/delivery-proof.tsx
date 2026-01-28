@@ -97,12 +97,8 @@ export function DeliveryProof({ booking }: DeliveryProofProps) {
               Durée du transport : {calculateDuration()} jour(s)
             </Text>
           )}
-          <Text style={styles.text}>
-            Expéditeur : {senderName}
-          </Text>
-          <Text style={styles.text}>
-            Voyageur : {travelerName}
-          </Text>
+          <Text style={styles.text}>Expéditeur : {senderName}</Text>
+          <Text style={styles.text}>Voyageur : {travelerName}</Text>
           <Text style={styles.text}>
             Trajet : {booking.announcement.departure_city} →{' '}
             {booking.announcement.arrival_city}
@@ -245,10 +241,3 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 })
-
-
-
-
-
-
-

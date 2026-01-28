@@ -19,9 +19,15 @@ export function SettingsBreadcrumb({ className }: { className?: string }) {
   return (
     <nav
       aria-label="Fil d'Ariane"
-      className={cn('flex items-center gap-2 text-xs text-muted-foreground', className)}
+      className={cn(
+        'flex items-center gap-2 text-xs text-muted-foreground',
+        className
+      )}
     >
-      <Link href="/dashboard" className="hover:text-foreground transition-colors">
+      <Link
+        href="/dashboard"
+        className="hover:text-foreground transition-colors"
+      >
         Dashboard
       </Link>
       <IconChevronRight className="h-3 w-3" aria-hidden="true" />

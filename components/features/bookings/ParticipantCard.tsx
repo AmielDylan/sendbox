@@ -6,18 +6,18 @@ import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { IconStar, IconMessageCircle } from '@tabler/icons-react'
-import { generateInitials, getAvatarUrl } from "@/lib/core/profile/utils"
+import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 
 interface ParticipantCardProps {
   role: 'sender' | 'traveler'
   profile:
     | {
-    id: string
-    firstname: string | null
-    lastname: string | null
-    avatar_url: string | null
-    rating: number | null
-    completed_services: number | null
+        id: string
+        firstname: string | null
+        lastname: string | null
+        avatar_url: string | null
+        rating: number | null
+        completed_services: number | null
       }
     | null
     | undefined
@@ -32,7 +32,8 @@ export function ParticipantCard({
   bookingId,
 }: ParticipantCardProps) {
   const displayName = profile
-    ? `${profile.firstname || ''} ${profile.lastname || ''}`.trim() || 'Utilisateur'
+    ? `${profile.firstname || ''} ${profile.lastname || ''}`.trim() ||
+      'Utilisateur'
     : 'Utilisateur'
   const initials = generateInitials(
     profile?.firstname ?? null,
@@ -41,7 +42,10 @@ export function ParticipantCard({
   const profileId = profile?.id
   const profileRating = typeof profile?.rating === 'number' ? profile.rating : 0
   const completedServices = profile?.completed_services ?? null
-  const avatarUrl = getAvatarUrl(profile?.avatar_url ?? null, profileId || displayName)
+  const avatarUrl = getAvatarUrl(
+    profile?.avatar_url ?? null,
+    profileId || displayName
+  )
 
   return (
     <div className="space-y-4">
@@ -74,7 +78,9 @@ export function ParticipantCard({
               <span>{profileRating.toFixed(1)}</span>
             </div>
             {completedServices !== null && (
-              <span>• {completedServices} service{completedServices > 1 ? 's' : ''}</span>
+              <span>
+                • {completedServices} service{completedServices > 1 ? 's' : ''}
+              </span>
             )}
           </div>
         </div>

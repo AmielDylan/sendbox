@@ -9,7 +9,7 @@ import { join } from 'path'
 function loadEnvFile() {
   try {
     const envFile = readFileSync(join(process.cwd(), '.env.local'), 'utf-8')
-    envFile.split('\n').forEach((line) => {
+    envFile.split('\n').forEach(line => {
       const match = line.match(/^([^=:#]+)=(.*)$/)
       if (match) {
         const key = match[1].trim()
@@ -30,11 +30,18 @@ const supabase = createClient(
 )
 
 async function checkEnum() {
-  console.log('🔍 Vérification de l\'enum announcement_status...\n')
+  console.log("🔍 Vérification de l'enum announcement_status...\n")
 
   // Tester différentes valeurs de statut
-  const testStatuses = ['draft', 'active', 'published', 'partially_booked', 'completed', 'cancelled']
-  
+  const testStatuses = [
+    'draft',
+    'active',
+    'published',
+    'partially_booked',
+    'completed',
+    'cancelled',
+  ]
+
   for (const status of testStatuses) {
     try {
       const { data, error } = await supabase
@@ -42,7 +49,7 @@ async function checkEnum() {
         .select('id')
         .eq('status', status)
         .limit(1)
-      
+
       if (error) {
         if (error.message.includes('invalid input value')) {
           console.log(`   ❌ "${status}" - INVALIDE dans l'enum`)
@@ -78,13 +85,25 @@ async function checkEnum() {
         })
         .select()
         .single()
-      
+
       if (error) {
         console.log(`   ❌ "${status}": ${error.message}`)
       } else {
         console.log(`   ✅ "${status}" accepté`)
         // Nettoyer
-        await supabase.from('announcements').delete().eq('id', (await supabase.from('announcements').select('id').limit(1).single()).data?.id)
+        await supabase
+          .from('announcements')
+          .delete()
+          .eq(
+            'id',
+            (
+              await supabase
+                .from('announcements')
+                .select('id')
+                .limit(1)
+                .single()
+            ).data?.id
+          )
       }
     } catch (e: any) {
       console.log(`   ❌ "${status}": ${e.message}`)
@@ -93,12 +112,3 @@ async function checkEnum() {
 }
 
 checkEnum().catch(console.error)
-
-
-
-
-
-
-
-
-

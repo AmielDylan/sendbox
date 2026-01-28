@@ -59,13 +59,17 @@ function mapToBreakdown(booking: Booking): BookingFinancialBreakdown {
 /**
  * Calculate traveler financials (amount to receive after commission)
  */
-export function calculateTravelerFinancials(bookings: Booking[]): TravelerFinancials {
-  const relevantBookings = bookings.filter((b) =>
+export function calculateTravelerFinancials(
+  bookings: Booking[]
+): TravelerFinancials {
+  const relevantBookings = bookings.filter(b =>
     ['paid', 'deposited', 'in_transit', 'delivered'].includes(b.status)
   )
 
-  const pendingBookings = relevantBookings.filter((b) => !b.delivery_confirmed_at)
-  const confirmedBookings = relevantBookings.filter((b) => b.delivery_confirmed_at)
+  const pendingBookings = relevantBookings.filter(b => !b.delivery_confirmed_at)
+  const confirmedBookings = relevantBookings.filter(
+    b => b.delivery_confirmed_at
+  )
 
   const pendingAmount = pendingBookings.reduce((sum, b) => {
     const price = b.total_price || 0
@@ -81,7 +85,7 @@ export function calculateTravelerFinancials(bookings: Booking[]): TravelerFinanc
 
   // In transit = only in_transit bookings
   const inTransitAmount = pendingBookings
-    .filter((b) => b.status === 'in_transit')
+    .filter(b => b.status === 'in_transit')
     .reduce((sum, b) => {
       const price = b.total_price || 0
       const commission = b.commission_amount || 0
@@ -90,7 +94,7 @@ export function calculateTravelerFinancials(bookings: Booking[]): TravelerFinanc
 
   // Paid = waiting for pickup/deposit
   const awaitingPickupAmount = pendingBookings
-    .filter((b) => b.status === 'paid')
+    .filter(b => b.status === 'paid')
     .reduce((sum, b) => {
       const price = b.total_price || 0
       const commission = b.commission_amount || 0
@@ -109,11 +113,14 @@ export function calculateTravelerFinancials(bookings: Booking[]): TravelerFinanc
 /**
  * Calculate requester financials (blocked funds)
  */
-export function calculateRequesterFinancials(bookings: Booking[]): RequesterFinancials {
+export function calculateRequesterFinancials(
+  bookings: Booking[]
+): RequesterFinancials {
   // Blocked bookings = paid, deposited, in_transit, delivered (until confirmed)
-  const blockedBookings = bookings.filter((b) =>
-    ['paid', 'deposited', 'in_transit', 'delivered'].includes(b.status) &&
-    !b.delivery_confirmed_at
+  const blockedBookings = bookings.filter(
+    b =>
+      ['paid', 'deposited', 'in_transit', 'delivered'].includes(b.status) &&
+      !b.delivery_confirmed_at
   )
 
   const totalBlocked = blockedBookings.reduce((sum, b) => {
@@ -124,7 +131,7 @@ export function calculateRequesterFinancials(bookings: Booking[]): RequesterFina
 
   // Total paid = all bookings with paid_at timestamp
   const totalPaid = bookings
-    .filter((b) => b.paid_at !== null)
+    .filter(b => b.paid_at !== null)
     .reduce((sum, b) => {
       const price = b.total_price || 0
       const commission = b.commission_amount || 0

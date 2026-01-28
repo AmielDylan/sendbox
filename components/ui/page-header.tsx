@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 import { IconChevronRight } from '@tabler/icons-react'
 import Link from 'next/link'
 
@@ -67,19 +67,10 @@ export function PageHeader({
             <p className="text-muted-foreground break-words">{description}</p>
           )}
         </div>
-        {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
+        {actions && (
+          <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>
+        )}
       </div>
     </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-

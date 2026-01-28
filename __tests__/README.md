@@ -14,6 +14,7 @@ Comprehensive test suite for Sendbox application covering unit tests, RLS polici
 ## Overview
 
 This test suite uses:
+
 - **Vitest** - Fast unit test framework with ESM support
 - **@testing-library/react** - React component testing utilities
 - **@testing-library/jest-dom** - Custom DOM matchers
@@ -52,41 +53,49 @@ __tests__/
 ## Running Tests
 
 ### All Tests
+
 ```bash
 npm test
 ```
 
 ### Unit Tests Only
+
 ```bash
 npm run test:unit
 ```
 
 ### Integration Tests Only
+
 ```bash
 npm run test:integration
 ```
 
 ### RLS Tests Only
+
 ```bash
 npm run test:rls
 ```
 
 ### Run All Non-E2E Tests
+
 ```bash
 npm run test:all
 ```
 
 ### Watch Mode (for development)
+
 ```bash
 npm test -- --watch
 ```
 
 ### UI Mode (interactive)
+
 ```bash
 npm run test:ui
 ```
 
 ### Coverage Report
+
 ```bash
 npm run test:coverage
 ```
@@ -208,7 +217,9 @@ test('complete auth flow: signup → verify → login → logout', async () => {
   // 4. Logout
   await supabaseAdmin.auth.signOut()
 
-  const { data: { session } } = await supabaseAdmin.auth.getSession()
+  const {
+    data: { session },
+  } = await supabaseAdmin.auth.getSession()
   expect(session).toBeNull()
 })
 ```
@@ -220,6 +231,7 @@ test('complete auth flow: signup → verify → login → logout', async () => {
 Located in `__tests__/setup/supabase-helpers.ts`:
 
 #### `createTestUser(options?)`
+
 Creates a test user with optional parameters.
 
 ```typescript
@@ -232,6 +244,7 @@ const user = await createTestUser({
 ```
 
 #### `createTestAdmin(options?)`
+
 Creates a test admin user.
 
 ```typescript
@@ -239,6 +252,7 @@ const admin = await createTestAdmin()
 ```
 
 #### `deleteTestUser(userId)`
+
 Deletes a test user.
 
 ```typescript
@@ -246,6 +260,7 @@ await deleteTestUser(user.id)
 ```
 
 #### `supabaseAdmin`
+
 Supabase admin client for testing (bypasses RLS).
 
 ```typescript
@@ -258,11 +273,13 @@ const { data } = await supabaseAdmin
 ## Coverage
 
 Coverage targets:
+
 - **Unit Tests**: >80% coverage on critical paths
 - **RLS Tests**: 100% of security policies tested
 - **Integration Tests**: All major user workflows
 
 View coverage report:
+
 ```bash
 npm run test:coverage
 ```
@@ -272,11 +289,13 @@ Coverage is generated in `coverage/` directory with HTML reports.
 ## Best Practices
 
 ### 1. Test Isolation
+
 - Each test should be independent
 - Use `beforeEach` and `afterEach` for setup/cleanup
 - Don't rely on test execution order
 
 ### 2. Descriptive Test Names
+
 ```typescript
 // ✅ Good
 test('user can update their own profile but not role')
@@ -286,6 +305,7 @@ test('profile update works')
 ```
 
 ### 3. Arrange-Act-Assert
+
 ```typescript
 test('user can create announcement', async () => {
   // Arrange
@@ -304,6 +324,7 @@ test('user can create announcement', async () => {
 ```
 
 ### 4. Mock External Dependencies
+
 ```typescript
 vi.mock('@/lib/shared/db/server', () => ({
   createClient: vi.fn(() => mockSupabase),
@@ -311,6 +332,7 @@ vi.mock('@/lib/shared/db/server', () => ({
 ```
 
 ### 5. Test Error Cases
+
 Always test both success and failure scenarios:
 
 ```typescript
@@ -323,12 +345,14 @@ test('handles invalid email format', async () => {
 ## CI/CD
 
 Tests run automatically on:
+
 - Every pull request
 - Every push to main branch
 
 GitHub Actions workflow location: `.github/workflows/tests.yml`
 
 ### Required Environment Variables
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
@@ -338,6 +362,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ## Troubleshooting
 
 ### Tests Timing Out
+
 Increase timeout in vitest.config.ts:
 
 ```typescript
@@ -349,9 +374,11 @@ export default defineConfig({
 ```
 
 ### Supabase Connection Issues
+
 Ensure Supabase is running and environment variables are set correctly.
 
 ### Mock Issues
+
 Clear all mocks between tests:
 
 ```typescript
@@ -363,6 +390,7 @@ beforeEach(() => {
 ## Contributing
 
 When adding new features:
+
 1. Write tests first (TDD approach recommended)
 2. Ensure tests pass locally
 3. Check coverage hasn't decreased

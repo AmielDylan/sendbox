@@ -3,17 +3,29 @@
  */
 
 import { Suspense } from 'react'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import { SettingsNav } from '@/components/layouts/SettingsNav'
 import { SettingsBreadcrumb } from '@/components/layouts/SettingsBreadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
 
-async function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
+async function SettingsLayoutContent({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  let kycStatus: 'pending' | 'approved' | 'rejected' | 'incomplete' | null | undefined = null
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  let kycStatus:
+    | 'pending'
+    | 'approved'
+    | 'rejected'
+    | 'incomplete'
+    | null
+    | undefined = null
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -43,14 +55,16 @@ async function SettingsLayoutContent({ children }: { children: React.ReactNode }
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 min-w-0 max-w-3xl">
-        {children}
-      </div>
+      <div className="flex-1 min-w-0 max-w-3xl">{children}</div>
     </div>
   )
 }
 
-export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+export default function SettingsLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <Suspense fallback={<SettingsLayoutSkeleton />}>
       <SettingsLayoutContent>{children}</SettingsLayoutContent>
@@ -79,8 +93,3 @@ function SettingsLayoutSkeleton() {
     </div>
   )
 }
-
-
-
-
-

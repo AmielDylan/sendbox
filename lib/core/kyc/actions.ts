@@ -5,14 +5,14 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from "@/lib/shared/db/server"
+import { createClient } from '@/lib/shared/db/server'
 import {
   kycReviewSchema,
   type KYCReviewInput,
   stripeIdentitySchema,
   type StripeIdentityInput,
-} from "@/lib/core/kyc/validations"
-import { createIdentityVerificationSession } from "@/lib/shared/services/stripe/identity"
+} from '@/lib/core/kyc/validations'
+import { createIdentityVerificationSession } from '@/lib/shared/services/stripe/identity'
 
 /**
  * Démarre une vérification Stripe Identity
@@ -102,7 +102,8 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 7),
     })
     return {
-      error: "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard.",
+      error:
+        "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard.",
     }
   }
 }
