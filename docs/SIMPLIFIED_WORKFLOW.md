@@ -22,6 +22,17 @@ Vercel: déploie automatiquement
 ```
 ✅ Chacun fait son travail correctement
 
+### **Stratégie de merge:**
+```
+Merge avec --no-ff (merge commits)
+    ↓
+Les branches apparaissent dans le graphe Git
+    ↓
+Historique clair et traçable
+```
+
+Voir `docs/GIT_MERGE_STRATEGY.md` pour la configuration.
+
 ---
 
 ## 📊 Ce que fait chaque workflow

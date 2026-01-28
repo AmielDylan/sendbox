@@ -5,10 +5,24 @@
 - [ ] Branche `feat/test-vercel-deploy` créée
 - [ ] Changements committés localement
 - [ ] Tu n'as pas encore poussé vers GitHub
+- [ ] Configuration Git: `git config merge.ff false` (voir `docs/GIT_MERGE_STRATEGY.md`)
 
 ---
 
 ## 🚀 Étapes pour tester
+
+### **Étape 0: Configurer la stratégie de merge (important !)**
+
+```bash
+# Configurer pour ne pas faire de fast-forward
+git config merge.ff false
+
+# Vérifier la configuration
+git config merge.ff
+# Résultat attendu: false
+```
+
+Voir `docs/GIT_MERGE_STRATEGY.md` pour plus d'infos.
 
 ### **Étape 1: Ajouter les secrets GitHub**
 
@@ -88,9 +102,47 @@ Si tout passe:
 1. Clique "Merge pull request"
 2. Attendre 30 secondes
 
+### **Étape 5: Merger vers develop (avec --no-ff)**
+
+```bash
+git checkout develop
+git pull origin develop
+
+# Merger avec merge commit (pas de fast-forward)
+git merge --no-ff feat/test-vercel-deploy
+
+# Pousser
+git push origin develop
+```
+
+**Ou sur GitHub:**
+1. Clique "Merge pull request" sur la PR
+2. S'il y a une option "Create a merge commit" → choisis-la
+3. Confirme le merge
+
+**Vérifier:**
+- Tu devrais voir un commit de merge dans l'historique
+- Le graphe Git montre la branche
+
+```bash
+# Voir le graphe de merge
+git log --oneline --graph -5 develop
+```
+
+**Résultat attendu:**
+```
+* xxxxxxx - Merge pull request #XXX
+|\
+| * xxxxxxx - docs: add summary
+| * xxxxxxx - docs: add workflow testing guide
+| * xxxxxxx - refactor: simplify deployment
+|/
+* xxxxxxx - Previous commit
+```
+
 **Vérifier:**
 - Le merge s'est fait
-- La branche peut être supprimée
+- La branche apparaît dans le graphe Git
 
 ### **Étape 6: Créer une PR develop → main (optionnel)**
 
@@ -104,7 +156,7 @@ git pull
 # 1. New pull request
 # 2. Base: main ← Compare: develop
 # 3. Create PR
-# 4. Merge PR
+# 4. Merge PR (avec --no-ff aussi)
 ```
 
 **Observer:**
