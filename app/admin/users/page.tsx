@@ -33,6 +33,7 @@ import { toast } from 'sonner'
 import { IconShield, IconBan, IconLockOpen, IconLoader2 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null)
@@ -42,6 +43,7 @@ export default function AdminUsersPage() {
   const [newRole, setNewRole] = useState<'user' | 'admin'>('user')
 
   const supabase = createClient()
+  const { user: currentUser } = useAuth()
 
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['adminUsers'],
@@ -114,35 +116,29 @@ export default function AdminUsersPage() {
                 <TableHead>Nom</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Rôle</TableHead>
-                <TableHead>KYC</TableHead>
                 <TableHead>Statut</TableHead>
                 <TableHead>Inscription</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users?.map((user: any) => (
+              {users?.map((user: any) => {
+                const isCurrentUser = currentUser?.id === user.id
+
+                return (
                 <TableRow key={user.id}>
                   <TableCell>
                     {user.firstname} {user.lastname}
+                    {isCurrentUser && (
+                      <Badge variant="outline" className="ml-2 text-xs">
+                        Vous
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>{user.email || 'N/A'}</TableCell>
                   <TableCell>
                     <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                       {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        user.kyc_status === 'approved'
-                          ? 'default'
-                          : user.kyc_status === 'pending'
-                          ? 'secondary'
-                          : 'destructive'
-                      }
-                    >
-                      {user.kyc_status || 'non soumis'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -160,11 +156,13 @@ export default function AdminUsersPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        disabled={isCurrentUser}
                         onClick={() => {
                           setSelectedUser(user)
                           setNewRole(user.role)
                           setRoleDialogOpen(true)
                         }}
+                        title={isCurrentUser ? 'Vous ne pouvez pas modifier votre propre rôle' : 'Modifier le rôle'}
                       >
                         <IconShield className="h-4 w-4" />
                       </Button>
@@ -180,10 +178,12 @@ export default function AdminUsersPage() {
                         <Button
                           variant="destructive"
                           size="sm"
+                          disabled={isCurrentUser}
                           onClick={() => {
                             setSelectedUser(user)
                             setBanDialogOpen(true)
                           }}
+                          title={isCurrentUser ? 'Vous ne pouvez pas vous bannir vous-même' : 'Bannir l\'utilisateur'}
                         >
                           <IconBan className="h-4 w-4" />
                         </Button>
@@ -191,7 +191,7 @@ export default function AdminUsersPage() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody>
           </Table>
         </CardContent>
