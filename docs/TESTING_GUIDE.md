@@ -302,7 +302,7 @@ Délai de sync: **\_** secondes
 ```
 
 Message d'erreur affiché: Oui / Non
-Texte du message: **************\_**************
+Texte du message: **\*\***\*\***\*\***\_**\*\***\*\***\*\***
 Bouton Réessayer fonctionne: Oui / Non
 
 ```
@@ -480,6 +480,6 @@ Une fois les tests validés:
 
 ---
 
-**Date du test:** ******\_\_\_******
-**Testeur:** ******\_\_\_******
+**Date du test:** **\*\***\_\_\_**\*\***
+**Testeur:** **\*\***\_\_\_**\*\***
 **Version:** 1.0.0 (Option complète)
