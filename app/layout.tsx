@@ -4,6 +4,9 @@ import { Toaster } from '@/components/ui/sonner'
 import { Providers } from './providers'
 import './globals.css'
 
+// Force dynamic rendering for all pages (uses auth context via Providers)
+export const dynamic = 'force-dynamic'
+
 const fraunces = Fraunces({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
