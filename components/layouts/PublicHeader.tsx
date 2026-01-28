@@ -34,6 +34,9 @@ export function PublicHeader() {
   const isRegister = pathname.startsWith('/register')
   const authPrimary = isLogin ? 'login' : isRegister ? 'register' : 'register'
 
+  // Detect if user is admin
+  const isAdmin = (profile as any)?.role === 'admin'
+
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -45,10 +48,20 @@ export function PublicHeader() {
 
   const navItems = [
     { label: 'Accueil', href: '/' },
-    { label: 'Rechercher', href: '/recherche', icon: IconSearch },
   ]
+
+  // Only show search for non-admin users
+  if (!isAdmin) {
+    navItems.push({ label: 'Rechercher', href: '/recherche', icon: IconSearch })
+  }
+
   if (user) {
-    navItems.push({ label: 'Dashboard', href: '/dashboard', icon: IconLayoutDashboard })
+    // Admin goes to /admin/dashboard, regular users to /dashboard
+    navItems.push({
+      label: 'Dashboard',
+      href: isAdmin ? '/admin/dashboard' : '/dashboard',
+      icon: IconLayoutDashboard
+    })
   }
 
   const isActive = (href: string) => {
@@ -190,35 +203,39 @@ export function PublicHeader() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer">
+                      <Link href={isAdmin ? '/admin/dashboard' : '/dashboard'} className="cursor-pointer">
                         <IconLayoutDashboard className="mr-2 h-4 w-4" />
-                        <span>Tableau de bord</span>
+                        <span>{isAdmin ? 'Dashboard admin' : 'Tableau de bord'}</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={profileLink} className="cursor-pointer">
-                        <IconUser className="mr-2 h-4 w-4" />
-                        <span>Mon profil</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    {showKycLink && (
+                    {!isAdmin && (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
-                            <IconShield className="mr-2 h-4 w-4" />
-                            <span>Vérifier mon identité</span>
+                          <Link href={profileLink} className="cursor-pointer">
+                            <IconUser className="mr-2 h-4 w-4" />
+                            <span>Mon profil</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
+                        {showKycLink && (
+                          <>
+                            <DropdownMenuItem asChild>
+                              <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
+                                <IconShield className="mr-2 h-4 w-4" />
+                                <span>Vérifier mon identité</span>
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        <DropdownMenuItem asChild>
+                          <Link href="/dashboard/reglages" className="cursor-pointer">
+                            <IconSettings className="mr-2 h-4 w-4" />
+                            <span>Paramètres</span>
+                          </Link>
+                        </DropdownMenuItem>
                       </>
                     )}
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard/reglages" className="cursor-pointer">
-                        <IconSettings className="mr-2 h-4 w-4" />
-                        <span>Paramètres</span>
-                      </Link>
-                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleLogout}
@@ -311,27 +328,31 @@ export function PublicHeader() {
                         </div>
                         <div className="flex flex-col gap-1">
                           <Button asChild variant="ghost" className="w-full justify-start">
-                            <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                              Tableau de bord
+                            <Link href={isAdmin ? '/admin/dashboard' : '/dashboard'} onClick={() => setMobileMenuOpen(false)}>
+                              {isAdmin ? 'Dashboard admin' : 'Tableau de bord'}
                             </Link>
                           </Button>
-                          <Button asChild variant="ghost" className="w-full justify-start">
-                            <Link href={profileLink} onClick={() => setMobileMenuOpen(false)}>
-                              Mon profil
-                            </Link>
-                          </Button>
-                          {showKycLink && (
-                            <Button asChild variant="ghost" className="w-full justify-start">
-                              <Link href="/dashboard/reglages/kyc" onClick={() => setMobileMenuOpen(false)}>
-                                Vérifier mon identité
-                              </Link>
-                            </Button>
+                          {!isAdmin && (
+                            <>
+                              <Button asChild variant="ghost" className="w-full justify-start">
+                                <Link href={profileLink} onClick={() => setMobileMenuOpen(false)}>
+                                  Mon profil
+                                </Link>
+                              </Button>
+                              {showKycLink && (
+                                <Button asChild variant="ghost" className="w-full justify-start">
+                                  <Link href="/dashboard/reglages/kyc" onClick={() => setMobileMenuOpen(false)}>
+                                    Vérifier mon identité
+                                  </Link>
+                                </Button>
+                              )}
+                              <Button asChild variant="ghost" className="w-full justify-start">
+                                <Link href="/dashboard/reglages" onClick={() => setMobileMenuOpen(false)}>
+                                  Paramètres
+                                </Link>
+                              </Button>
+                            </>
                           )}
-                          <Button asChild variant="ghost" className="w-full justify-start">
-                            <Link href="/dashboard/reglages" onClick={() => setMobileMenuOpen(false)}>
-                              Paramètres
-                            </Link>
-                          </Button>
                           <Button
                             variant="ghost"
                             className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
