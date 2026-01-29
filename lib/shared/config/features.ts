@@ -29,9 +29,26 @@ export const FEATURES = {
    * Dashboard Admin
    */
   ADMIN_DASHBOARD: true,
+
+  /**
+   * Mode Beta
+   */
+  BETA_MODE: true,
+  MAX_BETA_USERS: 50,
+  MAX_BOOKING_AMOUNT: 200,
+
+  /**
+   * Monitoring
+   */
+  SENTRY_ENABLED: false,
+  ANALYTICS_ENABLED: false,
 } as const
 
-export type FeatureFlag = keyof typeof FEATURES
+export type FeatureFlag = {
+  [Key in keyof typeof FEATURES]: typeof FEATURES[Key] extends boolean
+    ? Key
+    : never
+}[keyof typeof FEATURES]
 
 export type PaymentsMode = 'stripe' | 'simulation' | 'disabled'
 

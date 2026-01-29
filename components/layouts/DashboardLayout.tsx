@@ -43,10 +43,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
-import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { FEATURES, isFeatureEnabled } from '@/lib/shared/config/features'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
 import { getAvatarUrl } from '@/lib/core/profile/utils'
+import { BetaBanner } from '@/components/beta-banner'
+import { FeedbackDialog } from '@/components/feedback-dialog'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -166,7 +168,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
 
           {/* Page Content */}
-          <div className="p-4 md:p-6">{children}</div>
+          <div className="p-4 md:p-6">
+            <BetaBanner />
+            {children}
+          </div>
         </main>
       </div>
     </div>
@@ -235,6 +240,16 @@ function HeaderActions() {
       </Button>
       <ClientOnly>
         <ThemeToggle />
+      </ClientOnly>
+
+      {FEATURES.BETA_MODE && (
+        <Badge variant="secondary" className="hidden sm:inline-flex">
+          Beta Tester
+        </Badge>
+      )}
+
+      <ClientOnly>
+        <FeedbackDialog />
       </ClientOnly>
 
       <ClientOnly>
