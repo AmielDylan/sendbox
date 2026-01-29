@@ -1,15 +1,24 @@
 import { faker } from '@faker-js/faker'
-import { createMockSender, createMockTraveler, type MockUser } from './user.factory'
-import { createMockAnnouncement, type MockAnnouncement } from './announcement.factory'
+import {
+  createMockSender,
+  createMockTraveler,
+  type MockUser,
+} from './user.factory'
+import {
+  createMockAnnouncement,
+  type MockAnnouncement,
+} from './announcement.factory'
 
 /**
  * Factory pour créer des réservations de test
  */
 
 export type MockBookingStatus =
-  | 'pending_traveler_approval'
-  | 'pending_payment'
+  | 'pending'
+  | 'accepted'
+  | 'refused'
   | 'paid'
+  | 'deposited'
   | 'in_transit'
   | 'delivered'
   | 'cancelled'
@@ -30,11 +39,16 @@ export interface MockBooking {
   tracking_code?: string | null
   deposit_proof_url?: string | null
   delivery_proof_url?: string | null
-  qr_code_data?: string | null
+  qr_code?: string | null
   created_at: string
   updated_at: string
   confirmed_deposit_at?: string | null
   confirmed_delivery_at?: string | null
+  refused_at?: string | null
+  refused_reason?: string | null
+  cancelled_at?: string | null
+  cancelled_by?: string | null
+  cancelled_reason?: string | null
 }
 
 /**
@@ -87,15 +101,20 @@ export function createMockBooking(
     base_price: basePrice,
     commission,
     total_price: totalPrice,
-    status: 'pending_traveler_approval',
+    status: 'pending',
     tracking_code: null,
     deposit_proof_url: null,
     delivery_proof_url: null,
-    qr_code_data: null,
+    qr_code: null,
     created_at: now,
     updated_at: now,
     confirmed_deposit_at: null,
     confirmed_delivery_at: null,
+    refused_at: null,
+    refused_reason: null,
+    cancelled_at: null,
+    cancelled_by: null,
+    cancelled_reason: null,
     ...overrides,
   }
 }
@@ -107,19 +126,19 @@ export function createMockPendingBooking(
   overrides?: Partial<MockBooking>
 ): MockBooking {
   return createMockBooking({
-    status: 'pending_traveler_approval',
+    status: 'pending',
     ...overrides,
   })
 }
 
 /**
- * Crée une réservation en attente de paiement
+ * Crée une réservation acceptée
  */
-export function createMockPendingPaymentBooking(
+export function createMockAcceptedBooking(
   overrides?: Partial<MockBooking>
 ): MockBooking {
   return createMockBooking({
-    status: 'pending_payment',
+    status: 'accepted',
     ...overrides,
   })
 }
@@ -133,10 +152,7 @@ export function createMockPaidBooking(
   return createMockBooking({
     status: 'paid',
     tracking_code: faker.string.alphanumeric(10).toUpperCase(),
-    qr_code_data: JSON.stringify({
-      booking_id: faker.string.uuid(),
-      timestamp: Date.now(),
-    }),
+    qr_code: `SENDBOX-${faker.string.alphanumeric(8).toLowerCase()}-${faker.string.alphanumeric(4).toLowerCase()}`,
     ...overrides,
   })
 }
@@ -154,10 +170,7 @@ export function createMockInTransitBooking(
     tracking_code: faker.string.alphanumeric(10).toUpperCase(),
     deposit_proof_url: faker.image.url(),
     confirmed_deposit_at: now,
-    qr_code_data: JSON.stringify({
-      booking_id: faker.string.uuid(),
-      timestamp: Date.now(),
-    }),
+    qr_code: `SENDBOX-${faker.string.alphanumeric(8).toLowerCase()}-${faker.string.alphanumeric(4).toLowerCase()}`,
     ...overrides,
   })
 }
@@ -177,10 +190,7 @@ export function createMockDeliveredBooking(
     delivery_proof_url: faker.image.url(),
     confirmed_deposit_at: now,
     confirmed_delivery_at: now,
-    qr_code_data: JSON.stringify({
-      booking_id: faker.string.uuid(),
-      timestamp: Date.now(),
-    }),
+    qr_code: `SENDBOX-${faker.string.alphanumeric(8).toLowerCase()}-${faker.string.alphanumeric(4).toLowerCase()}`,
     ...overrides,
   })
 }
