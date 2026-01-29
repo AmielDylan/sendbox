@@ -6,6 +6,9 @@ import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
+// Import MSW setup pour mocker les APIs (Supabase, Stripe, etc.)
+import './msw-setup'
+
 // Cleanup after each test
 afterEach(() => {
   cleanup()
