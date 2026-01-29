@@ -40,6 +40,9 @@ vi.mock('next/navigation', () => ({
     get: vi.fn(),
   }),
   usePathname: () => '/',
+  redirect: vi.fn((url: string) => {
+    throw new Error(`NEXT_REDIRECT: ${url}`)
+  }),
 }))
 
 // Mock Next.js headers
