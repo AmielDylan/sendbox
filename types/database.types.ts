@@ -863,6 +863,63 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'feedback_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'feedback_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'user_stats'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      waitlist: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       user_stats: {
@@ -1211,3 +1268,5 @@ export type Message = Tables<'messages'>
 export type Notification = Tables<'notifications'>
 export type Rating = Tables<'ratings'>
 export type Transaction = Tables<'transactions'>
+export type Feedback = Tables<'feedback'>
+export type Waitlist = Tables<'waitlist'>

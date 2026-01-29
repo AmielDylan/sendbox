@@ -18,6 +18,7 @@ import {
   IconPackage,
   IconAlertTriangle,
   IconCreditCard,
+  IconMessageCircle,
   IconMenu2,
   IconLoader2,
   IconLogout,
@@ -94,6 +95,11 @@ const adminNavItems: AdminNavItem[] = [
     title: 'Transactions',
     href: '/admin/transactions',
     icon: IconCreditCard,
+  },
+  {
+    title: 'Feedback',
+    href: '/admin/feedback',
+    icon: IconMessageCircle,
   },
 ]
 
