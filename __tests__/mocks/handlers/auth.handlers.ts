@@ -1,11 +1,61 @@
 import { http, HttpResponse } from 'msw'
 import { faker } from '@faker-js/faker'
+import { setMockSessionCookies, resetMockSessionCookies } from '../../setup/test-utils'
 
 /**
  * MSW Handlers pour mocker Supabase Auth
  * Ces handlers interceptent les appels à l'API Supabase Auth
  */
 
+// Mock auth state - permet de définir l'utilisateur actuellement authentifié
+let mockAuthUser: { id: string; email: string } | null = null
+
+/**
+ * Définit l'utilisateur actuellement authentifié pour les tests
+ */
+export function setMockAuthUser(user: { id: string; email: string } | null) {
+  mockAuthUser = user
+
+  if (user) {
+    // Créer un cookie de session Supabase mocké
+    const mockAccessToken = faker.string.alphanumeric(40)
+    const mockRefreshToken = faker.string.alphanumeric(40)
+
+    const sessionData = {
+      access_token: mockAccessToken,
+      refresh_token: mockRefreshToken,
+      expires_in: 3600,
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      token_type: 'bearer',
+      user: {
+        id: user.id,
+        email: user.email,
+        aud: 'authenticated',
+        role: 'authenticated',
+      },
+    }
+
+    // Encoder en base64 comme le fait Supabase
+    const sessionValue = JSON.stringify(sessionData)
+
+    setMockSessionCookies([
+      {
+        name: 'sb-localhost-auth-token',
+        value: sessionValue,
+      },
+    ])
+  } else {
+    resetMockSessionCookies()
+  }
+}
+
+/**
+ * Réinitialise l'état d'authentification
+ */
+export function resetMockAuthUser() {
+  mockAuthUser = null
+  resetMockSessionCookies()
+}
 export const authHandlers = [
   // Mock signup
   http.post('*/auth/v1/signup', async ({ request }) => {
@@ -120,14 +170,16 @@ export const authHandlers = [
       )
     }
 
-    const userId = faker.string.uuid()
+    // Utiliser mockAuthUser s'il est défini, sinon générer un utilisateur aléatoire
+    const userId = mockAuthUser?.id || faker.string.uuid()
+    const email = mockAuthUser?.email || faker.internet.email()
 
     return HttpResponse.json(
       {
         id: userId,
         aud: 'authenticated',
         role: 'authenticated',
-        email: faker.internet.email(),
+        email: email,
         email_confirmed_at: new Date().toISOString(),
         phone: '',
         confirmed_at: new Date().toISOString(),
