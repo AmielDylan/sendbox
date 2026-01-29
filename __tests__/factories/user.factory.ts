@@ -15,6 +15,7 @@ export interface MockUser {
   role: MockUserRole
   kyc_status: MockKYCStatus
   kyc_verified_at?: string | null
+  kyc_rejection_reason?: string | null
   phone?: string | null
   avatar_url?: string | null
   created_at: string
@@ -39,6 +40,7 @@ export function createMockUser(overrides?: Partial<MockUser>): MockUser {
     role: 'sender',
     kyc_status: 'approved',
     kyc_verified_at: now,
+    kyc_rejection_reason: null,
     phone: faker.phone.number('+33 # ## ## ## ##'),
     avatar_url: faker.image.avatar(),
     created_at: now,

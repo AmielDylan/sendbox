@@ -25,17 +25,23 @@ export const databaseHandlers = [
     const select = url.searchParams.get('select')
 
     // Récupérer toutes les données de la table
-    const data = Array.from(mockDatabase[table as keyof typeof mockDatabase]?.values() || [])
+    let data = Array.from(mockDatabase[table as keyof typeof mockDatabase]?.values() || [])
 
-    // Filtrer si nécessaire (simplifié pour les tests)
-    let filtered = data
+    // Filtrer selon les query params (support basique de .eq())
+    // Supabase envoie des filtres comme: ?id=eq.value ou ?status=eq.active
+    url.searchParams.forEach((value, key) => {
+      if (key !== 'select' && value.startsWith('eq.')) {
+        const filterValue = value.substring(3) // Enlever 'eq.'
+        data = data.filter((row: any) => String(row[key]) === filterValue)
+      }
+    })
 
     // Retourner les données
-    return HttpResponse.json(filtered, {
+    return HttpResponse.json(data, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Content-Range': `0-${filtered.length - 1}/${filtered.length}`,
+        'Content-Range': `0-${data.length - 1}/${data.length}`,
       },
     })
   }),
