@@ -26,23 +26,28 @@ describe('createBooking', () => {
     kyc_status: 'approved',
   })
 
-  const mockAnnouncement = createMockPublishedAnnouncement({
-    id: 'announcement-test-1',
-    traveler_id: mockTraveler.id,
-    available_weight: 10,
-    status: 'active' as any,
-  })
-
-  const validBookingData: CreateBookingInput = {
-    announcement_id: mockAnnouncement.id,
-    package_description: 'Test package - laptop and documents',
-    kilos_requested: 5,
-    package_value: 100,
-    insurance_opted: false,
-  }
+  let mockAnnouncement: ReturnType<typeof createMockPublishedAnnouncement>
+  let validBookingData: CreateBookingInput
 
   beforeEach(() => {
     resetMockDatabase()
+
+    // Create fresh announcement for each test
+    mockAnnouncement = createMockPublishedAnnouncement({
+      traveler_id: mockTraveler.id,
+      available_kg: 10,
+      status: 'active' as any,
+    })
+
+    // Create fresh booking data for each test
+    validBookingData = {
+      announcement_id: mockAnnouncement.id,
+      package_description: 'Test package - laptop and documents',
+      kilos_requested: 5,
+      package_value: 100,
+      insurance_opted: false,
+    }
+
     // Seed the mock database with test data
     seedMockDatabase('profiles', [mockSender, mockTraveler])
     seedMockDatabase('announcements', [mockAnnouncement])
@@ -65,6 +70,7 @@ describe('createBooking', () => {
       kyc_status: 'pending',
     })
     seedMockDatabase('profiles', [senderPendingKYC])
+    setMockAuthUser({ id: senderPendingKYC.id, email: senderPendingKYC.email })
 
     const result = await createBooking(validBookingData)
 
@@ -80,6 +86,7 @@ describe('createBooking', () => {
       kyc_status: 'incomplete',
     })
     seedMockDatabase('profiles', [senderIncompleteKYC])
+    setMockAuthUser({ id: senderIncompleteKYC.id, email: senderIncompleteKYC.email })
 
     const result = await createBooking(validBookingData)
 
@@ -96,6 +103,7 @@ describe('createBooking', () => {
       kyc_rejection_reason: 'Documents invalides',
     })
     seedMockDatabase('profiles', [senderRejectedKYC])
+    setMockAuthUser({ id: senderRejectedKYC.id, email: senderRejectedKYC.email })
 
     const result = await createBooking(validBookingData)
 
@@ -107,9 +115,8 @@ describe('createBooking', () => {
   it('rejette si l utilisateur réserve sa propre annonce', async () => {
     // L'annonce appartient au même utilisateur qui essaie de réserver
     const ownAnnouncement = createMockPublishedAnnouncement({
-      id: 'own-announcement-1',
       traveler_id: mockSender.id, // Same user as sender
-      available_weight: 10,
+      available_kg: 10,
       status: 'active' as any,
     })
     seedMockDatabase('announcements', [ownAnnouncement])
@@ -127,7 +134,6 @@ describe('createBooking', () => {
 
   it('rejette si l annonce n est pas active', async () => {
     const inactiveAnnouncement = createMockAnnouncement({
-      id: 'inactive-announcement-1',
       traveler_id: mockTraveler.id,
       status: 'draft' as any,
     })

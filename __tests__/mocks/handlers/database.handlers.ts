@@ -18,6 +18,32 @@ const mockDatabase = {
 }
 
 export const databaseHandlers = [
+  // HEAD - Count queries (utilisé par Supabase pour compter les résultats)
+  http.head('*/rest/v1/:table', async ({ params, request }) => {
+    const table = params.table as string
+    const url = new URL(request.url)
+
+    // Récupérer toutes les données de la table
+    let data = Array.from(mockDatabase[table as keyof typeof mockDatabase]?.values() || [])
+
+    // Filtrer selon les query params
+    url.searchParams.forEach((value, key) => {
+      if (key !== 'select' && value.startsWith('eq.')) {
+        const filterValue = value.substring(3)
+        data = data.filter((row: any) => String(row[key]) === filterValue)
+      }
+    })
+
+    // Retourner seulement les headers avec le count
+    return new HttpResponse(null, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Range': `0-${data.length - 1}/${data.length}`,
+      },
+    })
+  }),
+
   // GET - Select queries (tous les tables)
   http.get('*/rest/v1/:table', async ({ params, request }) => {
     const table = params.table as string
@@ -35,7 +61,34 @@ export const databaseHandlers = [
       }
     })
 
-    // Retourner les données
+    // Gérer .single() - Supabase envoie Accept: application/vnd.pgrst.object+json
+    const acceptHeader = request.headers.get('Accept')
+    const isSingle = acceptHeader?.includes('application/vnd.pgrst.object+json')
+
+    if (isSingle) {
+      // .single() attend exactement 1 résultat
+      if (data.length === 0) {
+        return HttpResponse.json(
+          { error: 'No rows found', code: 'PGRST116', message: 'The result contains 0 rows' },
+          { status: 406 }
+        )
+      }
+      if (data.length > 1) {
+        return HttpResponse.json(
+          { error: 'Multiple rows found', code: 'PGRST116', message: `The result contains ${data.length} rows` },
+          { status: 406 }
+        )
+      }
+      // Retourner l'objet unique (pas dans un array)
+      return HttpResponse.json(data[0], {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/vnd.pgrst.object+json',
+        },
+      })
+    }
+
+    // Retourner les données normalement (array)
     return HttpResponse.json(data, {
       status: 200,
       headers: {
@@ -61,6 +114,21 @@ export const databaseHandlers = [
 
     // Stocker dans le mock database
     mockDatabase[table as keyof typeof mockDatabase]?.set(id, newRecord)
+
+    // Gérer .single() - Supabase envoie Accept: application/vnd.pgrst.object+json
+    const acceptHeader = request.headers.get('Accept')
+    const isSingle = acceptHeader?.includes('application/vnd.pgrst.object+json')
+
+    if (isSingle) {
+      // Retourner l'objet unique (pas dans un array)
+      return HttpResponse.json(newRecord, {
+        status: 201,
+        headers: {
+          'Content-Type': 'application/vnd.pgrst.object+json',
+          Location: `/${table}?id=eq.${id}`,
+        },
+      })
+    }
 
     return HttpResponse.json([newRecord], {
       status: 201,
