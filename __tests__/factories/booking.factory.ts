@@ -44,6 +44,11 @@ export interface MockBooking {
   updated_at: string
   confirmed_deposit_at?: string | null
   confirmed_delivery_at?: string | null
+  refused_at?: string | null
+  refused_reason?: string | null
+  cancelled_at?: string | null
+  cancelled_by?: string | null
+  cancelled_reason?: string | null
 }
 
 /**
@@ -105,6 +110,11 @@ export function createMockBooking(
     updated_at: now,
     confirmed_deposit_at: null,
     confirmed_delivery_at: null,
+    refused_at: null,
+    refused_reason: null,
+    cancelled_at: null,
+    cancelled_by: null,
+    cancelled_reason: null,
     ...overrides,
   }
 }
