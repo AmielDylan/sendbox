@@ -99,9 +99,7 @@ export function createMockArchivedAnnouncement(
 /**
  * Crée une annonce Paris → Cotonou
  */
-export function createMockParisCoto
-
-nouAnnouncement(
+export function createMockParisCotonouAnnouncement(
   overrides?: Partial<MockAnnouncement>
 ): MockAnnouncement {
   return createMockAnnouncement({

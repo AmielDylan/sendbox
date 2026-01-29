@@ -1,5 +1,5 @@
 import { beforeAll, afterEach, afterAll } from 'vitest'
-import { server, resetMockDatabase, resetMockStripeStore } from '../mocks/server'
+import { server, resetMockDatabase, resetMockStripeStore, resetMockAuthUser } from '../mocks/server'
 
 /**
  * Configuration MSW pour Vitest
@@ -23,6 +23,7 @@ afterEach(() => {
   // Reset les stores en mémoire
   resetMockDatabase()
   resetMockStripeStore()
+  resetMockAuthUser()
 })
 
 // Arrête le serveur MSW après tous les tests
