@@ -18,7 +18,7 @@ export interface MockAnnouncement {
   arrival_city: string
   departure_date: string
   arrival_date: string
-  available_weight: number
+  available_kg: number
   price_per_kg: number
   status: MockAnnouncementStatus
   views_count: number
@@ -50,7 +50,7 @@ export function createMockAnnouncement(
     arrival_city: 'Cotonou',
     departure_date: departureDate,
     arrival_date: arrivalDate,
-    available_weight: faker.number.int({ min: 5, max: 30 }),
+    available_kg: faker.number.int({ min: 5, max: 30 }),
     price_per_kg: faker.number.int({ min: 5, max: 15 }),
     status: 'published',
     views_count: faker.number.int({ min: 0, max: 100 }),
