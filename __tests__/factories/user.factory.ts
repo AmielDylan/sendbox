@@ -41,7 +41,7 @@ export function createMockUser(overrides?: Partial<MockUser>): MockUser {
     kyc_status: 'approved',
     kyc_verified_at: now,
     kyc_rejection_reason: null,
-    phone: faker.phone.number('+33 # ## ## ## ##'),
+    phone: faker.phone.number(),
     avatar_url: faker.image.avatar(),
     created_at: now,
     updated_at: now,

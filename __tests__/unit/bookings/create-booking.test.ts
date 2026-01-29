@@ -29,7 +29,7 @@ describe('createBooking', () => {
   const mockAnnouncement = createMockPublishedAnnouncement({
     id: 'announcement-test-1',
     traveler_id: mockTraveler.id,
-    available_kg: 10,
+    available_weight: 10,
     status: 'active' as any,
   })
 
@@ -37,7 +37,8 @@ describe('createBooking', () => {
     announcement_id: mockAnnouncement.id,
     package_description: 'Test package - laptop and documents',
     kilos_requested: 5,
-    item_category: 'electronics',
+    package_value: 100,
+    insurance_opted: false,
   }
 
   beforeEach(() => {
@@ -53,13 +54,8 @@ describe('createBooking', () => {
     const result = await createBooking(validBookingData)
 
     expect(result.error).toBeUndefined()
-    expect(result.data).toBeDefined()
-    expect(result.data).toMatchObject({
-      announcement_id: mockAnnouncement.id,
-      sender_id: mockSender.id,
-      status: 'pending',
-      kilos_requested: 5,
-    })
+    expect(result.success).toBe(true)
+    expect(result.bookingId).toBeDefined()
   })
 
   it('rejette si KYC non approuvé (pending)', async () => {
@@ -113,7 +109,7 @@ describe('createBooking', () => {
     const ownAnnouncement = createMockPublishedAnnouncement({
       id: 'own-announcement-1',
       traveler_id: mockSender.id, // Same user as sender
-      available_kg: 10,
+      available_weight: 10,
       status: 'active' as any,
     })
     seedMockDatabase('announcements', [ownAnnouncement])
