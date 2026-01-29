@@ -6,6 +6,9 @@ import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
+// Import MSW setup pour mocker les APIs (Supabase, Stripe, etc.)
+import './msw-setup'
+
 // Cleanup after each test
 afterEach(() => {
   cleanup()
@@ -37,12 +40,16 @@ vi.mock('next/navigation', () => ({
     get: vi.fn(),
   }),
   usePathname: () => '/',
+  redirect: vi.fn((url: string) => {
+    throw new Error(`NEXT_REDIRECT: ${url}`)
+  }),
 }))
 
 // Mock Next.js headers
 vi.mock('next/headers', () => ({
   cookies: () => ({
     get: vi.fn(),
+    getAll: vi.fn(() => []),
     set: vi.fn(),
     delete: vi.fn(),
   }),
