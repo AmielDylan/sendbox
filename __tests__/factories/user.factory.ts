@@ -22,9 +22,7 @@ export interface MockUser {
   updated_at: string
 }
 
-export interface MockProfile extends MockUser {
-  // Alias pour Profile
-}
+export type MockProfile = MockUser
 
 /**
  * Crée un mock user avec des données aléatoires ou personnalisées

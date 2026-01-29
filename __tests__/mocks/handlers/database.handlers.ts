@@ -22,7 +22,6 @@ export const databaseHandlers = [
   http.get('*/rest/v1/:table', async ({ params, request }) => {
     const table = params.table as string
     const url = new URL(request.url)
-    const select = url.searchParams.get('select')
 
     // Récupérer toutes les données de la table
     let data = Array.from(mockDatabase[table as keyof typeof mockDatabase]?.values() || [])
