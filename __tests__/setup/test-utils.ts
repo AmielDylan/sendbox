@@ -9,6 +9,23 @@ import { afterEach, vi } from 'vitest'
 // Import MSW setup pour mocker les APIs (Supabase, Stripe, etc.)
 import './msw-setup'
 
+// Mock session cookies storage
+let mockSessionCookies: Array<{ name: string; value: string }> = []
+
+/**
+ * Définit les cookies de session mockés (appelé par setMockAuthUser)
+ */
+export function setMockSessionCookies(cookies: Array<{ name: string; value: string }>) {
+  mockSessionCookies = cookies
+}
+
+/**
+ * Réinitialise les cookies de session mockés
+ */
+export function resetMockSessionCookies() {
+  mockSessionCookies = []
+}
+
 // Cleanup after each test
 afterEach(() => {
   cleanup()
@@ -48,8 +65,11 @@ vi.mock('next/navigation', () => ({
 // Mock Next.js headers
 vi.mock('next/headers', () => ({
   cookies: () => ({
-    get: vi.fn(),
-    getAll: vi.fn(() => []),
+    get: vi.fn((name: string) => {
+      const cookie = mockSessionCookies.find((c) => c.name === name)
+      return cookie ? { name: cookie.name, value: cookie.value } : undefined
+    }),
+    getAll: vi.fn(() => mockSessionCookies),
     set: vi.fn(),
     delete: vi.fn(),
   }),
