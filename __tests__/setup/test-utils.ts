@@ -46,6 +46,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('next/headers', () => ({
   cookies: () => ({
     get: vi.fn(),
+    getAll: vi.fn(() => []),
     set: vi.fn(),
     delete: vi.fn(),
   }),

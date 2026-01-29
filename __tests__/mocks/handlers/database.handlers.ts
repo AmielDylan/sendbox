@@ -27,9 +27,7 @@ export const databaseHandlers = [
     // Récupérer toutes les données de la table
     const data = Array.from(mockDatabase[table as keyof typeof mockDatabase]?.values() || [])
 
-    // Filtrer si nécessaire (simplif
-
-ié pour les tests)
+    // Filtrer si nécessaire (simplifié pour les tests)
     let filtered = data
 
     // Retourner les données
