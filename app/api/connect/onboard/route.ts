@@ -39,7 +39,7 @@ const BUSINESS_PROFILE_URL = (() => {
   }
 })()
 
-export async function POST() {
+export async function POST(req: Request) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -66,13 +66,16 @@ export async function POST() {
     )
   }
 
+  const body = await req.json().catch(() => ({} as { country?: string }))
+  const country = body?.country === 'BJ' ? 'BJ' : 'FR'
+
   let accountId = profile.stripe_connect_account_id || null
 
   try {
     if (!accountId) {
       const account = await stripe.accounts.create({
         type: 'express',
-        country: 'FR',
+        country,
         email: profile.email || user.email || undefined,
         capabilities: {
           transfers: { requested: true },
@@ -98,14 +101,16 @@ export async function POST() {
       }
     }
 
-    const accountLink = await stripe.accountLinks.create({
+    const accountSession = await stripe.accountSessions.create({
       account: accountId,
-      type: 'account_onboarding',
-      return_url: `${SAFE_APP_URL}/dashboard/reglages/paiements?connect=return`,
-      refresh_url: `${SAFE_APP_URL}/dashboard/reglages/paiements?connect=refresh`,
+      components: {
+        account_onboarding: {
+          enabled: true,
+        },
+      },
     })
 
-    return Response.json({ url: accountLink.url })
+    return Response.json({ client_secret: accountSession.client_secret })
   } catch (error) {
     console.error('Stripe connect onboarding error:', error)
     return Response.json(
