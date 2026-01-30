@@ -68,8 +68,8 @@ export default function WaitlistPage() {
             <CardTitle className="text-3xl">Liste d'attente</CardTitle>
             {FEATURES.BETA_MODE && (
               <Badge className="h-6 items-center rounded-full border border-amber-200 bg-amber-100 px-2 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-                Bêta · {typeof betaCount === 'number' ? betaCount : '…'}/
-                {FEATURES.MAX_BETA_USERS}
+                Beta : {typeof betaCount === 'number' ? betaCount : '…'}{' '}
+                utilisateurs / {FEATURES.MAX_BETA_USERS}
               </Badge>
             )}
           </div>

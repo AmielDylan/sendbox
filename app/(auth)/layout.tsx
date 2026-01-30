@@ -6,6 +6,7 @@
 import { PublicFooter } from '@/components/layouts/PublicFooter'
 import { PublicHeader } from '@/components/layouts/PublicHeader'
 import { AuthSidebar } from '@/components/auth/AuthSidebar'
+import { BetaMobileBadge } from '@/components/auth/BetaMobileBadge'
 
 // Force dynamic rendering for auth pages (use auth context)
 export const dynamic = 'force-dynamic'
@@ -48,7 +49,12 @@ export default function AuthLayout({
           />
 
           <div className="relative flex items-center justify-center min-h-screen p-4 sm:p-8 lg:p-12">
-            <div className="w-full max-w-lg animate-fade-in-up">{children}</div>
+            <div className="w-full max-w-lg animate-fade-in-up">
+              <div className="mb-6 lg:hidden">
+                <BetaMobileBadge />
+              </div>
+              {children}
+            </div>
           </div>
         </div>
       </main>
