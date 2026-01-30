@@ -15,7 +15,18 @@ const SAFE_APP_URL = (() => {
 })()
 const BUSINESS_PROFILE_URL = (() => {
   try {
-    return new URL(APP_URL).toString()
+    const parsed = new URL(APP_URL)
+    if (parsed.protocol !== 'https:') {
+      return null
+    }
+    if (
+      parsed.hostname === 'localhost' ||
+      parsed.hostname === '127.0.0.1' ||
+      parsed.hostname.endsWith('.local')
+    ) {
+      return null
+    }
+    return parsed.toString()
   } catch {
     return null
   }
