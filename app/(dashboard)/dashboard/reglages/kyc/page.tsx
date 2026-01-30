@@ -332,14 +332,15 @@ export default function KYCPage() {
         description="Stripe Identity se charge de vérifier vos documents."
       />
 
-      {FEATURES.STRIPE_PAYMENTS && connectAvailable && (
+      {FEATURES.STRIPE_PAYMENTS && (
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <CardTitle>Activer les paiements</CardTitle>
+                <CardTitle>Paramètres de paiement</CardTitle>
                 <CardDescription>
-                  Recevez vos gains directement sur votre compte bancaire.
+                  Configurez vos gains et la vérification nécessaire pour les
+                  recevoir.
                 </CardDescription>
               </div>
               <Badge
@@ -355,32 +356,70 @@ export default function KYCPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>Étapes requises pour recevoir vos paiements :</p>
-              <ul className="list-disc space-y-1 pl-5">
-                <li>Vérification d'identité</li>
-                <li>Ajouter votre compte bancaire</li>
-              </ul>
-              <p>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
+                <div>
+                  <p className="font-medium text-foreground">
+                    Vérification d'identité
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Obligatoire pour recevoir vos gains.
+                  </p>
+                </div>
+                {getStatusBadge()}
+              </div>
+              <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
+                <div>
+                  <p className="font-medium text-foreground">
+                    Ajouter votre compte bancaire
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Recevez vos paiements directement.
+                  </p>
+                </div>
+                <Badge
+                  variant={
+                    connectStatus?.payouts_enabled ? 'default' : 'warning'
+                  }
+                  className={cn(
+                    connectStatus?.payouts_enabled && 'bg-green-500 text-white'
+                  )}
+                >
+                  {connectBadgeLabel}
+                </Badge>
+              </div>
+            </div>
+
+            {!connectAvailable && (
+              <Alert>
+                <AlertTitle>Réservé aux partenaires</AlertTitle>
+                <AlertDescription>
+                  Cette option est disponible pour les comptes partenaires.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
                 Paiement sécurisé, libéré après confirmation ou automatiquement
                 sous 7 jours.
               </p>
+              <Button
+                onClick={handleConnectOnboarding}
+                disabled={
+                  isOnboarding ||
+                  isConnectLoading ||
+                  connectStatus?.payouts_enabled ||
+                  !connectAvailable
+                }
+              >
+                {isOnboarding
+                  ? 'En cours...'
+                  : connectStatus?.payouts_enabled
+                    ? 'Paiements activés'
+                    : 'Activer les paiements'}
+              </Button>
             </div>
-
-            <Button
-              onClick={handleConnectOnboarding}
-              disabled={
-                isOnboarding ||
-                isConnectLoading ||
-                connectStatus?.payouts_enabled
-              }
-            >
-              {isOnboarding
-                ? 'En cours...'
-                : connectStatus?.payouts_enabled
-                  ? 'Paiements activés'
-                  : 'Activer les paiements'}
-            </Button>
           </CardContent>
         </Card>
       )}
