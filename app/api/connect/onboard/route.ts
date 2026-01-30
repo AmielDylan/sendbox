@@ -1,7 +1,25 @@
 import { stripe } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/server'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+const RAW_APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+const APP_URL = RAW_APP_URL.trim().startsWith('http')
+  ? RAW_APP_URL.trim()
+  : `https://${RAW_APP_URL.trim()}`
+const SAFE_APP_URL = (() => {
+  try {
+    return new URL(APP_URL).toString()
+  } catch {
+    return 'http://localhost:3000'
+  }
+})()
+const BUSINESS_PROFILE_URL = (() => {
+  try {
+    return new URL(APP_URL).toString()
+  } catch {
+    return null
+  }
+})()
 
 export async function POST() {
   const supabase = await createClient()
@@ -23,8 +41,11 @@ export async function POST() {
     return Response.json({ error: 'Profil introuvable' }, { status: 404 })
   }
 
-  if (profile.role !== 'partner') {
-    return Response.json({ error: 'Accès réservé aux partenaires' }, { status: 403 })
+  if (profile.role === 'admin') {
+    return Response.json(
+      { error: 'Accès réservé aux utilisateurs' },
+      { status: 403 }
+    )
   }
 
   let accountId = profile.stripe_connect_account_id || null
@@ -39,7 +60,7 @@ export async function POST() {
       },
       business_profile: {
         name: 'Sendbox Partner',
-        url: APP_URL,
+        ...(BUSINESS_PROFILE_URL ? { url: BUSINESS_PROFILE_URL } : {}),
       },
     })
 
@@ -61,8 +82,8 @@ export async function POST() {
   const accountLink = await stripe.accountLinks.create({
     account: accountId,
     type: 'account_onboarding',
-    return_url: `${APP_URL}/dashboard/reglages/kyc?connect=return`,
-    refresh_url: `${APP_URL}/dashboard/reglages/kyc?connect=refresh`,
+    return_url: `${SAFE_APP_URL}/dashboard/reglages/paiements?connect=return`,
+    refresh_url: `${SAFE_APP_URL}/dashboard/reglages/paiements?connect=refresh`,
   })
 
   return Response.json({ url: accountLink.url })

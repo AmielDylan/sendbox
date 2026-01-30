@@ -12,6 +12,7 @@ import {
   IconUser,
   IconIdBadge2,
   IconShield,
+  IconCreditCard,
   IconCircleCheck,
   IconAlertCircle,
   IconClock,
@@ -27,15 +28,16 @@ interface SettingsNavProps {
 
 export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const supabase = useMemo(() => createClient(), [])
   const [kycStatus, setKycStatus] = useState<
     'pending' | 'approved' | 'rejected' | 'incomplete' | null
   >(initialKycStatus || null)
+  const isAdmin = profile?.role === 'admin'
 
   // Charger le statut initial si non fourni
   useEffect(() => {
-    if (!user?.id || initialKycStatus !== undefined) return
+    if (!user?.id || initialKycStatus !== undefined || isAdmin) return
 
     const loadKycStatus = async () => {
       const { data: profile } = await supabase
@@ -54,7 +56,7 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
 
   // Subscription Realtime pour KYC status
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.id || isAdmin) return
 
     console.log(
       '🔔 [SettingsNav] Subscribing to KYC updates for user:',
@@ -112,19 +114,34 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
       description: 'Informations personnelles',
     },
     {
+      label: 'Ajouter un compte bancaire',
+      href: '/dashboard/reglages/paiements',
+      icon: IconCreditCard,
+      description: 'Recevoir vos paiements',
+      paymentsOnly: true,
+      userOnly: true,
+    },
+    {
       label: "Vérification d'identité",
       href: '/dashboard/reglages/kyc',
       icon: IconShield,
       description: 'KYC et documents',
       badge: kycStatus,
       kycOnly: true, // Marqueur pour filtrage conditionnel
+      userOnly: true,
     },
   ]
 
   // Filtrer les items selon les feature flags
   const navItems = allNavItems.filter(item => {
+    if (item.userOnly && isAdmin) {
+      return false
+    }
     if (item.kycOnly && !isFeatureEnabled('KYC_ENABLED')) {
       return false // Masquer KYC si désactivé
+    }
+    if (item.paymentsOnly && !isFeatureEnabled('STRIPE_PAYMENTS')) {
+      return false
     }
     return true
   })

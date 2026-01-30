@@ -47,7 +47,7 @@ import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
 import { COUNTRY_OPTIONS } from '@/lib/utils/countries'
 import { getKYCStatus, startKYCVerification } from '@/lib/core/kyc/actions'
-import { FEATURES } from '@/lib/shared/config/features'
+import { useAuth } from '@/hooks/use-auth'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 type DocumentType = 'passport' | 'national_id'
@@ -57,18 +57,12 @@ export default function KYCPage() {
   const [submittedAt, setSubmittedAt] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [connectStatus, setConnectStatus] = useState<{
-    payouts_enabled: boolean
-    onboarding_completed: boolean
-    requirements: any
-  } | null>(null)
-  const [isConnectLoading, setIsConnectLoading] = useState(true)
-  const [isOnboarding, setIsOnboarding] = useState(false)
-  const [connectAvailable, setConnectAvailable] = useState(true)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
   const [countryOpen, setCountryOpen] = useState(false)
   const [countrySearch, setCountrySearch] = useState('')
+  const { profile } = useAuth()
+  const isAdmin = profile?.role === 'admin'
 
   const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
@@ -86,49 +80,12 @@ export default function KYCPage() {
   }, [countrySearch])
 
   useEffect(() => {
-    loadKYCStatus()
-  }, [])
-
-  useEffect(() => {
-    if (!FEATURES.STRIPE_PAYMENTS) {
-      setIsConnectLoading(false)
+    if (isAdmin) {
+      setIsLoading(false)
       return
     }
-
-    let isActive = true
-
-    const loadConnectStatus = async () => {
-      try {
-        const res = await fetch('/api/connect/status')
-        if (!isActive) return
-
-        if (res.status === 403) {
-          setConnectAvailable(false)
-          setIsConnectLoading(false)
-          return
-        }
-
-        if (!res.ok) {
-          throw new Error('Erreur lors du chargement')
-        }
-
-        const data = await res.json()
-        setConnectStatus(data)
-      } catch (error) {
-        console.error('Connect status error:', error)
-      } finally {
-        if (isActive) {
-          setIsConnectLoading(false)
-        }
-      }
-    }
-
-    loadConnectStatus()
-
-    return () => {
-      isActive = false
-    }
-  }, [])
+    loadKYCStatus()
+  }, [isAdmin])
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null
@@ -138,7 +95,7 @@ export default function KYCPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser()
-      if (!user || !isActive) return
+    if (!user || !isActive || isAdmin) return
 
       console.log('🔔 Subscribing to KYC updates for user:', user.id)
 
@@ -254,29 +211,6 @@ export default function KYCPage() {
     }
   }
 
-  const handleConnectOnboarding = async () => {
-    setIsOnboarding(true)
-    try {
-      const res = await fetch('/api/connect/onboard', { method: 'POST' })
-      if (!res.ok) {
-        const data = await res.json()
-        toast.error(data?.error || 'Impossible de démarrer la vérification')
-        return
-      }
-      const data = await res.json()
-      if (data?.url) {
-        window.location.href = data.url
-      } else {
-        toast.error('Lien de vérification indisponible')
-      }
-    } catch (error) {
-      console.error('Onboarding error:', error)
-      toast.error('Une erreur est survenue. Veuillez réessayer.')
-    } finally {
-      setIsOnboarding(false)
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -285,11 +219,23 @@ export default function KYCPage() {
     )
   }
 
-  const connectBadgeLabel = isConnectLoading
-    ? 'Chargement...'
-    : connectStatus?.payouts_enabled
-      ? 'Activé'
-      : 'À compléter'
+  if (isAdmin) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Vérification d'identité (KYC)"
+          description="Stripe Identity se charge de vérifier vos documents."
+        />
+        <Alert>
+          <AlertTitle>Réservé aux utilisateurs</AlertTitle>
+          <AlertDescription>
+            L&apos;interface KYC est disponible uniquement pour les comptes
+            utilisateurs.
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   const getStatusBadge = () => {
     switch (kycStatus) {
@@ -331,98 +277,6 @@ export default function KYCPage() {
         title="Vérification d'identité (KYC)"
         description="Stripe Identity se charge de vérifier vos documents."
       />
-
-      {FEATURES.STRIPE_PAYMENTS && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <CardTitle>Paramètres de paiement</CardTitle>
-                <CardDescription>
-                  Configurez vos gains et la vérification nécessaire pour les
-                  recevoir.
-                </CardDescription>
-              </div>
-              <Badge
-                variant={
-                  connectStatus?.payouts_enabled ? 'default' : 'warning'
-                }
-                className={cn(
-                  connectStatus?.payouts_enabled && 'bg-green-500 text-white'
-                )}
-              >
-                {connectBadgeLabel}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3 text-sm text-muted-foreground">
-              <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
-                <div>
-                  <p className="font-medium text-foreground">
-                    Vérification d'identité
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Obligatoire pour recevoir vos gains.
-                  </p>
-                </div>
-                {getStatusBadge()}
-              </div>
-              <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
-                <div>
-                  <p className="font-medium text-foreground">
-                    Ajouter votre compte bancaire
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Recevez vos paiements directement.
-                  </p>
-                </div>
-                <Badge
-                  variant={
-                    connectStatus?.payouts_enabled ? 'default' : 'warning'
-                  }
-                  className={cn(
-                    connectStatus?.payouts_enabled && 'bg-green-500 text-white'
-                  )}
-                >
-                  {connectBadgeLabel}
-                </Badge>
-              </div>
-            </div>
-
-            {!connectAvailable && (
-              <Alert>
-                <AlertTitle>Réservé aux partenaires</AlertTitle>
-                <AlertDescription>
-                  Cette option est disponible pour les comptes partenaires.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-muted-foreground">
-                Paiement sécurisé, libéré après confirmation ou automatiquement
-                sous 7 jours.
-              </p>
-              <Button
-                onClick={handleConnectOnboarding}
-                disabled={
-                  isOnboarding ||
-                  isConnectLoading ||
-                  connectStatus?.payouts_enabled ||
-                  !connectAvailable
-                }
-              >
-                {isOnboarding
-                  ? 'En cours...'
-                  : connectStatus?.payouts_enabled
-                    ? 'Paiements activés'
-                    : 'Activer les paiements'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Statut actuel */}
       <Card>
