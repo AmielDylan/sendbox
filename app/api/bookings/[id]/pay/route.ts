@@ -5,7 +5,7 @@ import { getPaymentsMode } from '@/lib/shared/config/features'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   if (getPaymentsMode() !== 'stripe') {
     return NextResponse.json(
@@ -24,7 +24,7 @@ export async function POST(
     return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
   }
 
-  const bookingId = params.id
+  const { id: bookingId } = await params
 
   if (!bookingId) {
     return NextResponse.json({ error: 'booking_id requis' }, { status: 400 })
