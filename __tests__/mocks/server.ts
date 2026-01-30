@@ -14,6 +14,13 @@ export const server = setupServer(
 )
 
 // Export des fonctions helpers pour réinitialiser les stores
-export { resetMockDatabase, seedMockDatabase } from './handlers/database.handlers'
-export { resetMockStripeStore, seedMockStripeStore } from './handlers/stripe.handlers'
+export {
+  resetMockDatabase,
+  seedMockDatabase,
+  getMockDatabase,
+} from './handlers/database.handlers'
+export {
+  resetMockStripeStore,
+  seedMockStripeStore,
+} from './handlers/stripe.handlers'
 export { setMockAuthUser, resetMockAuthUser } from './handlers/auth.handlers'

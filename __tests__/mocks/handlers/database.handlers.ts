@@ -309,3 +309,8 @@ export function seedMockDatabase(
     mockDatabase[table].set(record.id, record)
   })
 }
+
+// Fonction helper pour accéder au mock database (pour assertions dans les tests)
+export function getMockDatabase() {
+  return mockDatabase
+}
