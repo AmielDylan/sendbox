@@ -23,8 +23,8 @@ export async function GET() {
     return Response.json({ error: 'Profil introuvable' }, { status: 404 })
   }
 
-  if (profile.role !== 'partner') {
-    return Response.json({ error: 'Accès réservé aux partenaires' }, { status: 403 })
+  if (profile.role !== 'user') {
+    return Response.json({ error: 'Accès réservé aux utilisateurs' }, { status: 403 })
   }
 
   if (!profile.stripe_connect_account_id) {

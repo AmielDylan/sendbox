@@ -9,6 +9,7 @@ const sectionLabels: Record<string, string> = {
   compte: 'Compte',
   profil: 'Profil',
   kyc: "Vérification d'identité",
+  paiements: 'Compte bancaire',
 }
 
 export function SettingsBreadcrumb({ className }: { className?: string }) {
