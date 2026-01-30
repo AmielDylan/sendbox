@@ -14,10 +14,7 @@ export async function GET() {
 
     if (error) {
       console.error('Error fetching beta stats:', error)
-      return Response.json(
-        { error: 'Erreur de chargement' },
-        { status: 500 }
-      )
+      return Response.json({ error: 'Erreur de chargement' }, { status: 500 })
     }
 
     return Response.json({
@@ -27,9 +24,6 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Error creating admin client for beta stats:', error)
-    return Response.json(
-      { error: 'Erreur de configuration' },
-      { status: 500 }
-    )
+    return Response.json({ error: 'Erreur de configuration' }, { status: 500 })
   }
 }

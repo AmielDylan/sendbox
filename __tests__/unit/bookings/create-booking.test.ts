@@ -5,7 +5,11 @@ import {
   createMockAnnouncement,
   createMockPublishedAnnouncement,
 } from '../../factories/announcement.factory'
-import { seedMockDatabase, resetMockDatabase, setMockAuthUser } from '../../mocks/server'
+import {
+  seedMockDatabase,
+  resetMockDatabase,
+  setMockAuthUser,
+} from '../../mocks/server'
 import type { CreateBookingInput } from '@/lib/core/bookings/validations'
 
 /**
@@ -86,7 +90,10 @@ describe('createBooking', () => {
       kyc_status: 'incomplete',
     })
     seedMockDatabase('profiles', [senderIncompleteKYC])
-    setMockAuthUser({ id: senderIncompleteKYC.id, email: senderIncompleteKYC.email })
+    setMockAuthUser({
+      id: senderIncompleteKYC.id,
+      email: senderIncompleteKYC.email,
+    })
 
     const result = await createBooking(validBookingData)
 
@@ -103,7 +110,10 @@ describe('createBooking', () => {
       kyc_rejection_reason: 'Documents invalides',
     })
     seedMockDatabase('profiles', [senderRejectedKYC])
-    setMockAuthUser({ id: senderRejectedKYC.id, email: senderRejectedKYC.email })
+    setMockAuthUser({
+      id: senderRejectedKYC.id,
+      email: senderRejectedKYC.email,
+    })
 
     const result = await createBooking(validBookingData)
 
@@ -129,7 +139,9 @@ describe('createBooking', () => {
     })
 
     expect(result.error).toBeDefined()
-    expect(result.error).toMatch(/vous ne pouvez pas réserver votre propre annonce/i)
+    expect(result.error).toMatch(
+      /vous ne pouvez pas réserver votre propre annonce/i
+    )
   })
 
   it('rejette si l annonce n est pas active', async () => {

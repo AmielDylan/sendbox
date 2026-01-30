@@ -15,7 +15,9 @@ let mockSessionCookies: Array<{ name: string; value: string }> = []
 /**
  * Définit les cookies de session mockés (appelé par setMockAuthUser)
  */
-export function setMockSessionCookies(cookies: Array<{ name: string; value: string }>) {
+export function setMockSessionCookies(
+  cookies: Array<{ name: string; value: string }>
+) {
   mockSessionCookies = cookies
 }
 
@@ -66,7 +68,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('next/headers', () => ({
   cookies: () => ({
     get: vi.fn((name: string) => {
-      const cookie = mockSessionCookies.find((c) => c.name === name)
+      const cookie = mockSessionCookies.find(c => c.name === name)
       return cookie ? { name: cookie.name, value: cookie.value } : undefined
     }),
     getAll: vi.fn(() => mockSessionCookies),

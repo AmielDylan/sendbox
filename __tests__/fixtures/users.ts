@@ -1,4 +1,9 @@
-import { createMockSender, createMockTraveler, createMockAdmin, type MockUser } from '../factories/user.factory'
+import {
+  createMockSender,
+  createMockTraveler,
+  createMockAdmin,
+  type MockUser,
+} from '../factories/user.factory'
 
 /**
  * Fixtures utilisateurs - Données de test pré-définies et réutilisables

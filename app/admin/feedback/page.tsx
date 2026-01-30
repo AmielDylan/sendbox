@@ -71,12 +71,11 @@ export default async function AdminFeedbackPage() {
       <div className="space-y-4">
         {(feedbacks || []).map((feedback: any) => {
           const profile = feedback.profiles || null
-          const fullName =
-            profile
-              ? `${profile.firstname || ''} ${profile.lastname || ''}`.trim() ||
-                profile.email ||
-                'Utilisateur'
-              : 'Utilisateur'
+          const fullName = profile
+            ? `${profile.firstname || ''} ${profile.lastname || ''}`.trim() ||
+              profile.email ||
+              'Utilisateur'
+            : 'Utilisateur'
 
           return (
             <Card key={feedback.id}>

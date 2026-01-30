@@ -157,8 +157,7 @@ export function AuthSidebar() {
 function BetaInfoBadge({ count }: { count: number | null }) {
   if (!FEATURES.BETA_MODE) return null
 
-  const displayCount =
-    typeof count === 'number' ? `${count}` : '…'
+  const displayCount = typeof count === 'number' ? `${count}` : '…'
 
   return (
     <Badge className="h-6 items-center rounded-full border border-amber-200 bg-amber-100 px-2 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">

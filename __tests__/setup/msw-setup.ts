@@ -1,5 +1,10 @@
 import { beforeAll, afterEach, afterAll } from 'vitest'
-import { server, resetMockDatabase, resetMockStripeStore, resetMockAuthUser } from '../mocks/server'
+import {
+  server,
+  resetMockDatabase,
+  resetMockStripeStore,
+  resetMockAuthUser,
+} from '../mocks/server'
 
 /**
  * Configuration MSW pour Vitest

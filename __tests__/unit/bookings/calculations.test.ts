@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { calculateBookingPrice, formatPrice } from '@/lib/core/bookings/calculations'
+import {
+  calculateBookingPrice,
+  formatPrice,
+} from '@/lib/core/bookings/calculations'
 import {
   COMMISSION_RATE,
   INSURANCE_RATE,
@@ -78,7 +81,9 @@ describe('calculateBookingPrice', () => {
     it('applique le taux d assurance correct (3%)', () => {
       const result = calculateBookingPrice(5, 10, 200, true)
 
-      expect(result.insurancePremium).toBe(200 * INSURANCE_RATE + INSURANCE_BASE_FEE)
+      expect(result.insurancePremium).toBe(
+        200 * INSURANCE_RATE + INSURANCE_BASE_FEE
+      )
       expect(result.insurancePremium).toBe(6) // 200 * 0.03 + 0
     })
 

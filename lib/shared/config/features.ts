@@ -45,7 +45,7 @@ export const FEATURES = {
 } as const
 
 export type FeatureFlag = {
-  [Key in keyof typeof FEATURES]: typeof FEATURES[Key] extends boolean
+  [Key in keyof typeof FEATURES]: (typeof FEATURES)[Key] extends boolean
     ? Key
     : never
 }[keyof typeof FEATURES]

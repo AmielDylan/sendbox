@@ -34,7 +34,9 @@ export function createMockAnnouncement(
 ): MockAnnouncement {
   const now = new Date().toISOString()
   const departureDate = faker.date.future({ years: 0.5 }).toISOString()
-  const arrivalDate = faker.date.soon({ days: 7, refDate: departureDate }).toISOString()
+  const arrivalDate = faker.date
+    .soon({ days: 7, refDate: departureDate })
+    .toISOString()
 
   // Créer un traveler si pas fourni
   const traveler = overrides?.traveler || createMockTraveler()

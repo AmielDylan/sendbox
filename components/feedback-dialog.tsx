@@ -77,13 +77,17 @@ export function FeedbackDialog() {
             <Label>Message</Label>
             <Textarea
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
               placeholder="Décrivez votre feedback..."
               rows={5}
             />
           </div>
 
-          <Button onClick={handleSubmit} disabled={loading || !message} className="w-full">
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !message}
+            className="w-full"
+          >
             {loading ? 'Envoi...' : 'Envoyer'}
           </Button>
         </div>
