@@ -6,7 +6,6 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/shared/db/client'
 import { banUser, updateUserRole } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -54,7 +53,6 @@ export default function AdminUsersPage() {
   const [banReason, setBanReason] = useState('')
   const [newRole, setNewRole] = useState<'user' | 'admin'>('user')
 
-  const supabase = createClient()
   const { user: currentUser } = useAuth()
 
   const {
@@ -64,14 +62,18 @@ export default function AdminUsersPage() {
   } = useQuery({
     queryKey: ['adminUsers'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100)
+      const res = await fetch('/api/admin/users', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
 
-      if (error) throw error
-      return data
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.error || 'Erreur de chargement')
+      }
+
+      const payload = await res.json()
+      return payload.data
     },
   })
 
