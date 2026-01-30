@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -22,6 +22,11 @@ import {
   IconClock,
   IconLoader2,
 } from '@tabler/icons-react'
+import { loadConnectAndInitialize } from '@stripe/connect-js'
+import {
+  ConnectAccountOnboarding,
+  ConnectComponentsProvider,
+} from '@stripe/react-connect-js'
 import { cn } from '@/lib/utils'
 import { FEATURES } from '@/lib/shared/config/features'
 import { useAuth } from '@/hooks/use-auth'
@@ -41,9 +46,71 @@ export default function PaymentsSettingsPage() {
   const [isConnectLoading, setIsConnectLoading] = useState(true)
   const [isOnboarding, setIsOnboarding] = useState(false)
   const [connectAvailable, setConnectAvailable] = useState(true)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   const kycStatus = (profile?.kyc_status ?? null) as KYCStatus
   const canConfigurePayments = kycStatus === 'approved'
+
+  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+  const fetchClientSecret = useCallback(async () => {
+    const res = await fetch('/api/connect/onboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country: 'FR' }),
+    })
+
+    const data = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      throw new Error(data?.error || "Impossible d'activer les paiements")
+    }
+
+    if (!data?.client_secret) {
+      throw new Error('Client secret manquant')
+    }
+
+    return data.client_secret as string
+  }, [])
+
+  const connectInstance = useMemo(() => {
+    if (!publishableKey) return null
+    return loadConnectAndInitialize({
+      publishableKey,
+      fetchClientSecret,
+      appearance: {
+        variables: {
+          colorPrimary: '#0d9488',
+          colorText: '#0f172a',
+          colorDanger: '#dc2626',
+          fontFamily: 'Space Grotesk, system-ui, sans-serif',
+        },
+      },
+    })
+  }, [fetchClientSecret, publishableKey])
+
+  const loadConnectStatus = useCallback(async () => {
+    try {
+      const res = await fetch('/api/connect/status')
+
+      if (res.status === 403) {
+        setConnectAvailable(false)
+        setIsConnectLoading(false)
+        return
+      }
+
+      if (!res.ok) {
+        throw new Error('Erreur lors du chargement')
+      }
+
+      const data = await res.json()
+      setConnectStatus(data)
+    } catch (error) {
+      console.error('Connect status error:', error)
+    } finally {
+      setIsConnectLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     if (!FEATURES.STRIPE_PAYMENTS || isAdmin || !canConfigurePayments) {
@@ -51,62 +118,16 @@ export default function PaymentsSettingsPage() {
       return
     }
 
-    let isActive = true
-
-    const loadConnectStatus = async () => {
-      try {
-        const res = await fetch('/api/connect/status')
-        if (!isActive) return
-
-        if (res.status === 403) {
-          setConnectAvailable(false)
-          setIsConnectLoading(false)
-          return
-        }
-
-        if (!res.ok) {
-          throw new Error('Erreur lors du chargement')
-        }
-
-        const data = await res.json()
-        setConnectStatus(data)
-      } catch (error) {
-        console.error('Connect status error:', error)
-      } finally {
-        if (isActive) {
-          setIsConnectLoading(false)
-        }
-      }
-    }
-
     loadConnectStatus()
-
-    return () => {
-      isActive = false
-    }
-  }, [isAdmin])
+  }, [canConfigurePayments, isAdmin, loadConnectStatus])
 
   const handleConnectOnboarding = async () => {
-    setIsOnboarding(true)
-    try {
-      const res = await fetch('/api/connect/onboard', { method: 'POST' })
-      if (!res.ok) {
-        const data = await res.json()
-        toast.error(data?.error || "Impossible d'activer les paiements")
-        return
-      }
-      const data = await res.json()
-      if (data?.url) {
-        window.location.href = data.url
-      } else {
-        toast.error("Lien d'activation indisponible")
-      }
-    } catch (error) {
-      console.error('Onboarding error:', error)
-      toast.error('Une erreur est survenue. Veuillez réessayer.')
-    } finally {
-      setIsOnboarding(false)
+    if (!connectInstance) {
+      toast.error('Clé Stripe manquante')
+      return
     }
+    setIsOnboarding(true)
+    setShowOnboarding(true)
   }
 
   const connectBadgeLabel = isConnectLoading
@@ -277,6 +298,37 @@ export default function PaymentsSettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {showOnboarding && connectInstance && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Configurer votre compte bancaire</CardTitle>
+            <CardDescription>
+              Renseignez votre RIB directement dans Sendbox.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ConnectComponentsProvider connectInstance={connectInstance}>
+              <ConnectAccountOnboarding
+                onExit={() => {
+                  setShowOnboarding(false)
+                  setIsOnboarding(false)
+                  void loadConnectStatus()
+                }}
+                onLoadError={({ error }) => {
+                  console.error('Onboarding load error:', error)
+                  toast.error("Impossible d'ouvrir la configuration Stripe")
+                  setShowOnboarding(false)
+                  setIsOnboarding(false)
+                }}
+                onLoaderStart={() => {
+                  setIsOnboarding(true)
+                }}
+              />
+            </ConnectComponentsProvider>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
