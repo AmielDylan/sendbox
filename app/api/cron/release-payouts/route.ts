@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     .select('id, delivered_at, delivery_confirmed_at, status')
     .eq('status', 'delivered')
     .is('delivery_confirmed_at', null)
+    .is('dispute_opened_at', null)
     .lte('delivered_at', threshold)
 
   if (error) {

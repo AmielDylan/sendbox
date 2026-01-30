@@ -18,12 +18,12 @@ export const FEATURES = {
   /**
    * Paiements Stripe
    */
-  STRIPE_PAYMENTS: false,
+  STRIPE_PAYMENTS: true,
 
   /**
    * Paiements simulés (flow complet sans Stripe)
    */
-  PAYMENTS_SIMULATION: true,
+  PAYMENTS_SIMULATION: false,
 
   /**
    * Dashboard Admin
