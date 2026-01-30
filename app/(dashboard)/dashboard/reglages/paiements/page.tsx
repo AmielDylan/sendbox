@@ -190,16 +190,6 @@ export default function PaymentsSettingsPage() {
                 Activez vos paiements pour recevoir vos gains.
               </CardDescription>
             </div>
-            {canConfigurePayments && (
-              <Badge
-                variant={connectStatus?.payouts_enabled ? 'default' : 'warning'}
-                className={cn(
-                  connectStatus?.payouts_enabled && 'bg-green-500 text-white'
-                )}
-              >
-                {connectBadgeLabel}
-              </Badge>
-            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
