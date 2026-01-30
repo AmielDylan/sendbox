@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,6 +24,7 @@ export default function FundsPage() {
   } | null>(null)
   const [isConnectLoading, setIsConnectLoading] = useState(true)
   const [isOpeningPayout, setIsOpeningPayout] = useState(false)
+  const lastConnectStatusKey = useRef<string | null>(null)
 
   const kycStatus = (profile?.kyc_status ?? null) as
     | 'pending'
@@ -38,6 +39,17 @@ export default function FundsPage() {
       setIsConnectLoading(false)
       return
     }
+
+    if (!user?.id) {
+      setIsConnectLoading(false)
+      return
+    }
+
+    const currentKey = `${user.id}:${isAdmin}:${canConfigurePayments}`
+    if (lastConnectStatusKey.current === currentKey) {
+      return
+    }
+    lastConnectStatusKey.current = currentKey
 
     let isActive = true
 
@@ -66,7 +78,7 @@ export default function FundsPage() {
     return () => {
       isActive = false
     }
-  }, [isAdmin, canConfigurePayments])
+  }, [canConfigurePayments, isAdmin, user?.id])
 
   const handlePayout = async () => {
     setIsOpeningPayout(true)
