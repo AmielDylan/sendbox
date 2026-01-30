@@ -3,14 +3,21 @@ import { createClient } from '@/lib/shared/db/server'
 
 const RAW_APP_URL =
   process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-const APP_URL = RAW_APP_URL.startsWith('http')
-  ? RAW_APP_URL
-  : `https://${RAW_APP_URL}`
+const APP_URL = RAW_APP_URL.trim().startsWith('http')
+  ? RAW_APP_URL.trim()
+  : `https://${RAW_APP_URL.trim()}`
 const SAFE_APP_URL = (() => {
   try {
     return new URL(APP_URL).toString()
   } catch {
     return 'http://localhost:3000'
+  }
+})()
+const BUSINESS_PROFILE_URL = (() => {
+  try {
+    return new URL(APP_URL).toString()
+  } catch {
+    return null
   }
 })()
 
@@ -53,7 +60,7 @@ export async function POST() {
       },
       business_profile: {
         name: 'Sendbox Partner',
-        url: SAFE_APP_URL,
+        ...(BUSINESS_PROFILE_URL ? { url: BUSINESS_PROFILE_URL } : {}),
       },
     })
 

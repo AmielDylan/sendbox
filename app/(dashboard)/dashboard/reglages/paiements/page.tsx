@@ -203,33 +203,17 @@ export default function PaymentsSettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div
-            className={cn(
-              'space-y-3 text-sm text-muted-foreground',
-              !canConfigurePayments && 'pointer-events-none opacity-60'
-            )}
-          >
-            <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
-              <div>
-                <p className="font-medium text-foreground">
-                  Vérification d&apos;identité
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Obligatoire pour recevoir vos gains.
-                </p>
-              </div>
-              {canConfigurePayments && getKycBadge()}
-            </div>
-            <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
-              <div>
-                <p className="font-medium text-foreground">
-                  Compte bancaire
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Recevez vos paiements directement.
-                </p>
-              </div>
-              {canConfigurePayments && (
+          {canConfigurePayments ? (
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
+                <div>
+                  <p className="font-medium text-foreground">
+                    Compte bancaire
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Recevez vos paiements directement.
+                  </p>
+                </div>
                 <Badge
                   variant={
                     connectStatus?.payouts_enabled ? 'default' : 'warning'
@@ -240,9 +224,20 @@ export default function PaymentsSettingsPage() {
                 >
                   {connectBadgeLabel}
                 </Badge>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="rounded-md border border-border/50 bg-muted/20 px-3 py-2">
+                <p className="font-medium text-foreground">
+                  Vérification d&apos;identité
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Obligatoire pour recevoir vos gains.
+                </p>
+              </div>
+            </div>
+          )}
 
           {!connectAvailable && (
             <Alert>
@@ -255,10 +250,6 @@ export default function PaymentsSettingsPage() {
 
           {canConfigurePayments ? (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-muted-foreground">
-                Paiement sécurisé, libéré après confirmation ou automatiquement
-                sous 7 jours.
-              </p>
               <Button
                 onClick={handleConnectOnboarding}
                 disabled={
