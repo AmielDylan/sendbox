@@ -15,7 +15,25 @@ const SAFE_APP_URL = (() => {
 })()
 const BUSINESS_PROFILE_URL = (() => {
   try {
-    return new URL(APP_URL).toString()
+    const parsed = new URL(APP_URL)
+    if (parsed.protocol !== 'https:') {
+      return null
+    }
+    const hostname = parsed.hostname.toLowerCase()
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.endsWith('.local')
+    ) {
+      return null
+    }
+    if (!hostname.includes('.')) {
+      return null
+    }
+    if (parsed.port) {
+      return null
+    }
+    return parsed.toString()
   } catch {
     return null
   }
@@ -50,41 +68,49 @@ export async function POST() {
 
   let accountId = profile.stripe_connect_account_id || null
 
-  if (!accountId) {
-    const account = await stripe.accounts.create({
-      type: 'express',
-      country: 'FR',
-      email: profile.email || user.email || undefined,
-      capabilities: {
-        transfers: { requested: true },
-      },
-      business_profile: {
-        name: 'Sendbox Partner',
-        ...(BUSINESS_PROFILE_URL ? { url: BUSINESS_PROFILE_URL } : {}),
-      },
+  try {
+    if (!accountId) {
+      const account = await stripe.accounts.create({
+        type: 'express',
+        country: 'FR',
+        email: profile.email || user.email || undefined,
+        capabilities: {
+          transfers: { requested: true },
+        },
+        business_profile: {
+          name: 'Sendbox Partner',
+          ...(BUSINESS_PROFILE_URL ? { url: BUSINESS_PROFILE_URL } : {}),
+        },
+      })
+
+      accountId = account.id
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ stripe_connect_account_id: accountId })
+        .eq('id', user.id)
+
+      if (updateError) {
+        return Response.json(
+          { error: "Impossible d'enregistrer le compte Stripe" },
+          { status: 500 }
+        )
+      }
+    }
+
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      type: 'account_onboarding',
+      return_url: `${SAFE_APP_URL}/dashboard/reglages/paiements?connect=return`,
+      refresh_url: `${SAFE_APP_URL}/dashboard/reglages/paiements?connect=refresh`,
     })
 
-    accountId = account.id
-
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ stripe_connect_account_id: accountId })
-      .eq('id', user.id)
-
-    if (updateError) {
-      return Response.json(
-        { error: "Impossible d'enregistrer le compte Stripe" },
-        { status: 500 }
-      )
-    }
+    return Response.json({ url: accountLink.url })
+  } catch (error) {
+    console.error('Stripe connect onboarding error:', error)
+    return Response.json(
+      { error: "Impossible de démarrer l'onboarding Stripe" },
+      { status: 500 }
+    )
   }
-
-  const accountLink = await stripe.accountLinks.create({
-    account: accountId,
-    type: 'account_onboarding',
-    return_url: `${SAFE_APP_URL}/dashboard/reglages/paiements?connect=return`,
-    refresh_url: `${SAFE_APP_URL}/dashboard/reglages/paiements?connect=refresh`,
-  })
-
-  return Response.json({ url: accountLink.url })
 }
