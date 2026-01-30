@@ -22,6 +22,7 @@ import {
   IconSearch,
   IconSpeakerphone,
   IconAlertTriangle,
+  IconCreditCard,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from '@/lib/utils'
@@ -59,6 +60,7 @@ interface NavItem {
   href: string
   icon: React.ComponentType<{ className?: string }>
   badge?: number
+  userOnly?: boolean
 }
 
 const navItems: NavItem[] = [
@@ -84,6 +86,12 @@ const navItems: NavItem[] = [
     icon: IconPackage,
   },
   {
+    title: 'Fonds',
+    href: '/dashboard/fonds',
+    icon: IconCreditCard,
+    userOnly: true,
+  },
+  {
     title: 'Réglages',
     href: '/dashboard/reglages',
     icon: IconSettings,
@@ -95,7 +103,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isInitialCheckDone, setIsInitialCheckDone] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user, loading, profile } = useAuth()
+  const isAdmin = profile?.role === 'admin'
+
+  const visibleNavItems = navItems.filter(item => !item.userOnly || !isAdmin)
 
   // Redirection vers /login si non authentifié (après le chargement initial complet)
   useEffect(() => {
@@ -142,6 +153,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
               <SidebarContent
                 pathname={pathname}
+                items={visibleNavItems}
                 onNavigate={() => setSidebarOpen(false)}
               />
             </SheetContent>
@@ -154,7 +166,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 md:border-r">
-          <SidebarContent pathname={pathname} />
+          <SidebarContent pathname={pathname} items={visibleNavItems} />
         </aside>
 
         {/* Main Content */}
@@ -175,9 +187,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
 function SidebarContent({
   pathname,
+  items,
   onNavigate,
 }: {
   pathname: string
+  items: NavItem[]
   onNavigate?: () => void
 }) {
   return (
@@ -189,7 +203,7 @@ function SidebarContent({
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-4" aria-label="Navigation principale">
-        {navItems.map(item => {
+        {items.map(item => {
           const Icon = item.icon
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/')

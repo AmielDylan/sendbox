@@ -96,6 +96,7 @@ export function OptimizedAuthProvider({
   const profileRetryCount = useRef(0)
   const profileRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastKycStatus = useRef<string | null>(null)
+  const lastSetupNotificationKey = useRef<string | null>(null)
 
   const PROFILE_FETCH_TIMEOUT_MS = 12000
   const MAX_PROFILE_FETCH_RETRIES = 2
@@ -490,6 +491,24 @@ export function OptimizedAuthProvider({
   useEffect(() => {
     setStoreProfile(profile as any)
   }, [profile, setStoreProfile])
+
+  useEffect(() => {
+    if (!profile?.id) return
+
+    const setupKey = `${profile.id}:${profile.kyc_status ?? 'none'}:${
+      profile.stripe_payouts_enabled ? 'payouts' : 'no-payouts'
+    }:${profile.role ?? 'unknown'}`
+
+    if (lastSetupNotificationKey.current === setupKey) {
+      return
+    }
+
+    lastSetupNotificationKey.current = setupKey
+
+    fetch('/api/notifications/setup', { method: 'POST' }).catch(error => {
+      console.warn('Notification setup failed:', error)
+    })
+  }, [profile])
 
   useEffect(() => {
     lastKycStatus.current = (profile as any)?.kyc_status ?? null

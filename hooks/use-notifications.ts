@@ -2,7 +2,7 @@
  * Hook personnalisé pour gérer les notifications en temps réel
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/shared/db/client'
 import { toast } from 'sonner'
 import { Notification } from '@/lib/shared/db/queries/notifications'
@@ -11,6 +11,16 @@ export function useNotifications(limit: number = 20) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+
+  const removeNotification = useCallback((notificationId: string) => {
+    setNotifications(prev => {
+      const removed = prev.find(n => n.id === notificationId)
+      if (removed && !removed.read_at) {
+        setUnreadCount(count => Math.max(0, count - 1))
+      }
+      return prev.filter(n => n.id !== notificationId)
+    })
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -125,6 +135,24 @@ export function useNotifications(limit: number = 20) {
               })
             }
           )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`,
+            },
+            payload => {
+              const removedNotif = payload.old as Notification
+              setNotifications(prev =>
+                prev.filter(n => n.id !== removedNotif.id)
+              )
+              if (!removedNotif.read_at) {
+                setUnreadCount(prev => Math.max(0, prev - 1))
+              }
+            }
+          )
           .subscribe(status => {
             if (status === 'SUBSCRIBED') {
               console.log('✅ Subscribed to notifications realtime')
@@ -161,5 +189,5 @@ export function useNotifications(limit: number = 20) {
     }
   }, [limit])
 
-  return { notifications, unreadCount, isLoading }
+  return { notifications, unreadCount, isLoading, removeNotification }
 }

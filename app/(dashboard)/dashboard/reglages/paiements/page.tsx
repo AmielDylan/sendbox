@@ -43,9 +43,10 @@ export default function PaymentsSettingsPage() {
   const [connectAvailable, setConnectAvailable] = useState(true)
 
   const kycStatus = (profile?.kyc_status ?? null) as KYCStatus
+  const canConfigurePayments = kycStatus === 'approved'
 
   useEffect(() => {
-    if (!FEATURES.STRIPE_PAYMENTS || isAdmin) {
+    if (!FEATURES.STRIPE_PAYMENTS || isAdmin || !canConfigurePayments) {
       setIsConnectLoading(false)
       return
     }
@@ -189,18 +190,25 @@ export default function PaymentsSettingsPage() {
                 Activez vos paiements pour recevoir vos gains.
               </CardDescription>
             </div>
-            <Badge
-              variant={connectStatus?.payouts_enabled ? 'default' : 'warning'}
-              className={cn(
-                connectStatus?.payouts_enabled && 'bg-green-500 text-white'
-              )}
-            >
-              {connectBadgeLabel}
-            </Badge>
+            {canConfigurePayments && (
+              <Badge
+                variant={connectStatus?.payouts_enabled ? 'default' : 'warning'}
+                className={cn(
+                  connectStatus?.payouts_enabled && 'bg-green-500 text-white'
+                )}
+              >
+                {connectBadgeLabel}
+              </Badge>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-3 text-sm text-muted-foreground">
+          <div
+            className={cn(
+              'space-y-3 text-sm text-muted-foreground',
+              !canConfigurePayments && 'pointer-events-none opacity-60'
+            )}
+          >
             <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
               <div>
                 <p className="font-medium text-foreground">
@@ -210,15 +218,7 @@ export default function PaymentsSettingsPage() {
                   Obligatoire pour recevoir vos gains.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                {getKycBadge()}
-                <Link
-                  href="/dashboard/reglages/kyc"
-                  className="text-xs text-primary hover:underline"
-                >
-                  Vérifier
-                </Link>
-              </div>
+              {canConfigurePayments && getKycBadge()}
             </div>
             <div className="flex items-center justify-between rounded-md border border-border/50 bg-muted/20 px-3 py-2">
               <div>
@@ -229,14 +229,18 @@ export default function PaymentsSettingsPage() {
                   Recevez vos paiements directement.
                 </p>
               </div>
-              <Badge
-                variant={connectStatus?.payouts_enabled ? 'default' : 'warning'}
-                className={cn(
-                  connectStatus?.payouts_enabled && 'bg-green-500 text-white'
-                )}
-              >
-                {connectBadgeLabel}
-              </Badge>
+              {canConfigurePayments && (
+                <Badge
+                  variant={
+                    connectStatus?.payouts_enabled ? 'default' : 'warning'
+                  }
+                  className={cn(
+                    connectStatus?.payouts_enabled && 'bg-green-500 text-white'
+                  )}
+                >
+                  {connectBadgeLabel}
+                </Badge>
+              )}
             </div>
           </div>
 
@@ -249,33 +253,47 @@ export default function PaymentsSettingsPage() {
             </Alert>
           )}
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-muted-foreground">
-              Paiement sécurisé, libéré après confirmation ou automatiquement
-              sous 7 jours.
-            </p>
-            <Button
-              onClick={handleConnectOnboarding}
-              disabled={
-                isOnboarding ||
-                isConnectLoading ||
-                connectStatus?.payouts_enabled ||
-                !connectAvailable ||
-                !FEATURES.STRIPE_PAYMENTS
-              }
-            >
-              {isOnboarding ? (
-                <>
-                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Activation...
-                </>
-              ) : connectStatus?.payouts_enabled ? (
-                'Paiements activés'
-              ) : (
-                'Activer les paiements'
-              )}
-            </Button>
-          </div>
+          {canConfigurePayments ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                Paiement sécurisé, libéré après confirmation ou automatiquement
+                sous 7 jours.
+              </p>
+              <Button
+                onClick={handleConnectOnboarding}
+                disabled={
+                  isOnboarding ||
+                  isConnectLoading ||
+                  connectStatus?.payouts_enabled ||
+                  !connectAvailable ||
+                  !FEATURES.STRIPE_PAYMENTS
+                }
+              >
+                {isOnboarding ? (
+                  <>
+                    <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Activation...
+                  </>
+                ) : connectStatus?.payouts_enabled ? (
+                  'Paiements activés'
+                ) : (
+                  'Activer les paiements'
+                )}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                Vérifiez vos informations d&apos;identité avant d&apos;ajouter
+                un compte bancaire.
+              </p>
+              <Button asChild>
+                <Link href="/dashboard/reglages/kyc">
+                  Vérifier mon identité
+                </Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

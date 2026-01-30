@@ -22,7 +22,8 @@ import { NotificationItem } from './NotificationItem'
 
 export function NotificationDropdown() {
   const [open, setOpen] = useState(false)
-  const { notifications, unreadCount, isLoading } = useNotifications(5)
+  const { notifications, unreadCount, isLoading, removeNotification } =
+    useNotifications(5)
 
   const recentNotifications = notifications.slice(0, 5)
 
@@ -60,6 +61,7 @@ export function NotificationDropdown() {
                   key={notification.id}
                   notification={notification}
                   onClick={() => setOpen(false)}
+                  onDelete={id => removeNotification(id)}
                 />
               ))}
             </div>

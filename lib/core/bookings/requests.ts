@@ -409,6 +409,41 @@ export async function markNotificationAsRead(notificationId: string) {
 }
 
 /**
+ * Supprime une notification
+ */
+export async function deleteNotification(notificationId: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      error: 'Non authentifié',
+    }
+  }
+
+  const { error } = await supabase
+    .from('notifications')
+    .delete()
+    .eq('id', notificationId)
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Error deleting notification:', error)
+    return {
+      error: 'Erreur lors de la suppression de la notification',
+    }
+  }
+
+  revalidatePath('/dashboard/messages')
+  return {
+    success: true,
+  }
+}
+
+/**
  * Récupère le nombre de notifications non lues
  */
 export async function getUnreadNotificationsCount() {

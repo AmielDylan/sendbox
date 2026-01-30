@@ -4,6 +4,7 @@
 
 'use client'
 
+import type { MouseEvent } from 'react'
 import { Notification } from '@/lib/shared/db/queries/notifications'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -18,13 +19,18 @@ import {
   IconMessageCircle,
   IconBell,
   IconShield,
+  IconX,
 } from '@tabler/icons-react'
 import Link from 'next/link'
-import { markNotificationAsRead } from '@/lib/core/bookings/requests'
+import {
+  deleteNotification,
+  markNotificationAsRead,
+} from '@/lib/core/bookings/requests'
 
 interface NotificationItemProps {
   notification: Notification
   onClick?: () => void
+  onDelete?: (notificationId: string) => void
 }
 
 const NOTIFICATION_ICONS = {
@@ -58,6 +64,7 @@ const NOTIFICATION_COLORS = {
 export function NotificationItem({
   notification,
   onClick,
+  onDelete,
 }: NotificationItemProps) {
   const Icon =
     NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] ||
@@ -74,6 +81,15 @@ export function NotificationItem({
       await markNotificationAsRead(notification.id)
     }
     onClick?.()
+  }
+
+  const handleDelete = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const result = await deleteNotification(notification.id)
+    if (!result?.error) {
+      onDelete?.(notification.id)
+    }
   }
 
   const getLink = () => {
@@ -115,9 +131,19 @@ export function NotificationItem({
           })}
         </p>
       </div>
-      {isUnread && (
-        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2" />
-      )}
+      <div className="flex flex-col items-end gap-2">
+        {isUnread && (
+          <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-1" />
+        )}
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="text-muted-foreground hover:text-destructive transition-colors"
+          aria-label="Supprimer la notification"
+        >
+          <IconX className="h-3.5 w-3.5" />
+        </button>
+      </div>
     </div>
   )
 
