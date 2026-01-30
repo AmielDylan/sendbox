@@ -21,6 +21,7 @@ import {
   IconUser,
   IconSearch,
   IconSpeakerphone,
+  IconAlertTriangle,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from '@/lib/utils'
@@ -47,7 +48,6 @@ import { FEATURES, isFeatureEnabled } from '@/lib/shared/config/features'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
 import { getAvatarUrl } from '@/lib/core/profile/utils'
-import { BetaBanner } from '@/components/beta-banner'
 import { FeedbackDialog } from '@/components/feedback-dialog'
 
 interface DashboardLayoutProps {
@@ -147,9 +147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </SheetContent>
           </Sheet>
         </ClientOnly>
-        <div className="flex-1">
-          <LogoLink className="h-6" />
-        </div>
+        <div className="flex-1" />
         <HeaderActions />
       </header>
 
@@ -168,10 +166,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
 
           {/* Page Content */}
-          <div className="p-4 md:p-6">
-            <BetaBanner />
-            {children}
-          </div>
+          <div className="p-4 md:p-6">{children}</div>
         </main>
       </div>
     </div>
@@ -226,6 +221,14 @@ function SidebarContent({
           )
         })}
       </nav>
+      {FEATURES.BETA_MODE && (
+        <div className="border-t p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
+            <IconAlertTriangle className="h-4 w-4" />
+            <span>Version bêta</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -243,8 +246,11 @@ function HeaderActions() {
       </ClientOnly>
 
       {FEATURES.BETA_MODE && (
-        <Badge variant="secondary" className="hidden sm:inline-flex">
-          Beta Tester
+        <Badge
+          variant="secondary"
+          className="hidden sm:inline-flex rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+        >
+          Bêta
         </Badge>
       )}
 
