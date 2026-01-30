@@ -18,7 +18,6 @@ describe('cancelBookingWithReason', () => {
     email: 'sender@test.com',
     role: 'sender',
     kyc_status: 'approved',
-    rating: 5.0,
   })
 
   const mockTraveler = createMockUser({
@@ -26,7 +25,6 @@ describe('cancelBookingWithReason', () => {
     email: 'traveler@test.com',
     role: 'traveler',
     kyc_status: 'approved',
-    rating: 4.5,
   })
 
   let mockAnnouncement: ReturnType<typeof createMockPublishedAnnouncement>
