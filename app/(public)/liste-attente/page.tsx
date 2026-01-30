@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,9 +10,16 @@ import { toast } from 'sonner'
 import { FEATURES } from '@/lib/shared/config/features'
 
 export default function WaitlistPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [betaCount, setBetaCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!FEATURES.BETA_MODE) {
+      router.replace('/')
+    }
+  }, [router])
 
   useEffect(() => {
     if (!FEATURES.BETA_MODE) return
@@ -35,6 +43,10 @@ export default function WaitlistPage() {
       isMounted = false
     }
   }, [])
+
+  if (!FEATURES.BETA_MODE) {
+    return null
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
