@@ -74,20 +74,6 @@ export async function proxy(request: NextRequest) {
     isAdmin = profile?.role === 'admin'
   }
 
-  // Auto-logout admin (temporaire) pour forcer la déconnexion après relance
-  const autoLogoutCookie = request.cookies.get('sb-auto-logout')
-  if (user && isAdmin && !autoLogoutCookie) {
-    await supabase.auth.signOut()
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    const response = NextResponse.redirect(url)
-    response.cookies.set('sb-auto-logout', '1', {
-      path: '/',
-      maxAge: 300,
-      sameSite: 'lax',
-    })
-    return response
-  }
 
   // Si l'utilisateur essaie d'accéder à une route protégée sans être authentifié
   if (isProtectedRoute && !user) {

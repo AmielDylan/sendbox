@@ -45,16 +45,14 @@ export function AuthSidebar() {
 
   return (
     <div className="w-full max-w-md space-y-6">
+      <BetaInfoBadge count={betaCount} />
       {isRegister ? (
         <>
           {/* Registration Progress */}
           <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-lg font-semibold text-foreground">
-                Créez votre compte en 2 min
-              </h3>
-              <BetaInfoBadge count={betaCount} />
-            </div>
+            <h3 className="text-lg font-semibold text-foreground">
+              Créez votre compte en 2 min
+            </h3>
             <div className="space-y-3">
               {[
                 'Informations personnelles',
@@ -75,12 +73,9 @@ export function AuthSidebar() {
 
           {/* What You Get */}
           <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-lg font-semibold text-foreground">
-                Ce que vous obtenez
-              </h3>
-              <BetaInfoBadge count={betaCount} />
-            </div>
+            <h3 className="text-lg font-semibold text-foreground">
+              Ce que vous obtenez
+            </h3>
             <div className="space-y-3">
               {[
                 { icon: IconShieldCheck, text: 'Profil vérifié et sécurisé' },
@@ -101,12 +96,9 @@ export function AuthSidebar() {
         <>
           {/* Login Benefits */}
           <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-lg font-semibold text-foreground">
-                Votre espace Sendbox
-              </h3>
-              <BetaInfoBadge count={betaCount} />
-            </div>
+            <h3 className="text-lg font-semibold text-foreground">
+              Votre espace Sendbox
+            </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Accédez à votre tableau de bord pour gérer vos annonces, suivre
               vos colis et communiquer en toute sécurité.
@@ -115,12 +107,9 @@ export function AuthSidebar() {
 
           {/* Security Info */}
           <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-lg font-semibold text-foreground">
-                Sécurité renforcée
-              </h3>
-              <BetaInfoBadge count={betaCount} />
-            </div>
+            <h3 className="text-lg font-semibold text-foreground">
+              Sécurité renforcée
+            </h3>
             <div className="space-y-3">
               {[
                 'Chiffrement de bout en bout',
@@ -139,9 +128,6 @@ export function AuthSidebar() {
 
       {/* Trust Indicator */}
       <div className="rounded-2xl border-2 border-primary/20 bg-primary/5 backdrop-blur-sm p-4">
-        <div className="flex items-start justify-between gap-3">
-          <BetaInfoBadge count={betaCount} />
-        </div>
         <p className="text-sm text-foreground text-center">
           <span className="font-semibold">100% sécurisé</span>
           <br />
