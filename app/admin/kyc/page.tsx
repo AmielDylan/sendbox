@@ -6,7 +6,6 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/shared/db/client'
 import {
   Card,
   CardContent,
@@ -34,21 +33,31 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default function AdminKYCPage() {
-  const supabase = createClient()
-
   const { data: kycStats, isLoading } = useQuery({
     queryKey: ['adminKYCStats'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select(
-          'id, email, firstname, lastname, kyc_status, kyc_submitted_at, created_at'
-        )
-        .order('kyc_submitted_at', { ascending: false, nullsFirst: false })
-        .limit(100)
+      const res = await fetch('/api/admin/users', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      })
 
-      if (error) throw error
-      return data
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.error || 'Erreur de chargement')
+      }
+
+      const payload = await res.json()
+      const users = (payload?.data || []) as any[]
+
+      return users.sort((a, b) => {
+        const aTime = a.kyc_submitted_at
+          ? new Date(a.kyc_submitted_at).getTime()
+          : 0
+        const bTime = b.kyc_submitted_at
+          ? new Date(b.kyc_submitted_at).getTime()
+          : 0
+        return bTime - aTime
+      })
     },
   })
 
