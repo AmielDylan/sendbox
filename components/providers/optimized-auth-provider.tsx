@@ -100,6 +100,7 @@ export function OptimizedAuthProvider({
   const PROFILE_FETCH_TIMEOUT_MS = 12000
   const MAX_PROFILE_FETCH_RETRIES = 2
   const PROFILE_RETRY_BASE_DELAY_MS = 1500
+  const PROFILE_POLL_INTERVAL_MS = 60000
 
   const showKycStatusToast = useCallback(
     (status: string | null, rejectionReason?: string | null) => {
@@ -164,6 +165,20 @@ export function OptimizedAuthProvider({
         profileRetryTimer.current = null
       }
 
+      const queueProfileRetry = (reason: string) => {
+        if (profileRetryCount.current >= MAX_PROFILE_FETCH_RETRIES) {
+          return
+        }
+
+        const retryDelay =
+          PROFILE_RETRY_BASE_DELAY_MS * (profileRetryCount.current + 1)
+        profileRetryCount.current += 1
+        profileRetryTimer.current = setTimeout(() => {
+          console.warn('[Auth] Retrying profile fetch:', reason)
+          fetchProfile(userId)
+        }, retryDelay)
+      }
+
       try {
         console.log('[Auth] Fetching profile for user:', userId)
 
@@ -187,11 +202,22 @@ export function OptimizedAuthProvider({
         })
 
         if (profileError) {
+          const isEmptyError =
+            !profileError.code &&
+            !profileError.message &&
+            !profileError.details &&
+            !profileError.hint
+
           // Si le profil n'existe pas, ce n'est pas une erreur critique
           if (profileError.code === 'PGRST116') {
             console.warn('[Auth] Profile not found for user:', userId)
             setProfile(null)
             setError(null)
+            queueProfileRetry('profile_not_found')
+          } else if (isEmptyError) {
+            console.warn('[Auth] Empty profile error payload, retrying')
+            setError(null)
+            queueProfileRetry('empty_error')
           } else {
             console.error('[Auth] Error fetching profile:', profileError)
             console.error('[Auth] Profile error details:', {
@@ -225,12 +251,7 @@ export function OptimizedAuthProvider({
         }
 
         if (profileRetryCount.current < MAX_PROFILE_FETCH_RETRIES) {
-          const retryDelay =
-            PROFILE_RETRY_BASE_DELAY_MS * (profileRetryCount.current + 1)
-          profileRetryCount.current += 1
-          profileRetryTimer.current = setTimeout(() => {
-            fetchProfile(userId)
-          }, retryDelay)
+          queueProfileRetry('exception')
         }
 
         setError(null)
@@ -404,6 +425,9 @@ export function OptimizedAuthProvider({
       .subscribe(status => {
         if (status === 'CHANNEL_ERROR') {
           console.error('❌ Realtime profile subscription error')
+          if (user?.id) {
+            fetchProfile(user.id)
+          }
         }
       })
 
@@ -411,6 +435,21 @@ export function OptimizedAuthProvider({
       supabase.removeChannel(channel)
     }
   }, [user?.id, supabase, setStoreProfile, showKycStatusToast])
+
+  /**
+   * Fallback polling in case realtime is unavailable.
+   */
+  useEffect(() => {
+    if (!user?.id) return
+
+    const interval = setInterval(() => {
+      if (!isFetchingProfile.current) {
+        fetchProfile(user.id)
+      }
+    }, PROFILE_POLL_INTERVAL_MS)
+
+    return () => clearInterval(interval)
+  }, [user?.id, fetchProfile])
 
   /**
    * Synchronisation multi-onglets via BroadcastChannel

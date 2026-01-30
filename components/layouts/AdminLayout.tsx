@@ -49,6 +49,7 @@ import { ClientOnly } from '@/components/ui/client-only'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
 import { getAvatarUrl } from '@/lib/core/profile/utils'
+import { FEATURES } from '@/lib/shared/config/features'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -106,6 +107,9 @@ const adminNavItems: AdminNavItem[] = [
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const navItems = FEATURES.BETA_MODE
+    ? adminNavItems
+    : adminNavItems.filter(item => item.href !== '/admin/feedback')
 
   return (
     <div className="min-h-screen bg-background">
@@ -126,6 +130,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <SheetContent side="left" className="w-64 p-0">
               <SheetTitle className="sr-only">Menu d'administration</SheetTitle>
               <SidebarContent
+                navItems={navItems}
                 pathname={pathname}
                 onNavigate={() => setSidebarOpen(false)}
               />
@@ -141,7 +146,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="flex">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 md:border-r">
-          <SidebarContent pathname={pathname} />
+          <SidebarContent navItems={navItems} pathname={pathname} />
         </aside>
 
         {/* Main Content */}
@@ -163,9 +168,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 function SidebarContent({
   pathname,
   onNavigate,
+  navItems,
 }: {
   pathname: string
   onNavigate?: () => void
+  navItems: AdminNavItem[]
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -179,7 +186,7 @@ function SidebarContent({
         className="flex-1 space-y-1 p-4"
         aria-label="Navigation administration"
       >
-        {adminNavItems.map(item => {
+        {navItems.map(item => {
           const Icon = item.icon
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/')

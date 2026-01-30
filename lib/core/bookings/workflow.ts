@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { createSystemNotification } from '@/lib/core/notifications/system'
+import { releaseTransferForBooking } from '@/lib/core/payments/transfers'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 /**
@@ -668,6 +669,19 @@ export async function confirmDeliveryReceipt(bookingId: string) {
 
   if (notifError) {
     console.error('Notification creation failed (non-blocking):', notifError)
+  }
+
+  // Déclencher le transfert Stripe Connect (non-bloquant)
+  try {
+    const releaseResult = await releaseTransferForBooking(
+      bookingId,
+      'delivery_confirmed'
+    )
+    if (releaseResult.error) {
+      console.error('Transfer release skipped:', releaseResult.error)
+    }
+  } catch (releaseError) {
+    console.error('Transfer release failed (non-blocking):', releaseError)
   }
 
   revalidatePath('/dashboard/colis')

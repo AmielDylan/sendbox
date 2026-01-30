@@ -1,8 +1,13 @@
 import { createClient } from '@/lib/shared/db/server'
+import { FEATURES } from '@/lib/shared/config/features'
 
 const ALLOWED_TYPES = new Set(['bug', 'feature', 'other'])
 
 export async function POST(req: Request) {
+  if (!FEATURES.BETA_MODE) {
+    return Response.json({ error: 'Not found' }, { status: 404 })
+  }
+
   const supabase = await createClient()
   const {
     data: { user },

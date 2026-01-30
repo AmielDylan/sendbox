@@ -1085,7 +1085,7 @@ export type Database = {
         | 'payout'
         | 'refund'
       transaction_status: 'pending' | 'completed' | 'failed' | 'refunded'
-      user_role: 'sender' | 'traveler' | 'both' | 'admin'
+      user_role: 'user' | 'partner' | 'admin'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1255,7 +1255,7 @@ export const Constants = {
         'payout',
         'refund',
       ],
-      user_role: ['sender', 'traveler', 'both', 'admin'],
+      user_role: ['user', 'partner', 'admin'],
     },
   },
 } as const

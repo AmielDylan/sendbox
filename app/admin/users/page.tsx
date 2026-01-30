@@ -51,7 +51,7 @@ export default function AdminUsersPage() {
   const [banDialogOpen, setBanDialogOpen] = useState(false)
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
   const [banReason, setBanReason] = useState('')
-  const [newRole, setNewRole] = useState<'user' | 'admin'>('user')
+  const [newRole, setNewRole] = useState<'user' | 'partner' | 'admin'>('user')
 
   const { user: currentUser } = useAuth()
 
@@ -283,6 +283,7 @@ export default function AdminUsersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="user">Utilisateur</SelectItem>
+                  <SelectItem value="partner">Partenaire</SelectItem>
                   <SelectItem value="admin">Administrateur</SelectItem>
                 </SelectContent>
               </Select>

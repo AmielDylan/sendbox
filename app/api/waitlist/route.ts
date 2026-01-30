@@ -1,6 +1,11 @@
 import { createClient } from '@/lib/shared/db/server'
+import { FEATURES } from '@/lib/shared/config/features'
 
 export async function POST(req: Request) {
+  if (!FEATURES.BETA_MODE) {
+    return Response.json({ error: 'Not found' }, { status: 404 })
+  }
+
   const supabase = await createClient()
   const body = await req.json()
   const email =
