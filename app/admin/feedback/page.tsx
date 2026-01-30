@@ -10,12 +10,16 @@ import { Badge } from '@/components/ui/badge'
 import { IconMessageCircle } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { FEATURES } from '@/lib/shared/config/features'
 
 export default async function AdminFeedbackPage() {
   const admin = await isAdmin()
 
   if (!admin) {
     redirect('/')
+  }
+  if (!FEATURES.BETA_MODE) {
+    redirect('/admin/dashboard')
   }
 
   const supabase = createAdminClient()

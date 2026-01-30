@@ -122,7 +122,10 @@ export async function banUser(
 /**
  * Modifie le rôle d'un utilisateur
  */
-export async function updateUserRole(userId: string, role: 'user' | 'admin') {
+export async function updateUserRole(
+  userId: string,
+  role: 'user' | 'partner' | 'admin'
+) {
   if (!(await isAdmin())) {
     return {
       error: 'Non autorisé',
