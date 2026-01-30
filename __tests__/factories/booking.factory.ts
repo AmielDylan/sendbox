@@ -31,15 +31,20 @@ export interface MockBooking {
   traveler_id: string
   package_description: string
   weight: number
+  kilos_requested?: number // Alias for weight (used in API routes)
   package_value?: number | null
   base_price: number
   commission: number
   total_price: number
+  price_per_kg?: number
+  insurance_opted?: boolean
   status: MockBookingStatus
   tracking_code?: string | null
   deposit_proof_url?: string | null
   delivery_proof_url?: string | null
   qr_code?: string | null
+  payment_intent_id?: string | null
+  paid_at?: string | null
   created_at: string
   updated_at: string
   confirmed_deposit_at?: string | null
