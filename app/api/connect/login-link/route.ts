@@ -1,6 +1,12 @@
 import { stripe } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/server'
 
+type ProfileConnectInfo = {
+  id: string
+  role: string | null
+  stripe_connect_account_id: string | null
+}
+
 export async function POST() {
   const supabase = await createClient()
   const {
@@ -11,11 +17,13 @@ export async function POST() {
     return Response.json({ error: 'Non authentifié' }, { status: 401 })
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const { data, error: profileError } = await supabase
     .from('profiles')
     .select('id, role, stripe_connect_account_id')
     .eq('id', user.id)
     .single()
+
+  const profile = data as ProfileConnectInfo | null
 
   if (profileError || !profile) {
     return Response.json({ error: 'Profil introuvable' }, { status: 404 })
