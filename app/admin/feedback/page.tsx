@@ -4,7 +4,7 @@
 
 import { redirect } from 'next/navigation'
 import { isAdmin } from '@/lib/core/admin/actions'
-import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IconMessageCircle } from '@tabler/icons-react'
@@ -18,7 +18,7 @@ export default async function AdminFeedbackPage() {
     redirect('/')
   }
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { data: feedbacks, error } = await supabase
     .from('feedback')
     .select(
@@ -88,7 +88,9 @@ export default async function AdminFeedbackPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{feedback.type}</Badge>
+                  <Badge className={getFeedbackBadgeClass(feedback.type)}>
+                    {formatFeedbackType(feedback.type)}
+                  </Badge>
                   <span className="text-xs text-muted-foreground">
                     {feedback.created_at
                       ? format(
@@ -109,4 +111,26 @@ export default async function AdminFeedbackPage() {
       </div>
     </div>
   )
+}
+
+function formatFeedbackType(type: string) {
+  switch (type) {
+    case 'bug':
+      return 'Bug'
+    case 'feature':
+      return 'Suggestion'
+    default:
+      return 'Autre'
+  }
+}
+
+function getFeedbackBadgeClass(type: string) {
+  switch (type) {
+    case 'bug':
+      return 'border border-red-200 bg-red-100 text-red-900 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200'
+    case 'feature':
+      return 'border border-blue-200 bg-blue-100 text-blue-900 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-200'
+    default:
+      return 'border border-slate-200 bg-slate-100 text-slate-900 dark:border-slate-700 dark:bg-slate-900/30 dark:text-slate-200'
+  }
 }

@@ -248,9 +248,9 @@ function HeaderActions() {
       {FEATURES.BETA_MODE && (
         <Badge
           variant="secondary"
-          className="hidden sm:inline-flex rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+          className="hidden h-8 items-center rounded-full border border-amber-200 bg-amber-100 px-3 text-[11px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 sm:inline-flex"
         >
-          Bêta
+          Version bêta
         </Badge>
       )}
 

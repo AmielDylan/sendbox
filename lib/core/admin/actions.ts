@@ -6,13 +6,14 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
 import { headers } from 'next/headers'
 
 /**
  * Vérifie si l'utilisateur est admin
  */
 export async function isAdmin(): Promise<boolean> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const {
     data: { user },
