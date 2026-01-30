@@ -16,170 +16,184 @@ const mockStripeStore = {
 
 export const stripeHandlers = [
   // Create Payment Intent
-  http.post('https://api.stripe.com/v1/payment_intents', async ({ request }) => {
-    const formData = await request.text()
-    const params = new URLSearchParams(formData)
+  http.post(
+    'https://api.stripe.com/v1/payment_intents',
+    async ({ request }) => {
+      const formData = await request.text()
+      const params = new URLSearchParams(formData)
 
-    const amount = params.get('amount')
-    const currency = params.get('currency') || 'eur'
-    const metadata = Object.fromEntries(
-      Array.from(params.entries()).filter(([key]) => key.startsWith('metadata['))
-    )
+      const amount = params.get('amount')
+      const currency = params.get('currency') || 'eur'
+      const metadata = Object.fromEntries(
+        Array.from(params.entries()).filter(([key]) =>
+          key.startsWith('metadata[')
+        )
+      )
 
-    const paymentIntentId = `pi_test_${faker.string.alphanumeric(24)}`
-    const clientSecret = `${paymentIntentId}_secret_${faker.string.alphanumeric(32)}`
+      const paymentIntentId = `pi_test_${faker.string.alphanumeric(24)}`
+      const clientSecret = `${paymentIntentId}_secret_${faker.string.alphanumeric(32)}`
 
-    const paymentIntent = {
-      id: paymentIntentId,
-      object: 'payment_intent',
-      amount: parseInt(amount || '0'),
-      amount_capturable: 0,
-      amount_received: 0,
-      application: null,
-      application_fee_amount: null,
-      automatic_payment_methods: null,
-      canceled_at: null,
-      cancellation_reason: null,
-      capture_method: 'automatic',
-      charges: {
-        object: 'list',
-        data: [],
-        has_more: false,
-        total_count: 0,
-        url: `/v1/charges?payment_intent=${paymentIntentId}`,
-      },
-      client_secret: clientSecret,
-      confirmation_method: 'automatic',
-      created: Math.floor(Date.now() / 1000),
-      currency,
-      customer: null,
-      description: null,
-      invoice: null,
-      last_payment_error: null,
-      latest_charge: null,
-      livemode: false,
-      metadata,
-      next_action: null,
-      on_behalf_of: null,
-      payment_method: null,
-      payment_method_options: {},
-      payment_method_types: ['card'],
-      processing: null,
-      receipt_email: null,
-      review: null,
-      setup_future_usage: null,
-      shipping: null,
-      source: null,
-      statement_descriptor: null,
-      statement_descriptor_suffix: null,
-      status: 'requires_payment_method',
-      transfer_data: null,
-      transfer_group: null,
+      const paymentIntent = {
+        id: paymentIntentId,
+        object: 'payment_intent',
+        amount: parseInt(amount || '0'),
+        amount_capturable: 0,
+        amount_received: 0,
+        application: null,
+        application_fee_amount: null,
+        automatic_payment_methods: null,
+        canceled_at: null,
+        cancellation_reason: null,
+        capture_method: 'automatic',
+        charges: {
+          object: 'list',
+          data: [],
+          has_more: false,
+          total_count: 0,
+          url: `/v1/charges?payment_intent=${paymentIntentId}`,
+        },
+        client_secret: clientSecret,
+        confirmation_method: 'automatic',
+        created: Math.floor(Date.now() / 1000),
+        currency,
+        customer: null,
+        description: null,
+        invoice: null,
+        last_payment_error: null,
+        latest_charge: null,
+        livemode: false,
+        metadata,
+        next_action: null,
+        on_behalf_of: null,
+        payment_method: null,
+        payment_method_options: {},
+        payment_method_types: ['card'],
+        processing: null,
+        receipt_email: null,
+        review: null,
+        setup_future_usage: null,
+        shipping: null,
+        source: null,
+        statement_descriptor: null,
+        statement_descriptor_suffix: null,
+        status: 'requires_payment_method',
+        transfer_data: null,
+        transfer_group: null,
+      }
+
+      mockStripeStore.paymentIntents.set(paymentIntentId, paymentIntent)
+
+      return HttpResponse.json(paymentIntent, { status: 200 })
     }
-
-    mockStripeStore.paymentIntents.set(paymentIntentId, paymentIntent)
-
-    return HttpResponse.json(paymentIntent, { status: 200 })
-  }),
+  ),
 
   // Retrieve Payment Intent
-  http.get('https://api.stripe.com/v1/payment_intents/:id', async ({ params }) => {
-    const id = params.id as string
-    const paymentIntent = mockStripeStore.paymentIntents.get(id)
+  http.get(
+    'https://api.stripe.com/v1/payment_intents/:id',
+    async ({ params }) => {
+      const id = params.id as string
+      const paymentIntent = mockStripeStore.paymentIntents.get(id)
 
-    if (!paymentIntent) {
-      return HttpResponse.json(
-        {
-          error: {
-            type: 'invalid_request_error',
-            message: `No such payment_intent: '${id}'`,
+      if (!paymentIntent) {
+        return HttpResponse.json(
+          {
+            error: {
+              type: 'invalid_request_error',
+              message: `No such payment_intent: '${id}'`,
+            },
           },
-        },
-        { status: 404 }
-      )
-    }
+          { status: 404 }
+        )
+      }
 
-    return HttpResponse.json(paymentIntent, { status: 200 })
-  }),
+      return HttpResponse.json(paymentIntent, { status: 200 })
+    }
+  ),
 
   // Confirm Payment Intent
-  http.post('https://api.stripe.com/v1/payment_intents/:id/confirm', async ({ params }) => {
-    const id = params.id as string
-    const paymentIntent = mockStripeStore.paymentIntents.get(id)
+  http.post(
+    'https://api.stripe.com/v1/payment_intents/:id/confirm',
+    async ({ params }) => {
+      const id = params.id as string
+      const paymentIntent = mockStripeStore.paymentIntents.get(id)
 
-    if (!paymentIntent) {
-      return HttpResponse.json(
-        {
-          error: {
-            type: 'invalid_request_error',
-            message: `No such payment_intent: '${id}'`,
-          },
-        },
-        { status: 404 }
-      )
-    }
-
-    // Simuler un paiement réussi
-    const chargeId = `ch_test_${faker.string.alphanumeric(24)}`
-    const updatedPaymentIntent = {
-      ...paymentIntent,
-      status: 'succeeded',
-      amount_received: paymentIntent.amount,
-      latest_charge: chargeId,
-      charges: {
-        ...paymentIntent.charges,
-        data: [
+      if (!paymentIntent) {
+        return HttpResponse.json(
           {
-            id: chargeId,
-            object: 'charge',
-            amount: paymentIntent.amount,
-            amount_captured: paymentIntent.amount,
-            amount_refunded: 0,
-            balance_transaction: `txn_${faker.string.alphanumeric(24)}`,
-            captured: true,
-            created: Math.floor(Date.now() / 1000),
-            currency: paymentIntent.currency,
-            paid: true,
-            status: 'succeeded',
+            error: {
+              type: 'invalid_request_error',
+              message: `No such payment_intent: '${id}'`,
+            },
           },
-        ],
-        total_count: 1,
-      },
+          { status: 404 }
+        )
+      }
+
+      // Simuler un paiement réussi
+      const chargeId = `ch_test_${faker.string.alphanumeric(24)}`
+      const updatedPaymentIntent = {
+        ...paymentIntent,
+        status: 'succeeded',
+        amount_received: paymentIntent.amount,
+        latest_charge: chargeId,
+        charges: {
+          ...paymentIntent.charges,
+          data: [
+            {
+              id: chargeId,
+              object: 'charge',
+              amount: paymentIntent.amount,
+              amount_captured: paymentIntent.amount,
+              amount_refunded: 0,
+              balance_transaction: `txn_${faker.string.alphanumeric(24)}`,
+              captured: true,
+              created: Math.floor(Date.now() / 1000),
+              currency: paymentIntent.currency,
+              paid: true,
+              status: 'succeeded',
+            },
+          ],
+          total_count: 1,
+        },
+      }
+
+      mockStripeStore.paymentIntents.set(id, updatedPaymentIntent)
+
+      return HttpResponse.json(updatedPaymentIntent, { status: 200 })
     }
-
-    mockStripeStore.paymentIntents.set(id, updatedPaymentIntent)
-
-    return HttpResponse.json(updatedPaymentIntent, { status: 200 })
-  }),
+  ),
 
   // Cancel Payment Intent
-  http.post('https://api.stripe.com/v1/payment_intents/:id/cancel', async ({ params }) => {
-    const id = params.id as string
-    const paymentIntent = mockStripeStore.paymentIntents.get(id)
+  http.post(
+    'https://api.stripe.com/v1/payment_intents/:id/cancel',
+    async ({ params }) => {
+      const id = params.id as string
+      const paymentIntent = mockStripeStore.paymentIntents.get(id)
 
-    if (!paymentIntent) {
-      return HttpResponse.json(
-        {
-          error: {
-            type: 'invalid_request_error',
-            message: `No such payment_intent: '${id}'`,
+      if (!paymentIntent) {
+        return HttpResponse.json(
+          {
+            error: {
+              type: 'invalid_request_error',
+              message: `No such payment_intent: '${id}'`,
+            },
           },
-        },
-        { status: 404 }
-      )
+          { status: 404 }
+        )
+      }
+
+      const updatedPaymentIntent = {
+        ...paymentIntent,
+        status: 'canceled',
+        canceled_at: Math.floor(Date.now() / 1000),
+        cancellation_reason: 'requested_by_customer',
+      }
+
+      mockStripeStore.paymentIntents.set(id, updatedPaymentIntent)
+
+      return HttpResponse.json(updatedPaymentIntent, { status: 200 })
     }
-
-    const updatedPaymentIntent = {
-      ...paymentIntent,
-      status: 'canceled',
-      canceled_at: Math.floor(Date.now() / 1000),
-      cancellation_reason: 'requested_by_customer',
-    }
-
-    mockStripeStore.paymentIntents.set(id, updatedPaymentIntent)
-
-    return HttpResponse.json(updatedPaymentIntent, { status: 200 })
-  }),
+  ),
 
   // Create Transfer (pour escrow)
   http.post('https://api.stripe.com/v1/transfers', async ({ request }) => {
@@ -229,7 +243,9 @@ export const stripeHandlers = [
 
     const email = params.get('email')
     const metadata = Object.fromEntries(
-      Array.from(params.entries()).filter(([key]) => key.startsWith('metadata['))
+      Array.from(params.entries()).filter(([key]) =>
+        key.startsWith('metadata[')
+      )
     )
 
     const customerId = `cus_test_${faker.string.alphanumeric(14)}`
@@ -296,7 +312,10 @@ export function resetMockStripeStore() {
 }
 
 // Fonction helper pour pré-remplir des données Stripe de test
-export function seedMockStripeStore(type: keyof typeof mockStripeStore, data: any[]) {
+export function seedMockStripeStore(
+  type: keyof typeof mockStripeStore,
+  data: any[]
+) {
   data.forEach(record => {
     mockStripeStore[type].set(record.id, record)
   })

@@ -4,6 +4,7 @@
 
 'use client'
 
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   IconShieldCheck,
@@ -11,10 +12,36 @@ import {
   IconUsers,
   IconCheck,
 } from '@tabler/icons-react'
+import { Badge } from '@/components/ui/badge'
+import { FEATURES } from '@/lib/shared/config/features'
 
 export function AuthSidebar() {
   const pathname = usePathname()
   const isRegister = pathname?.includes('register')
+  const [betaCount, setBetaCount] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!FEATURES.BETA_MODE) return
+
+    let isMounted = true
+    const loadCount = async () => {
+      try {
+        const res = await fetch('/api/beta-stats')
+        if (!res.ok) return
+        const payload = await res.json()
+        if (isMounted && typeof payload?.count === 'number') {
+          setBetaCount(payload.count)
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    void loadCount()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   return (
     <div className="w-full max-w-md space-y-6">
@@ -22,9 +49,12 @@ export function AuthSidebar() {
         <>
           {/* Registration Progress */}
           <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Créez votre compte en 2 min
-            </h3>
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-lg font-semibold text-foreground">
+                Créez votre compte en 2 min
+              </h3>
+              <BetaInfoBadge count={betaCount} />
+            </div>
             <div className="space-y-3">
               {[
                 'Informations personnelles',
@@ -45,9 +75,12 @@ export function AuthSidebar() {
 
           {/* What You Get */}
           <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Ce que vous obtenez
-            </h3>
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-lg font-semibold text-foreground">
+                Ce que vous obtenez
+              </h3>
+              <BetaInfoBadge count={betaCount} />
+            </div>
             <div className="space-y-3">
               {[
                 { icon: IconShieldCheck, text: 'Profil vérifié et sécurisé' },
@@ -68,9 +101,12 @@ export function AuthSidebar() {
         <>
           {/* Login Benefits */}
           <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Votre espace Sendbox
-            </h3>
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-lg font-semibold text-foreground">
+                Votre espace Sendbox
+              </h3>
+              <BetaInfoBadge count={betaCount} />
+            </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Accédez à votre tableau de bord pour gérer vos annonces, suivre
               vos colis et communiquer en toute sécurité.
@@ -79,9 +115,12 @@ export function AuthSidebar() {
 
           {/* Security Info */}
           <div className="rounded-2xl border-2 border-border/50 bg-background/95 backdrop-blur-sm p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">
-              Sécurité renforcée
-            </h3>
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-lg font-semibold text-foreground">
+                Sécurité renforcée
+              </h3>
+              <BetaInfoBadge count={betaCount} />
+            </div>
             <div className="space-y-3">
               {[
                 'Chiffrement de bout en bout',
@@ -100,6 +139,9 @@ export function AuthSidebar() {
 
       {/* Trust Indicator */}
       <div className="rounded-2xl border-2 border-primary/20 bg-primary/5 backdrop-blur-sm p-4">
+        <div className="flex items-start justify-between gap-3">
+          <BetaInfoBadge count={betaCount} />
+        </div>
         <p className="text-sm text-foreground text-center">
           <span className="font-semibold">100% sécurisé</span>
           <br />
@@ -109,5 +151,17 @@ export function AuthSidebar() {
         </p>
       </div>
     </div>
+  )
+}
+
+function BetaInfoBadge({ count }: { count: number | null }) {
+  if (!FEATURES.BETA_MODE) return null
+
+  const displayCount = typeof count === 'number' ? `${count}` : '…'
+
+  return (
+    <Badge className="h-6 items-center rounded-full border border-amber-200 bg-amber-100 px-2 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
+      Bêta · {displayCount}/{FEATURES.MAX_BETA_USERS}
+    </Badge>
   )
 }

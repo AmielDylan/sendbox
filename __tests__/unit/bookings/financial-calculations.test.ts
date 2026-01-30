@@ -288,21 +288,33 @@ describe('calculateTravelerFinancials', () => {
 
     it('inclut uniquement les statuts pertinents (paid, deposited, in_transit, delivered)', () => {
       const bookings = [
-        createTestBooking({ status: 'pending', total_price: 100, commission_amount: 12 }),
+        createTestBooking({
+          status: 'pending',
+          total_price: 100,
+          commission_amount: 12,
+        }),
         createTestBooking({
           status: 'paid',
           total_price: 100,
           commission_amount: 12,
           delivery_confirmed_at: null,
         }),
-        createTestBooking({ status: 'refused', total_price: 100, commission_amount: 12 }),
+        createTestBooking({
+          status: 'refused',
+          total_price: 100,
+          commission_amount: 12,
+        }),
         createTestBooking({
           status: 'in_transit',
           total_price: 100,
           commission_amount: 12,
           delivery_confirmed_at: null,
         }),
-        createTestBooking({ status: 'cancelled', total_price: 100, commission_amount: 12 }),
+        createTestBooking({
+          status: 'cancelled',
+          total_price: 100,
+          commission_amount: 12,
+        }),
       ]
 
       const result = calculateTravelerFinancials(bookings)

@@ -1,6 +1,9 @@
 import { http, HttpResponse } from 'msw'
 import { faker } from '@faker-js/faker'
-import { setMockSessionCookies, resetMockSessionCookies } from '../../setup/test-utils'
+import {
+  setMockSessionCookies,
+  resetMockSessionCookies,
+} from '../../setup/test-utils'
 
 /**
  * MSW Handlers pour mocker Supabase Auth
@@ -164,10 +167,7 @@ export const authHandlers = [
     const authHeader = request.headers.get('Authorization')
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return HttpResponse.json(
-        { error: 'invalid_token' },
-        { status: 401 }
-      )
+      return HttpResponse.json({ error: 'invalid_token' }, { status: 401 })
     }
 
     // Utiliser mockAuthUser s'il est défini, sinon générer un utilisateur aléatoire
@@ -211,10 +211,7 @@ export const authHandlers = [
     const authHeader = request.headers.get('Authorization')
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return HttpResponse.json(
-        { error: 'invalid_token' },
-        { status: 401 }
-      )
+      return HttpResponse.json({ error: 'invalid_token' }, { status: 401 })
     }
 
     const body = (await request.json()) as {
@@ -281,10 +278,7 @@ export const authHandlers = [
       )
     }
 
-    return HttpResponse.json(
-      { error: 'invalid_request' },
-      { status: 400 }
-    )
+    return HttpResponse.json({ error: 'invalid_request' }, { status: 400 })
   }),
 
   // Mock resend verification email

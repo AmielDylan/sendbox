@@ -1,4 +1,4 @@
-name: CI - Quality Checks
+name: CI - Intégration Continue
 
 on:
   push:
@@ -11,55 +11,87 @@ env:
 
 jobs:
   lint-and-format:
-    name: Lint & Format Check
+    name: Lint et Formatage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Installer les dépendances
         run: npm ci
 
-      - name: Run ESLint
+      - name: Vérifier ESLint
         run: npm run lint
 
-      - name: Check Prettier formatting
+      - name: Vérifier le formatage Prettier
         run: npx prettier --check .
 
   type-check:
-    name: TypeScript Type Check
+    name: Vérification TypeScript
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Installer les dépendances
         run: npm ci
 
-      - name: Check TypeScript
+      - name: Vérifier les types TypeScript
         run: npx tsc --noEmit
+
+  test:
+    name: Tests Vitest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Exécuter les tests
+        run: npm test -- --run
+
+      - name: Générer le rapport de couverture
+        run: npm run test:coverage
+        continue-on-error: true
 
   build:
     name: Build Next.js
     runs-on: ubuntu-latest
-    needs: [lint-and-format, type-check]
+    needs: [lint-and-format, type-check, test]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Installer les dépendances
         run: npm ci
 
-      - name: Build Next.js
+      - name: Compiler l'application
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -70,15 +102,15 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
   all-checks:
-    name: All Checks Summary
+    name: Résumé des Vérifications
     runs-on: ubuntu-latest
-    needs: [lint-and-format, type-check, build]
+    needs: [lint-and-format, type-check, test, build]
     if: always()
     steps:
-      - name: Check status
+      - name: Vérifier le statut global
         run: |
-          if [[ "${{ needs.lint-and-format.result }}" == "failure" || "${{ needs.type-check.result }}" == "failure" || "${{ needs.build.result }}" == "failure" ]]; then
-            echo "❌ Some checks failed!"
+          if [[ "${{ needs.lint-and-format.result }}" == "failure" || "${{ needs.type-check.result }}" == "failure" || "${{ needs.test.result }}" == "failure" || "${{ needs.build.result }}" == "failure" ]]; then
+            echo "❌ Certaines vérifications ont échoué!"
             exit 1
           fi
-          echo "✅ All checks passed!"
+          echo "✅ Toutes les vérifications sont passées!"

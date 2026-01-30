@@ -21,6 +21,7 @@ import {
   IconUser,
   IconSearch,
   IconSpeakerphone,
+  IconAlertTriangle,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from '@/lib/utils'
@@ -43,10 +44,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
-import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { FEATURES, isFeatureEnabled } from '@/lib/shared/config/features'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
 import { getAvatarUrl } from '@/lib/core/profile/utils'
+import { FeedbackDialog } from '@/components/feedback-dialog'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -145,9 +147,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </SheetContent>
           </Sheet>
         </ClientOnly>
-        <div className="flex-1">
-          <LogoLink className="h-6" />
-        </div>
+        <div className="flex-1" />
         <HeaderActions />
       </header>
 
@@ -221,6 +221,14 @@ function SidebarContent({
           )
         })}
       </nav>
+      {FEATURES.BETA_MODE && (
+        <div className="border-t p-4">
+          <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
+            <IconAlertTriangle className="h-4 w-4" />
+            <span>Version bêta</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -235,6 +243,19 @@ function HeaderActions() {
       </Button>
       <ClientOnly>
         <ThemeToggle />
+      </ClientOnly>
+
+      {FEATURES.BETA_MODE && (
+        <Badge
+          variant="secondary"
+          className="hidden h-8 items-center rounded-full border border-amber-200 bg-amber-100 px-3 text-[11px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 sm:inline-flex"
+        >
+          Version bêta
+        </Badge>
+      )}
+
+      <ClientOnly>
+        <FeedbackDialog />
       </ClientOnly>
 
       <ClientOnly>

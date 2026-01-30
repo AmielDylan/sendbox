@@ -17,8 +17,9 @@ import {
 } from '@/lib/core/bookings/photos'
 import { validateImageUpload } from '@/lib/shared/security/upload-validation'
 import { uploadRateLimit } from '@/lib/shared/security/rate-limit'
-import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { FEATURES, isFeatureEnabled } from '@/lib/shared/config/features'
 import { notifyUser } from '@/lib/core/notifications/actions'
+import { calculateBookingPrice } from '@/lib/core/bookings/calculations'
 import sharp from 'sharp'
 
 /**
@@ -192,6 +193,19 @@ export async function createBooking(
     return {
       error: validation.error.issues[0]?.message || 'Données invalides',
       field: String(validation.error.issues[0]?.path[0] || 'unknown'),
+    }
+  }
+
+  const breakdown = calculateBookingPrice(
+    validation.data.kilos_requested,
+    announcement.price_per_kg || 0,
+    validation.data.package_value || 0,
+    validation.data.insurance_opted
+  )
+
+  if (FEATURES.BETA_MODE && breakdown.total > FEATURES.MAX_BOOKING_AMOUNT) {
+    return {
+      error: `Montant limité à ${FEATURES.MAX_BOOKING_AMOUNT}€ pendant la beta`,
     }
   }
 

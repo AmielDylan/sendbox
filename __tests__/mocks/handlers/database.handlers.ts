@@ -24,13 +24,26 @@ export const databaseHandlers = [
     const url = new URL(request.url)
 
     // Récupérer toutes les données de la table
-    let data = Array.from(mockDatabase[table as keyof typeof mockDatabase]?.values() || [])
+    let data = Array.from(
+      mockDatabase[table as keyof typeof mockDatabase]?.values() || []
+    )
 
-    // Filtrer selon les query params
+    // Filtrer selon les query params (support de .eq(), .neq(), .in())
     url.searchParams.forEach((value, key) => {
-      if (key !== 'select' && value.startsWith('eq.')) {
+      if (key === 'select') return
+
+      if (value.startsWith('eq.')) {
         const filterValue = value.substring(3)
         data = data.filter((row: any) => String(row[key]) === filterValue)
+      } else if (value.startsWith('neq.')) {
+        const filterValue = value.substring(4)
+        data = data.filter((row: any) => String(row[key]) !== filterValue)
+      } else if (value.startsWith('in.')) {
+        const inValues = value
+          .substring(4, value.length - 1)
+          .split(',')
+          .map((v: string) => v.trim())
+        data = data.filter((row: any) => inValues.includes(String(row[key])))
       }
     })
 
@@ -50,16 +63,58 @@ export const databaseHandlers = [
     const url = new URL(request.url)
 
     // Récupérer toutes les données de la table
-    let data = Array.from(mockDatabase[table as keyof typeof mockDatabase]?.values() || [])
+    let data = Array.from(
+      mockDatabase[table as keyof typeof mockDatabase]?.values() || []
+    )
 
-    // Filtrer selon les query params (support basique de .eq())
-    // Supabase envoie des filtres comme: ?id=eq.value ou ?status=eq.active
+    // Filtrer selon les query params (support de .eq(), .neq(), .in())
+    // Supabase envoie des filtres comme: ?id=eq.value, ?status=eq.active, ?id=neq.value, ?status=in.(val1,val2)
     url.searchParams.forEach((value, key) => {
-      if (key !== 'select' && value.startsWith('eq.')) {
+      if (key === 'select') return
+
+      if (value.startsWith('eq.')) {
         const filterValue = value.substring(3) // Enlever 'eq.'
         data = data.filter((row: any) => String(row[key]) === filterValue)
+      } else if (value.startsWith('neq.')) {
+        const filterValue = value.substring(4) // Enlever 'neq.'
+        data = data.filter((row: any) => String(row[key]) !== filterValue)
+      } else if (value.startsWith('in.')) {
+        // Format: in.(value1,value2,value3)
+        const inValues = value
+          .substring(4, value.length - 1)
+          .split(',')
+          .map((v: string) => v.trim())
+        data = data.filter((row: any) => inValues.includes(String(row[key])))
       }
     })
+
+    // Gérer les joins (ex: announcements:announcement_id(...))
+    const selectParam = url.searchParams.get('select')
+    if (selectParam && selectParam.includes(':')) {
+      // Parse le select pour extraire les joins
+      // Format: "*, announcements:announcement_id(id, traveler_id, available_kg, status)"
+      const joinMatch = selectParam.match(/(\w+):(\w+)\s*\([^)]+\)/)
+      if (joinMatch) {
+        const [, joinAlias, joinField] = joinMatch
+        const joinTable = joinAlias // Ex: "announcements"
+
+        data = data.map((row: any) => {
+          // Récupérer l'enregistrement lié
+          const foreignKey = row[joinField] // Ex: row["announcement_id"]
+          if (foreignKey) {
+            const joinedData =
+              mockDatabase[joinTable as keyof typeof mockDatabase]?.get(
+                foreignKey
+              )
+            return {
+              ...row,
+              [joinAlias]: joinedData || null,
+            }
+          }
+          return row
+        })
+      }
+    }
 
     // Gérer .single() - Supabase envoie Accept: application/vnd.pgrst.object+json
     const acceptHeader = request.headers.get('Accept')
@@ -69,13 +124,21 @@ export const databaseHandlers = [
       // .single() attend exactement 1 résultat
       if (data.length === 0) {
         return HttpResponse.json(
-          { error: 'No rows found', code: 'PGRST116', message: 'The result contains 0 rows' },
+          {
+            error: 'No rows found',
+            code: 'PGRST116',
+            message: 'The result contains 0 rows',
+          },
           { status: 406 }
         )
       }
       if (data.length > 1) {
         return HttpResponse.json(
-          { error: 'Multiple rows found', code: 'PGRST116', message: `The result contains ${data.length} rows` },
+          {
+            error: 'Multiple rows found',
+            code: 'PGRST116',
+            message: `The result contains ${data.length} rows`,
+          },
           { status: 406 }
         )
       }
@@ -160,10 +223,7 @@ export const databaseHandlers = [
     const existingRecord = store?.get(id)
 
     if (!existingRecord) {
-      return HttpResponse.json(
-        { error: 'Record not found' },
-        { status: 404 }
-      )
+      return HttpResponse.json({ error: 'Record not found' }, { status: 404 })
     }
 
     const updatedRecord = {
@@ -201,9 +261,12 @@ export const databaseHandlers = [
     const store = mockDatabase[table as keyof typeof mockDatabase]
     store?.delete(id)
 
-    return HttpResponse.json({}, {
-      status: 204,
-    })
+    return HttpResponse.json(
+      {},
+      {
+        status: 204,
+      }
+    )
   }),
 
   // RPC - Remote Procedure Calls (fonctions Supabase)
@@ -238,8 +301,16 @@ export function resetMockDatabase() {
 }
 
 // Fonction helper pour pré-remplir des données de test
-export function seedMockDatabase(table: keyof typeof mockDatabase, data: any[]) {
+export function seedMockDatabase(
+  table: keyof typeof mockDatabase,
+  data: any[]
+) {
   data.forEach(record => {
     mockDatabase[table].set(record.id, record)
   })
+}
+
+// Fonction helper pour accéder au mock database (pour assertions dans les tests)
+export function getMockDatabase() {
+  return mockDatabase
 }

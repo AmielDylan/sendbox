@@ -20,6 +20,7 @@ import {
   type ResetPasswordInput,
 } from '@/lib/core/auth/validations'
 import { authRateLimit } from '@/lib/shared/security/rate-limit'
+import { FEATURES } from '@/lib/shared/config/features'
 
 // Messages d'erreur génériques pour éviter l'énumération
 const GENERIC_ERROR_MESSAGE =
@@ -41,6 +42,23 @@ export async function signUp(formData: RegisterInput) {
   const supabase = await createClient()
 
   try {
+    if (FEATURES.BETA_MODE) {
+      const { count, error: betaCountError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+
+      if (betaCountError) {
+        console.warn('Beta user count failed:', betaCountError)
+      }
+
+      if (count !== null && count >= FEATURES.MAX_BETA_USERS) {
+        return {
+          error: "Beta complète. Rejoignez la liste d'attente.",
+          field: 'email',
+        }
+      }
+    }
+
     // Créer l'utilisateur dans Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: validation.data.email,

@@ -107,6 +107,9 @@ export function createMockUserWithPendingKYC(
 /**
  * Crée plusieurs utilisateurs de test
  */
-export function createMockUsers(count: number, overrides?: Partial<MockUser>): MockUser[] {
+export function createMockUsers(
+  count: number,
+  overrides?: Partial<MockUser>
+): MockUser[] {
   return Array.from({ length: count }, () => createMockUser(overrides))
 }

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { registerSchema, loginSchema, resetPasswordRequestSchema } from '@/lib/core/auth/validations'
+import {
+  registerSchema,
+  loginSchema,
+  resetPasswordRequestSchema,
+} from '@/lib/core/auth/validations'
 
 /**
  * Tests pour les utilitaires et validations d'authentification
