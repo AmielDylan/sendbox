@@ -17,12 +17,12 @@ import { toast } from 'sonner'
 import { FEATURES } from '@/lib/shared/config/features'
 
 export function FeedbackDialog() {
-  if (!FEATURES.BETA_MODE) return null
-
   const [open, setOpen] = useState(false)
   const [type, setType] = useState<'bug' | 'feature' | 'other'>('other')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  if (!FEATURES.BETA_MODE) return null
 
   async function handleSubmit() {
     setLoading(true)

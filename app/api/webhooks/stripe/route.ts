@@ -16,6 +16,7 @@ import { sendEmail } from '@/lib/shared/services/email/client'
 import Stripe from 'stripe'
 import { getPaymentsMode } from '@/lib/shared/config/features'
 import { createSystemNotification } from '@/lib/core/notifications/system'
+import type { Database } from '@/types/database.types'
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
@@ -64,13 +65,13 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminClient()
   const paymentsEnabled = getPaymentsMode() === 'stripe'
 
-  const normalizeTransferStatus = (status?: string | null) => {
-    switch (status) {
-      case 'paid':
-      case 'failed':
-      case 'reversed':
-      case 'pending':
-        return status
+  const normalizeTransferStatus = (eventType?: string | null) => {
+    switch (eventType) {
+      case 'transfer.reversed':
+        return 'reversed'
+      case 'transfer.created':
+      case 'transfer.updated':
+        return 'paid'
       default:
         return 'pending'
     }
@@ -251,6 +252,9 @@ export async function POST(req: NextRequest) {
 
         const payoutsEnabled = Boolean(account.payouts_enabled)
         const requirements = account.requirements || null
+        const requirementsJson = requirements
+          ? (JSON.parse(JSON.stringify(requirements)) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
+          : null
         const onboardingCompleted =
           payoutsEnabled &&
           !requirements?.currently_due?.length &&
@@ -261,7 +265,7 @@ export async function POST(req: NextRequest) {
           .update({
             stripe_payouts_enabled: payoutsEnabled,
             stripe_onboarding_completed: onboardingCompleted,
-            stripe_requirements: requirements,
+            stripe_requirements: requirementsJson,
           })
           .eq('stripe_connect_account_id', account.id)
 
@@ -693,10 +697,9 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      case 'transfer.paid':
-      case 'transfer.failed':
-      case 'transfer.reversed':
-      case 'transfer.created': {
+      case 'transfer.created':
+      case 'transfer.updated':
+      case 'transfer.reversed': {
         const transfer = event.data.object as Stripe.Transfer
         const bookingId = transfer.metadata?.booking_id
 
@@ -704,7 +707,7 @@ export async function POST(req: NextRequest) {
           break
         }
 
-        const transferStatus = normalizeTransferStatus(transfer.status)
+        const transferStatus = normalizeTransferStatus(event.type)
 
         await (supabase as any).from('transfers').upsert(
           {

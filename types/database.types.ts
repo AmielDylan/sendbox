@@ -581,6 +581,10 @@ export type Database = {
           phone: string | null
           rating: number | null
           role: Database['public']['Enums']['user_role']
+          stripe_connect_account_id: string | null
+          stripe_onboarding_completed: boolean
+          stripe_payouts_enabled: boolean
+          stripe_requirements: Json | null
           total_services: number | null
           updated_at: string | null
         }
@@ -621,6 +625,10 @@ export type Database = {
           phone?: string | null
           rating?: number | null
           role?: Database['public']['Enums']['user_role']
+          stripe_connect_account_id?: string | null
+          stripe_onboarding_completed?: boolean
+          stripe_payouts_enabled?: boolean
+          stripe_requirements?: Json | null
           total_services?: number | null
           updated_at?: string | null
         }
@@ -661,6 +669,10 @@ export type Database = {
           phone?: string | null
           rating?: number | null
           role?: Database['public']['Enums']['user_role']
+          stripe_connect_account_id?: string | null
+          stripe_onboarding_completed?: boolean
+          stripe_payouts_enabled?: boolean
+          stripe_requirements?: Json | null
           total_services?: number | null
           updated_at?: string | null
         }
