@@ -93,9 +93,14 @@ export default function KYCPage() {
 
     const subscribeToProfile = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
-    if (!user || !isActive || isAdmin) return
+        data: { session },
+      } = await supabase.auth.getSession()
+      const user = session?.user
+      if (!user || !isActive || isAdmin) return
+
+      if (session?.access_token) {
+        await supabase.realtime.setAuth(session.access_token)
+      }
 
       console.log('🔔 Subscribing to KYC updates for user:', user.id)
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -23,30 +23,71 @@ interface ConnectStatusDisplayProps {
   onEdit?: () => void
 }
 
+const STATUS_FAILURE_KEY = 'stripe-connect-status:last-failure'
+const STATUS_FAILURE_BACKOFF_MS = 8000
+
 export function ConnectStatusDisplay({ onEdit }: ConnectStatusDisplayProps) {
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState<{
     onboarded: boolean
-    chargesEnabled: boolean
     payoutsEnabled: boolean
     requirements?: any
   } | null>(null)
+  const inFlightRef = useRef(false)
 
-  const fetchStatus = useCallback(async () => {
+  const shouldSkipAutoFetch = () => {
+    if (typeof window === 'undefined') return false
+    const lastFailure = Number(
+      window.sessionStorage.getItem(STATUS_FAILURE_KEY)
+    )
+    if (!lastFailure) return false
+    return Date.now() - lastFailure < STATUS_FAILURE_BACKOFF_MS
+  }
+
+  const fetchStatus = useCallback(async (options?: { force?: boolean }) => {
+    if (inFlightRef.current) {
+      return
+    }
+    if (!options?.force && shouldSkipAutoFetch()) {
+      setLoading(false)
+      return
+    }
+
+    inFlightRef.current = true
     try {
       setLoading(true)
-      const res = await fetch('/api/stripe/connect/status')
+      const res = await fetch('/api/connect/status')
 
       if (!res.ok) {
         throw new Error('Erreur lors du chargement du statut')
       }
 
       const data = await res.json()
-      setStatus(data)
+      const payoutsEnabled = Boolean(data?.payouts_enabled)
+      const onboarded =
+        typeof data?.onboarding_completed === 'boolean'
+          ? data.onboarding_completed
+          : payoutsEnabled
+      setStatus({
+        onboarded,
+        payoutsEnabled,
+        requirements: data?.requirements,
+      })
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(STATUS_FAILURE_KEY)
+      }
     } catch (error) {
       console.error('Erreur:', error)
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(
+          STATUS_FAILURE_KEY,
+          Date.now().toString()
+        )
+      }
+      setStatus(null)
       toast.error('Erreur lors du chargement du statut')
     } finally {
+      inFlightRef.current = false
       setLoading(false)
     }
   }, [])
@@ -76,7 +117,7 @@ export function ConnectStatusDisplay({ onEdit }: ConnectStatusDisplayProps) {
             Impossible de charger le statut de votre compte
           </p>
           <Button
-            onClick={fetchStatus}
+            onClick={() => fetchStatus({ force: true })}
             variant="outline"
             size="sm"
             className="mt-4"
@@ -88,8 +129,13 @@ export function ConnectStatusDisplay({ onEdit }: ConnectStatusDisplayProps) {
     )
   }
 
+  const hasAccount =
+    status.requirements != null ||
+    status.onboarded ||
+    status.payoutsEnabled
+
   // Account not created yet
-  if (!status.onboarded && !status.payoutsEnabled) {
+  if (!hasAccount) {
     return (
       <Card>
         <CardHeader>
@@ -150,7 +196,7 @@ export function ConnectStatusDisplay({ onEdit }: ConnectStatusDisplayProps) {
               Modifier
             </Button>
             <Button
-              onClick={fetchStatus}
+              onClick={() => fetchStatus({ force: true })}
               variant="outline"
               size="sm"
               className="flex-1"
@@ -217,7 +263,7 @@ export function ConnectStatusDisplay({ onEdit }: ConnectStatusDisplayProps) {
             Reprendre la configuration
           </Button>
           <Button
-            onClick={fetchStatus}
+            onClick={() => fetchStatus({ force: true })}
             variant="outline"
             size="sm"
             className="flex-1"
