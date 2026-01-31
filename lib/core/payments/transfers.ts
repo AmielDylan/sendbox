@@ -9,8 +9,10 @@ import { stripe } from '@/lib/shared/services/stripe/config'
 import { toStripeAmount } from '@/lib/core/payments/calculations'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 import { getPaymentsMode } from '@/lib/shared/config/features'
+import { createFedaPayPayout } from '@/lib/services/fedapay'
 
 const EUR = 'eur'
+const XOF = 'xof'
 
 function normalizeTransferStatus(value: string | null | undefined) {
   switch (value) {
@@ -24,6 +26,23 @@ function normalizeTransferStatus(value: string | null | undefined) {
     case 'reversed':
     case 'pending':
       return value
+    default:
+      return 'pending'
+  }
+}
+
+function normalizeWalletStatus(value: string | null | undefined) {
+  switch (value) {
+    case 'completed':
+    case 'paid':
+    case 'sent':
+      return 'paid'
+    case 'failed':
+    case 'canceled':
+    case 'cancelled':
+      return 'failed'
+    case 'scheduled':
+    case 'pending':
     default:
       return 'pending'
   }
@@ -44,13 +63,7 @@ export async function releaseTransferForBooking(
   bookingId: string,
   reason: ReleaseReason
 ): Promise<ReleaseTransferResult> {
-  if (getPaymentsMode() !== 'stripe') {
-    return { skipped: true, error: 'payments_disabled' }
-  }
-
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return { error: 'stripe_not_configured' }
-  }
+  const paymentsMode = getPaymentsMode()
 
   const admin = createAdminClient()
 
@@ -105,9 +118,117 @@ export async function releaseTransferForBooking(
 
   const { data: traveler } = await admin
     .from('profiles')
-    .select('stripe_connect_account_id, stripe_payouts_enabled')
+    .select(
+      'stripe_connect_account_id, stripe_payouts_enabled, payout_method, payout_status, wallet_operator, wallet_phone, firstname, lastname, email'
+    )
     .eq('id', booking.traveler_id)
     .single()
+
+  if (!traveler) {
+    return { error: 'traveler_not_found' }
+  }
+
+  const payoutMethod = (traveler as any)?.payout_method as
+    | 'stripe_bank'
+    | 'mobile_wallet'
+    | undefined
+  const payoutStatus = (traveler as any)?.payout_status as
+    | 'pending'
+    | 'active'
+    | undefined
+
+  const amountTotal = Number(payment.amount_total ?? 0)
+  const platformFee = Number(payment.platform_fee ?? 0)
+  const travelerAmount = Math.max(0, amountTotal - platformFee)
+
+  if (travelerAmount <= 0) {
+    return { error: 'invalid_transfer_amount' }
+  }
+
+  if (payoutMethod === 'mobile_wallet') {
+    if (payoutStatus !== 'active') {
+      await createSystemNotification({
+        userId: booking.traveler_id,
+        type: 'system_alert',
+        title: 'Activez votre Mobile Wallet',
+        content:
+          'Validez votre numéro Mobile Wallet pour recevoir vos gains.',
+        bookingId: booking.id,
+      })
+      return { error: 'wallet_not_verified' }
+    }
+
+    if (!(traveler as any)?.wallet_operator || !(traveler as any)?.wallet_phone) {
+      return { error: 'wallet_not_configured' }
+    }
+
+    const payoutCurrency = (payment.currency || XOF).toLowerCase()
+    if (payoutCurrency !== XOF) {
+      return { error: 'wallet_currency_not_supported' }
+    }
+
+    const payout = await createFedaPayPayout({
+      amount: travelerAmount,
+      currency: payoutCurrency.toUpperCase(),
+      operator: (traveler as any)?.wallet_operator,
+      phoneNumber: (traveler as any)?.wallet_phone,
+      receiverName: [traveler?.firstname, traveler?.lastname]
+        .filter(Boolean)
+        .join(' ')
+        .trim(),
+      reference: bookingId,
+      metadata: {
+        booking_id: bookingId,
+        reason,
+      },
+    })
+
+    const transferStatus = normalizeWalletStatus(payout.status)
+
+    await (admin as any).from('transfers').insert({
+      booking_id: bookingId,
+      stripe_transfer_id: null,
+      external_transfer_id: payout.id,
+      payout_provider: 'fedapay',
+      amount: travelerAmount,
+      currency: payoutCurrency,
+      status: transferStatus,
+      attempted_at: new Date().toISOString(),
+    })
+
+    if (transferStatus === 'paid') {
+      await admin
+        .from('bookings')
+        .update({
+          payout_at: new Date().toISOString(),
+          payout_id: payout.id,
+        })
+        .eq('id', bookingId)
+    }
+
+    await createSystemNotification({
+      userId: booking.traveler_id,
+      type: 'payment_confirmed',
+      title: 'Paiement débloqué',
+      content:
+        'Votre paiement sécurisé est en cours de transfert vers votre Mobile Wallet.',
+      bookingId: booking.id,
+    })
+
+    return {
+      success: true,
+      transferId: payout.id,
+      status: transferStatus,
+    }
+  }
+
+  if (paymentsMode !== 'stripe') {
+    return { skipped: true, error: 'payments_disabled' }
+  }
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return { error: 'stripe_not_configured' }
+  }
 
   if (!traveler?.stripe_connect_account_id || !traveler.stripe_payouts_enabled) {
     await createSystemNotification({
@@ -119,14 +240,6 @@ export async function releaseTransferForBooking(
       bookingId: booking.id,
     })
     return { error: 'payouts_not_enabled' }
-  }
-
-  const amountTotal = Number(payment.amount_total ?? 0)
-  const platformFee = Number(payment.platform_fee ?? 0)
-  const travelerAmount = Math.max(0, amountTotal - platformFee)
-
-  if (travelerAmount <= 0) {
-    return { error: 'invalid_transfer_amount' }
   }
 
   const transfer = await stripe.transfers.create(
@@ -149,6 +262,8 @@ export async function releaseTransferForBooking(
   await (admin as any).from('transfers').insert({
     booking_id: bookingId,
     stripe_transfer_id: transfer.id,
+    external_transfer_id: transfer.id,
+    payout_provider: 'stripe',
     amount: travelerAmount,
     currency: (payment.currency || EUR).toLowerCase(),
     status: transferStatus,

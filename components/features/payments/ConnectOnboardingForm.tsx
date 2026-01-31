@@ -23,14 +23,38 @@ import { IconAlertCircle, IconCheck, IconLoader } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 
+export interface ConnectOnboardingPayload {
+  country: 'FR' | 'BJ'
+  consentAccepted: boolean
+  personalData: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    dob: string
+    address: string
+    city: string
+    postalCode: string
+  }
+  bankData: {
+    accountHolder: string
+    iban: string
+    bic?: string
+  }
+}
+
 interface ConnectOnboardingFormProps {
+  onSubmit: (payload: ConnectOnboardingPayload) => Promise<void>
   onSuccess?: () => void
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const IBAN_REGEX = /^[A-Z]{2}\d{2}[A-Z0-9]+$/
 
-export function ConnectOnboardingForm({ onSuccess }: ConnectOnboardingFormProps) {
+export function ConnectOnboardingForm({
+  onSubmit,
+  onSuccess,
+}: ConnectOnboardingFormProps) {
   const { profile, user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<'country' | 'form'>('country')
@@ -157,51 +181,32 @@ export function ConnectOnboardingForm({ onSuccess }: ConnectOnboardingFormProps)
     setLoading(true)
 
     try {
-      const res = await fetch('/api/connect/onboard', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          country,
-          consentAccepted,
-          personalData: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phone: formData.phone,
-            dob: `${formData.dobYear}-${formData.dobMonth}-${formData.dobDay}`,
-            address: formData.address,
-            city: formData.city,
-            postalCode: formData.postalCode,
-          },
-          bankData: {
-            accountHolder: formData.bankAccountHolder,
-            iban: formData.iban.replace(/\s/g, '').toUpperCase(),
-            bic: formData.bic,
-          },
-        }),
+      await onSubmit({
+        country,
+        consentAccepted,
+        personalData: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          dob: `${formData.dobYear}-${formData.dobMonth}-${formData.dobDay}`,
+          address: formData.address,
+          city: formData.city,
+          postalCode: formData.postalCode,
+        },
+        bankData: {
+          accountHolder: formData.bankAccountHolder,
+          iban: formData.iban.replace(/\s/g, '').toUpperCase(),
+          bic: formData.bic,
+        },
       })
-
-      const payload = await res.json().catch(() => ({}))
-
-      if (!res.ok) {
-        throw new Error(
-          payload?.error ||
-            payload?.message ||
-            "Erreur lors de la création du lien d'onboarding"
-        )
-      }
-
-      if (!payload?.url) {
-        throw new Error('Lien Stripe indisponible')
-      }
-
-      window.location.href = payload.url
       onSuccess?.()
     } catch (error) {
       console.error('Erreur:', error)
       toast.error(
         error instanceof Error ? error.message : 'Une erreur est survenue'
       )
+    } finally {
       setLoading(false)
     }
   }

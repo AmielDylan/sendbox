@@ -15,7 +15,7 @@ export async function GET() {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'id, role, stripe_connect_account_id, stripe_payouts_enabled, stripe_onboarding_completed'
+      'id, role, stripe_connect_account_id, stripe_payouts_enabled, stripe_onboarding_completed, payout_method, payout_status'
     )
     .eq('id', user.id)
     .single()
@@ -31,10 +31,22 @@ export async function GET() {
     )
   }
 
+  const payoutMethod = (profile as any)?.payout_method as
+    | 'stripe_bank'
+    | 'mobile_wallet'
+    | undefined
+  const payoutStatus = (profile as any)?.payout_status as
+    | 'pending'
+    | 'active'
+    | 'disabled'
+    | undefined
+
   if (!profile.stripe_connect_account_id) {
     return Response.json({
       payouts_enabled: false,
       onboarding_completed: false,
+      payout_status: payoutStatus ?? null,
+      payout_method: payoutMethod ?? null,
       requirements: null,
     })
   }
@@ -50,18 +62,28 @@ export async function GET() {
     !requirements?.currently_due?.length &&
     !requirements?.past_due?.length
 
-  await supabase
-    .from('profiles')
-    .update({
-      stripe_payouts_enabled: payoutsEnabled,
-      stripe_onboarding_completed: onboardingCompleted,
-      stripe_requirements: requirementsJson,
-    })
-    .eq('id', user.id)
+  const shouldUpdatePayoutMethod = payoutMethod !== 'mobile_wallet'
+  const nextPayoutStatus = payoutsEnabled ? 'active' : 'pending'
+  const updatePayload: Record<string, any> = {
+    stripe_payouts_enabled: payoutsEnabled,
+    stripe_onboarding_completed: onboardingCompleted,
+    stripe_requirements: requirementsJson,
+  }
+
+  if (shouldUpdatePayoutMethod) {
+    updatePayload.payout_method = payoutMethod || 'stripe_bank'
+    updatePayload.payout_status = nextPayoutStatus
+  }
+
+  await supabase.from('profiles').update(updatePayload as any).eq('id', user.id)
 
   return Response.json({
     payouts_enabled: payoutsEnabled,
     onboarding_completed: onboardingCompleted,
+    payout_status: shouldUpdatePayoutMethod ? nextPayoutStatus : payoutStatus,
+    payout_method: shouldUpdatePayoutMethod
+      ? updatePayload.payout_method
+      : payoutMethod,
     requirements: requirementsJson,
   })
 }

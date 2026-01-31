@@ -10,8 +10,8 @@ import { stripe } from '@/lib/shared/services/stripe/config'
 export type ConnectCountry = 'FR' | 'BJ'
 
 /**
- * Create a Stripe Connect Express account for a traveler
- * Express = Stripe handles verification (no complex onboarding needed)
+ * Create a Stripe Connect Custom account for a traveler
+ * Custom = verification is embedded in Sendbox (whitelabel)
  */
 export async function createConnectedAccount(
   userId: string,
@@ -19,12 +19,13 @@ export async function createConnectedAccount(
   country: ConnectCountry
 ) {
   const account = await stripe.accounts.create({
-    type: 'express',
+    type: 'custom',
     country,
     ...(email ? { email } : {}),
     capabilities: {
       transfers: { requested: true },
     },
+    business_type: 'individual',
     metadata: {
       sendbox_user_id: userId,
     },
@@ -46,6 +47,22 @@ export async function createAccountLink(accountId: string) {
   })
 
   return link
+}
+
+/**
+ * Create a Connect embedded onboarding session
+ */
+export async function createAccountSession(accountId: string) {
+  const session = await stripe.accountSessions.create({
+    account: accountId,
+    components: {
+      account_onboarding: {
+        enabled: true,
+      },
+    },
+  })
+
+  return session
 }
 
 /**
