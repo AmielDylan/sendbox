@@ -12,13 +12,18 @@ import { getPaymentsMode } from '@/lib/shared/config/features'
 
 const EUR = 'eur'
 
-function normalizeTransferStatus(status: string | null | undefined) {
-  switch (status) {
+function normalizeTransferStatus(value: string | null | undefined) {
+  switch (value) {
+    case 'transfer.reversed':
+      return 'reversed'
+    case 'transfer.created':
+    case 'transfer.updated':
+      return 'paid'
     case 'paid':
     case 'failed':
     case 'reversed':
     case 'pending':
-      return status
+      return value
     default:
       return 'pending'
   }
@@ -139,7 +144,7 @@ export async function releaseTransferForBooking(
     }
   )
 
-  const transferStatus = normalizeTransferStatus(transfer.status)
+  const transferStatus = normalizeTransferStatus('transfer.created')
 
   await (admin as any).from('transfers').insert({
     booking_id: bookingId,
