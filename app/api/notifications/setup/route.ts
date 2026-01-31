@@ -14,7 +14,7 @@ export async function POST() {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, role, kyc_status, stripe_payouts_enabled')
+    .select('id, role, kyc_status, stripe_payouts_enabled, payout_status')
     .eq('id', user.id)
     .single()
 
@@ -28,8 +28,7 @@ export async function POST() {
 
   const needsKyc =
     FEATURES.KYC_ENABLED && profile.kyc_status !== 'approved'
-  const needsPayments =
-    FEATURES.STRIPE_PAYMENTS && !profile.stripe_payouts_enabled
+  const needsPayments = (profile as any)?.payout_status !== 'active'
 
   if (!needsKyc && !needsPayments) {
     return Response.json({ success: true })

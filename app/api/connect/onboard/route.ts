@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/shared/db/server'
 import {
-  createAccountLink,
+  createAccountSession,
   createConnectedAccount,
   type ConnectCountry,
 } from '@/lib/services/stripe-connect'
+import { stripe } from '@/lib/shared/services/stripe/config'
 
 type OnboardRequestBody = {
   country?: string
@@ -22,6 +23,18 @@ type OnboardRequestBody = {
     accountHolder?: string
     iban?: string
     bic?: string
+  }
+}
+
+const parseDob = (value?: string) => {
+  if (!value) return null
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!match) return null
+  const [, year, month, day] = match
+  return {
+    day: Number(day),
+    month: Number(month),
+    year: Number(year),
   }
 }
 
@@ -66,6 +79,7 @@ export async function POST(req: Request) {
 
     const country: ConnectCountry = body?.country === 'BJ' ? 'BJ' : 'FR'
     const personal = body?.personalData || {}
+    const bank = body?.bankData || {}
 
     const updates: Record<string, string> = {}
     if (personal.firstName?.trim()) updates.firstname = personal.firstName.trim()
@@ -108,9 +122,123 @@ export async function POST(req: Request) {
       }
     }
 
-    const link = await createAccountLink(accountId)
+    if (accountId) {
+      try {
+        const existingAccount = await stripe.accounts.retrieve(accountId)
+        if (existingAccount.type !== 'custom') {
+          const newAccountId = await createConnectedAccount(
+            user.id,
+            accountEmail,
+            country
+          )
+          accountId = newAccountId
 
-    return Response.json({ url: link.url })
+          const { error: replaceError } = await supabase
+            .from('profiles')
+            .update({ stripe_connect_account_id: newAccountId })
+            .eq('id', user.id)
+
+          if (replaceError) {
+            return Response.json(
+              { error: "Impossible d'actualiser le compte Stripe" },
+              { status: 500 }
+            )
+          }
+        }
+      } catch (error) {
+        console.error('Stripe account fetch error:', error)
+        return Response.json(
+          { error: "Impossible d'accéder au compte Stripe" },
+          { status: 500 }
+        )
+      }
+    }
+
+    if (!accountId) {
+      return Response.json(
+        { error: "Impossible d'initialiser le compte Stripe" },
+        { status: 500 }
+      )
+    }
+
+    const individual: Record<string, any> = {}
+    if (personal.firstName?.trim()) individual.first_name = personal.firstName.trim()
+    if (personal.lastName?.trim()) individual.last_name = personal.lastName.trim()
+    if (personal.email?.trim()) individual.email = personal.email.trim()
+    if (personal.phone?.trim()) individual.phone = personal.phone.trim()
+
+    const dob = parseDob(personal.dob)
+    if (dob) {
+      individual.dob = dob
+    }
+
+    if (personal.address?.trim() || personal.city?.trim() || personal.postalCode?.trim()) {
+      individual.address = {
+        line1: personal.address?.trim() || undefined,
+        city: personal.city?.trim() || undefined,
+        postal_code: personal.postalCode?.trim() || undefined,
+        country,
+      }
+    }
+
+    if (Object.keys(individual).length > 0) {
+      try {
+        await stripe.accounts.update(accountId, {
+          business_type: 'individual',
+          individual,
+        })
+      } catch (error) {
+        console.error('Stripe account update error:', error)
+        return Response.json(
+          { error: 'Informations Stripe invalides. Vérifiez le formulaire.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (country === 'FR' && bank?.iban?.trim() && bank?.accountHolder?.trim()) {
+      const iban = bank.iban.replace(/\s/g, '').toUpperCase()
+      try {
+        await stripe.accounts.createExternalAccount(accountId, {
+          external_account: {
+            object: 'bank_account',
+            country: 'FR',
+            currency: 'eur',
+            account_holder_name: bank.accountHolder.trim(),
+            account_holder_type: 'individual',
+            account_number: iban,
+          },
+        })
+      } catch (error) {
+        console.warn('Stripe external account error:', error)
+      }
+    }
+
+    const { error: payoutUpdateError } = await supabase
+      .from('profiles')
+      .update({
+        payout_method: 'stripe_bank',
+        payout_status: 'pending',
+        wallet_operator: null,
+        wallet_phone: null,
+        wallet_verified_at: null,
+        wallet_otp_code: null,
+        wallet_otp_expires_at: null,
+        stripe_payouts_enabled: false,
+        stripe_onboarding_completed: false,
+      } as any)
+      .eq('id', user.id)
+
+    if (payoutUpdateError) {
+      return Response.json(
+        { error: 'Impossible de mettre à jour le mode de paiement' },
+        { status: 500 }
+      )
+    }
+
+    const session = await createAccountSession(accountId)
+
+    return Response.json({ client_secret: session.client_secret })
   } catch (error) {
     console.error('Stripe connect onboarding error:', error)
     return Response.json(

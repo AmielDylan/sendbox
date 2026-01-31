@@ -259,14 +259,32 @@ export async function POST(req: NextRequest) {
           payoutsEnabled &&
           !requirements?.currently_due?.length &&
           !requirements?.past_due?.length
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, payout_method')
+          .eq('stripe_connect_account_id', account.id)
+          .maybeSingle()
+
+        const payoutMethod = (profile as any)?.payout_method as
+          | 'stripe_bank'
+          | 'mobile_wallet'
+          | undefined
+        const shouldUpdatePayoutMethod = payoutMethod !== 'mobile_wallet'
+        const nextPayoutStatus = payoutsEnabled ? 'active' : 'pending'
+        const updatePayload: Record<string, any> = {
+          stripe_payouts_enabled: payoutsEnabled,
+          stripe_onboarding_completed: onboardingCompleted,
+          stripe_requirements: requirementsJson,
+        }
+
+        if (shouldUpdatePayoutMethod) {
+          updatePayload.payout_method = payoutMethod || 'stripe_bank'
+          updatePayload.payout_status = nextPayoutStatus
+        }
 
         const { error } = await supabase
           .from('profiles')
-          .update({
-            stripe_payouts_enabled: payoutsEnabled,
-            stripe_onboarding_completed: onboardingCompleted,
-            stripe_requirements: requirementsJson,
-          })
+          .update(updatePayload as any)
           .eq('stripe_connect_account_id', account.id)
 
         if (error) {

@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,15 +13,23 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialSummaryCard'
 import { FEATURES } from '@/lib/shared/config/features'
 import { useAuth } from '@/hooks/use-auth'
-import { toast } from 'sonner'
 import { IconLoader2 } from '@tabler/icons-react'
 
 export default function FundsPage() {
   const { user, profile, loading, refetch } = useAuth()
   const isAdmin = profile?.role === 'admin'
-  const [isConnectLoading, setIsConnectLoading] = useState(true)
-  const [isOpeningPayout, setIsOpeningPayout] = useState(false)
   const payoutsEnabled = Boolean(profile?.stripe_payouts_enabled)
+  const payoutMethod = (profile as any)?.payout_method as
+    | 'stripe_bank'
+    | 'mobile_wallet'
+    | undefined
+  const payoutStatus = (profile as any)?.payout_status as
+    | 'pending'
+    | 'active'
+    | 'disabled'
+    | undefined
+  const isStripeSelected = payoutMethod === 'stripe_bank'
+  const isWalletSelected = payoutMethod === 'mobile_wallet'
 
   const kycStatus = (profile?.kyc_status ?? null) as
     | 'pending'
@@ -41,66 +49,36 @@ export default function FundsPage() {
   }, [refetch])
 
   useEffect(() => {
-    if (!FEATURES.STRIPE_PAYMENTS || isAdmin || !canConfigurePayments) {
-      setIsConnectLoading(false)
+    if (
+      !FEATURES.STRIPE_PAYMENTS ||
+      isAdmin ||
+      !canConfigurePayments ||
+      !isStripeSelected
+    ) {
       return
     }
 
     if (!user?.id || payoutsEnabled) {
-      setIsConnectLoading(false)
       return
     }
-
-    let isActive = true
 
     const loadConnectStatus = async () => {
       try {
         await refreshConnectStatus()
       } catch (error) {
         console.error('Connect status error:', error)
-      } finally {
-        if (isActive) {
-          setIsConnectLoading(false)
-        }
       }
     }
 
-    setIsConnectLoading(true)
     loadConnectStatus()
-
-    return () => {
-      isActive = false
-    }
   }, [
     canConfigurePayments,
     isAdmin,
+    isStripeSelected,
     payoutsEnabled,
     refreshConnectStatus,
     user?.id,
   ])
-
-  const handlePayout = async () => {
-    setIsOpeningPayout(true)
-    try {
-      const res = await fetch('/api/connect/login-link', { method: 'POST' })
-      if (!res.ok) {
-        const data = await res.json()
-        toast.error(data?.error || "Impossible d'ouvrir les virements")
-        return
-      }
-      const data = await res.json()
-      if (data?.url) {
-        window.location.href = data.url
-      } else {
-        toast.error('Lien de virement indisponible')
-      }
-    } catch (error) {
-      console.error('Payout link error:', error)
-      toast.error('Une erreur est survenue. Veuillez réessayer.')
-    } finally {
-      setIsOpeningPayout(false)
-    }
-  }
 
   if (loading || !user) {
     return (
@@ -166,16 +144,31 @@ export default function FundsPage() {
               Virement
             </p>
             {canConfigurePayments ? (
-              <Button
-                onClick={handlePayout}
-                disabled={
-                  isOpeningPayout ||
-                  isConnectLoading ||
-                  !payoutsEnabled
-                }
-              >
-                {isOpeningPayout ? 'Ouverture...' : 'Virer sur mon compte'}
-              </Button>
+              <>
+                {isStripeSelected && (
+                  <Button asChild>
+                    <Link href="/dashboard/reglages/paiements">
+                      {payoutStatus === 'active'
+                        ? 'Gérer mon compte bancaire'
+                        : 'Finaliser la vérification'}
+                    </Link>
+                  </Button>
+                )}
+                {isWalletSelected && (
+                  <Button asChild>
+                    <Link href="/dashboard/reglages/paiements">
+                      Gérer mon Mobile Wallet
+                    </Link>
+                  </Button>
+                )}
+                {!payoutMethod && (
+                  <Button asChild>
+                    <Link href="/dashboard/reglages/paiements">
+                      Activer les paiements
+                    </Link>
+                  </Button>
+                )}
+              </>
             ) : (
               <Button asChild>
                 <Link href="/dashboard/reglages/kyc">
@@ -183,16 +176,19 @@ export default function FundsPage() {
                 </Link>
               </Button>
             )}
-            {canConfigurePayments && !payoutsEnabled && (
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/reglages/paiements">
-                  Activer les paiements
-                </Link>
-              </Button>
-            )}
             {!canConfigurePayments && (
               <p className="text-xs text-muted-foreground">
                 Activez votre identité pour débloquer les virements.
+              </p>
+            )}
+            {canConfigurePayments && payoutStatus === 'pending' && (
+              <p className="text-xs text-muted-foreground">
+                Vérification en cours pour {isWalletSelected ? 'le wallet' : 'le compte bancaire'}.
+              </p>
+            )}
+            {canConfigurePayments && payoutStatus === 'active' && isWalletSelected && (
+              <p className="text-xs text-muted-foreground">
+                Mobile Wallet vérifié. Les paiements seront envoyés sur votre numéro.
               </p>
             )}
           </div>
