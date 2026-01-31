@@ -18,6 +18,19 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = createAdminClient()
+  const startTime = new Date()
+  
+  // Log job start
+  const { data: jobLog } = await (admin as any)
+    .from('cron_job_logs')
+    .insert({
+      job_name: 'auto_release_payouts',
+      last_run_at: startTime.toISOString(),
+      status: 'running',
+    })
+    .select()
+    .single()
+
   const threshold = new Date(
     Date.now() - AUTO_RELEASE_DAYS * 24 * 60 * 60 * 1000
   ).toISOString()
@@ -31,6 +44,17 @@ export async function POST(req: NextRequest) {
     .lte('delivered_at', threshold)
 
   if (error) {
+    // Log error
+    if (jobLog?.id) {
+      await (admin as any)
+        .from('cron_job_logs')
+        .update({
+          status: 'failed',
+          error_message: 'Failed to load bookings',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', jobLog.id)
+    }
     return NextResponse.json(
       { error: 'Failed to load payments' },
       { status: 500 }
@@ -60,9 +84,23 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Log job completion
+  if (jobLog?.id) {
+    await (admin as any)
+      .from('cron_job_logs')
+      .update({
+        status: 'success',
+        processed_count: released,
+        next_run_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', jobLog.id)
+  }
+
   return NextResponse.json({
     processed,
     released,
     errors,
+    timestamp: new Date().toISOString(),
   })
 }
