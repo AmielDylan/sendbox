@@ -1,6 +1,6 @@
-import { stripe } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/server'
 import type { Database } from '@/types/database.types'
+import { checkAccountStatus } from '@/lib/services/stripe-connect'
 
 export async function GET() {
   const supabase = await createClient()
@@ -39,9 +39,9 @@ export async function GET() {
     })
   }
 
-  const account = await stripe.accounts.retrieve(profile.stripe_connect_account_id)
-  const payoutsEnabled = Boolean(account.payouts_enabled)
-  const requirements = account.requirements || null
+  const status = await checkAccountStatus(profile.stripe_connect_account_id)
+  const payoutsEnabled = Boolean(status.payoutsEnabled)
+  const requirements = status.requirements || null
   const requirementsJson = requirements
     ? (JSON.parse(JSON.stringify(requirements)) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
     : null

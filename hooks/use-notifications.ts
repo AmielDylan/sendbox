@@ -42,14 +42,19 @@ export function useNotifications(limit: number = 20) {
 
       try {
         const {
-          data: { user },
-        } = await supabase.auth.getUser()
+          data: { session },
+        } = await supabase.auth.getSession()
+        const user = session?.user
 
         if (!user) {
           if (isActive) {
             setIsLoading(false)
           }
           return
+        }
+
+        if (session?.access_token) {
+          await supabase.realtime.setAuth(session.access_token)
         }
 
         // Charger les notifications

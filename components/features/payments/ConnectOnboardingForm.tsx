@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,23 +18,26 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { IconAlertCircle, IconCheck, IconLoader } from '@tabler/icons-react'
 import { toast } from 'sonner'
+import { useAuth } from '@/hooks/use-auth'
 
 interface ConnectOnboardingFormProps {
   onSuccess?: () => void
-  onLoading?: (loading: boolean) => void
 }
 
-export function ConnectOnboardingForm({
-  onSuccess,
-  onLoading,
-}: ConnectOnboardingFormProps) {
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const IBAN_REGEX = /^[A-Z]{2}\d{2}[A-Z0-9]+$/
+
+export function ConnectOnboardingForm({ onSuccess }: ConnectOnboardingFormProps) {
+  const { profile, user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<'country' | 'form'>('country')
   const [country, setCountry] = useState<'FR' | 'BJ'>('FR')
+  const [consentAccepted, setConsentAccepted] = useState(false)
+  const [hasPrefilled, setHasPrefilled] = useState(false)
 
-  // Custom form fields (instead of Stripe forms)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -46,7 +49,6 @@ export function ConnectOnboardingForm({
     address: '',
     city: '',
     postalCode: '',
-    country: 'FR',
     bankAccountHolder: '',
     iban: '',
     bic: '',
@@ -54,25 +56,93 @@ export function ConnectOnboardingForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  const profileBirthday =
+    (profile as any)?.kyc_birthday || (profile as any)?.birthday || null
+  const derivedCountry = useMemo(() => {
+    const fromProfile = (profile as any)?.country
+    return fromProfile === 'BJ' || fromProfile === 'FR' ? fromProfile : null
+  }, [profile])
+
+  useEffect(() => {
+    if (hasPrefilled) return
+    if (!profile && !user) return
+
+    setFormData(prev => {
+      const next = { ...prev }
+      if (!next.firstName && (profile as any)?.firstname) {
+        next.firstName = (profile as any).firstname
+      }
+      if (!next.lastName && (profile as any)?.lastname) {
+        next.lastName = (profile as any).lastname
+      }
+      if (!next.email && (profile as any)?.email) {
+        next.email = (profile as any).email
+      }
+      if (!next.email && user?.email) {
+        next.email = user.email
+      }
+      if (!next.phone && (profile as any)?.phone) {
+        next.phone = (profile as any).phone
+      }
+      if (!next.address && (profile as any)?.address) {
+        next.address = (profile as any).address
+      }
+
+      if (
+        (!next.dobDay || !next.dobMonth || !next.dobYear) &&
+        typeof profileBirthday === 'string'
+      ) {
+        const match = profileBirthday.match(/^(\d{4})-(\d{2})-(\d{2})/)
+        if (match) {
+          next.dobYear = next.dobYear || match[1]
+          next.dobMonth = next.dobMonth || match[2]
+          next.dobDay = next.dobDay || match[3]
+        }
+      }
+
+      if (!next.bankAccountHolder) {
+        const first = next.firstName || (profile as any)?.firstname || ''
+        const last = next.lastName || (profile as any)?.lastname || ''
+        const full = `${first} ${last}`.trim()
+        if (full) {
+          next.bankAccountHolder = full
+        }
+      }
+
+      return next
+    })
+
+    if (derivedCountry) {
+      setCountry(derivedCountry)
+    }
+
+    setHasPrefilled(true)
+  }, [derivedCountry, hasPrefilled, profile, profileBirthday, user])
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.firstName.trim()) newErrors.firstName = 'Prénom requis'
     if (!formData.lastName.trim()) newErrors.lastName = 'Nom requis'
     if (!formData.email.trim()) newErrors.email = 'Email requis'
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      newErrors.email = 'Email invalide'
+    if (!EMAIL_REGEX.test(formData.email)) newErrors.email = 'Email invalide'
     if (!formData.phone.trim()) newErrors.phone = 'Téléphone requis'
-    if (!formData.dobDay || !formData.dobMonth || !formData.dobYear)
+    if (!formData.dobDay || !formData.dobMonth || !formData.dobYear) {
       newErrors.dob = 'Date de naissance requise'
+    }
     if (!formData.address.trim()) newErrors.address = 'Adresse requise'
     if (!formData.city.trim()) newErrors.city = 'Ville requise'
     if (!formData.postalCode.trim()) newErrors.postalCode = 'Code postal requis'
-    if (!formData.bankAccountHolder.trim())
+    if (!formData.bankAccountHolder.trim()) {
       newErrors.bankAccountHolder = 'Titulaire du compte requis'
+    }
     if (!formData.iban.trim()) newErrors.iban = 'IBAN requis'
-    if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(formData.iban.replace(/\s/g, '')))
+    if (!IBAN_REGEX.test(formData.iban.replace(/\s/g, ''))) {
       newErrors.iban = 'IBAN invalide (format: FR XX...)'
+    }
+    if (!consentAccepted) {
+      newErrors.consent = 'Veuillez confirmer l\'exactitude des informations'
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -85,15 +155,14 @@ export function ConnectOnboardingForm({
     }
 
     setLoading(true)
-    onLoading?.(true)
 
     try {
-      // Step 1: Create Stripe Connect account via API
-      const createRes = await fetch('/api/stripe/connect/create', {
+      const res = await fetch('/api/connect/onboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           country,
+          consentAccepted,
           personalData: {
             firstName: formData.firstName,
             lastName: formData.lastName,
@@ -112,29 +181,21 @@ export function ConnectOnboardingForm({
         }),
       })
 
-      if (!createRes.ok) {
-        const error = await createRes.json()
-        throw new Error(error.message || 'Erreur lors de la création du compte')
+      const payload = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(
+          payload?.error ||
+            payload?.message ||
+            "Erreur lors de la création du lien d'onboarding"
+        )
       }
 
-      const { accountId } = await createRes.json()
-
-      // Step 2: Get onboarding link
-      const linkRes = await fetch('/api/stripe/connect/onboarding-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accountId }),
-      })
-
-      if (!linkRes.ok) {
-        throw new Error('Erreur lors de la génération du lien')
+      if (!payload?.url) {
+        throw new Error('Lien Stripe indisponible')
       }
 
-      const { url } = await linkRes.json()
-
-      // Redirect to Stripe onboarding (stays in iframe/embedded)
-      window.location.href = url
-
+      window.location.href = payload.url
       onSuccess?.()
     } catch (error) {
       console.error('Erreur:', error)
@@ -142,7 +203,6 @@ export function ConnectOnboardingForm({
         error instanceof Error ? error.message : 'Une erreur est survenue'
       )
       setLoading(false)
-      onLoading?.(false)
     }
   }
 
@@ -181,11 +241,11 @@ export function ConnectOnboardingForm({
       <CardHeader>
         <CardTitle>Informations personnelles & bancaires</CardTitle>
         <CardDescription>
-          Vos données sont sécurisées par Stripe
+          Vos données sont sécurisées et seront utilisées pour Stripe Connect
+          Custom.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 max-h-[600px] overflow-y-auto">
-        {/* Personal Information */}
         <div className="space-y-4">
           <h3 className="font-semibold text-sm">Identité</h3>
 
@@ -237,9 +297,7 @@ export function ConnectOnboardingForm({
               type="email"
               placeholder="jean@example.com"
               value={formData.email}
-              onChange={e =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
               disabled={loading}
               className={errors.email ? 'border-red-500' : ''}
             />
@@ -256,9 +314,7 @@ export function ConnectOnboardingForm({
               id="phone"
               placeholder="+33612345678"
               value={formData.phone}
-              onChange={e =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
+              onChange={e => setFormData({ ...formData, phone: e.target.value })}
               disabled={loading}
               className={errors.phone ? 'border-red-500' : ''}
             />
@@ -276,9 +332,7 @@ export function ConnectOnboardingForm({
                 min="1"
                 max="31"
                 value={formData.dobDay}
-                onChange={e =>
-                  setFormData({ ...formData, dobDay: e.target.value })
-                }
+                onChange={e => setFormData({ ...formData, dobDay: e.target.value })}
                 disabled={loading}
               />
               <Input
@@ -310,7 +364,6 @@ export function ConnectOnboardingForm({
           </div>
         </div>
 
-        {/* Address */}
         <div className="space-y-4">
           <h3 className="font-semibold text-sm">Adresse</h3>
 
@@ -322,9 +375,7 @@ export function ConnectOnboardingForm({
               id="address"
               placeholder="123 Rue de la Paix"
               value={formData.address}
-              onChange={e =>
-                setFormData({ ...formData, address: e.target.value })
-              }
+              onChange={e => setFormData({ ...formData, address: e.target.value })}
               disabled={loading}
               className={errors.address ? 'border-red-500' : ''}
             />
@@ -342,9 +393,7 @@ export function ConnectOnboardingForm({
                 id="city"
                 placeholder="Paris"
                 value={formData.city}
-                onChange={e =>
-                  setFormData({ ...formData, city: e.target.value })
-                }
+                onChange={e => setFormData({ ...formData, city: e.target.value })}
                 disabled={loading}
                 className={errors.city ? 'border-red-500' : ''}
               />
@@ -373,7 +422,6 @@ export function ConnectOnboardingForm({
           </div>
         </div>
 
-        {/* Bank Information */}
         <div className="space-y-4 border-t pt-4">
           <h3 className="font-semibold text-sm">Informations bancaires</h3>
 
@@ -416,7 +464,6 @@ export function ConnectOnboardingForm({
               value={formData.iban}
               onChange={e => {
                 let val = e.target.value.toUpperCase()
-                // Auto-format with spaces
                 val = val.replace(/\s/g, '').replace(/(.{4})/g, '$1 ')
                 setFormData({ ...formData, iban: val.trim() })
               }}
@@ -444,7 +491,26 @@ export function ConnectOnboardingForm({
           </div>
         </div>
 
-        {/* Actions */}
+        <div className="space-y-2 border-t pt-4">
+          <div className="flex items-start gap-2">
+            <Checkbox
+              id="consent"
+              checked={consentAccepted}
+              onCheckedChange={checked =>
+                setConsentAccepted(checked === true)
+              }
+              disabled={loading}
+            />
+            <Label htmlFor="consent" className="text-sm leading-5">
+              Je confirme que les informations ci-dessus sont conformes à mes
+              documents officiels d'identité.
+            </Label>
+          </div>
+          {errors.consent && (
+            <p className="text-xs text-red-500">{errors.consent}</p>
+          )}
+        </div>
+
         <div className="flex gap-2 border-t pt-4">
           <Button
             variant="outline"

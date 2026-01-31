@@ -15,13 +15,13 @@ export type ConnectCountry = 'FR' | 'BJ'
  */
 export async function createConnectedAccount(
   userId: string,
-  email: string,
+  email: string | undefined,
   country: ConnectCountry
 ) {
   const account = await stripe.accounts.create({
     type: 'express',
     country,
-    email,
+    ...(email ? { email } : {}),
     capabilities: {
       transfers: { requested: true },
     },

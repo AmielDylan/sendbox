@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { FEATURES } from '@/lib/shared/config/features'
@@ -20,15 +20,9 @@ export default function PaymentsSettingsPage() {
   const { profile } = useAuth()
   const isAdmin = profile?.role === 'admin'
   const [showForm, setShowForm] = useState(false)
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const kycStatus = (profile?.kyc_status ?? null) as KYCStatus
   const canConfigurePayments = kycStatus === 'approved'
-
-  const handleFormSuccess = useCallback(() => {
-    setShowForm(false)
-    setRefreshTrigger(prev => prev + 1)
-  }, [])
 
   if (isAdmin) {
     return (
@@ -96,19 +90,10 @@ export default function PaymentsSettingsPage() {
 
       {showForm ? (
         <ConnectOnboardingForm
-          key={refreshTrigger}
-          onSuccess={handleFormSuccess}
-          onLoading={loading => {
-            if (!loading) {
-              setRefreshTrigger(prev => prev + 1)
-            }
-          }}
+          onSuccess={() => setShowForm(false)}
         />
       ) : (
-        <ConnectStatusDisplay
-          key={refreshTrigger}
-          onEdit={() => setShowForm(true)}
-        />
+        <ConnectStatusDisplay onEdit={() => setShowForm(true)} />
       )}
     </div>
   )

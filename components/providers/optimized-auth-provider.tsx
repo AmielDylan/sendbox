@@ -188,12 +188,17 @@ export function OptimizedAuthProvider({
           abortController.abort()
         }, PROFILE_FETCH_TIMEOUT_MS)
 
-        const { data, error: profileError } = await supabase
+        const {
+          data,
+          error: profileError,
+          status,
+          statusText,
+        } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', userId)
           .abortSignal(abortController.signal)
-          .single()
+          .maybeSingle()
 
         clearTimeout(timeoutId)
 
@@ -208,20 +213,20 @@ export function OptimizedAuthProvider({
             !profileError.message &&
             !profileError.details &&
             !profileError.hint
+          const isNetworkError = status === 0
 
-          // Si le profil n'existe pas, ce n'est pas une erreur critique
-          if (profileError.code === 'PGRST116') {
-            console.warn('[Auth] Profile not found for user:', userId)
-            setProfile(null)
+          if (isEmptyError || isNetworkError) {
+            console.warn('[Auth] Profile fetch failed, retrying', {
+              reason: isNetworkError ? 'network_error' : 'empty_error',
+              status,
+              statusText,
+            })
             setError(null)
-            queueProfileRetry('profile_not_found')
-          } else if (isEmptyError) {
-            console.warn('[Auth] Empty profile error payload, retrying')
-            setError(null)
-            queueProfileRetry('empty_error')
+            queueProfileRetry(isNetworkError ? 'network_error' : 'empty_error')
           } else {
-            console.error('[Auth] Error fetching profile:', profileError)
-            console.error('[Auth] Profile error details:', {
+            console.error('[Auth] Error fetching profile:', {
+              status,
+              statusText,
               code: profileError.code,
               message: profileError.message,
               details: profileError.details,
@@ -229,6 +234,11 @@ export function OptimizedAuthProvider({
             })
             setError(new Error('Failed to load profile'))
           }
+        } else if (!data) {
+          console.warn('[Auth] Profile not found for user:', userId)
+          setProfile(null)
+          setError(null)
+          queueProfileRetry('profile_not_found')
         } else {
           console.log('[Auth] Profile loaded successfully:', {
             id: data?.id,
@@ -294,6 +304,10 @@ export function OptimizedAuthProvider({
 
         if (!mounted) return
 
+        if (initialSession?.access_token) {
+          void supabase.realtime.setAuth(initialSession.access_token)
+        }
+
         if (sessionError) {
           console.error('[Auth] Error getting session:', sessionError)
           setError(sessionError)
@@ -334,6 +348,8 @@ export function OptimizedAuthProvider({
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('[Auth] State change:', event, currentSession?.user?.id)
+
+      void supabase.realtime.setAuth(currentSession?.access_token ?? null)
 
       setSession(currentSession)
       setUser(currentSession?.user ?? null)

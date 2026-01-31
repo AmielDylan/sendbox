@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,14 +17,11 @@ import { toast } from 'sonner'
 import { IconLoader2 } from '@tabler/icons-react'
 
 export default function FundsPage() {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, refetch } = useAuth()
   const isAdmin = profile?.role === 'admin'
-  const [connectStatus, setConnectStatus] = useState<{
-    payouts_enabled: boolean
-  } | null>(null)
   const [isConnectLoading, setIsConnectLoading] = useState(true)
   const [isOpeningPayout, setIsOpeningPayout] = useState(false)
-  const lastConnectStatusKey = useRef<string | null>(null)
+  const payoutsEnabled = Boolean(profile?.stripe_payouts_enabled)
 
   const kycStatus = (profile?.kyc_status ?? null) as
     | 'pending'
@@ -34,36 +31,31 @@ export default function FundsPage() {
     | null
   const canConfigurePayments = kycStatus === 'approved'
 
+  const refreshConnectStatus = useCallback(async () => {
+    const res = await fetch('/api/connect/status')
+    if (!res.ok) {
+      throw new Error('Erreur lors du chargement')
+    }
+    await res.json()
+    await refetch()
+  }, [refetch])
+
   useEffect(() => {
     if (!FEATURES.STRIPE_PAYMENTS || isAdmin || !canConfigurePayments) {
       setIsConnectLoading(false)
       return
     }
 
-    if (!user?.id) {
+    if (!user?.id || payoutsEnabled) {
       setIsConnectLoading(false)
       return
     }
-
-    const currentKey = `${user.id}:${isAdmin}:${canConfigurePayments}`
-    if (lastConnectStatusKey.current === currentKey) {
-      return
-    }
-    lastConnectStatusKey.current = currentKey
 
     let isActive = true
 
     const loadConnectStatus = async () => {
       try {
-        const res = await fetch('/api/connect/status')
-        if (!isActive) return
-
-        if (!res.ok) {
-          throw new Error('Erreur lors du chargement')
-        }
-
-        const data = await res.json()
-        setConnectStatus(data)
+        await refreshConnectStatus()
       } catch (error) {
         console.error('Connect status error:', error)
       } finally {
@@ -73,12 +65,19 @@ export default function FundsPage() {
       }
     }
 
+    setIsConnectLoading(true)
     loadConnectStatus()
 
     return () => {
       isActive = false
     }
-  }, [canConfigurePayments, isAdmin, user?.id])
+  }, [
+    canConfigurePayments,
+    isAdmin,
+    payoutsEnabled,
+    refreshConnectStatus,
+    user?.id,
+  ])
 
   const handlePayout = async () => {
     setIsOpeningPayout(true)
@@ -172,7 +171,7 @@ export default function FundsPage() {
                 disabled={
                   isOpeningPayout ||
                   isConnectLoading ||
-                  !connectStatus?.payouts_enabled
+                  !payoutsEnabled
                 }
               >
                 {isOpeningPayout ? 'Ouverture...' : 'Virer sur mon compte'}
@@ -184,7 +183,7 @@ export default function FundsPage() {
                 </Link>
               </Button>
             )}
-            {canConfigurePayments && !connectStatus?.payouts_enabled && (
+            {canConfigurePayments && !payoutsEnabled && (
               <Button variant="outline" asChild>
                 <Link href="/dashboard/reglages/paiements">
                   Activer les paiements
