@@ -97,19 +97,23 @@ export async function POST(req: Request) {
     const country: ConnectCountry = body?.country === 'BJ' ? 'BJ' : 'FR'
     const personal = body?.personalData || {}
     const bank = body?.bankData || {}
-    const fallbackWebsite = process.env.NEXT_PUBLIC_APP_URL
+    const reqOrigin = req.headers.get('origin')
+    const reqHost =
+      req.headers.get('x-forwarded-host') || req.headers.get('host')
+    const reqProto = req.headers.get('x-forwarded-proto') || 'http'
+    const baseUrl =
+      reqOrigin || (reqHost ? `${reqProto}://${reqHost}` : null)
+    const defaultProfileUrl = baseUrl
+      ? `${baseUrl.replace(/\/$/, '')}/profil/${user.id}`
+      : null
+    const envProfileUrl = process.env.NEXT_PUBLIC_APP_URL
       ? `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/profil/${user.id}`
       : null
-    const businessWebsite =
-      normalizeWebsite(body?.businessWebsite) || normalizeWebsite(fallbackWebsite || undefined)
 
-    if (country === 'FR' && !businessWebsite) {
-      console.error('Missing business website for Stripe onboarding.')
-      return Response.json(
-        { error: "Impossible de démarrer l'onboarding Stripe." },
-        { status: 400 }
-      )
-    }
+    const businessWebsite =
+      normalizeWebsite(body?.businessWebsite) ||
+      normalizeWebsite(envProfileUrl || undefined) ||
+      normalizeWebsite(defaultProfileUrl || undefined)
 
     const updates: Record<string, string> = {}
     if (personal.firstName?.trim()) updates.firstname = personal.firstName.trim()
