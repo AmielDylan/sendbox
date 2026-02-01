@@ -208,7 +208,6 @@ export async function POST(req: Request) {
     if (Object.keys(individual).length > 0) {
       try {
         await stripe.accounts.update(accountId, {
-          business_type: 'individual',
           individual,
         })
       } catch (error) {
