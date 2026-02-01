@@ -81,12 +81,6 @@ export function ConnectOnboardingForm({
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const profileUrl = useMemo(() => {
-    const base = process.env.NEXT_PUBLIC_APP_URL || ''
-    const id = (profile as any)?.id || user?.id
-    if (!base || !id) return ''
-    return `${base.replace(/\/$/, '')}/profil/${id}`
-  }, [profile, user])
 
   const profileBirthday =
     (profile as any)?.kyc_birthday || (profile as any)?.birthday || null
@@ -139,10 +133,6 @@ export function ConnectOnboardingForm({
         if (full) {
           next.bankAccountHolder = full
         }
-      }
-
-      if (!next.businessWebsite && profileUrl) {
-        next.businessWebsite = profileUrl
       }
 
       return next
@@ -200,12 +190,6 @@ export function ConnectOnboardingForm({
     }
 
     try {
-      if (country === 'FR' && !formData.businessWebsite.trim()) {
-        toast.error('URL publique introuvable. Vérifiez NEXT_PUBLIC_APP_URL.')
-        setLoading(false)
-        return
-      }
-
       await onSubmit({
         country,
         consentAccepted,
@@ -356,11 +340,6 @@ export function ConnectOnboardingForm({
             )}
           </div>
 
-          {formData.businessWebsite && (
-            <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-              URL publique utilisée pour Stripe : {formData.businessWebsite}
-            </div>
-          )}
 
           <div>
             <Label className="text-sm">Date de naissance *</Label>

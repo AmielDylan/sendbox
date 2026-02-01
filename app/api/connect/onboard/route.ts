@@ -104,11 +104,9 @@ export async function POST(req: Request) {
       normalizeWebsite(body?.businessWebsite) || normalizeWebsite(fallbackWebsite || undefined)
 
     if (country === 'FR' && !businessWebsite) {
+      console.error('Missing business website for Stripe onboarding.')
       return Response.json(
-        {
-          error:
-            'Un site web valide est requis pour activer les virements. Vérifiez NEXT_PUBLIC_APP_URL.',
-        },
+        { error: "Impossible de démarrer l'onboarding Stripe." },
         { status: 400 }
       )
     }
@@ -267,7 +265,7 @@ export async function POST(req: Request) {
       } catch (error) {
         console.error('Stripe business profile error:', error)
         return Response.json(
-          { error: 'Site web invalide pour Stripe. Vérifiez l’URL.' },
+          { error: "Impossible de démarrer l'onboarding Stripe." },
           { status: 400 }
         )
       }
