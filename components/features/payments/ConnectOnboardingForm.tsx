@@ -26,6 +26,7 @@ import { useAuth } from '@/hooks/use-auth'
 export interface ConnectOnboardingPayload {
   country: 'FR' | 'BJ'
   consentAccepted: boolean
+  businessWebsite?: string
   personalData: {
     firstName: string
     lastName: string
@@ -50,6 +51,7 @@ interface ConnectOnboardingFormProps {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const IBAN_REGEX = /^[A-Z]{2}\d{2}[A-Z0-9]+$/
+const WEBSITE_REGEX = /^[a-z0-9.-]+\.[a-z]{2,}$/i
 
 export function ConnectOnboardingForm({
   onSubmit,
@@ -73,6 +75,7 @@ export function ConnectOnboardingForm({
     address: '',
     city: '',
     postalCode: '',
+    businessWebsite: '',
     bankAccountHolder: '',
     iban: '',
     bic: '',
@@ -164,6 +167,18 @@ export function ConnectOnboardingForm({
     if (!IBAN_REGEX.test(formData.iban.replace(/\s/g, ''))) {
       newErrors.iban = 'IBAN invalide (format: FR XX...)'
     }
+    if (country === 'FR') {
+      if (!formData.businessWebsite.trim()) {
+        newErrors.businessWebsite = 'Site web requis'
+      } else if (!WEBSITE_REGEX.test(formData.businessWebsite.trim())) {
+        newErrors.businessWebsite = 'Site web invalide'
+      }
+    } else if (
+      formData.businessWebsite.trim() &&
+      !WEBSITE_REGEX.test(formData.businessWebsite.trim())
+    ) {
+      newErrors.businessWebsite = 'Site web invalide'
+    }
     if (!consentAccepted) {
       newErrors.consent = 'Veuillez confirmer l\'exactitude des informations'
     }
@@ -180,10 +195,20 @@ export function ConnectOnboardingForm({
 
     setLoading(true)
 
+    const normalizeWebsite = (value: string) => {
+      const trimmed = value.trim()
+      if (!trimmed) return ''
+      if (/^https?:\/\//i.test(trimmed)) return trimmed
+      return `https://${trimmed}`
+    }
+
     try {
       await onSubmit({
         country,
         consentAccepted,
+        businessWebsite: formData.businessWebsite
+          ? normalizeWebsite(formData.businessWebsite)
+          : undefined,
         personalData: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -325,6 +350,31 @@ export function ConnectOnboardingForm({
             />
             {errors.phone && (
               <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="businessWebsite" className="text-sm">
+              Site web de l'activité {country === 'FR' ? '*' : '(optionnel)'}
+            </Label>
+            <Input
+              id="businessWebsite"
+              placeholder="https://www.votresite.com"
+              value={formData.businessWebsite}
+              onChange={e =>
+                setFormData({ ...formData, businessWebsite: e.target.value })
+              }
+              disabled={loading}
+              className={errors.businessWebsite ? 'border-red-500' : ''}
+            />
+            {errors.businessWebsite ? (
+              <p className="text-xs text-red-500 mt-1">
+                {errors.businessWebsite}
+              </p>
+            ) : (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Stripe peut exiger un site web valide pour activer les virements.
+              </p>
             )}
           </div>
 

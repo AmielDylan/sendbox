@@ -9,6 +9,7 @@ import { stripe } from '@/lib/shared/services/stripe/config'
 type OnboardRequestBody = {
   country?: string
   consentAccepted?: boolean
+  businessWebsite?: string
   personalData?: {
     firstName?: string
     lastName?: string
@@ -35,6 +36,22 @@ const parseDob = (value?: string) => {
     day: Number(day),
     month: Number(month),
     year: Number(year),
+  }
+}
+
+const normalizeWebsite = (value?: string) => {
+  if (!value) return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const withScheme = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`
+  try {
+    const url = new URL(withScheme)
+    if (!url.hostname.includes('.')) return null
+    return url.toString()
+  } catch {
+    return null
   }
 }
 
@@ -80,6 +97,14 @@ export async function POST(req: Request) {
     const country: ConnectCountry = body?.country === 'BJ' ? 'BJ' : 'FR'
     const personal = body?.personalData || {}
     const bank = body?.bankData || {}
+    const businessWebsite = normalizeWebsite(body?.businessWebsite)
+
+    if (country === 'FR' && !businessWebsite) {
+      return Response.json(
+        { error: 'Un site web valide est requis pour activer les virements.' },
+        { status: 400 }
+      )
+    }
 
     const updates: Record<string, string> = {}
     if (personal.firstName?.trim()) updates.firstname = personal.firstName.trim()
@@ -222,6 +247,20 @@ export async function POST(req: Request) {
         console.error('Stripe account update error:', error)
         return Response.json(
           { error: 'Informations Stripe invalides. Vérifiez le formulaire.' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (businessWebsite) {
+      try {
+        await stripe.accounts.update(accountId, {
+          business_profile: { url: businessWebsite },
+        })
+      } catch (error) {
+        console.error('Stripe business profile error:', error)
+        return Response.json(
+          { error: 'Site web invalide pour Stripe. Vérifiez l’URL.' },
           { status: 400 }
         )
       }
