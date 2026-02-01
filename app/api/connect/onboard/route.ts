@@ -55,6 +55,21 @@ const normalizeWebsite = (value?: string) => {
   }
 }
 
+const isPublicUrl = (value: string | null) => {
+  if (!value) return false
+  try {
+    const url = new URL(value)
+    const host = url.hostname.toLowerCase()
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') {
+      return false
+    }
+    if (host.endsWith('.local')) return false
+    return url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const supabase = await createClient()
@@ -109,11 +124,17 @@ export async function POST(req: Request) {
     const envProfileUrl = process.env.NEXT_PUBLIC_APP_URL
       ? `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/profil/${user.id}`
       : null
+    const sendboxFallbackUrl = `https://www.gosendbox.com/profil/${user.id}`
 
-    const businessWebsite =
+    const preferredUrl =
       normalizeWebsite(body?.businessWebsite) ||
       normalizeWebsite(envProfileUrl || undefined) ||
-      normalizeWebsite(defaultProfileUrl || undefined)
+      normalizeWebsite(defaultProfileUrl || undefined) ||
+      normalizeWebsite(sendboxFallbackUrl)
+
+    const businessWebsite = isPublicUrl(preferredUrl)
+      ? preferredUrl
+      : normalizeWebsite(sendboxFallbackUrl)
 
     const updates: Record<string, string> = {}
     if (personal.firstName?.trim()) updates.firstname = personal.firstName.trim()

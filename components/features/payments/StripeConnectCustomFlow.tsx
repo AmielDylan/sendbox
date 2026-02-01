@@ -25,6 +25,7 @@ export function StripeConnectCustomFlow({
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [isPolling, setIsPolling] = useState(false)
+  const [showPendingNotice, setShowPendingNotice] = useState(false)
   const pollRef = useRef<number | null>(null)
   const { profile, refetch } = useAuth()
 
@@ -112,6 +113,7 @@ export function StripeConnectCustomFlow({
       }
 
       setClientSecret(data.client_secret)
+      setShowPendingNotice(true)
     } finally {
       setLoading(false)
     }
@@ -140,6 +142,16 @@ export function StripeConnectCustomFlow({
                 demandera des informations complémentaires si nécessaire.
               </AlertDescription>
             </Alert>
+            {showPendingNotice && (
+              <Alert>
+                <AlertDescription>
+                  La vérification de vos informations bancaires est en cours.
+                  Ce processus peut prendre jusqu’à 24h. Aucune de vos
+                  informations bancaires n’est conservée par Sendbox dans le
+                  cadre de cette vérification.
+                </AlertDescription>
+              </Alert>
+            )}
             <ConnectComponentsProvider connectInstance={connectInstance}>
               <ConnectAccountOnboarding
                 onExit={async () => {

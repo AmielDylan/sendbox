@@ -261,7 +261,7 @@ export async function POST(req: NextRequest) {
           !requirements?.past_due?.length
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, payout_method')
+          .select('id, payout_method, stripe_payouts_enabled')
           .eq('stripe_connect_account_id', account.id)
           .maybeSingle()
 
@@ -289,6 +289,14 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error('❌ Failed to update connect status:', error)
+        } else if (payoutsEnabled && profile?.id && !profile?.stripe_payouts_enabled) {
+          await createSystemNotification({
+            userId: profile.id,
+            type: 'system_alert',
+            title: 'Paiements activés',
+            content:
+              'Votre compte bancaire est vérifié. Les virements sont maintenant disponibles.',
+          })
         }
         break
       }
