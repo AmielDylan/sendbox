@@ -51,7 +51,6 @@ interface ConnectOnboardingFormProps {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const IBAN_REGEX = /^[A-Z]{2}\d{2}[A-Z0-9]+$/
-const WEBSITE_REGEX = /^[a-z0-9.-]+\.[a-z]{2,}$/i
 
 export function ConnectOnboardingForm({
   onSubmit,
@@ -82,6 +81,12 @@ export function ConnectOnboardingForm({
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const profileUrl = useMemo(() => {
+    const base = process.env.NEXT_PUBLIC_APP_URL || ''
+    const id = (profile as any)?.id || user?.id
+    if (!base || !id) return ''
+    return `${base.replace(/\/$/, '')}/profil/${id}`
+  }, [profile, user])
 
   const profileBirthday =
     (profile as any)?.kyc_birthday || (profile as any)?.birthday || null
@@ -136,6 +141,10 @@ export function ConnectOnboardingForm({
         }
       }
 
+      if (!next.businessWebsite && profileUrl) {
+        next.businessWebsite = profileUrl
+      }
+
       return next
     })
 
@@ -167,18 +176,6 @@ export function ConnectOnboardingForm({
     if (!IBAN_REGEX.test(formData.iban.replace(/\s/g, ''))) {
       newErrors.iban = 'IBAN invalide (format: FR XX...)'
     }
-    if (country === 'FR') {
-      if (!formData.businessWebsite.trim()) {
-        newErrors.businessWebsite = 'Site web requis'
-      } else if (!WEBSITE_REGEX.test(formData.businessWebsite.trim())) {
-        newErrors.businessWebsite = 'Site web invalide'
-      }
-    } else if (
-      formData.businessWebsite.trim() &&
-      !WEBSITE_REGEX.test(formData.businessWebsite.trim())
-    ) {
-      newErrors.businessWebsite = 'Site web invalide'
-    }
     if (!consentAccepted) {
       newErrors.consent = 'Veuillez confirmer l\'exactitude des informations'
     }
@@ -203,6 +200,12 @@ export function ConnectOnboardingForm({
     }
 
     try {
+      if (country === 'FR' && !formData.businessWebsite.trim()) {
+        toast.error('URL publique introuvable. Vérifiez NEXT_PUBLIC_APP_URL.')
+        setLoading(false)
+        return
+      }
+
       await onSubmit({
         country,
         consentAccepted,
@@ -353,30 +356,11 @@ export function ConnectOnboardingForm({
             )}
           </div>
 
-          <div>
-            <Label htmlFor="businessWebsite" className="text-sm">
-              Site web de l'activité {country === 'FR' ? '*' : '(optionnel)'}
-            </Label>
-            <Input
-              id="businessWebsite"
-              placeholder="https://www.votresite.com"
-              value={formData.businessWebsite}
-              onChange={e =>
-                setFormData({ ...formData, businessWebsite: e.target.value })
-              }
-              disabled={loading}
-              className={errors.businessWebsite ? 'border-red-500' : ''}
-            />
-            {errors.businessWebsite ? (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.businessWebsite}
-              </p>
-            ) : (
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Stripe peut exiger un site web valide pour activer les virements.
-              </p>
-            )}
-          </div>
+          {formData.businessWebsite && (
+            <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+              URL publique utilisée pour Stripe : {formData.businessWebsite}
+            </div>
+          )}
 
           <div>
             <Label className="text-sm">Date de naissance *</Label>
