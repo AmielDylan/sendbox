@@ -43,8 +43,9 @@ export async function createConnectedAccount(
     capabilities: {
       transfers: { requested: true },
     },
-    business_type: 'individual',
-    ...(accountToken?.id ? { account_token: accountToken.id } : {}),
+    ...(accountToken?.id
+      ? { account_token: accountToken.id }
+      : { business_type: 'individual' }),
     metadata: {
       sendbox_user_id: userId,
     },
