@@ -107,11 +107,50 @@ export async function POST(req: Request) {
       }
     }
 
+    const individual: Record<string, any> = {}
+    if (personal.firstName?.trim()) {
+      individual.first_name = personal.firstName.trim()
+    }
+    if (personal.lastName?.trim()) {
+      individual.last_name = personal.lastName.trim()
+    }
+    if (personal.email?.trim()) individual.email = personal.email.trim()
+    if (personal.phone?.trim()) individual.phone = personal.phone.trim()
+
+    const dob = parseDob(personal.dob)
+    if (dob) {
+      individual.dob = dob
+    }
+
+    if (
+      personal.address?.trim() ||
+      personal.city?.trim() ||
+      personal.postalCode?.trim()
+    ) {
+      individual.address = {
+        line1: personal.address?.trim() || undefined,
+        city: personal.city?.trim() || undefined,
+        postal_code: personal.postalCode?.trim() || undefined,
+        country,
+      }
+    }
+
+    const accountTokenData = {
+      business_type: 'individual' as const,
+      individual: Object.keys(individual).length > 0 ? individual : undefined,
+      tos_shown_and_accepted: true,
+    }
+
     let accountId = profile.stripe_connect_account_id || null
     const accountEmail = personal.email?.trim() || profile.email || user.email
 
     if (!accountId) {
-      accountId = await createConnectedAccount(user.id, accountEmail, country)
+      accountId = await createConnectedAccount(
+        user.id,
+        accountEmail,
+        country,
+        accountTokenData
+      )
 
       const { error: updateError } = await supabase
         .from('profiles')
@@ -133,7 +172,8 @@ export async function POST(req: Request) {
           const newAccountId = await createConnectedAccount(
             user.id,
             accountEmail,
-            country
+            country,
+            accountTokenData
           )
           accountId = newAccountId
 
@@ -163,26 +203,6 @@ export async function POST(req: Request) {
         { error: "Impossible d'initialiser le compte Stripe" },
         { status: 500 }
       )
-    }
-
-    const individual: Record<string, any> = {}
-    if (personal.firstName?.trim()) individual.first_name = personal.firstName.trim()
-    if (personal.lastName?.trim()) individual.last_name = personal.lastName.trim()
-    if (personal.email?.trim()) individual.email = personal.email.trim()
-    if (personal.phone?.trim()) individual.phone = personal.phone.trim()
-
-    const dob = parseDob(personal.dob)
-    if (dob) {
-      individual.dob = dob
-    }
-
-    if (personal.address?.trim() || personal.city?.trim() || personal.postalCode?.trim()) {
-      individual.address = {
-        line1: personal.address?.trim() || undefined,
-        city: personal.city?.trim() || undefined,
-        postal_code: personal.postalCode?.trim() || undefined,
-        country,
-      }
     }
 
     if (Object.keys(individual).length > 0) {
