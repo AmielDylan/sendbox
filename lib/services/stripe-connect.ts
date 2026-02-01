@@ -9,6 +9,13 @@ import { stripe } from '@/lib/shared/services/stripe/config'
 
 export type ConnectCountry = 'FR' | 'BJ'
 
+type AccountTokenData = {
+  business_type?: 'individual' | 'company' | 'government_entity' | 'non_profit'
+  individual?: Record<string, unknown>
+  company?: Record<string, unknown>
+  tos_shown_and_accepted?: boolean
+}
+
 /**
  * Create a Stripe Connect Custom account for a traveler
  * Custom = verification is embedded in Sendbox (whitelabel)
@@ -16,8 +23,19 @@ export type ConnectCountry = 'FR' | 'BJ'
 export async function createConnectedAccount(
   userId: string,
   email: string | undefined,
-  country: ConnectCountry
+  country: ConnectCountry,
+  accountTokenData?: AccountTokenData
 ) {
+  const accountToken = accountTokenData
+    ? await stripe.tokens.create({
+        account: {
+          ...accountTokenData,
+          tos_shown_and_accepted:
+            accountTokenData.tos_shown_and_accepted ?? true,
+        },
+      })
+    : null
+
   const account = await stripe.accounts.create({
     type: 'custom',
     country,
@@ -26,6 +44,7 @@ export async function createConnectedAccount(
       transfers: { requested: true },
     },
     business_type: 'individual',
+    ...(accountToken?.id ? { account_token: accountToken.id } : {}),
     metadata: {
       sendbox_user_id: userId,
     },
