@@ -86,6 +86,8 @@ export async function POST(req: Request) {
     if (personal.lastName?.trim()) updates.lastname = personal.lastName.trim()
     if (personal.phone?.trim()) updates.phone = personal.phone.trim()
     if (personal.address?.trim()) updates.address = personal.address.trim()
+    if (personal.dob?.trim()) updates.birthday = personal.dob.trim()
+    if (country) updates.country = country
 
     if (Object.keys(updates).length > 0) {
       const { error: updateProfileError } = await supabase
