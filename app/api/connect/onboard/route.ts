@@ -207,8 +207,16 @@ export async function POST(req: Request) {
 
     if (Object.keys(individual).length > 0) {
       try {
+        const accountToken = await stripe.tokens.create({
+          account: {
+            business_type: 'individual',
+            individual,
+            tos_shown_and_accepted: true,
+          },
+        })
+
         await stripe.accounts.update(accountId, {
-          individual,
+          account_token: accountToken.id,
         })
       } catch (error) {
         console.error('Stripe account update error:', error)
