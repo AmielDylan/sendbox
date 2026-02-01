@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { loadConnectAndInitialize } from '@stripe/connect-js/pure'
 import {
   ConnectAccountOnboarding,
@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
+import { useAuth } from '@/hooks/use-auth'
 
 interface StripeConnectCustomFlowProps {
   onCompleted?: () => void
@@ -23,6 +24,9 @@ export function StripeConnectCustomFlow({
 }: StripeConnectCustomFlowProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [isPolling, setIsPolling] = useState(false)
+  const pollRef = useRef<number | null>(null)
+  const { profile, refetch } = useAuth()
 
   const publishableKey =
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
@@ -35,6 +39,54 @@ export function StripeConnectCustomFlow({
       fetchClientSecret: async () => clientSecret,
     })
   }, [clientSecret, publishableKey])
+
+  const stopPolling = () => {
+    if (pollRef.current) {
+      window.clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+    setIsPolling(false)
+  }
+
+  const startPolling = () => {
+    if (pollRef.current) return
+    setIsPolling(true)
+    let attempts = 0
+    pollRef.current = window.setInterval(async () => {
+      attempts += 1
+      try {
+        const res = await fetch('/api/connect/status')
+        const data = await res.json().catch(() => ({}))
+        if (res.ok && (data?.payouts_enabled || data?.payout_status === 'active')) {
+          await refetch()
+          toast.success('Paiements Stripe activés.')
+          stopPolling()
+          return
+        }
+      } catch (error) {
+        console.error('Stripe status polling error:', error)
+      }
+
+      if (attempts >= 15) {
+        stopPolling()
+      }
+    }, 4000)
+  }
+
+  useEffect(() => {
+    const payoutStatus = (profile as any)?.payout_status as
+      | 'active'
+      | 'pending'
+      | 'disabled'
+      | undefined
+    if (payoutStatus === 'active') {
+      stopPolling()
+    }
+  }, [profile])
+
+  useEffect(() => {
+    return () => stopPolling()
+  }, [])
 
   const handleSubmit = async (payload: ConnectOnboardingPayload) => {
     setLoading(true)
@@ -94,6 +146,7 @@ export function StripeConnectCustomFlow({
                   toast.success('Vérification terminée.')
                   await fetch('/api/connect/status').catch(() => null)
                   onCompleted?.()
+                  startPolling()
                 }}
               />
             </ConnectComponentsProvider>
