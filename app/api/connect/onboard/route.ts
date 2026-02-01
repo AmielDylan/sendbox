@@ -97,11 +97,18 @@ export async function POST(req: Request) {
     const country: ConnectCountry = body?.country === 'BJ' ? 'BJ' : 'FR'
     const personal = body?.personalData || {}
     const bank = body?.bankData || {}
-    const businessWebsite = normalizeWebsite(body?.businessWebsite)
+    const fallbackWebsite = process.env.NEXT_PUBLIC_APP_URL
+      ? `${process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '')}/profil/${user.id}`
+      : null
+    const businessWebsite =
+      normalizeWebsite(body?.businessWebsite) || normalizeWebsite(fallbackWebsite || undefined)
 
     if (country === 'FR' && !businessWebsite) {
       return Response.json(
-        { error: 'Un site web valide est requis pour activer les virements.' },
+        {
+          error:
+            'Un site web valide est requis pour activer les virements. Vérifiez NEXT_PUBLIC_APP_URL.',
+        },
         { status: 400 }
       )
     }
