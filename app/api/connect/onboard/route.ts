@@ -8,19 +8,6 @@ import { isStripeAccountMissing } from '@/lib/services/stripe-connect'
 import { stripe } from '@/lib/shared/services/stripe/config'
 
 type OnboardRequestBody = {
-  country?: string
-  consentAccepted?: boolean
-  businessWebsite?: string
-  personalData?: {
-    firstName?: string
-    lastName?: string
-    email?: string
-    phone?: string
-    dob?: string
-    address?: string
-    city?: string
-    postalCode?: string
-  }
   bankData?: {
     accountHolder?: string
     iban?: string
@@ -84,7 +71,9 @@ export async function POST(req: Request) {
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, role, email, stripe_connect_account_id')
+      .select(
+        'id, role, email, stripe_connect_account_id, firstname, lastname, phone, address, city, postal_code, birthday, country'
+      )
       .eq('id', user.id)
       .single()
 
@@ -103,16 +92,15 @@ export async function POST(req: Request) {
       .json()
       .catch(() => ({} as OnboardRequestBody))
 
-    if (!body?.consentAccepted) {
+    const bank = body?.bankData || {}
+    if (!bank?.accountHolder?.trim() || !bank?.iban?.trim()) {
       return Response.json(
-        { error: 'Vous devez confirmer l\'exactitude des informations' },
+        { error: 'Informations bancaires requises' },
         { status: 400 }
       )
     }
 
-    const country: ConnectCountry = body?.country === 'BJ' ? 'BJ' : 'FR'
-    const personal = body?.personalData || {}
-    const bank = body?.bankData || {}
+    const country: ConnectCountry = profile.country === 'BJ' ? 'BJ' : 'FR'
     const reqOrigin = req.headers.get('origin')
     const reqHost =
       req.headers.get('x-forwarded-host') || req.headers.get('host')
@@ -128,7 +116,6 @@ export async function POST(req: Request) {
     const sendboxFallbackUrl = `https://www.gosendbox.com/profil/${user.id}`
 
     const preferredUrl =
-      normalizeWebsite(body?.businessWebsite) ||
       normalizeWebsite(envProfileUrl || undefined) ||
       normalizeWebsite(defaultProfileUrl || undefined) ||
       normalizeWebsite(sendboxFallbackUrl)
@@ -137,58 +124,30 @@ export async function POST(req: Request) {
       ? preferredUrl
       : normalizeWebsite(sendboxFallbackUrl)
 
-    const updates: Record<string, string> = {}
-    if (personal.firstName?.trim()) updates.firstname = personal.firstName.trim()
-    if (personal.lastName?.trim()) updates.lastname = personal.lastName.trim()
-    if (personal.phone?.trim()) updates.phone = personal.phone.trim()
-    if (personal.address?.trim()) updates.address = personal.address.trim()
-    if (personal.city?.trim()) updates.city = personal.city.trim()
-    if (personal.postalCode?.trim()) updates.postal_code = personal.postalCode.trim()
-    if (personal.dob?.trim()) updates.birthday = personal.dob.trim()
-    if (country) updates.country = country
-
-    if (Object.keys(updates).length > 0) {
-      const { error: updateProfileError } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-
-      if (updateProfileError) {
-        console.error('Profile update error:', updateProfileError)
-        return Response.json(
-          {
-            error: 'Impossible de mettre à jour le profil',
-            details: updateProfileError.message,
-          },
-          { status: 500 }
-        )
-      }
-    }
-
     const individual: Record<string, any> = {}
-    if (personal.firstName?.trim()) {
-      individual.first_name = personal.firstName.trim()
+    if (profile.firstname?.trim()) {
+      individual.first_name = profile.firstname.trim()
     }
-    if (personal.lastName?.trim()) {
-      individual.last_name = personal.lastName.trim()
+    if (profile.lastname?.trim()) {
+      individual.last_name = profile.lastname.trim()
     }
-    if (personal.email?.trim()) individual.email = personal.email.trim()
-    if (personal.phone?.trim()) individual.phone = personal.phone.trim()
+    if (profile.email?.trim()) individual.email = profile.email.trim()
+    if (profile.phone?.trim()) individual.phone = profile.phone.trim()
 
-    const dob = parseDob(personal.dob)
+    const dob = parseDob(profile.birthday || undefined)
     if (dob) {
       individual.dob = dob
     }
 
     if (
-      personal.address?.trim() ||
-      personal.city?.trim() ||
-      personal.postalCode?.trim()
+      profile.address?.trim() ||
+      profile.city?.trim() ||
+      profile.postal_code?.trim()
     ) {
       individual.address = {
-        line1: personal.address?.trim() || undefined,
-        city: personal.city?.trim() || undefined,
-        postal_code: personal.postalCode?.trim() || undefined,
+        line1: profile.address?.trim() || undefined,
+        city: profile.city?.trim() || undefined,
+        postal_code: profile.postal_code?.trim() || undefined,
         country,
       }
     }
@@ -200,7 +159,7 @@ export async function POST(req: Request) {
     }
 
     let accountId = profile.stripe_connect_account_id || null
-    const accountEmail = personal.email?.trim() || profile.email || user.email
+    const accountEmail = profile.email || user.email
 
     if (!accountId) {
       accountId = await createConnectedAccount(
