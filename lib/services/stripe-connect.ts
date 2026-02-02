@@ -19,7 +19,7 @@ export const isStripeAccountMissing = (error: unknown) => {
   )
 }
 
-type AccountTokenData = {
+export type AccountTokenData = {
   business_type?: 'individual' | 'company' | 'government_entity' | 'non_profit'
   individual?: Record<string, unknown>
   company?: Record<string, unknown>
@@ -121,6 +121,22 @@ export async function checkAccountStatus(accountId: string) {
     }
     throw error
   }
+}
+
+export async function getAccountRepresentative(accountId: string) {
+  const account = await stripe.accounts.retrieve(accountId)
+
+  if (account.individual?.id) {
+    return { account, personId: account.individual.id }
+  }
+
+  const persons = await stripe.accounts.listPersons(accountId, { limit: 10 })
+  const representative = persons.data.find(
+    person => person.relationship?.representative
+  )
+  const personId = representative?.id || persons.data[0]?.id || null
+
+  return { account, personId }
 }
 
 /**

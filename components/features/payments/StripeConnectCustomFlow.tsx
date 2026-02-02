@@ -79,14 +79,15 @@ export function StripeConnectCustomFlow({
         const data = await res.json().catch(() => ({}))
         if (res.ok && (data?.payouts_enabled || data?.payout_status === 'active')) {
           await refetch()
-          toast.success('Paiements Stripe activés.')
+          toast.success('Paiements activés.')
           stopLongPolling()
           return
         }
 
         if (!res.ok) {
           toast.error(
-            data?.error || 'Impossible de vérifier la création du compte Stripe.'
+            data?.error ||
+              'Impossible de vérifier la création du compte de paiement.'
           )
         }
 
@@ -97,7 +98,7 @@ export function StripeConnectCustomFlow({
           !latestProfile?.stripe_connect_account_id &&
           !missingAccountNotified.current
         ) {
-          toast.error('Compte Stripe non créé. Reprenez la vérification.')
+          toast.error('Compte de paiement non créé. Reprenez la vérification.')
           missingAccountNotified.current = true
         }
       } catch (error) {
@@ -117,7 +118,7 @@ export function StripeConnectCustomFlow({
         const data = await res.json().catch(() => ({}))
         if (res.ok && (data?.payouts_enabled || data?.payout_status === 'active')) {
           await refetch()
-          toast.success('Paiements Stripe activés.')
+          toast.success('Paiements activés.')
           stopPolling()
           return
         }
@@ -204,7 +205,7 @@ export function StripeConnectCustomFlow({
 
       const stripe = await stripePromise
       if (!stripe) {
-        throw new Error("Stripe n'est pas disponible")
+        throw new Error("Le service de vérification n'est pas disponible")
       }
 
       const { error } = await stripe.verifyIdentity(data.client_secret)
@@ -245,7 +246,7 @@ export function StripeConnectCustomFlow({
       }
 
       if (!data?.client_secret) {
-        throw new Error('Client secret Stripe indisponible')
+        throw new Error('Clé de vérification indisponible')
       }
 
       setClientSecret(data.client_secret)
@@ -262,7 +263,7 @@ export function StripeConnectCustomFlow({
         <Alert>
           <AlertDescription className="flex flex-col gap-3">
             <span>
-              Stripe demande une vérification d&apos;identité pour éviter une
+              Une vérification d&apos;identité est nécessaire pour éviter une
               interruption des virements.
             </span>
             <div>
@@ -292,7 +293,7 @@ export function StripeConnectCustomFlow({
       {clientSecret && connectInstance ? (
         <Card>
           <CardHeader>
-            <CardTitle>Vérification Stripe</CardTitle>
+          <CardTitle>Vérification</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert>
@@ -302,8 +303,9 @@ export function StripeConnectCustomFlow({
             </Alert>
             <Alert>
               <AlertDescription>
-                Finalisez la vérification directement dans Sendbox. Stripe vous
-                demandera des informations complémentaires si nécessaire.
+                Finalisez la vérification directement dans Sendbox. Des
+                informations complémentaires pourront être demandées si
+                nécessaire.
               </AlertDescription>
             </Alert>
             {showPendingNotice && (
@@ -341,8 +343,8 @@ export function StripeConnectCustomFlow({
         <Alert>
           <AlertDescription>
             {publishableKey
-              ? 'Remplissez le formulaire pour lancer la vérification Stripe.'
-              : 'Clé Stripe manquante. Vérifiez la configuration.'}
+              ? 'Remplissez le formulaire pour lancer la vérification.'
+              : 'Configuration de paiement manquante.'}
           </AlertDescription>
         </Alert>
       )}

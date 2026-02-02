@@ -5,10 +5,14 @@
 import { stripe } from '@/lib/shared/services/stripe/config'
 
 type IdentityVerificationInput = {
-  email: string
+  email?: string | null
   userId: string
   documentType: 'passport' | 'national_id'
   documentCountry: string
+  relatedPerson?: {
+    accountId: string
+    personId: string
+  }
 }
 
 export async function createIdentityVerificationSession(
@@ -24,13 +28,31 @@ export async function createIdentityVerificationSession(
   try {
     const session = await stripe.identity.verificationSessions.create({
       type: 'document',
-      provided_details: {
-        email: input.email,
-      },
+      ...(input.relatedPerson
+        ? {
+            related_person: {
+              account: input.relatedPerson.accountId,
+              person: input.relatedPerson.personId,
+            },
+          }
+        : {}),
+      ...(input.email
+        ? {
+            provided_details: {
+              email: input.email,
+            },
+          }
+        : {}),
       metadata: {
         user_id: input.userId,
         document_type: input.documentType,
         document_country: input.documentCountry,
+        ...(input.relatedPerson?.accountId
+          ? { stripe_account_id: input.relatedPerson.accountId }
+          : {}),
+        ...(input.relatedPerson?.personId
+          ? { stripe_person_id: input.relatedPerson.personId }
+          : {}),
       },
       options: {
         document: {

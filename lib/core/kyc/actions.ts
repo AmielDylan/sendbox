@@ -13,6 +13,25 @@ import {
   type StripeIdentityInput,
 } from '@/lib/core/kyc/validations'
 import { createIdentityVerificationSession } from '@/lib/shared/services/stripe/identity'
+import {
+  createConnectedAccount,
+  getAccountRepresentative,
+  isStripeAccountMissing,
+  type AccountTokenData,
+  type ConnectCountry,
+} from '@/lib/services/stripe-connect'
+
+const parseDob = (value?: string | null) => {
+  if (!value) return null
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!match) return null
+  const [, year, month, day] = match
+  return {
+    day: Number(day),
+    month: Number(month),
+    year: Number(year),
+  }
+}
 
 /**
  * Démarre une vérification Stripe Identity
@@ -41,7 +60,9 @@ export async function startKYCVerification(input: StripeIdentityInput) {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, email, kyc_status')
+    .select(
+      'id, email, kyc_status, role, stripe_connect_account_id, firstname, lastname, phone, address, city, postal_code, birthday, country'
+    )
     .eq('id', user.id)
     .single()
 
@@ -57,19 +78,121 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     }
   }
 
-  const email = profile.email || user.email
-  if (!email) {
+  if (profile.role === 'admin') {
     return {
-      error: 'Email indisponible pour la vérification',
+      error: 'Accès réservé aux utilisateurs',
     }
   }
 
+  const email = profile.email || user.email || null
+
   try {
+    const country: ConnectCountry =
+      profile.country === 'BJ' || profile.country === 'FR'
+        ? profile.country
+        : 'FR'
+
+    const individual: Record<string, unknown> = {}
+    if (profile.firstname?.trim()) {
+      individual.first_name = profile.firstname.trim()
+    }
+    if (profile.lastname?.trim()) {
+      individual.last_name = profile.lastname.trim()
+    }
+    if (profile.email?.trim()) individual.email = profile.email.trim()
+    if (profile.phone?.trim()) individual.phone = profile.phone.trim()
+
+    const dob = parseDob(profile.birthday)
+    if (dob) {
+      individual.dob = dob
+    }
+
+    if (profile.address?.trim()) {
+      individual.address = {
+        line1: profile.address.trim(),
+        city: profile.city?.trim() || undefined,
+        postal_code: profile.postal_code?.trim() || undefined,
+        country,
+      }
+    }
+
+    const accountTokenData: AccountTokenData = {
+      business_type: 'individual',
+      individual: Object.keys(individual).length > 0 ? individual : undefined,
+      tos_shown_and_accepted: true,
+    }
+
+    let accountId = profile.stripe_connect_account_id || null
+
+    if (!accountId) {
+      accountId = await createConnectedAccount(
+        user.id,
+        profile.email || user.email || undefined,
+        country,
+        accountTokenData
+      )
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ stripe_connect_account_id: accountId })
+        .eq('id', user.id)
+
+      if (updateError) {
+        return {
+          error: "Impossible d'enregistrer le compte de paiement",
+        }
+      }
+    } else {
+      try {
+        await getAccountRepresentative(accountId)
+      } catch (error) {
+        if (isStripeAccountMissing(error)) {
+          accountId = await createConnectedAccount(
+            user.id,
+            profile.email || user.email || undefined,
+            country,
+            accountTokenData
+          )
+
+          const { error: replaceError } = await supabase
+            .from('profiles')
+            .update({ stripe_connect_account_id: accountId })
+            .eq('id', user.id)
+
+          if (replaceError) {
+            return {
+              error: "Impossible d'enregistrer le compte de paiement",
+            }
+          }
+        } else {
+          throw error
+        }
+      }
+    }
+
+    if (!accountId) {
+      return {
+        error: "Impossible d'initialiser le compte de paiement",
+      }
+    }
+
+    const { personId } = await getAccountRepresentative(accountId)
+
+    if (!personId) {
+      return {
+        error: "Impossible d'identifier la personne à vérifier",
+      }
+    }
+
     const session = await createIdentityVerificationSession({
       email,
       userId: user.id,
       documentType: validation.data.documentType,
       documentCountry: validation.data.documentCountry,
+      relatedPerson: {
+        accountId,
+        personId,
+      },
     })
 
     const { error: updateError } = await supabase
