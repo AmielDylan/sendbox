@@ -95,7 +95,7 @@ export async function POST(req: Request) {
       },
     })
 
-    if (!session.client_secret) {
+    if (!session.clientSecret) {
       return Response.json(
         { error: 'Client secret indisponible' },
         { status: 500 }
