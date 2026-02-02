@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { POST } from '@/app/api/payments/simulate/route'
 import { NextRequest } from 'next/server'
 import { createMockUser } from '../factories/user.factory'
@@ -10,6 +10,11 @@ import {
   setMockAuthUser,
   getMockDatabase,
 } from '../mocks/server'
+
+vi.mock('@/lib/shared/config/features', () => ({
+  getPaymentsMode: vi.fn(() => 'simulation'),
+  isFeatureEnabled: vi.fn((feature: string) => feature === 'KYC_ENABLED'),
+}))
 
 /**
  * Tests pour POST /api/payments/simulate
