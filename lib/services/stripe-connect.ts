@@ -3,7 +3,7 @@
  * Handles account creation, verification, and fund transfers
  */
 
-'use server'
+import 'server-only'
 
 import { stripe } from '@/lib/shared/services/stripe/config'
 
