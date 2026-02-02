@@ -180,7 +180,6 @@ export function StripeConnectCustomFlow({
     if (!requirements) return false
     const allRequirements = [
       ...(requirements.currently_due ?? []),
-      ...(requirements.eventually_due ?? []),
       ...(requirements.pending_verification ?? []),
       ...(requirements.past_due ?? []),
     ]
@@ -290,64 +289,66 @@ export function StripeConnectCustomFlow({
         />
       )}
 
-      {clientSecret && connectInstance ? (
-        <Card>
-          <CardHeader>
-          <CardTitle>Vérification</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert>
-              <AlertDescription>
-                Cliquez sur le bouton ci-dessous pour continuer la vérification.
-              </AlertDescription>
-            </Alert>
-            <Alert>
-              <AlertDescription>
-                Finalisez la vérification directement dans Sendbox. Des
-                informations complémentaires pourront être demandées si
-                nécessaire.
-              </AlertDescription>
-            </Alert>
-            {showPendingNotice && (
+      {clientSecret ? (
+        connectInstance ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Vérification</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <Alert>
                 <AlertDescription>
-                  La vérification de vos informations bancaires est en cours.
-                  Ce processus peut prendre jusqu’à 24h. Aucune de vos
-                  informations bancaires n’est conservée par Sendbox dans le
-                  cadre de cette vérification.
+                  Cliquez sur le bouton ci-dessous pour continuer la vérification.
                 </AlertDescription>
               </Alert>
-            )}
-            <ConnectComponentsProvider connectInstance={connectInstance}>
-              <ConnectAccountOnboarding
-                onExit={async () => {
-                  toast.success('Vérification terminée.')
-                  await fetch('/api/connect/status').catch(() => null)
-                  onCompleted?.()
-                  startPolling()
+              <Alert>
+                <AlertDescription>
+                  Finalisez la vérification directement dans Sendbox. Des
+                  informations complémentaires pourront être demandées si
+                  nécessaire.
+                </AlertDescription>
+              </Alert>
+              {showPendingNotice && (
+                <Alert>
+                  <AlertDescription>
+                    La vérification de vos informations bancaires est en cours.
+                    Ce processus peut prendre jusqu’à 24h. Aucune de vos
+                    informations bancaires n’est conservée par Sendbox dans le
+                    cadre de cette vérification.
+                  </AlertDescription>
+                </Alert>
+              )}
+              <ConnectComponentsProvider connectInstance={connectInstance}>
+                <ConnectAccountOnboarding
+                  onExit={async () => {
+                    toast.success('Vérification terminée.')
+                    await fetch('/api/connect/status').catch(() => null)
+                    onCompleted?.()
+                    startPolling()
+                  }}
+                />
+              </ConnectComponentsProvider>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setClientSecret(null)
+                  setShowPendingNotice(false)
                 }}
-              />
-            </ConnectComponentsProvider>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setClientSecret(null)
-                setShowPendingNotice(false)
-              }}
-            >
-              Modifier mes informations
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Alert>
-          <AlertDescription>
-            {publishableKey
-              ? 'Remplissez le formulaire pour lancer la vérification.'
-              : 'Configuration de paiement manquante.'}
-          </AlertDescription>
-        </Alert>
-      )}
+              >
+                Modifier mes informations
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Alert>
+            <AlertDescription>
+              {publishableKey
+                ? 'Configuration de paiement en cours. Réessayez.'
+                : 'Configuration de paiement manquante.'}
+            </AlertDescription>
+          </Alert>
+        )
+      ) : null}
     </div>
   )
 }

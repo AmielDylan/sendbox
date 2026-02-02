@@ -58,7 +58,6 @@ export function ConnectOnboardingForm({
 }: ConnectOnboardingFormProps) {
   const { profile, user } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [step, setStep] = useState<'country' | 'form'>('country')
   const [country, setCountry] = useState<'FR' | 'BJ'>('FR')
   const [consentAccepted, setConsentAccepted] = useState(false)
   const [hasPrefilled, setHasPrefilled] = useState(false)
@@ -227,36 +226,6 @@ export function ConnectOnboardingForm({
     } finally {
       setLoading(false)
     }
-  }
-
-  if (step === 'country') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Configurer vos paiements</CardTitle>
-          <CardDescription>
-            Sélectionnez le pays de votre banque
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="country">Pays</Label>
-            <Select value={country} onValueChange={(v: any) => setCountry(v)}>
-              <SelectTrigger id="country">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="FR">France</SelectItem>
-                <SelectItem value="BJ">Bénin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button onClick={() => setStep('form')} className="w-full">
-            Continuer
-          </Button>
-        </CardContent>
-      </Card>
-    )
   }
 
   return (
