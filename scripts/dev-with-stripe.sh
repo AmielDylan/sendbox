@@ -43,8 +43,26 @@ trap "rm -f $TEMP_FILE" EXIT
 
 echo -e "${BLUE}🔗 Démarrage du webhook forwarding...${NC}"
 
+# Événements Stripe écoutés (alignés sur app/api/webhooks/stripe/route.ts)
+EVENTS="account.updated,\
+identity.verification_session.processing,\
+identity.verification_session.verified,\
+identity.verification_session.requires_input,\
+identity.verification_session.canceled,\
+identity.verification_session.redacted,\
+payment_intent.succeeded,\
+payment_intent.payment_failed,\
+charge.refunded,\
+transfer.created,\
+transfer.updated,\
+transfer.reversed"
+
 # Lancer stripe listen en arrière-plan et capturer le secret
-stripe listen --forward-to localhost:3000/api/webhooks/stripe --print-secret > "$TEMP_FILE" 2>&1 &
+stripe listen \
+  --events "$EVENTS" \
+  --forward-to localhost:3000/api/webhooks/stripe \
+  --forward-connect-to localhost:3000/api/webhooks/stripe \
+  --print-secret > "$TEMP_FILE" 2>&1 &
 STRIPE_PID=$!
 
 # Attendre que le secret soit disponible (max 10 secondes)
