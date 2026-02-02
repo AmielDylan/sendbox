@@ -503,16 +503,8 @@ export function ConnectOnboardingForm({
           )}
         </div>
 
-        <div className="flex gap-2 border-t pt-4">
-          <Button
-            variant="outline"
-            onClick={() => setStep('country')}
-            disabled={loading}
-            className="flex-1"
-          >
-            Retour
-          </Button>
-          <Button onClick={handleSubmit} disabled={loading} className="flex-1">
+        <div className="border-t pt-4">
+          <Button onClick={handleSubmit} disabled={loading} className="w-full">
             {loading ? (
               <>
                 <IconLoader className="h-4 w-4 mr-2 animate-spin" />
