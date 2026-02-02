@@ -9,6 +9,10 @@ export const DOCUMENT_TYPES = ['passport', 'national_id'] as const
 export type DocumentType = (typeof DOCUMENT_TYPES)[number]
 
 export const stripeIdentitySchema = z.object({
+  firstName: z.string().min(2, 'Prénom requis'),
+  lastName: z.string().min(2, 'Nom requis'),
+  email: z.string().email('Email invalide'),
+  phone: z.string().min(6, 'Téléphone requis'),
   documentType: z.enum(DOCUMENT_TYPES, {
     message: 'Type de document invalide',
   }),

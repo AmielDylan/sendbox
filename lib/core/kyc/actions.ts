@@ -89,6 +89,10 @@ export async function startKYCVerification(input: StripeIdentityInput) {
 
   try {
     const {
+      firstName,
+      lastName,
+      email: inputEmail,
+      phone: inputPhone,
       documentType,
       documentCountry,
       birthday,
@@ -103,14 +107,26 @@ export async function startKYCVerification(input: StripeIdentityInput) {
         : 'FR'
 
     const individual: Record<string, unknown> = {}
-    if (profile.firstname?.trim()) {
+    if (firstName?.trim()) {
+      individual.first_name = firstName.trim()
+    } else if (profile.firstname?.trim()) {
       individual.first_name = profile.firstname.trim()
     }
-    if (profile.lastname?.trim()) {
+    if (lastName?.trim()) {
+      individual.last_name = lastName.trim()
+    } else if (profile.lastname?.trim()) {
       individual.last_name = profile.lastname.trim()
     }
-    if (profile.email?.trim()) individual.email = profile.email.trim()
-    if (profile.phone?.trim()) individual.phone = profile.phone.trim()
+    if (inputEmail?.trim()) {
+      individual.email = inputEmail.trim()
+    } else if (profile.email?.trim()) {
+      individual.email = profile.email.trim()
+    }
+    if (inputPhone?.trim()) {
+      individual.phone = inputPhone.trim()
+    } else if (profile.phone?.trim()) {
+      individual.phone = profile.phone.trim()
+    }
 
     const dob = parseDob(birthday || profile.birthday)
     if (dob) {
@@ -133,11 +149,13 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     }
 
     let accountId = profile.stripe_connect_account_id || null
+    const contactEmail =
+      inputEmail?.trim() || profile.email || user.email || null
 
     if (!accountId) {
       accountId = await createConnectedAccount(
         user.id,
-        profile.email || user.email || undefined,
+        contactEmail || undefined,
         country,
         accountTokenData
       )
@@ -159,7 +177,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
         if (isStripeAccountMissing(error)) {
           accountId = await createConnectedAccount(
             user.id,
-            profile.email || user.email || undefined,
+            contactEmail || undefined,
             country,
             accountTokenData
           )
@@ -218,7 +236,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     }
 
     const session = await createIdentityVerificationSession({
-      email,
+      email: contactEmail,
       userId: user.id,
       documentType,
       documentCountry,
@@ -234,6 +252,9 @@ export async function startKYCVerification(input: StripeIdentityInput) {
         kyc_document_type: documentType,
         kyc_nationality: documentCountry,
         kyc_rejection_reason: null,
+        firstname: firstName?.trim() || profile.firstname,
+        lastname: lastName?.trim() || profile.lastname,
+        phone: inputPhone?.trim() || profile.phone,
         address: address?.trim() || profile.address,
         city: city?.trim() || profile.city,
         postal_code: postalCode?.trim() || profile.postal_code,
