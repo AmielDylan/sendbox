@@ -11,6 +11,7 @@ import {
   type ConnectOnboardingPayload,
 } from '@/components/features/payments/ConnectOnboardingForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
@@ -194,14 +195,16 @@ export function StripeConnectCustomFlow({
 
   return (
     <div className="space-y-6">
-      <ConnectOnboardingForm
-        onSubmit={handleSubmit}
-        onSuccess={() => {
-          if (!loading) {
-            toast.success('Formulaire envoyé. Continuer la vérification.')
-          }
-        }}
-      />
+      {!clientSecret && (
+        <ConnectOnboardingForm
+          onSubmit={handleSubmit}
+          onSuccess={() => {
+            if (!loading) {
+              toast.success('Formulaire envoyé. Continuer la vérification.')
+            }
+          }}
+        />
+      )}
 
       {clientSecret && connectInstance ? (
         <Card>
@@ -209,6 +212,11 @@ export function StripeConnectCustomFlow({
             <CardTitle>Vérification Stripe</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Alert>
+              <AlertDescription>
+                Cliquez sur le bouton ci-dessous pour continuer la vérification.
+              </AlertDescription>
+            </Alert>
             <Alert>
               <AlertDescription>
                 Finalisez la vérification directement dans Sendbox. Stripe vous
@@ -235,6 +243,15 @@ export function StripeConnectCustomFlow({
                 }}
               />
             </ConnectComponentsProvider>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setClientSecret(null)
+                setShowPendingNotice(false)
+              }}
+            >
+              Modifier mes informations
+            </Button>
           </CardContent>
         </Card>
       ) : (
