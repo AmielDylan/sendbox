@@ -213,6 +213,10 @@ export default function PaymentsSettingsPage() {
                 Changer de mode
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Changer de mode relance la vérification et désactive temporairement
+              vos paiements.
+            </p>
 
             {selectedMethod === 'stripe_bank' ? (
               <StripeConnectCustomFlow
