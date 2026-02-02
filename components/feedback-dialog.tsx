@@ -14,12 +14,15 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { toast } from 'sonner'
+import { FEATURES } from '@/lib/shared/config/features'
 
 export function FeedbackDialog() {
   const [open, setOpen] = useState(false)
   const [type, setType] = useState<'bug' | 'feature' | 'other'>('other')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  if (!FEATURES.BETA_MODE) return null
 
   async function handleSubmit() {
     setLoading(true)

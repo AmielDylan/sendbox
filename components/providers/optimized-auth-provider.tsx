@@ -96,10 +96,18 @@ export function OptimizedAuthProvider({
   const profileRetryCount = useRef(0)
   const profileRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastKycStatus = useRef<string | null>(null)
+  const lastSetupNotificationKey = useRef<string | null>(null)
+  const connectBootstrapRequested = useRef(false)
 
   const PROFILE_FETCH_TIMEOUT_MS = 12000
   const MAX_PROFILE_FETCH_RETRIES = 2
   const PROFILE_RETRY_BASE_DELAY_MS = 1500
+  const PROFILE_POLL_INTERVAL_MS = 60000
+  const CONNECT_STATUS_POLL_INTERVAL_MS = 300000
+
+  const connectStatusPollingRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  )
 
   const showKycStatusToast = useCallback(
     (status: string | null, rejectionReason?: string | null) => {
@@ -164,6 +172,20 @@ export function OptimizedAuthProvider({
         profileRetryTimer.current = null
       }
 
+      const queueProfileRetry = (reason: string) => {
+        if (profileRetryCount.current >= MAX_PROFILE_FETCH_RETRIES) {
+          return
+        }
+
+        const retryDelay =
+          PROFILE_RETRY_BASE_DELAY_MS * (profileRetryCount.current + 1)
+        profileRetryCount.current += 1
+        profileRetryTimer.current = setTimeout(() => {
+          console.warn('[Auth] Retrying profile fetch:', reason)
+          fetchProfile(userId)
+        }, retryDelay)
+      }
+
       try {
         console.log('[Auth] Fetching profile for user:', userId)
 
@@ -172,12 +194,17 @@ export function OptimizedAuthProvider({
           abortController.abort()
         }, PROFILE_FETCH_TIMEOUT_MS)
 
-        const { data, error: profileError } = await supabase
+        const {
+          data,
+          error: profileError,
+          status,
+          statusText,
+        } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', userId)
           .abortSignal(abortController.signal)
-          .single()
+          .maybeSingle()
 
         clearTimeout(timeoutId)
 
@@ -187,14 +214,25 @@ export function OptimizedAuthProvider({
         })
 
         if (profileError) {
-          // Si le profil n'existe pas, ce n'est pas une erreur critique
-          if (profileError.code === 'PGRST116') {
-            console.warn('[Auth] Profile not found for user:', userId)
-            setProfile(null)
+          const isEmptyError =
+            !profileError.code &&
+            !profileError.message &&
+            !profileError.details &&
+            !profileError.hint
+          const isNetworkError = status === 0
+
+          if (isEmptyError || isNetworkError) {
+            console.warn('[Auth] Profile fetch failed, retrying', {
+              reason: isNetworkError ? 'network_error' : 'empty_error',
+              status,
+              statusText,
+            })
             setError(null)
+            queueProfileRetry(isNetworkError ? 'network_error' : 'empty_error')
           } else {
-            console.error('[Auth] Error fetching profile:', profileError)
-            console.error('[Auth] Profile error details:', {
+            console.error('[Auth] Error fetching profile:', {
+              status,
+              statusText,
               code: profileError.code,
               message: profileError.message,
               details: profileError.details,
@@ -202,6 +240,11 @@ export function OptimizedAuthProvider({
             })
             setError(new Error('Failed to load profile'))
           }
+        } else if (!data) {
+          console.warn('[Auth] Profile not found for user:', userId)
+          setProfile(null)
+          setError(null)
+          queueProfileRetry('profile_not_found')
         } else {
           console.log('[Auth] Profile loaded successfully:', {
             id: data?.id,
@@ -225,12 +268,7 @@ export function OptimizedAuthProvider({
         }
 
         if (profileRetryCount.current < MAX_PROFILE_FETCH_RETRIES) {
-          const retryDelay =
-            PROFILE_RETRY_BASE_DELAY_MS * (profileRetryCount.current + 1)
-          profileRetryCount.current += 1
-          profileRetryTimer.current = setTimeout(() => {
-            fetchProfile(userId)
-          }, retryDelay)
+          queueProfileRetry('exception')
         }
 
         setError(null)
@@ -272,6 +310,10 @@ export function OptimizedAuthProvider({
 
         if (!mounted) return
 
+        if (initialSession?.access_token) {
+          void supabase.realtime.setAuth(initialSession.access_token)
+        }
+
         if (sessionError) {
           console.error('[Auth] Error getting session:', sessionError)
           setError(sessionError)
@@ -312,6 +354,8 @@ export function OptimizedAuthProvider({
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('[Auth] State change:', event, currentSession?.user?.id)
+
+      void supabase.realtime.setAuth(currentSession?.access_token ?? null)
 
       setSession(currentSession)
       setUser(currentSession?.user ?? null)
@@ -404,6 +448,9 @@ export function OptimizedAuthProvider({
       .subscribe(status => {
         if (status === 'CHANNEL_ERROR') {
           console.error('❌ Realtime profile subscription error')
+          if (user?.id) {
+            fetchProfile(user.id)
+          }
         }
       })
 
@@ -411,6 +458,77 @@ export function OptimizedAuthProvider({
       supabase.removeChannel(channel)
     }
   }, [user?.id, supabase, setStoreProfile, showKycStatusToast])
+
+  /**
+   * Fallback polling in case realtime is unavailable.
+   */
+  useEffect(() => {
+    if (!user?.id) return
+
+    const interval = setInterval(() => {
+      if (!isFetchingProfile.current) {
+        fetchProfile(user.id)
+      }
+    }, PROFILE_POLL_INTERVAL_MS)
+
+    return () => clearInterval(interval)
+  }, [user?.id, fetchProfile])
+
+  /**
+   * Poll connect status when Stripe payouts are pending.
+   */
+  useEffect(() => {
+    if (!user?.id) return
+
+    const payoutMethod = (profile as any)?.payout_method as
+      | 'stripe_bank'
+      | 'mobile_wallet'
+      | undefined
+    const payoutStatus = (profile as any)?.payout_status as
+      | 'pending'
+      | 'active'
+      | 'disabled'
+      | undefined
+    const stripeAccountId = (profile as any)?.stripe_connect_account_id as
+      | string
+      | undefined
+
+    if (
+      payoutMethod !== 'stripe_bank' ||
+      payoutStatus === 'active' ||
+      !stripeAccountId
+    ) {
+      if (connectStatusPollingRef.current) {
+        clearInterval(connectStatusPollingRef.current)
+        connectStatusPollingRef.current = null
+      }
+      return
+    }
+
+    if (connectStatusPollingRef.current) return
+
+    const pollConnectStatus = async () => {
+      try {
+        const res = await fetch('/api/connect/status')
+        await res.json().catch(() => null)
+      } catch (error) {
+        console.warn('Connect status polling failed:', error)
+      }
+    }
+
+    pollConnectStatus()
+    connectStatusPollingRef.current = setInterval(
+      pollConnectStatus,
+      CONNECT_STATUS_POLL_INTERVAL_MS
+    )
+
+    return () => {
+      if (connectStatusPollingRef.current) {
+        clearInterval(connectStatusPollingRef.current)
+        connectStatusPollingRef.current = null
+      }
+    }
+  }, [user?.id, profile])
 
   /**
    * Synchronisation multi-onglets via BroadcastChannel
@@ -451,6 +569,40 @@ export function OptimizedAuthProvider({
   useEffect(() => {
     setStoreProfile(profile as any)
   }, [profile, setStoreProfile])
+
+  useEffect(() => {
+    if (!profile?.id) return
+
+    const setupKey = `${profile.id}:${profile.kyc_status ?? 'none'}:${
+      profile.stripe_payouts_enabled ? 'payouts' : 'no-payouts'
+    }:${profile.role ?? 'unknown'}`
+
+    if (lastSetupNotificationKey.current === setupKey) {
+      return
+    }
+
+    lastSetupNotificationKey.current = setupKey
+
+    fetch('/api/notifications/setup', { method: 'POST' }).catch(error => {
+      console.warn('Notification setup failed:', error)
+    })
+  }, [profile])
+
+  useEffect(() => {
+    if (!profile?.id || !user?.id) return
+
+    if (connectBootstrapRequested.current) return
+
+    if (profile.role === 'admin') return
+
+    if ((profile as any)?.stripe_connect_account_id) return
+
+    connectBootstrapRequested.current = true
+    fetch('/api/connect/bootstrap', { method: 'POST' }).catch(error => {
+      console.warn('Connect bootstrap failed:', error)
+      connectBootstrapRequested.current = false
+    })
+  }, [profile, user?.id])
 
   useEffect(() => {
     lastKycStatus.current = (profile as any)?.kyc_status ?? null

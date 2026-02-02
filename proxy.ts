@@ -74,6 +74,7 @@ export async function proxy(request: NextRequest) {
     isAdmin = profile?.role === 'admin'
   }
 
+
   // Si l'utilisateur essaie d'accéder à une route protégée sans être authentifié
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()

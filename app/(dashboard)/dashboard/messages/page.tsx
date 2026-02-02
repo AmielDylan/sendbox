@@ -29,6 +29,7 @@ import {
   IconMessageCircle,
 } from '@tabler/icons-react'
 import { createClient } from '@/lib/shared/db/client'
+import { NotificationItem } from '@/components/features/notifications/NotificationItem'
 
 type ConversationSummary = {
   booking_id: string
@@ -641,40 +642,15 @@ function MessagesPageContent() {
           ) : (
             <div className="space-y-2">
               {notifications.map(notification => (
-                <Card
+                <NotificationItem
                   key={notification.id}
-                  className={`cursor-pointer hover:bg-muted/50 transition-colors ${
-                    notification.read_at ? 'opacity-60' : ''
-                  }`}
-                >
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{notification.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {notification.content}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {new Date(notification.created_at).toLocaleDateString(
-                            'fr-FR',
-                            {
-                              day: 'numeric',
-                              month: 'long',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            }
-                          )}
-                        </p>
-                      </div>
-                      {!notification.read_at && (
-                        <Badge variant="default" className="ml-4">
-                          Nouveau
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                  notification={notification}
+                  onDelete={async () => {
+                    refetchNotifications()
+                    const result = await getUnreadNotificationsCount()
+                    setUnreadCount(result.count)
+                  }}
+                />
               ))}
             </div>
           )}

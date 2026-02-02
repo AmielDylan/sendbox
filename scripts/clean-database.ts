@@ -54,12 +54,20 @@ interface TableStats {
  */
 async function getTableStats(): Promise<TableStats[]> {
   const tables = [
-    'announcements',
-    'bookings',
-    'transactions',
-    'ratings',
-    'messages',
     'notifications',
+    'messages',
+    'ratings',
+    'transactions',
+    'payments',
+    'transfers',
+    'disputes',
+    'qr_scan_logs',
+    'bookings',
+    'announcements',
+    'feedback',
+    'waitlist',
+    'admin_audit_logs',
+    'cron_job_logs',
     'profiles',
   ]
   const stats: TableStats[] = []
@@ -260,8 +268,16 @@ async function main() {
     'messages',
     'ratings',
     'transactions',
+    'payments',
+    'transfers',
+    'disputes',
+    'qr_scan_logs',
     'bookings',
     'announcements',
+    'feedback',
+    'waitlist',
+    'admin_audit_logs',
+    'cron_job_logs',
   ]
 
   const results = {

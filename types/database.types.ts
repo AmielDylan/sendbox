@@ -546,6 +546,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          city: string | null
           avatar_url: string | null
           banned_at: string | null
           banned_reason: string | null
@@ -579,13 +580,26 @@ export type Database = {
           lastname: string | null
           nationality: string | null
           phone: string | null
+          postal_code: string | null
           rating: number | null
           role: Database['public']['Enums']['user_role']
+          stripe_connect_account_id: string | null
+          stripe_onboarding_completed: boolean
+          stripe_payouts_enabled: boolean
+          stripe_requirements: Json | null
+          payout_method: string | null
+          payout_status: string | null
+          wallet_operator: string | null
+          wallet_phone: string | null
+          wallet_verified_at: string | null
+          wallet_otp_code: string | null
+          wallet_otp_expires_at: string | null
           total_services: number | null
           updated_at: string | null
         }
         Insert: {
           address?: string | null
+          city?: string | null
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
@@ -619,13 +633,26 @@ export type Database = {
           lastname?: string | null
           nationality?: string | null
           phone?: string | null
+          postal_code?: string | null
           rating?: number | null
           role?: Database['public']['Enums']['user_role']
+          stripe_connect_account_id?: string | null
+          stripe_onboarding_completed?: boolean
+          stripe_payouts_enabled?: boolean
+          stripe_requirements?: Json | null
+          payout_method?: string | null
+          payout_status?: string | null
+          wallet_operator?: string | null
+          wallet_phone?: string | null
+          wallet_verified_at?: string | null
+          wallet_otp_code?: string | null
+          wallet_otp_expires_at?: string | null
           total_services?: number | null
           updated_at?: string | null
         }
         Update: {
           address?: string | null
+          city?: string | null
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
@@ -659,8 +686,20 @@ export type Database = {
           lastname?: string | null
           nationality?: string | null
           phone?: string | null
+          postal_code?: string | null
           rating?: number | null
           role?: Database['public']['Enums']['user_role']
+          stripe_connect_account_id?: string | null
+          stripe_onboarding_completed?: boolean
+          stripe_payouts_enabled?: boolean
+          stripe_requirements?: Json | null
+          payout_method?: string | null
+          payout_status?: string | null
+          wallet_operator?: string | null
+          wallet_phone?: string | null
+          wallet_verified_at?: string | null
+          wallet_otp_code?: string | null
+          wallet_otp_expires_at?: string | null
           total_services?: number | null
           updated_at?: string | null
         }
@@ -1085,7 +1124,7 @@ export type Database = {
         | 'payout'
         | 'refund'
       transaction_status: 'pending' | 'completed' | 'failed' | 'refunded'
-      user_role: 'sender' | 'traveler' | 'both' | 'admin'
+      user_role: 'user' | 'partner' | 'admin'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1255,7 +1294,7 @@ export const Constants = {
         'payout',
         'refund',
       ],
-      user_role: ['sender', 'traveler', 'both', 'admin'],
+      user_role: ['user', 'partner', 'admin'],
     },
   },
 } as const

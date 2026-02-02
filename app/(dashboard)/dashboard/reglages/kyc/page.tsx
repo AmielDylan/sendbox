@@ -47,6 +47,7 @@ import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
 import { COUNTRY_OPTIONS } from '@/lib/utils/countries'
 import { getKYCStatus, startKYCVerification } from '@/lib/core/kyc/actions'
+import { useAuth } from '@/hooks/use-auth'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 type DocumentType = 'passport' | 'national_id'
@@ -58,8 +59,14 @@ export default function KYCPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
+  const [birthDate, setBirthDate] = useState('')
+  const [address, setAddress] = useState('')
+  const [city, setCity] = useState('')
+  const [postalCode, setPostalCode] = useState('')
   const [countryOpen, setCountryOpen] = useState(false)
   const [countrySearch, setCountrySearch] = useState('')
+  const { profile } = useAuth()
+  const isAdmin = profile?.role === 'admin'
 
   const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
@@ -77,8 +84,28 @@ export default function KYCPage() {
   }, [countrySearch])
 
   useEffect(() => {
+    if (isAdmin) {
+      setIsLoading(false)
+      return
+    }
     loadKYCStatus()
-  }, [])
+  }, [isAdmin])
+
+  useEffect(() => {
+    if (!profile) return
+    if (!birthDate && (profile as any)?.birthday) {
+      setBirthDate((profile as any).birthday as string)
+    }
+    if (!address && (profile as any)?.address) {
+      setAddress((profile as any).address as string)
+    }
+    if (!city && (profile as any)?.city) {
+      setCity((profile as any).city as string)
+    }
+    if (!postalCode && (profile as any)?.postal_code) {
+      setPostalCode((profile as any).postal_code as string)
+    }
+  }, [profile, birthDate, address, city, postalCode])
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null
@@ -86,9 +113,14 @@ export default function KYCPage() {
 
     const subscribeToProfile = async () => {
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user || !isActive) return
+        data: { session },
+      } = await supabase.auth.getSession()
+      const user = session?.user
+      if (!user || !isActive || isAdmin) return
+
+      if (session?.access_token) {
+        await supabase.realtime.setAuth(session.access_token)
+      }
 
       console.log('🔔 Subscribing to KYC updates for user:', user.id)
 
@@ -158,6 +190,10 @@ export default function KYCPage() {
       toast.error('Veuillez sélectionner un document et un pays')
       return
     }
+    if (!birthDate || !address || !city || !postalCode) {
+      toast.error('Veuillez compléter vos informations personnelles')
+      return
+    }
 
     setIsSubmitting(true)
 
@@ -165,6 +201,10 @@ export default function KYCPage() {
       const result = await startKYCVerification({
         documentType: documentType as DocumentType,
         documentCountry,
+        birthday: birthDate,
+        address,
+        city,
+        postalCode,
       })
 
       if (result.error) {
@@ -174,12 +214,12 @@ export default function KYCPage() {
 
       const stripe = await stripePromise
       if (!stripe) {
-        toast.error("Stripe n'est pas encore disponible. Réessayez.")
+        toast.error("Le service de vérification n'est pas disponible. Réessayez.")
         return
       }
 
       if (!result.verificationClientSecret) {
-        toast.error("Impossible d'initialiser Stripe Identity.")
+        toast.error("Impossible d'initialiser la vérification.")
         return
       }
 
@@ -208,6 +248,24 @@ export default function KYCPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (isAdmin) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Vérification d'identité"
+          description="Nous vérifions vos documents pour sécuriser votre compte."
+        />
+        <Alert>
+          <AlertTitle>Réservé aux utilisateurs</AlertTitle>
+          <AlertDescription>
+            L&apos;interface KYC est disponible uniquement pour les comptes
+            utilisateurs.
+          </AlertDescription>
+        </Alert>
       </div>
     )
   }
@@ -250,7 +308,7 @@ export default function KYCPage() {
     <div className="space-y-6">
       <PageHeader
         title="Vérification d'identité (KYC)"
-        description="Stripe Identity se charge de vérifier vos documents."
+          description="Nous vérifions vos documents pour sécuriser votre compte."
       />
 
       {/* Statut actuel */}
@@ -265,7 +323,7 @@ export default function KYCPage() {
             {kycStatus === 'rejected' &&
               'Votre vérification a été refusée. Vous pouvez relancer une vérification.'}
             {(kycStatus === 'incomplete' || !kycStatus) &&
-              'Aucune vérification en cours. Lancez Stripe Identity pour continuer.'}
+              "Aucune vérification en cours. Lancez la vérification pour continuer."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -283,9 +341,9 @@ export default function KYCPage() {
       {kycStatus !== 'approved' && (
         <Card>
           <CardHeader>
-            <CardTitle>Lancer la vérification Stripe Identity</CardTitle>
+            <CardTitle>Lancer la vérification d'identité</CardTitle>
             <CardDescription>
-              Sélectionnez votre document puis continuez sur Stripe.
+              Sélectionnez votre document puis continuez la vérification.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -403,12 +461,54 @@ export default function KYCPage() {
               </Popover>
             </div>
 
+            <div className="space-y-4 rounded-lg border border-border/60 p-4">
+              <p className="text-sm font-semibold">Informations personnelles</p>
+              <div className="space-y-2">
+                <Label htmlFor="birthDate">Date de naissance</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={birthDate}
+                  onChange={event => setBirthDate(event.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Adresse</Label>
+                <Input
+                  id="address"
+                  placeholder="28 Route de Bonsecours"
+                  value={address}
+                  onChange={event => setAddress(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ville</Label>
+                  <Input
+                    id="city"
+                    placeholder="Paris"
+                    value={city}
+                    onChange={event => setCity(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Code postal</Label>
+                  <Input
+                    id="postalCode"
+                    placeholder="75012"
+                    value={postalCode}
+                    onChange={event => setPostalCode(event.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
             <Alert>
               <IconShieldLock className="h-4 w-4" />
               <AlertTitle>Sécurité & confidentialité</AlertTitle>
               <AlertDescription>
                 <p>
-                  La vérification est opérée par Stripe Identity. Nous ne
+                  La vérification est opérée par un prestataire sécurisé. Nous ne
                   stockons pas vos documents, uniquement le statut de
                   vérification et les informations déclarées.
                 </p>
@@ -429,7 +529,7 @@ export default function KYCPage() {
               {isSubmitting ? (
                 <>
                   <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Ouverture de Stripe Identity...
+                  Ouverture de la vérification...
                 </>
               ) : (
                 'Vérifier mon identité'

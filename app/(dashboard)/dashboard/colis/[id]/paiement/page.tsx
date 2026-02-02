@@ -108,7 +108,7 @@ function PaymentPageContent() {
       setAmounts(computedAmounts)
 
       if (isStripe) {
-        const response = await fetch('/api/payments/create-intent', {
+        const response = await fetch(`/api/bookings/${bookingId}/pay`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -127,7 +127,14 @@ function PaymentPageContent() {
           return
         }
 
-        const { clientSecret: secret } = await response.json()
+        const payload = await response.json()
+        if (payload?.alreadyPaid) {
+          toast.info('Cette réservation est déjà payée')
+          router.push(`/dashboard/colis/${bookingId}`)
+          return
+        }
+
+        const { clientSecret: secret } = payload
         setClientSecret(secret)
       } else {
         setClientSecret(null)
@@ -509,7 +516,10 @@ function PaymentPageContent() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <IconLock className="h-4 w-4 text-primary" />
-                  <span>Fonds bloqués jusqu'à livraison</span>
+                  <span>
+                    Paiement sécurisé, libéré après confirmation ou sous 7
+                    jours
+                  </span>
                 </div>
               </div>
 
@@ -518,16 +528,15 @@ function PaymentPageContent() {
                   <IconShield className="h-4 w-4 text-primary mt-0.5" />
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-foreground">
-                      Séquestre des fonds
+                      Paiement sécurisé
                     </p>
                     <p>
-                      Les fonds restent bloqués sur la plateforme jusqu'à la
-                      confirmation de livraison par le demandeur.
+                      Le paiement est conservé sur la plateforme et libéré au
+                      voyageur après votre confirmation de remise.
                     </p>
                     <p>
-                      Si le voyageur confirme la livraison et que vous ne
-                      répondez pas malgré les relances, les fonds sont libérés
-                      après 7 jours.
+                      Sans action de votre part (et sans litige), le paiement
+                      est libéré automatiquement après 7 jours.
                     </p>
                   </div>
                 </div>

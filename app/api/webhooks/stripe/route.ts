@@ -16,6 +16,7 @@ import { sendEmail } from '@/lib/shared/services/email/client'
 import Stripe from 'stripe'
 import { getPaymentsMode } from '@/lib/shared/config/features'
 import { createSystemNotification } from '@/lib/core/notifications/system'
+import type { Database } from '@/types/database.types'
 
 export async function POST(req: NextRequest) {
   const body = await req.text()
@@ -63,6 +64,18 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient()
   const paymentsEnabled = getPaymentsMode() === 'stripe'
+
+  const normalizeTransferStatus = (eventType?: string | null) => {
+    switch (eventType) {
+      case 'transfer.reversed':
+        return 'reversed'
+      case 'transfer.created':
+      case 'transfer.updated':
+        return 'paid'
+      default:
+        return 'pending'
+    }
+  }
 
   const withIdentityMetadata = (
     updateData: Record<string, unknown>,
@@ -234,6 +247,60 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      case 'account.updated': {
+        const account = event.data.object as Stripe.Account
+
+        const payoutsEnabled = Boolean(account.payouts_enabled)
+        const requirements = account.requirements || null
+        const requirementsJson = requirements
+          ? (JSON.parse(JSON.stringify(requirements)) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
+          : null
+        const onboardingCompleted =
+          payoutsEnabled &&
+          !requirements?.currently_due?.length &&
+          !requirements?.past_due?.length
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, payout_method, stripe_payouts_enabled')
+          .eq('stripe_connect_account_id', account.id)
+          .maybeSingle()
+
+        const payoutMethod = (profile as any)?.payout_method as
+          | 'stripe_bank'
+          | 'mobile_wallet'
+          | undefined
+        const shouldUpdatePayoutMethod = payoutMethod !== 'mobile_wallet'
+        const nextPayoutStatus = payoutsEnabled ? 'active' : 'pending'
+        const updatePayload: Record<string, any> = {
+          stripe_payouts_enabled: payoutsEnabled,
+          stripe_onboarding_completed: onboardingCompleted,
+          stripe_requirements: requirementsJson,
+        }
+
+        if (shouldUpdatePayoutMethod) {
+          updatePayload.payout_method = payoutMethod || 'stripe_bank'
+          updatePayload.payout_status = nextPayoutStatus
+        }
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updatePayload as any)
+          .eq('stripe_connect_account_id', account.id)
+
+        if (error) {
+          console.error('❌ Failed to update connect status:', error)
+        } else if (payoutsEnabled && profile?.id && !profile?.stripe_payouts_enabled) {
+          await createSystemNotification({
+            userId: profile.id,
+            type: 'system_alert',
+            title: 'Paiements activés',
+            content:
+              'Votre compte bancaire est vérifié. Les virements sont maintenant disponibles.',
+          })
+        }
+        break
+      }
+
       case 'identity.verification_session.canceled': {
         const verificationSession = event.data
           .object as Stripe.Identity.VerificationSession
@@ -328,7 +395,7 @@ export async function POST(req: NextRequest) {
         // Vérifier que le booking existe et n'est pas déjà payé (idempotency)
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
-          .select('id, paid_at, qr_code, status')
+          .select('id, paid_at, qr_code, status, commission_amount, insurance_premium')
           .eq('id', booking_id)
           .single()
 
@@ -343,6 +410,23 @@ export async function POST(req: NextRequest) {
           paid_at: booking.paid_at,
           has_qr: !!booking.qr_code,
         })
+
+        const platformFee =
+          (booking.commission_amount || 0) + (booking.insurance_premium || 0)
+
+        // Mettre à jour la table payments (idempotent)
+        await (supabase as any).from('payments').upsert(
+          {
+            booking_id,
+            stripe_payment_intent_id: paymentIntent.id,
+            amount_total: fromStripeAmount(paymentIntent.amount),
+            platform_fee: platformFee,
+            currency: paymentIntent.currency || 'eur',
+            status: 'succeeded',
+            captured_at: new Date().toISOString(),
+          },
+          { onConflict: 'stripe_payment_intent_id' }
+        )
 
         // Vérifier que le booking n'est pas déjà payé (idempotency)
         if (booking.paid_at) {
@@ -554,6 +638,20 @@ export async function POST(req: NextRequest) {
         const booking_id = paymentIntent.metadata.booking_id
 
         if (booking_id) {
+          await (supabase as any).from('payments').upsert(
+            {
+              booking_id,
+              stripe_payment_intent_id: paymentIntent.id,
+              amount_total: fromStripeAmount(paymentIntent.amount),
+              platform_fee: fromStripeAmount(
+                parseInt(paymentIntent.metadata.platform_fee || '0')
+              ),
+              currency: paymentIntent.currency || 'eur',
+              status: paymentIntent.status,
+            },
+            { onConflict: 'stripe_payment_intent_id' }
+          )
+
           // Créer une transaction pour l'échec
           await (supabase as any).from('transactions').insert({
             booking_id,
@@ -583,6 +681,17 @@ export async function POST(req: NextRequest) {
         const paymentIntentId = charge.payment_intent as string
 
         if (paymentIntentId) {
+          const refundStatus =
+            charge.amount_refunded &&
+            charge.amount_refunded < (charge.amount || 0)
+              ? 'partially_refunded'
+              : 'refunded'
+
+          await (supabase as any)
+            .from('payments')
+            .update({ status: refundStatus })
+            .eq('stripe_payment_intent_id', paymentIntentId)
+
           // Récupérer le booking via payment_intent_id
           const { data: booking } = await supabase
             .from('bookings')
@@ -610,6 +719,42 @@ export async function POST(req: NextRequest) {
 
             console.log('Refund processed for booking:', booking.id)
           }
+        }
+        break
+      }
+
+      case 'transfer.created':
+      case 'transfer.updated':
+      case 'transfer.reversed': {
+        const transfer = event.data.object as Stripe.Transfer
+        const bookingId = transfer.metadata?.booking_id
+
+        if (!bookingId) {
+          break
+        }
+
+        const transferStatus = normalizeTransferStatus(event.type)
+
+        await (supabase as any).from('transfers').upsert(
+          {
+            booking_id: bookingId,
+            stripe_transfer_id: transfer.id,
+            amount: fromStripeAmount(transfer.amount),
+            currency: transfer.currency || 'eur',
+            status: transferStatus,
+            attempted_at: new Date().toISOString(),
+          },
+          { onConflict: 'stripe_transfer_id' }
+        )
+
+        if (transferStatus === 'paid') {
+          await supabase
+            .from('bookings')
+            .update({
+              payout_at: new Date().toISOString(),
+              payout_id: transfer.id,
+            })
+            .eq('id', bookingId)
         }
         break
       }

@@ -18,8 +18,14 @@ import { resolve } from 'path'
 // Charger les variables d'environnement depuis .env.local
 config({ path: resolve(process.cwd(), '.env.local') })
 
+type TargetSelector = {
+  email?: string
+  userId?: string
+}
+
 async function setKYCStatus(
-  targetStatus: 'pending' | 'approved' | 'rejected' | 'incomplete'
+  targetStatus: 'pending' | 'approved' | 'rejected' | 'incomplete',
+  selector: TargetSelector
 ) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -42,27 +48,58 @@ async function setKYCStatus(
   console.log(`🔧 Setting KYC status to: ${targetStatus}`)
   console.log('')
 
-  // Get current user (first one we find for simplicity)
-  const { data: profiles, error: fetchError } = await supabase
-    .from('profiles')
-    .select('id, firstname, lastname, email, kyc_status')
-    .limit(10)
+  let targetProfile:
+    | {
+        id: string
+        firstname: string | null
+        lastname: string | null
+        email: string
+        kyc_status: string | null
+      }
+    | null = null
 
-  if (fetchError || !profiles || profiles.length === 0) {
-    console.error('❌ Failed to fetch profiles:', fetchError)
+  if (selector.userId || selector.email) {
+    const query = supabase
+      .from('profiles')
+      .select('id, firstname, lastname, email, kyc_status')
+
+    const { data, error } = selector.userId
+      ? await query.eq('id', selector.userId).maybeSingle()
+      : await query.eq('email', selector.email as string).maybeSingle()
+
+    if (error || !data) {
+      console.error('❌ Profile not found for selector:', selector)
+      process.exit(1)
+    }
+
+    targetProfile = data
+  } else {
+    const { data: profiles, error: fetchError } = await supabase
+      .from('profiles')
+      .select('id, firstname, lastname, email, kyc_status')
+      .limit(10)
+
+    if (fetchError || !profiles || profiles.length === 0) {
+      console.error('❌ Failed to fetch profiles:', fetchError)
+      process.exit(1)
+    }
+
+    console.log('📋 Available profiles:')
+    profiles.forEach((profile, index) => {
+      console.log(
+        `  ${index + 1}. ${profile.firstname} ${profile.lastname} (${profile.email}) - Status: ${profile.kyc_status || 'null'}`
+      )
+    })
+    console.log('')
+
+    targetProfile = profiles[0]
+  }
+
+  if (!targetProfile) {
+    console.error('❌ No profile selected')
     process.exit(1)
   }
 
-  console.log('📋 Available profiles:')
-  profiles.forEach((profile, index) => {
-    console.log(
-      `  ${index + 1}. ${profile.firstname} ${profile.lastname} (${profile.email}) - Status: ${profile.kyc_status || 'null'}`
-    )
-  })
-  console.log('')
-
-  // Update the first profile for demo
-  const targetProfile = profiles[0]
   console.log(
     `👤 Updating: ${targetProfile.firstname} ${targetProfile.lastname}`
   )
@@ -107,6 +144,15 @@ async function setKYCStatus(
 const args = process.argv.slice(2)
 const status = args[0] as 'pending' | 'approved' | 'rejected' | 'incomplete'
 
+const readFlagValue = (flag: string) => {
+  const index = args.indexOf(flag)
+  if (index === -1) return undefined
+  return args[index + 1]
+}
+
+const email = readFlagValue('--email') || readFlagValue('-e')
+const userId = readFlagValue('--user-id') || readFlagValue('--id')
+
 if (
   !status ||
   !['pending', 'approved', 'rejected', 'incomplete'].includes(status)
@@ -114,7 +160,9 @@ if (
   console.error('❌ Invalid or missing status argument')
   console.log('')
   console.log('Usage:')
-  console.log('  npx tsx scripts/set-kyc-status.ts <STATUS>')
+  console.log(
+    '  npx tsx scripts/set-kyc-status.ts <STATUS> [--email user@mail.com] [--user-id uuid]'
+  )
   console.log('')
   console.log('Valid statuses:')
   console.log('  - pending')
@@ -123,8 +171,8 @@ if (
   console.log('  - incomplete')
   console.log('')
   console.log('Example:')
-  console.log('  npx tsx scripts/set-kyc-status.ts approved')
+  console.log('  npx tsx scripts/set-kyc-status.ts approved --email user@mail.com')
   process.exit(1)
 }
 
-setKYCStatus(status)
+setKYCStatus(status, { email, userId })

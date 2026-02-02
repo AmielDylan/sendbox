@@ -4,12 +4,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/shared/db/server'
-import { stripe } from '@/lib/shared/services/stripe/config'
-import {
-  calculateBookingAmounts,
-  toStripeAmount,
-} from '@/lib/core/payments/calculations'
-import { getPaymentsMode, isFeatureEnabled } from '@/lib/shared/config/features'
+import { createBookingPaymentIntent } from '@/lib/core/payments/create-payment-intent'
+import { getPaymentsMode } from '@/lib/shared/config/features'
 
 export async function POST(req: NextRequest) {
   if (getPaymentsMode() !== 'stripe') {
@@ -38,120 +34,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'booking_id requis' }, { status: 400 })
     }
 
-    // Récupérer le booking avec l'annonce
-    const { data: booking, error: bookingError } = await supabase
-      .from('bookings')
-      .select(
-        `
-        *,
-        announcements:announcement_id (
-          traveler_id,
-          price_per_kg
-        )
-      `
-      )
-      .eq('id', booking_id)
-      .single()
-
-    if (bookingError || !booking) {
-      return NextResponse.json(
-        { error: 'Réservation introuvable' },
-        { status: 404 }
-      )
-    }
-
-    // Vérifier que le booking appartient à l'utilisateur
-    if (booking.sender_id !== user.id) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 })
-    }
-
-    // Vérifier que le booking n'est pas déjà payé
-    if (booking.payment_intent_id) {
-      return NextResponse.json(
-        { error: 'Cette réservation est déjà payée' },
-        { status: 400 }
-      )
-    }
-
-    if (isFeatureEnabled('KYC_ENABLED')) {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('kyc_status, kyc_rejection_reason')
-        .eq('id', user.id)
-        .single()
-
-      if (profileError || !profile) {
-        return NextResponse.json(
-          { error: 'Profil introuvable' },
-          { status: 404 }
-        )
-      }
-
-      if (profile.kyc_status !== 'approved') {
-        let errorMessage = "Vérification d'identité requise pour continuer"
-        let errorDetails =
-          "Veuillez compléter votre vérification d'identité pour effectuer un paiement."
-
-        if (profile.kyc_status === 'pending') {
-          errorMessage = 'Vérification en cours'
-          errorDetails =
-            "Votre vérification d'identité est en cours d'examen. Vous pourrez effectuer un paiement une fois celle-ci approuvée (24-48h)."
-        } else if (profile.kyc_status === 'rejected') {
-          errorMessage = 'Vérification refusée'
-          errorDetails = profile.kyc_rejection_reason
-            ? `Votre vérification a été refusée : ${profile.kyc_rejection_reason}. Veuillez soumettre de nouveaux documents.`
-            : 'Votre vérification a été refusée. Veuillez soumettre de nouveaux documents depuis vos réglages.'
-        } else if (profile.kyc_status === 'incomplete') {
-          errorMessage = "Vérification d'identité incomplète"
-          errorDetails =
-            "Veuillez soumettre vos documents d'identité pour effectuer un paiement."
-        }
-
-        return NextResponse.json(
-          { error: errorMessage, errorDetails, field: 'kyc' },
-          { status: 403 }
-        )
-      }
-    }
-
-    const announcement = booking.announcements as any
-
-    // Calculer les montants
-    const amounts = calculateBookingAmounts(
-      booking.kilos_requested || 0,
-      announcement.price_per_kg,
-      booking.package_value || 0,
-      booking.insurance_opted || false
-    )
-
-    // Créer le Payment Intent Stripe
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: toStripeAmount(amounts.totalAmount),
-      currency: 'eur',
-      metadata: {
-        booking_id: booking.id,
-        sender_id: booking.sender_id,
-        traveler_id: announcement.traveler_id,
-        commission_amount: toStripeAmount(amounts.commissionAmount).toString(),
-        insurance_amount: toStripeAmount(amounts.insurancePremium).toString(),
-        total_price: toStripeAmount(amounts.totalPrice).toString(),
-      },
-      // Application fee désactivé temporairement - nécessite Stripe Connect
-      // TODO: Implémenter Stripe Connect pour gérer les commissions automatiquement
-      // application_fee_amount: toStripeAmount(amounts.commissionAmount),
-      // Description pour le client
-      description: `Réservation Sendbox - ${booking.kilos_requested}kg`,
+    const result = await createBookingPaymentIntent({
+      supabase,
+      bookingId: booking_id,
+      userId: user.id,
     })
 
-    // Sauvegarder le payment_intent_id dans le booking
-    await supabase
-      .from('bookings')
-      .update({ payment_intent_id: paymentIntent.id })
-      .eq('id', booking_id)
+    if (result.alreadyPaid) {
+      return NextResponse.json({ success: true, alreadyPaid: true })
+    }
+
+    if (result.error) {
+      return NextResponse.json(
+        {
+          error: result.error,
+          errorDetails: result.errorDetails,
+          field: result.field,
+        },
+        { status: result.status || 400 }
+      )
+    }
 
     return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
-      amount: amounts.totalAmount,
+      clientSecret: result.clientSecret,
+      amount: result.amount,
     })
   } catch (error) {
     console.error('Error creating payment intent:', error)
