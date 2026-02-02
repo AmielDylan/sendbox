@@ -186,12 +186,12 @@ export default function KYCPage() {
 
       const stripe = await stripePromise
       if (!stripe) {
-        toast.error("Stripe n'est pas encore disponible. Réessayez.")
+        toast.error("Le service de vérification n'est pas disponible. Réessayez.")
         return
       }
 
       if (!result.verificationClientSecret) {
-        toast.error("Impossible d'initialiser Stripe Identity.")
+        toast.error("Impossible d'initialiser la vérification.")
         return
       }
 
@@ -228,8 +228,8 @@ export default function KYCPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Vérification d'identité (KYC)"
-          description="Stripe Identity se charge de vérifier vos documents."
+          title="Vérification d'identité"
+          description="Nous vérifions vos documents pour sécuriser votre compte."
         />
         <Alert>
           <AlertTitle>Réservé aux utilisateurs</AlertTitle>
@@ -280,7 +280,7 @@ export default function KYCPage() {
     <div className="space-y-6">
       <PageHeader
         title="Vérification d'identité (KYC)"
-        description="Stripe Identity se charge de vérifier vos documents."
+          description="Nous vérifions vos documents pour sécuriser votre compte."
       />
 
       {/* Statut actuel */}
@@ -295,7 +295,7 @@ export default function KYCPage() {
             {kycStatus === 'rejected' &&
               'Votre vérification a été refusée. Vous pouvez relancer une vérification.'}
             {(kycStatus === 'incomplete' || !kycStatus) &&
-              'Aucune vérification en cours. Lancez Stripe Identity pour continuer.'}
+              "Aucune vérification en cours. Lancez la vérification pour continuer."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -313,9 +313,9 @@ export default function KYCPage() {
       {kycStatus !== 'approved' && (
         <Card>
           <CardHeader>
-            <CardTitle>Lancer la vérification Stripe Identity</CardTitle>
+            <CardTitle>Lancer la vérification d'identité</CardTitle>
             <CardDescription>
-              Sélectionnez votre document puis continuez sur Stripe.
+              Sélectionnez votre document puis continuez la vérification.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -438,7 +438,7 @@ export default function KYCPage() {
               <AlertTitle>Sécurité & confidentialité</AlertTitle>
               <AlertDescription>
                 <p>
-                  La vérification est opérée par Stripe Identity. Nous ne
+                  La vérification est opérée par un prestataire sécurisé. Nous ne
                   stockons pas vos documents, uniquement le statut de
                   vérification et les informations déclarées.
                 </p>
@@ -459,7 +459,7 @@ export default function KYCPage() {
               {isSubmitting ? (
                 <>
                   <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Ouverture de Stripe Identity...
+                  Ouverture de la vérification...
                 </>
               ) : (
                 'Vérifier mon identité'

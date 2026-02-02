@@ -1,5 +1,5 @@
 /**
- * Page de configuration des paiements (Stripe Connect + Mobile Wallet)
+ * Page de configuration des paiements (Compte Bancaire + Mobile Wallet)
  */
 
 'use client'
@@ -68,7 +68,7 @@ export default function PaymentsSettingsPage() {
       {
         id: 'stripe_bank',
         title: 'Compte Bancaire',
-        description: 'Virement international SEPA via Stripe.',
+        description: 'Virement international SEPA.',
         icon: IconBuildingBank,
         disabled: !FEATURES.STRIPE_PAYMENTS,
       },
@@ -131,10 +131,10 @@ export default function PaymentsSettingsPage() {
 
       {!FEATURES.STRIPE_PAYMENTS && (
         <Alert>
-          <AlertTitle>Stripe désactivé</AlertTitle>
+          <AlertTitle>Virements bancaires désactivés</AlertTitle>
           <AlertDescription>
-            Les paiements Stripe sont désactivés pour le moment. Utilisez Mobile
-            Wallet pour recevoir vos gains.
+            Les virements bancaires sont désactivés pour le moment. Utilisez
+            Mobile Wallet pour recevoir vos gains.
           </AlertDescription>
         </Alert>
       )}
@@ -205,7 +205,7 @@ export default function PaymentsSettingsPage() {
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {selectedMethod === 'stripe_bank'
-                    ? 'Renseignez vos informations et finalisez la vérification Stripe.'
+                    ? 'Renseignez vos informations et finalisez la vérification.'
                     : 'Choisissez votre opérateur et validez votre numéro par OTP.'}
                 </p>
               </div>

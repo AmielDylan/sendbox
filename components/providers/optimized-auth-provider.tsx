@@ -97,6 +97,7 @@ export function OptimizedAuthProvider({
   const profileRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastKycStatus = useRef<string | null>(null)
   const lastSetupNotificationKey = useRef<string | null>(null)
+  const connectBootstrapRequested = useRef(false)
 
   const PROFILE_FETCH_TIMEOUT_MS = 12000
   const MAX_PROFILE_FETCH_RETRIES = 2
@@ -586,6 +587,22 @@ export function OptimizedAuthProvider({
       console.warn('Notification setup failed:', error)
     })
   }, [profile])
+
+  useEffect(() => {
+    if (!profile?.id || !user?.id) return
+
+    if (connectBootstrapRequested.current) return
+
+    if (profile.role === 'admin') return
+
+    if ((profile as any)?.stripe_connect_account_id) return
+
+    connectBootstrapRequested.current = true
+    fetch('/api/connect/bootstrap', { method: 'POST' }).catch(error => {
+      console.warn('Connect bootstrap failed:', error)
+      connectBootstrapRequested.current = false
+    })
+  }, [profile, user?.id])
 
   useEffect(() => {
     lastKycStatus.current = (profile as any)?.kyc_status ?? null

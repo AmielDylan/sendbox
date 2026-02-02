@@ -264,8 +264,7 @@ export function ConnectOnboardingForm({
       <CardHeader>
         <CardTitle>Informations personnelles & bancaires</CardTitle>
         <CardDescription>
-          Vos données sont sécurisées et seront utilisées pour Stripe Connect
-          Custom.
+          Vos données sont sécurisées et utilisées pour activer vos paiements.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 max-h-[600px] overflow-y-auto">
@@ -452,8 +451,8 @@ export function ConnectOnboardingForm({
           <div className="bg-blue-50 border border-blue-200 rounded-md p-3 flex gap-2">
             <IconAlertCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-blue-900">
-              Vos coordonnées bancaires sont transmises directement à Stripe et
-              sécurisées par chiffrement.
+              Vos coordonnées bancaires sont transmises à notre prestataire de
+              paiement et sécurisées par chiffrement.
             </p>
           </div>
 

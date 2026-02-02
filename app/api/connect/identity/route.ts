@@ -1,23 +1,16 @@
 import { createClient } from '@/lib/shared/db/server'
-import { stripe } from '@/lib/shared/services/stripe/config'
-import { isStripeAccountMissing } from '@/lib/services/stripe-connect'
+import { createIdentityVerificationSession } from '@/lib/shared/services/stripe/identity'
+import {
+  getAccountRepresentative,
+  isStripeAccountMissing,
+} from '@/lib/services/stripe-connect'
 
-const pickPersonId = async (accountId: string) => {
-  const account = await stripe.accounts.retrieve(accountId)
-  if (account.individual?.id) {
-    return { account, personId: account.individual.id }
-  }
-
-  const persons = await stripe.accounts.listPersons(accountId, { limit: 10 })
-  const representative = persons.data.find(
-    person => person.relationship?.representative
-  )
-  const personId = representative?.id || persons.data[0]?.id || null
-
-  return { account, personId }
+type IdentityRequestBody = {
+  documentType?: 'passport' | 'national_id'
+  documentCountry?: string
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const supabase = await createClient()
     const {
@@ -47,16 +40,20 @@ export async function POST() {
 
     if (!profile.stripe_connect_account_id) {
       return Response.json(
-        { error: 'Compte Stripe introuvable' },
+        { error: 'Compte de paiement introuvable' },
         { status: 400 }
       )
     }
 
     const accountId = profile.stripe_connect_account_id
 
+    const body = (await req.json().catch(() => null)) as
+      | IdentityRequestBody
+      | null
+
     let accountData: { account: any; personId: string | null }
     try {
-      accountData = await pickPersonId(accountId)
+      accountData = await getAccountRepresentative(accountId)
     } catch (error) {
       if (isStripeAccountMissing(error)) {
         await supabase
@@ -71,7 +68,7 @@ export async function POST() {
           .eq('id', user.id)
 
         return Response.json(
-          { error: 'Compte Stripe supprimé. Relancez la vérification.' },
+          { error: 'Compte de paiement supprimé. Relancez la vérification.' },
           { status: 400 }
         )
       }
@@ -87,16 +84,14 @@ export async function POST() {
       )
     }
 
-    const session = await stripe.identity.verificationSessions.create({
-      type: 'document',
-      related_person: {
-        account: account.id,
-        person: personId,
-      },
-      metadata: {
-        user_id: user.id,
-        stripe_account_id: account.id,
-        stripe_person_id: personId,
+    const session = await createIdentityVerificationSession({
+      email: user.email,
+      userId: user.id,
+      documentType: body?.documentType || 'passport',
+      documentCountry: body?.documentCountry || 'FR',
+      relatedPerson: {
+        accountId: account.id,
+        personId,
       },
     })
 
@@ -108,13 +103,13 @@ export async function POST() {
     }
 
     return Response.json({
-      client_secret: session.client_secret,
+      client_secret: session.clientSecret,
       session_id: session.id,
     })
   } catch (error) {
     console.error('Stripe identity session error:', error)
     return Response.json(
-      { error: 'Impossible de démarrer la vérification Stripe' },
+      { error: 'Impossible de démarrer la vérification' },
       { status: 500 }
     )
   }

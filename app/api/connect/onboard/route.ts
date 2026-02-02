@@ -217,7 +217,7 @@ export async function POST(req: Request) {
 
       if (updateError) {
         return Response.json(
-          { error: "Impossible d'enregistrer le compte Stripe" },
+          { error: "Impossible d'enregistrer le compte de paiement" },
           { status: 500 }
         )
       }
@@ -242,7 +242,7 @@ export async function POST(req: Request) {
 
           if (replaceError) {
             return Response.json(
-              { error: "Impossible d'actualiser le compte Stripe" },
+              { error: "Impossible d'actualiser le compte de paiement" },
               { status: 500 }
             )
           }
@@ -264,14 +264,14 @@ export async function POST(req: Request) {
 
           if (replaceError) {
             return Response.json(
-              { error: "Impossible d'actualiser le compte Stripe" },
+              { error: "Impossible d'actualiser le compte de paiement" },
               { status: 500 }
             )
           }
         } else {
           console.error('Stripe account fetch error:', error)
           return Response.json(
-            { error: "Impossible d'accéder au compte Stripe" },
+          { error: "Impossible d'accéder au compte de paiement" },
             { status: 500 }
           )
         }
@@ -280,7 +280,7 @@ export async function POST(req: Request) {
 
     if (!accountId) {
       return Response.json(
-        { error: "Impossible d'initialiser le compte Stripe" },
+        { error: "Impossible d'initialiser le compte de paiement" },
         { status: 500 }
       )
     }
@@ -301,7 +301,7 @@ export async function POST(req: Request) {
       } catch (error) {
         console.error('Stripe account update error:', error)
         return Response.json(
-          { error: 'Informations Stripe invalides. Vérifiez le formulaire.' },
+          { error: 'Informations invalides. Vérifiez le formulaire.' },
           { status: 400 }
         )
       }
@@ -315,7 +315,7 @@ export async function POST(req: Request) {
       } catch (error) {
         console.error('Stripe business profile error:', error)
         return Response.json(
-          { error: "Impossible de démarrer l'onboarding Stripe." },
+          { error: "Impossible de démarrer la vérification." },
           { status: 400 }
         )
       }
@@ -367,7 +367,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Stripe connect onboarding error:', error)
     return Response.json(
-      { error: "Impossible de démarrer l'onboarding Stripe" },
+      { error: "Impossible de démarrer la vérification" },
       { status: 500 }
     )
   }
