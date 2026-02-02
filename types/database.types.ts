@@ -587,6 +587,13 @@ export type Database = {
           stripe_onboarding_completed: boolean
           stripe_payouts_enabled: boolean
           stripe_requirements: Json | null
+          payout_method: string | null
+          payout_status: string | null
+          wallet_operator: string | null
+          wallet_phone: string | null
+          wallet_verified_at: string | null
+          wallet_otp_code: string | null
+          wallet_otp_expires_at: string | null
           total_services: number | null
           updated_at: string | null
         }
@@ -633,6 +640,13 @@ export type Database = {
           stripe_onboarding_completed?: boolean
           stripe_payouts_enabled?: boolean
           stripe_requirements?: Json | null
+          payout_method?: string | null
+          payout_status?: string | null
+          wallet_operator?: string | null
+          wallet_phone?: string | null
+          wallet_verified_at?: string | null
+          wallet_otp_code?: string | null
+          wallet_otp_expires_at?: string | null
           total_services?: number | null
           updated_at?: string | null
         }
@@ -679,6 +693,13 @@ export type Database = {
           stripe_onboarding_completed?: boolean
           stripe_payouts_enabled?: boolean
           stripe_requirements?: Json | null
+          payout_method?: string | null
+          payout_status?: string | null
+          wallet_operator?: string | null
+          wallet_phone?: string | null
+          wallet_verified_at?: string | null
+          wallet_otp_code?: string | null
+          wallet_otp_expires_at?: string | null
           total_services?: number | null
           updated_at?: string | null
         }
