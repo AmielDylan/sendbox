@@ -4,6 +4,7 @@ import {
   createConnectedAccount,
   type ConnectCountry,
 } from '@/lib/services/stripe-connect'
+import { isStripeAccountMissing } from '@/lib/services/stripe-connect'
 import { stripe } from '@/lib/shared/services/stripe/config'
 
 type OnboardRequestBody = {
@@ -245,11 +246,33 @@ export async function POST(req: Request) {
           }
         }
       } catch (error) {
-        console.error('Stripe account fetch error:', error)
-        return Response.json(
-          { error: "Impossible d'accéder au compte Stripe" },
-          { status: 500 }
-        )
+        if (isStripeAccountMissing(error)) {
+          const newAccountId = await createConnectedAccount(
+            user.id,
+            accountEmail,
+            country,
+            accountTokenData
+          )
+          accountId = newAccountId
+
+          const { error: replaceError } = await supabase
+            .from('profiles')
+            .update({ stripe_connect_account_id: newAccountId })
+            .eq('id', user.id)
+
+          if (replaceError) {
+            return Response.json(
+              { error: "Impossible d'actualiser le compte Stripe" },
+              { status: 500 }
+            )
+          }
+        } else {
+          console.error('Stripe account fetch error:', error)
+          return Response.json(
+            { error: "Impossible d'accéder au compte Stripe" },
+            { status: 500 }
+          )
+        }
       }
     }
 

@@ -52,6 +52,28 @@ export async function GET() {
   }
 
   const status = await checkAccountStatus(profile.stripe_connect_account_id)
+  if (status.missing) {
+    const resetPayload: Record<string, any> = {
+      stripe_connect_account_id: null,
+      stripe_payouts_enabled: false,
+      stripe_onboarding_completed: false,
+      stripe_requirements: null,
+    }
+    if (payoutMethod === 'stripe_bank') {
+      resetPayload.payout_status = 'disabled'
+    }
+
+    await supabase.from('profiles').update(resetPayload).eq('id', user.id)
+
+    return Response.json({
+      payouts_enabled: false,
+      onboarding_completed: false,
+      payout_status: resetPayload.payout_status ?? payoutStatus ?? null,
+      payout_method: payoutMethod ?? null,
+      requirements: null,
+      missing_account: true,
+    })
+  }
   const payoutsEnabled = Boolean(status.payoutsEnabled)
   const requirements = status.requirements || null
   const requirementsJson = requirements

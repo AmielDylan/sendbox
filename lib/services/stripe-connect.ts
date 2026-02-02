@@ -9,6 +9,16 @@ import { stripe } from '@/lib/shared/services/stripe/config'
 
 export type ConnectCountry = 'FR' | 'BJ'
 
+export const isStripeAccountMissing = (error: unknown) => {
+  if (!error || typeof error !== 'object') return false
+  const anyError = error as { code?: string; message?: string }
+  const message = typeof anyError.message === 'string' ? anyError.message : ''
+  return (
+    anyError.code === 'resource_missing' ||
+    /no such account/i.test(message)
+  )
+}
+
 type AccountTokenData = {
   business_type?: 'individual' | 'company' | 'government_entity' | 'non_profit'
   individual?: Record<string, unknown>
@@ -89,13 +99,27 @@ export async function createAccountSession(accountId: string) {
  * Check if account is fully set up
  */
 export async function checkAccountStatus(accountId: string) {
-  const account = await stripe.accounts.retrieve(accountId)
+  try {
+    const account = await stripe.accounts.retrieve(accountId)
 
-  return {
-    chargesEnabled: account.charges_enabled || false,
-    payoutsEnabled: account.payouts_enabled || false,
-    detailsSubmitted: account.details_submitted || false,
-    requirements: account.requirements,
+    return {
+      chargesEnabled: account.charges_enabled || false,
+      payoutsEnabled: account.payouts_enabled || false,
+      detailsSubmitted: account.details_submitted || false,
+      requirements: account.requirements,
+      missing: false,
+    }
+  } catch (error) {
+    if (isStripeAccountMissing(error)) {
+      return {
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+        requirements: null,
+        missing: true,
+      }
+    }
+    throw error
   }
 }
 

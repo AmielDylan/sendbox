@@ -68,7 +68,18 @@ export async function POST(req: Request) {
         const status = await checkAccountStatus(
           profile.stripe_connect_account_id
         )
-        if (status.payoutsEnabled) {
+        if (status.missing) {
+          await supabase
+            .from('profiles')
+            .update({
+              stripe_connect_account_id: null,
+              stripe_payouts_enabled: false,
+              stripe_onboarding_completed: false,
+              stripe_requirements: null,
+              payout_status: 'disabled',
+            } as any)
+            .eq('id', user.id)
+        } else if (status.payoutsEnabled) {
           payoutStatus = 'active'
           stripeFlags = { stripe_payouts_enabled: true }
         }

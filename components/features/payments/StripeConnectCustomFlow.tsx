@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
+import { getStripeClient } from '@/lib/shared/services/stripe/config'
 
 interface StripeConnectCustomFlowProps {
   onCompleted?: () => void
@@ -27,6 +28,7 @@ export function StripeConnectCustomFlow({
   const [loading, setLoading] = useState(false)
   const [isPolling, setIsPolling] = useState(false)
   const [showPendingNotice, setShowPendingNotice] = useState(false)
+  const [identityLoading, setIdentityLoading] = useState(false)
   const longPollRef = useRef<number | null>(null)
   const longPollAttempts = useRef(0)
   const missingAccountNotified = useRef(false)
@@ -40,6 +42,8 @@ export function StripeConnectCustomFlow({
 
   const publishableKey =
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+
+  const stripePromise = useMemo(() => getStripeClient(), [])
 
   const connectInstance = useMemo(() => {
     if (!clientSecret || !publishableKey) return null
@@ -162,6 +166,65 @@ export function StripeConnectCustomFlow({
     return () => stopLongPolling()
   }, [showPendingNotice, profile])
 
+  const requirements = (profile as any)?.stripe_requirements as
+    | {
+        currently_due?: string[]
+        eventually_due?: string[]
+        pending_verification?: string[]
+        past_due?: string[]
+      }
+    | undefined
+
+  const requiresIdentityVerification = useMemo(() => {
+    if (!requirements) return false
+    const allRequirements = [
+      ...(requirements.currently_due ?? []),
+      ...(requirements.eventually_due ?? []),
+      ...(requirements.pending_verification ?? []),
+      ...(requirements.past_due ?? []),
+    ]
+    return allRequirements.some(
+      field =>
+        field.startsWith('individual.verification') ||
+        field.startsWith('person.verification')
+    )
+  }, [requirements])
+
+  const startIdentityVerification = async () => {
+    if (identityLoading) return
+    setIdentityLoading(true)
+    try {
+      const res = await fetch('/api/connect/identity', { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(
+          data?.error || 'Impossible de démarrer la vérification'
+        )
+      }
+
+      const stripe = await stripePromise
+      if (!stripe) {
+        throw new Error("Stripe n'est pas disponible")
+      }
+
+      const { error } = await stripe.verifyIdentity(data.client_secret)
+      if (error) {
+        throw new Error(
+          error.message ||
+            "La vérification d'identité n'a pas pu être complétée."
+        )
+      }
+
+      toast.success('Vérification envoyée.')
+      await fetch('/api/connect/status').catch(() => null)
+      await refetch()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erreur inconnue')
+    } finally {
+      setIdentityLoading(false)
+    }
+  }
+
   const handleSubmit = async (payload: ConnectOnboardingPayload) => {
     setLoading(true)
     try {
@@ -195,6 +258,26 @@ export function StripeConnectCustomFlow({
 
   return (
     <div className="space-y-6">
+      {requiresIdentityVerification && (
+        <Alert>
+          <AlertDescription className="flex flex-col gap-3">
+            <span>
+              Stripe demande une vérification d&apos;identité pour éviter une
+              interruption des virements.
+            </span>
+            <div>
+              <Button
+                onClick={startIdentityVerification}
+                disabled={identityLoading}
+              >
+                {identityLoading
+                  ? 'Vérification en cours...'
+                  : 'Vérifier mon identité'}
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
       {!clientSecret && (
         <ConnectOnboardingForm
           onSubmit={handleSubmit}
