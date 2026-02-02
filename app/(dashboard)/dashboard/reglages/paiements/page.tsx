@@ -16,6 +16,17 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { FEATURES } from '@/lib/shared/config/features'
 import { useAuth } from '@/hooks/use-auth'
 import { StripeConnectCustomFlow } from '@/components/features/payments/StripeConnectCustomFlow'
@@ -55,6 +66,7 @@ export default function PaymentsSettingsPage() {
   const [step, setStep] = useState<'select' | 'details'>(
     currentMethod ? 'details' : 'select'
   )
+  const [changeModeOpen, setChangeModeOpen] = useState(false)
 
   useEffect(() => {
     if (currentMethod) {
@@ -205,18 +217,33 @@ export default function PaymentsSettingsPage() {
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {selectedMethod === 'stripe_bank'
-                    ? 'Renseignez vos informations et finalisez la vérification.'
+                    ? 'Ajoutez votre IBAN pour activer les virements.'
                     : 'Choisissez votre opérateur et validez votre numéro par OTP.'}
                 </p>
               </div>
-              <Button variant="outline" onClick={() => setStep('select')}>
-                Changer de mode
-              </Button>
+              <AlertDialog open={changeModeOpen} onOpenChange={setChangeModeOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline">Changer de mode</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Changer de mode de paiement ?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Changer de mode relance la vérification et désactive
+                      temporairement vos paiements.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => setStep('select')}>
+                      OK
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Changer de mode relance la vérification et désactive temporairement
-              vos paiements.
-            </p>
 
             {selectedMethod === 'stripe_bank' ? (
               <StripeConnectCustomFlow

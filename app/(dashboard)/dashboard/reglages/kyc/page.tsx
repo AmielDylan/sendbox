@@ -59,13 +59,17 @@ export default function KYCPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
   const [countryOpen, setCountryOpen] = useState(false)
   const [countrySearch, setCountrySearch] = useState('')
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
 
   const stripePromise = useMemo(() => getStripeClient(), [])
@@ -93,6 +97,18 @@ export default function KYCPage() {
 
   useEffect(() => {
     if (!profile) return
+    if (!firstName && (profile as any)?.firstname) {
+      setFirstName((profile as any).firstname as string)
+    }
+    if (!lastName && (profile as any)?.lastname) {
+      setLastName((profile as any).lastname as string)
+    }
+    if (!email && ((profile as any)?.email || user?.email)) {
+      setEmail(((profile as any)?.email as string) || user?.email || '')
+    }
+    if (!phone && (profile as any)?.phone) {
+      setPhone((profile as any).phone as string)
+    }
     if (!birthDate && (profile as any)?.birthday) {
       setBirthDate((profile as any).birthday as string)
     }
@@ -105,7 +121,18 @@ export default function KYCPage() {
     if (!postalCode && (profile as any)?.postal_code) {
       setPostalCode((profile as any).postal_code as string)
     }
-  }, [profile, birthDate, address, city, postalCode])
+  }, [
+    profile,
+    user,
+    firstName,
+    lastName,
+    email,
+    phone,
+    birthDate,
+    address,
+    city,
+    postalCode,
+  ])
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null
@@ -190,6 +217,10 @@ export default function KYCPage() {
       toast.error('Veuillez sélectionner un document et un pays')
       return
     }
+    if (!firstName || !lastName || !email || !phone) {
+      toast.error('Veuillez compléter vos informations personnelles')
+      return
+    }
     if (!birthDate || !address || !city || !postalCode) {
       toast.error('Veuillez compléter vos informations personnelles')
       return
@@ -199,6 +230,10 @@ export default function KYCPage() {
 
     try {
       const result = await startKYCVerification({
+        firstName,
+        lastName,
+        email,
+        phone,
         documentType: documentType as DocumentType,
         documentCountry,
         birthday: birthDate,
@@ -463,6 +498,47 @@ export default function KYCPage() {
 
             <div className="space-y-4 rounded-lg border border-border/60 p-4">
               <p className="text-sm font-semibold">Informations personnelles</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">Prénom</Label>
+                  <Input
+                    id="firstName"
+                    placeholder="Amiel"
+                    value={firstName}
+                    onChange={event => setFirstName(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Nom</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Adjovi"
+                    value={lastName}
+                    onChange={event => setLastName(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={event => setEmail(event.target.value)}
+                    disabled
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Téléphone</Label>
+                  <Input
+                    id="phone"
+                    placeholder="+33612345678"
+                    value={phone}
+                    onChange={event => setPhone(event.target.value)}
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="birthDate">Date de naissance</Label>
                 <Input
