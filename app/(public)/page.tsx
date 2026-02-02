@@ -342,7 +342,7 @@ export default function HomePage() {
             </div>
 
             {/* Right: Visual */}
-            <div className="relative animate-fade-in-up animation-delay-300">
+            <div className="relative animate-fade-in-up animation-delay-300 hidden sm:block">
               <div className="relative aspect-square max-w-lg mx-auto lg:ml-auto">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-emerald-500/20 rounded-3xl"></div>
                 <div className="relative h-full rounded-3xl overflow-hidden border-2 border-border bg-muted/20 p-12">
@@ -415,7 +415,7 @@ export default function HomePage() {
                   variant="outline"
                 >
                   <Link href="/register">
-                    Devenir transporteur
+                    Créer une annonce
                     <IconArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
