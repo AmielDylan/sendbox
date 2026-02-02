@@ -142,6 +142,8 @@ export async function POST(req: Request) {
     if (personal.lastName?.trim()) updates.lastname = personal.lastName.trim()
     if (personal.phone?.trim()) updates.phone = personal.phone.trim()
     if (personal.address?.trim()) updates.address = personal.address.trim()
+    if (personal.city?.trim()) updates.city = personal.city.trim()
+    if (personal.postalCode?.trim()) updates.postal_code = personal.postalCode.trim()
     if (personal.dob?.trim()) updates.birthday = personal.dob.trim()
     if (country) updates.country = country
 

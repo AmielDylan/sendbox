@@ -546,6 +546,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          city: string | null
           avatar_url: string | null
           banned_at: string | null
           banned_reason: string | null
@@ -579,6 +580,7 @@ export type Database = {
           lastname: string | null
           nationality: string | null
           phone: string | null
+          postal_code: string | null
           rating: number | null
           role: Database['public']['Enums']['user_role']
           stripe_connect_account_id: string | null
@@ -590,6 +592,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          city?: string | null
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
@@ -623,6 +626,7 @@ export type Database = {
           lastname?: string | null
           nationality?: string | null
           phone?: string | null
+          postal_code?: string | null
           rating?: number | null
           role?: Database['public']['Enums']['user_role']
           stripe_connect_account_id?: string | null
@@ -634,6 +638,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          city?: string | null
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
@@ -667,6 +672,7 @@ export type Database = {
           lastname?: string | null
           nationality?: string | null
           phone?: string | null
+          postal_code?: string | null
           rating?: number | null
           role?: Database['public']['Enums']['user_role']
           stripe_connect_account_id?: string | null
