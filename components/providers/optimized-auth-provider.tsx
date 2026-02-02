@@ -102,6 +102,11 @@ export function OptimizedAuthProvider({
   const MAX_PROFILE_FETCH_RETRIES = 2
   const PROFILE_RETRY_BASE_DELAY_MS = 1500
   const PROFILE_POLL_INTERVAL_MS = 60000
+  const CONNECT_STATUS_POLL_INTERVAL_MS = 300000
+
+  const connectStatusPollingRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  )
 
   const showKycStatusToast = useCallback(
     (status: string | null, rejectionReason?: string | null) => {
@@ -467,6 +472,62 @@ export function OptimizedAuthProvider({
 
     return () => clearInterval(interval)
   }, [user?.id, fetchProfile])
+
+  /**
+   * Poll connect status when Stripe payouts are pending.
+   */
+  useEffect(() => {
+    if (!user?.id) return
+
+    const payoutMethod = (profile as any)?.payout_method as
+      | 'stripe_bank'
+      | 'mobile_wallet'
+      | undefined
+    const payoutStatus = (profile as any)?.payout_status as
+      | 'pending'
+      | 'active'
+      | 'disabled'
+      | undefined
+    const stripeAccountId = (profile as any)?.stripe_connect_account_id as
+      | string
+      | undefined
+
+    if (
+      payoutMethod !== 'stripe_bank' ||
+      payoutStatus === 'active' ||
+      !stripeAccountId
+    ) {
+      if (connectStatusPollingRef.current) {
+        clearInterval(connectStatusPollingRef.current)
+        connectStatusPollingRef.current = null
+      }
+      return
+    }
+
+    if (connectStatusPollingRef.current) return
+
+    const pollConnectStatus = async () => {
+      try {
+        const res = await fetch('/api/connect/status')
+        await res.json().catch(() => null)
+      } catch (error) {
+        console.warn('Connect status polling failed:', error)
+      }
+    }
+
+    pollConnectStatus()
+    connectStatusPollingRef.current = setInterval(
+      pollConnectStatus,
+      CONNECT_STATUS_POLL_INTERVAL_MS
+    )
+
+    return () => {
+      if (connectStatusPollingRef.current) {
+        clearInterval(connectStatusPollingRef.current)
+        connectStatusPollingRef.current = null
+      }
+    }
+  }, [user?.id, profile])
 
   /**
    * Synchronisation multi-onglets via BroadcastChannel
