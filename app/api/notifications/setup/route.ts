@@ -52,9 +52,13 @@ export async function POST() {
     .eq('user_id', user.id)
     .eq('type', 'system_alert')
     .eq('title', title)
-    .limit(1)
+    .order('created_at', { ascending: false })
 
   if (existing && existing.length > 0) {
+    if (existing.length > 1) {
+      const duplicateIds = existing.slice(1).map(item => item.id)
+      await supabase.from('notifications').delete().in('id', duplicateIds)
+    }
     return Response.json({ success: true })
   }
 

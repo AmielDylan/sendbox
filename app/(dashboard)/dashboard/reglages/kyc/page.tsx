@@ -59,6 +59,10 @@ export default function KYCPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
+  const [birthDate, setBirthDate] = useState('')
+  const [address, setAddress] = useState('')
+  const [city, setCity] = useState('')
+  const [postalCode, setPostalCode] = useState('')
   const [countryOpen, setCountryOpen] = useState(false)
   const [countrySearch, setCountrySearch] = useState('')
   const { profile } = useAuth()
@@ -86,6 +90,22 @@ export default function KYCPage() {
     }
     loadKYCStatus()
   }, [isAdmin])
+
+  useEffect(() => {
+    if (!profile) return
+    if (!birthDate && (profile as any)?.birthday) {
+      setBirthDate((profile as any).birthday as string)
+    }
+    if (!address && (profile as any)?.address) {
+      setAddress((profile as any).address as string)
+    }
+    if (!city && (profile as any)?.city) {
+      setCity((profile as any).city as string)
+    }
+    if (!postalCode && (profile as any)?.postal_code) {
+      setPostalCode((profile as any).postal_code as string)
+    }
+  }, [profile, birthDate, address, city, postalCode])
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null
@@ -170,6 +190,10 @@ export default function KYCPage() {
       toast.error('Veuillez sélectionner un document et un pays')
       return
     }
+    if (!birthDate || !address || !city || !postalCode) {
+      toast.error('Veuillez compléter vos informations personnelles')
+      return
+    }
 
     setIsSubmitting(true)
 
@@ -177,6 +201,10 @@ export default function KYCPage() {
       const result = await startKYCVerification({
         documentType: documentType as DocumentType,
         documentCountry,
+        birthday: birthDate,
+        address,
+        city,
+        postalCode,
       })
 
       if (result.error) {
@@ -431,6 +459,48 @@ export default function KYCPage() {
                   </div>
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div className="space-y-4 rounded-lg border border-border/60 p-4">
+              <p className="text-sm font-semibold">Informations personnelles</p>
+              <div className="space-y-2">
+                <Label htmlFor="birthDate">Date de naissance</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={birthDate}
+                  onChange={event => setBirthDate(event.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Adresse</Label>
+                <Input
+                  id="address"
+                  placeholder="28 Route de Bonsecours"
+                  value={address}
+                  onChange={event => setAddress(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ville</Label>
+                  <Input
+                    id="city"
+                    placeholder="Paris"
+                    value={city}
+                    onChange={event => setCity(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Code postal</Label>
+                  <Input
+                    id="postalCode"
+                    placeholder="75012"
+                    value={postalCode}
+                    onChange={event => setPostalCode(event.target.value)}
+                  />
+                </div>
+              </div>
             </div>
 
             <Alert>

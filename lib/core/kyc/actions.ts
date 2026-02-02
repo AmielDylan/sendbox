@@ -20,6 +20,7 @@ import {
   type AccountTokenData,
   type ConnectCountry,
 } from '@/lib/services/stripe-connect'
+import { stripe } from '@/lib/shared/services/stripe/config'
 
 const parseDob = (value?: string | null) => {
   if (!value) return null
@@ -87,9 +88,18 @@ export async function startKYCVerification(input: StripeIdentityInput) {
   const email = profile.email || user.email || null
 
   try {
+    const {
+      documentType,
+      documentCountry,
+      birthday,
+      address,
+      city,
+      postalCode,
+    } = validation.data
+
     const country: ConnectCountry =
-      profile.country === 'BJ' || profile.country === 'FR'
-        ? profile.country
+      documentCountry === 'BJ' || documentCountry === 'FR'
+        ? documentCountry
         : 'FR'
 
     const individual: Record<string, unknown> = {}
@@ -102,16 +112,16 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     if (profile.email?.trim()) individual.email = profile.email.trim()
     if (profile.phone?.trim()) individual.phone = profile.phone.trim()
 
-    const dob = parseDob(profile.birthday)
+    const dob = parseDob(birthday || profile.birthday)
     if (dob) {
       individual.dob = dob
     }
 
-    if (profile.address?.trim()) {
+    if (address?.trim()) {
       individual.address = {
-        line1: profile.address.trim(),
-        city: profile.city?.trim() || undefined,
-        postal_code: profile.postal_code?.trim() || undefined,
+        line1: address.trim(),
+        city: city?.trim() || undefined,
+        postal_code: postalCode?.trim() || undefined,
         country,
       }
     }
@@ -176,6 +186,29 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       }
     }
 
+    if (Object.keys(individual).length > 0) {
+      const accountToken = await stripe.tokens.create({
+        account: {
+          business_type: 'individual',
+          individual,
+          tos_shown_and_accepted: true,
+        },
+      })
+
+      await stripe.accounts.update(accountId, {
+        account_token: accountToken.id,
+      })
+    }
+
+    const fallbackProfileUrl = `https://www.gosendbox.com/profil/${user.id}`
+    try {
+      await stripe.accounts.update(accountId, {
+        business_profile: { url: fallbackProfileUrl },
+      })
+    } catch (error) {
+      console.warn('Business profile update failed:', error)
+    }
+
     const { personId } = await getAccountRepresentative(accountId)
 
     if (!personId) {
@@ -187,8 +220,8 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     const session = await createIdentityVerificationSession({
       email,
       userId: user.id,
-      documentType: validation.data.documentType,
-      documentCountry: validation.data.documentCountry,
+      documentType,
+      documentCountry,
       relatedPerson: {
         accountId,
         personId,
@@ -198,9 +231,14 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        kyc_document_type: validation.data.documentType,
-        kyc_nationality: validation.data.documentCountry,
+        kyc_document_type: documentType,
+        kyc_nationality: documentCountry,
         kyc_rejection_reason: null,
+        address: address?.trim() || profile.address,
+        city: city?.trim() || profile.city,
+        postal_code: postalCode?.trim() || profile.postal_code,
+        birthday: birthday || profile.birthday,
+        country: profile.country || documentCountry,
       })
       .eq('id', user.id)
 
