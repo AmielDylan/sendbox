@@ -113,6 +113,12 @@ export function ConnectOnboardingForm({
       if (!next.address && (profile as any)?.address) {
         next.address = (profile as any).address
       }
+      if (!next.city && (profile as any)?.city) {
+        next.city = (profile as any).city
+      }
+      if (!next.postalCode && (profile as any)?.postal_code) {
+        next.postalCode = (profile as any).postal_code
+      }
 
       if (
         (!next.dobDay || !next.dobMonth || !next.dobYear) &&
