@@ -2,10 +2,13 @@ import { createClient } from '@/lib/shared/db/server'
 import {
   createAccountSession,
   createConnectedAccount,
-  type ConnectCountry,
 } from '@/lib/services/stripe-connect'
 import { isStripeAccountMissing } from '@/lib/services/stripe-connect'
 import { stripe } from '@/lib/shared/services/stripe/config'
+import {
+  getStripeConnectAllowedCountries,
+  resolveStripeConnectCountry,
+} from '@/lib/shared/stripe/connect-allowed'
 
 type OnboardRequestBody = {
   bankData?: {
@@ -100,7 +103,21 @@ export async function POST(req: Request) {
       )
     }
 
-    const country: ConnectCountry = profile.country === 'BJ' ? 'BJ' : 'FR'
+    const allowedCountries = getStripeConnectAllowedCountries()
+    const country = resolveStripeConnectCountry(
+      profile.country,
+      allowedCountries
+    )
+
+    if (!country) {
+      return Response.json(
+        {
+          error:
+            "Pays de vérification manquant. Relancez la vérification d'identité.",
+        },
+        { status: 400 }
+      )
+    }
     const reqOrigin = req.headers.get('origin')
     const reqHost =
       req.headers.get('x-forwarded-host') || req.headers.get('host')

@@ -53,6 +53,7 @@ import {
   startKYCVerification,
 } from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
+import { getStripeConnectAllowedCountriesClient } from '@/lib/shared/stripe/connect-allowed-client'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 type DocumentType = 'passport' | 'national_id'
@@ -78,9 +79,16 @@ export default function KYCPage() {
   const [countrySearch, setCountrySearch] = useState('')
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
-  const stripeSupportedCountries = useMemo(() => ['FR'], [])
+  const stripeSupportedCountries = useMemo(
+    () => getStripeConnectAllowedCountriesClient(),
+    []
+  )
+  const stripeSupportedSet = useMemo(
+    () => new Set(stripeSupportedCountries),
+    [stripeSupportedCountries]
+  )
   const isStripeCountrySupported =
-    !documentCountry || stripeSupportedCountries.includes(documentCountry)
+    !documentCountry || stripeSupportedSet.has(documentCountry)
   const canPrepareAccount =
     Boolean(documentType && documentCountry) && isStripeCountrySupported
 
@@ -89,15 +97,18 @@ export default function KYCPage() {
 
   const filteredCountries = useMemo(() => {
     const query = countrySearch.trim().toLowerCase()
+    const supportedOptions = COUNTRY_OPTIONS.filter(country =>
+      stripeSupportedSet.has(country.code)
+    )
     if (!query) {
-      return COUNTRY_OPTIONS
+      return supportedOptions
     }
-    return COUNTRY_OPTIONS.filter(
+    return supportedOptions.filter(
       country =>
         country.name.toLowerCase().includes(query) ||
         country.code.toLowerCase().includes(query)
     )
-  }, [countrySearch])
+  }, [countrySearch, stripeSupportedSet])
 
   useEffect(() => {
     if (isAdmin) {
@@ -544,9 +555,9 @@ export default function KYCPage() {
                     <IconAlertTriangle className="h-4 w-4" />
                     <AlertTitle>Pays non supporté</AlertTitle>
                     <AlertDescription>
-                      La vérification Stripe n&apos;est pas disponible pour ce
-                      pays pour le moment. Utilisez un document français ou
-                      choisissez Mobile Wallet pour recevoir vos paiements.
+                      Stripe Connect n&apos;est pas disponible pour ce pays
+                      pour le moment. Choisissez un pays pris en charge ou
+                      utilisez Mobile Wallet pour recevoir vos paiements.
                     </AlertDescription>
                   </Alert>
                 )}
