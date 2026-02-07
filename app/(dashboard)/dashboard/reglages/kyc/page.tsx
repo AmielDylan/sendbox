@@ -46,7 +46,11 @@ import { cn } from '@/lib/utils'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
 import { COUNTRY_OPTIONS } from '@/lib/utils/countries'
-import { getKYCStatus, startKYCVerification } from '@/lib/core/kyc/actions'
+import {
+  getKYCStatus,
+  prepareKYCAccount,
+  startKYCVerification,
+} from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
@@ -59,6 +63,8 @@ export default function KYCPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
+  const [step, setStep] = useState<'document' | 'details'>('document')
+  const [isPreparingAccount, setIsPreparingAccount] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -213,6 +219,10 @@ export default function KYCPage() {
   }
 
   const handleStartVerification = async () => {
+    if (step !== 'details') {
+      toast.error('Préparez votre compte avant de continuer')
+      return
+    }
     if (!documentType || !documentCountry) {
       toast.error('Veuillez sélectionner un document et un pays')
       return
@@ -276,6 +286,31 @@ export default function KYCPage() {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handlePrepareAccount = async () => {
+    if (!documentType || !documentCountry) {
+      toast.error('Veuillez sélectionner un document et un pays')
+      return
+    }
+
+    setIsPreparingAccount(true)
+    try {
+      const result = await prepareKYCAccount(documentCountry)
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      setStep('details')
+      toast.success('Compte prêt pour la vérification')
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Erreur lors de la préparation'
+      )
+    } finally {
+      setIsPreparingAccount(false)
     }
   }
 
@@ -382,235 +417,282 @@ export default function KYCPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Type de document */}
-            <div className="space-y-2">
-              <Label htmlFor="documentType">Type de document</Label>
-              <Select
-                value={documentType}
-                onValueChange={value => setDocumentType(value as DocumentType)}
-              >
-                <SelectTrigger id="documentType">
-                  <SelectValue placeholder="Sélectionnez un document" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="passport">Passeport</SelectItem>
-                  <SelectItem value="national_id">
-                    Carte nationale d&apos;identité
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {step === 'document' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="documentType">Type de document</Label>
+                  <Select
+                    value={documentType}
+                    onValueChange={value =>
+                      setDocumentType(value as DocumentType)
+                    }
+                  >
+                    <SelectTrigger id="documentType">
+                      <SelectValue placeholder="Sélectionnez un document" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="passport">Passeport</SelectItem>
+                      <SelectItem value="national_id">
+                        Carte nationale d&apos;identité
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Pays d'émission */}
-            <div className="space-y-2">
-              <Label htmlFor="documentCountry">
-                Pays d&apos;émission du document
-              </Label>
-              <Popover
-                open={countryOpen}
-                onOpenChange={open => {
-                  setCountryOpen(open)
-                  if (!open) {
-                    setCountrySearch('')
-                  }
-                }}
-              >
-                <PopoverTrigger asChild>
+                <div className="space-y-2">
+                  <Label htmlFor="documentCountry">
+                    Pays d&apos;émission du document
+                  </Label>
+                  <Popover
+                    open={countryOpen}
+                    onOpenChange={open => {
+                      setCountryOpen(open)
+                      if (!open) {
+                        setCountrySearch('')
+                      }
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={countryOpen}
+                        className="w-full justify-between"
+                        id="documentCountry"
+                      >
+                        {documentCountry ? (
+                          <span className="flex items-center gap-2">
+                            <span>
+                              {
+                                COUNTRY_OPTIONS.find(
+                                  country => country.code === documentCountry
+                                )?.flag
+                              }
+                            </span>
+                            <span>
+                              {
+                                COUNTRY_OPTIONS.find(
+                                  country => country.code === documentCountry
+                                )?.name
+                              }
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Sélectionnez un pays
+                          </span>
+                        )}
+                        <IconChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="bottom"
+                      align="start"
+                      className="w-[--radix-popover-trigger-width] p-0"
+                    >
+                      <div className="flex items-center gap-2 border-b px-3 py-2">
+                        <IconSearch className="h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Rechercher un pays..."
+                          value={countrySearch}
+                          onChange={event => setCountrySearch(event.target.value)}
+                          className="h-8 border-0 px-0 focus-visible:ring-0"
+                        />
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {filteredCountries.length > 0 ? (
+                          filteredCountries.map(country => (
+                            <button
+                              key={country.code}
+                              type="button"
+                              className={cn(
+                                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
+                                documentCountry === country.code && 'bg-accent'
+                              )}
+                              onClick={() => {
+                                setDocumentCountry(country.code)
+                                setCountryOpen(false)
+                                setCountrySearch('')
+                              }}
+                            >
+                              <span>{country.flag}</span>
+                              <span>{country.name}</span>
+                              <span className="ml-auto text-xs text-muted-foreground">
+                                {country.code}
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <p className="px-3 py-2 text-sm text-muted-foreground">
+                            Aucun pays trouvé.
+                          </p>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={handlePrepareAccount}
+                  disabled={isPreparingAccount}
+                >
+                  {isPreparingAccount ? (
+                    <>
+                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Préparation en cours...
+                    </>
+                  ) : (
+                    'Continuer'
+                  )}
+                </Button>
+              </>
+            )}
+
+            {step === 'details' && (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
+                  <div className="text-sm">
+                    <span className="font-medium">Document :</span>{' '}
+                    {documentType === 'passport'
+                      ? 'Passeport'
+                      : "Carte d'identité"}{' '}
+                    •{' '}
+                    <span className="font-medium">Pays :</span>{' '}
+                    {documentCountry || '—'}
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
-                    role="combobox"
-                    aria-expanded={countryOpen}
-                    className="w-full justify-between"
-                    id="documentCountry"
+                    size="sm"
+                    onClick={() => setStep('document')}
+                    disabled={isSubmitting}
                   >
-                    {documentCountry ? (
-                      <span className="flex items-center gap-2">
-                        <span>
-                          {
-                            COUNTRY_OPTIONS.find(
-                              country => country.code === documentCountry
-                            )?.flag
-                          }
-                        </span>
-                        <span>
-                          {
-                            COUNTRY_OPTIONS.find(
-                              country => country.code === documentCountry
-                            )?.name
-                          }
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Sélectionnez un pays
-                      </span>
-                    )}
-                    <IconChevronDown className="h-4 w-4 opacity-50" />
+                    Modifier
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  side="bottom"
-                  align="start"
-                  className="w-[--radix-popover-trigger-width] p-0"
-                >
-                  <div className="flex items-center gap-2 border-b px-3 py-2">
-                    <IconSearch className="h-4 w-4 text-muted-foreground" />
+                </div>
+
+                <div className="space-y-4 rounded-lg border border-border/60 p-4">
+                  <p className="text-sm font-semibold">
+                    Informations personnelles
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">Prénom</Label>
+                      <Input
+                        id="firstName"
+                        placeholder="Amiel"
+                        value={firstName}
+                        onChange={event => setFirstName(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Nom</Label>
+                      <Input
+                        id="lastName"
+                        placeholder="Adjovi"
+                        value={lastName}
+                        onChange={event => setLastName(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={event => setEmail(event.target.value)}
+                        disabled
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Téléphone</Label>
+                      <Input
+                        id="phone"
+                        placeholder="+33612345678"
+                        value={phone}
+                        onChange={event => setPhone(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="birthDate">Date de naissance</Label>
                     <Input
-                      placeholder="Rechercher un pays..."
-                      value={countrySearch}
-                      onChange={event => setCountrySearch(event.target.value)}
-                      className="h-8 border-0 px-0 focus-visible:ring-0"
+                      id="birthDate"
+                      type="date"
+                      value={birthDate}
+                      onChange={event => setBirthDate(event.target.value)}
                     />
                   </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {filteredCountries.length > 0 ? (
-                      filteredCountries.map(country => (
-                        <button
-                          key={country.code}
-                          type="button"
-                          className={cn(
-                            'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
-                            documentCountry === country.code && 'bg-accent'
-                          )}
-                          onClick={() => {
-                            setDocumentCountry(country.code)
-                            setCountryOpen(false)
-                            setCountrySearch('')
-                          }}
-                        >
-                          <span>{country.flag}</span>
-                          <span>{country.name}</span>
-                          <span className="ml-auto text-xs text-muted-foreground">
-                            {country.code}
-                          </span>
-                        </button>
-                      ))
-                    ) : (
-                      <p className="px-3 py-2 text-sm text-muted-foreground">
-                        Aucun pays trouvé.
-                      </p>
-                    )}
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Adresse</Label>
+                    <Input
+                      id="address"
+                      placeholder="28 Route de Bonsecours"
+                      value={address}
+                      onChange={event => setAddress(event.target.value)}
+                    />
                   </div>
-                </PopoverContent>
-              </Popover>
-            </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">Ville</Label>
+                      <Input
+                        id="city"
+                        placeholder="Paris"
+                        value={city}
+                        onChange={event => setCity(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="postalCode">Code postal</Label>
+                      <Input
+                        id="postalCode"
+                        placeholder="75012"
+                        value={postalCode}
+                        onChange={event => setPostalCode(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            <div className="space-y-4 rounded-lg border border-border/60 p-4">
-              <p className="text-sm font-semibold">Informations personnelles</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="Amiel"
-                    value={firstName}
-                    onChange={event => setFirstName(event.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Adjovi"
-                    value={lastName}
-                    onChange={event => setLastName(event.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={event => setEmail(event.target.value)}
-                    disabled
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone</Label>
-                  <Input
-                    id="phone"
-                    placeholder="+33612345678"
-                    value={phone}
-                    onChange={event => setPhone(event.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="birthDate">Date de naissance</Label>
-                <Input
-                  id="birthDate"
-                  type="date"
-                  value={birthDate}
-                  onChange={event => setBirthDate(event.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Adresse</Label>
-                <Input
-                  id="address"
-                  placeholder="28 Route de Bonsecours"
-                  value={address}
-                  onChange={event => setAddress(event.target.value)}
-                />
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
-                  <Input
-                    id="city"
-                    placeholder="Paris"
-                    value={city}
-                    onChange={event => setCity(event.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Code postal</Label>
-                  <Input
-                    id="postalCode"
-                    placeholder="75012"
-                    value={postalCode}
-                    onChange={event => setPostalCode(event.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+                <Alert>
+                  <IconShieldLock className="h-4 w-4" />
+                  <AlertTitle>Sécurité & confidentialité</AlertTitle>
+                  <AlertDescription>
+                    <p>
+                      La vérification est opérée par un prestataire sécurisé.
+                      Nous ne stockons pas vos documents, uniquement le statut
+                      de vérification et les informations déclarées.
+                    </p>
+                    <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
+                      <li>Données chiffrées pendant le transfert.</li>
+                      <li>Utilisation strictement liée à la conformité KYC.</li>
+                      <li>Vous pouvez relancer la vérification si besoin.</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
 
-            <Alert>
-              <IconShieldLock className="h-4 w-4" />
-              <AlertTitle>Sécurité & confidentialité</AlertTitle>
-              <AlertDescription>
-                <p>
-                  La vérification est opérée par un prestataire sécurisé. Nous ne
-                  stockons pas vos documents, uniquement le statut de
-                  vérification et les informations déclarées.
-                </p>
-                <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
-                  <li>Données chiffrées pendant le transfert.</li>
-                  <li>Utilisation strictement liée à la conformité KYC.</li>
-                  <li>Vous pouvez relancer la vérification si besoin.</li>
-                </ul>
-              </AlertDescription>
-            </Alert>
-
-            <Button
-              type="button"
-              className="w-full"
-              disabled={isSubmitting || kycStatus === 'pending'}
-              onClick={handleStartVerification}
-            >
-              {isSubmitting ? (
-                <>
-                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Ouverture de la vérification...
-                </>
-              ) : (
-                'Vérifier mon identité'
-              )}
-            </Button>
+                <Button
+                  type="button"
+                  className="w-full"
+                  disabled={isSubmitting || kycStatus === 'pending'}
+                  onClick={handleStartVerification}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Ouverture de la vérification...
+                    </>
+                  ) : (
+                    'Vérifier mon identité'
+                  )}
+                </Button>
+              </>
+            )}
             {kycStatus === 'pending' && (
               <p className="text-xs text-muted-foreground text-center">
                 Vérification en cours. Vous recevrez un email dès validation.

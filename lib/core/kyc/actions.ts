@@ -21,6 +21,7 @@ import {
   type ConnectCountry,
 } from '@/lib/services/stripe-connect'
 import { stripe } from '@/lib/shared/services/stripe/config'
+import type Stripe from 'stripe'
 
 const parseDob = (value?: string | null) => {
   if (!value) return null
@@ -31,6 +32,122 @@ const parseDob = (value?: string | null) => {
     day: Number(day),
     month: Number(month),
     year: Number(year),
+  }
+}
+
+/**
+ * Prépare le compte Stripe Connect pour le pays du document KYC
+ * (création ou recréation si le pays change)
+ */
+export async function prepareKYCAccount(documentCountry: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      error: 'Vous devez être connecté pour vérifier votre identité',
+    }
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, role, email, stripe_connect_account_id, country')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError || !profile) {
+    return {
+      error: 'Profil introuvable',
+    }
+  }
+
+  if (profile.role === 'admin') {
+    return {
+      error: 'Accès réservé aux utilisateurs',
+    }
+  }
+
+  const targetCountry: ConnectCountry =
+    documentCountry === 'BJ' || documentCountry === 'FR'
+      ? documentCountry
+      : 'FR'
+
+  const contactEmail = profile.email || user.email || undefined
+  const accountTokenData: AccountTokenData = {
+    business_type: 'individual',
+    tos_shown_and_accepted: true,
+  }
+
+  const createAccount = async () =>
+    createConnectedAccount(profile.id, contactEmail, targetCountry, accountTokenData)
+
+  let accountId = profile.stripe_connect_account_id || null
+  let previousAccountId: string | null = null
+  let status: 'ready' | 'created' | 'recreated' = 'ready'
+
+  if (!accountId) {
+    accountId = await createAccount()
+    status = 'created'
+  } else {
+    try {
+      const { account } = await getAccountRepresentative(accountId)
+      if (account?.country && account.country !== targetCountry) {
+        previousAccountId = accountId
+        accountId = await createAccount()
+        status = 'recreated'
+      }
+    } catch (error) {
+      if (isStripeAccountMissing(error)) {
+        accountId = await createAccount()
+        status = 'created'
+      } else {
+        throw error
+      }
+    }
+  }
+
+  if (!accountId) {
+    return {
+      error: "Impossible d'initialiser le compte de paiement",
+    }
+  }
+
+  const updatePayload: Record<string, unknown> = {
+    stripe_connect_account_id: accountId,
+    stripe_payouts_enabled: false,
+    stripe_onboarding_completed: false,
+    stripe_requirements: null,
+    payout_status: 'disabled',
+    country: targetCountry,
+  }
+
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update(updatePayload as any)
+    .eq('id', user.id)
+
+  if (updateError) {
+    return {
+      error: "Impossible d'enregistrer le compte de paiement",
+    }
+  }
+
+  if (previousAccountId) {
+    try {
+      await stripe.accounts.del(previousAccountId)
+    } catch (error) {
+      console.warn('Failed to delete previous Stripe account:', error)
+    }
+  }
+
+  return {
+    success: true,
+    status,
+    accountId,
   }
 }
 
@@ -148,87 +265,37 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       tos_shown_and_accepted: true,
     }
 
-    let accountId = profile.stripe_connect_account_id || null
+    const accountId = profile.stripe_connect_account_id || null
     const contactEmail =
       inputEmail?.trim() || profile.email || user.email || null
 
     if (!accountId) {
-      accountId = await createConnectedAccount(
-        user.id,
-        contactEmail || undefined,
-        country,
-        accountTokenData
-      )
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ stripe_connect_account_id: accountId })
-        .eq('id', user.id)
-
-      if (updateError) {
-        return {
-          error: "Impossible d'enregistrer le compte de paiement",
-        }
-      }
-    } else {
-      try {
-        const { account } = await getAccountRepresentative(accountId)
-
-        if (account?.country && account.country !== country) {
-          const newAccountId = await createConnectedAccount(
-            user.id,
-            contactEmail || undefined,
-            country,
-            accountTokenData
-          )
-
-          accountId = newAccountId
-
-          const { error: replaceError } = await supabase
-            .from('profiles')
-            .update({
-              stripe_connect_account_id: newAccountId,
-              stripe_payouts_enabled: false,
-              stripe_onboarding_completed: false,
-              stripe_requirements: null,
-              payout_status: 'disabled',
-            } as any)
-            .eq('id', user.id)
-
-          if (replaceError) {
-            return {
-              error: "Impossible d'enregistrer le compte de paiement",
-            }
-          }
-        }
-      } catch (error) {
-        if (isStripeAccountMissing(error)) {
-          accountId = await createConnectedAccount(
-            user.id,
-            contactEmail || undefined,
-            country,
-            accountTokenData
-          )
-
-          const { error: replaceError } = await supabase
-            .from('profiles')
-            .update({ stripe_connect_account_id: accountId })
-            .eq('id', user.id)
-
-          if (replaceError) {
-            return {
-              error: "Impossible d'enregistrer le compte de paiement",
-            }
-          }
-        } else {
-          throw error
-        }
+      return {
+        error:
+          "Compte de paiement manquant. Relancez la préparation avant la vérification.",
       }
     }
 
-    if (!accountId) {
+    let account: Stripe.Account | null = null
+    let personId: string | null = null
+    try {
+      const accountData = await getAccountRepresentative(accountId)
+      account = accountData.account
+      personId = accountData.personId
+    } catch (error) {
+      if (isStripeAccountMissing(error)) {
+        return {
+          error:
+            'Compte de paiement supprimé. Relancez la préparation avant la vérification.',
+        }
+      }
+      throw error
+    }
+
+    if (account?.country && account.country !== country) {
       return {
-        error: "Impossible d'initialiser le compte de paiement",
+        error:
+          'Le compte de paiement doit être préparé pour le pays sélectionné.',
       }
     }
 
@@ -255,7 +322,10 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       console.warn('Business profile update failed:', error)
     }
 
-    const { personId } = await getAccountRepresentative(accountId)
+    if (!personId) {
+      const accountData = await getAccountRepresentative(accountId)
+      personId = accountData.personId
+    }
 
     if (!personId) {
       return {

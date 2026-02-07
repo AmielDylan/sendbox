@@ -62,6 +62,12 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  console.log('🔔 Stripe webhook received:', {
+    id: event.id,
+    type: event.type,
+    livemode: event.livemode,
+  })
+
   const supabase = createAdminClient()
   const paymentsEnabled = getPaymentsMode() === 'stripe'
 
