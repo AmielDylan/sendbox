@@ -157,12 +157,22 @@ const BOOKING_REQUEST_HTML = `<!DOCTYPE html>
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 16px;">
                 <tr>
                   <td align="center">
-                    <a
-                      href="{{{APP_URL}}}/dashboard/messages?booking={{{BOOKING_ID}}}"
-                      style="background:#0d9488; background:linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color:#ffffff; text-decoration:none; padding:14px 30px; border-radius:8px; font-weight:600; font-size:16px; display:inline-block;"
-                    >
-                      Voir la demande
-                    </a>
+                    <table role="presentation" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td
+                          align="center"
+                          bgcolor="#0d9488"
+                          style="background-color:#0d9488; border-radius:8px;"
+                        >
+                          <a
+                            href="{{{APP_URL}}}/dashboard/messages?booking={{{BOOKING_ID}}}"
+                            style="display:inline-block; padding:14px 30px; color:#ffffff; text-decoration:none; font-weight:600; font-size:16px; line-height:1; background-color:#0d9488; border:1px solid #0d9488; border-radius:8px;"
+                          >
+                            Voir la demande
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
