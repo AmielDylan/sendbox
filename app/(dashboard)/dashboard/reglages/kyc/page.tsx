@@ -264,7 +264,15 @@ export default function KYCPage() {
         supabase.removeChannel(channel)
       }
     }
-  }, [supabase])
+  }, [supabase, isAdmin, user?.id])
+
+  useEffect(() => {
+    if (!profile) return
+    const nextStatus = (profile as any)?.kyc_status ?? null
+    const nextSubmitted = (profile as any)?.kyc_submitted_at ?? null
+    setKycStatus(nextStatus)
+    setSubmittedAt(nextSubmitted)
+  }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
 
   const loadKYCStatus = async () => {
     setIsLoading(true)
