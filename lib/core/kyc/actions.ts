@@ -172,7 +172,35 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       }
     } else {
       try {
-        await getAccountRepresentative(accountId)
+        const { account } = await getAccountRepresentative(accountId)
+
+        if (account?.country && account.country !== country) {
+          const newAccountId = await createConnectedAccount(
+            user.id,
+            contactEmail || undefined,
+            country,
+            accountTokenData
+          )
+
+          accountId = newAccountId
+
+          const { error: replaceError } = await supabase
+            .from('profiles')
+            .update({
+              stripe_connect_account_id: newAccountId,
+              stripe_payouts_enabled: false,
+              stripe_onboarding_completed: false,
+              stripe_requirements: null,
+              payout_status: 'disabled',
+            } as any)
+            .eq('id', user.id)
+
+          if (replaceError) {
+            return {
+              error: "Impossible d'enregistrer le compte de paiement",
+            }
+          }
+        }
       } catch (error) {
         if (isStripeAccountMissing(error)) {
           accountId = await createConnectedAccount(
@@ -259,7 +287,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
         city: city?.trim() || profile.city,
         postal_code: postalCode?.trim() || profile.postal_code,
         birthday: birthday || profile.birthday,
-        country: profile.country || documentCountry,
+        country: documentCountry || profile.country,
       })
       .eq('id', user.id)
 
