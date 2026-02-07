@@ -333,7 +333,15 @@ export async function POST(req: NextRequest) {
           stripe_requirements: requirementsJson,
         }
 
-        if (account.individual?.verification?.status === 'verified') {
+        const individualVerificationStatus =
+          account.individual?.verification?.status
+        const documentVerificationStatus =
+          account.individual?.verification?.document?.status
+        const isIdentityVerified =
+          individualVerificationStatus === 'verified' ||
+          documentVerificationStatus === 'verified'
+
+        if (isIdentityVerified) {
           const reviewedAt = new Date().toISOString()
           updatePayload.kyc_status = 'approved'
           updatePayload.kyc_reviewed_at = profile?.kyc_reviewed_at || reviewedAt
@@ -356,11 +364,7 @@ export async function POST(req: NextRequest) {
         if (error) {
           console.error('❌ Failed to update connect status:', error)
         } else {
-          if (
-            account.individual?.verification?.status === 'verified' &&
-            profile?.id &&
-            profile?.kyc_status !== 'approved'
-          ) {
+          if (isIdentityVerified && profile?.id && profile?.kyc_status !== 'approved') {
             await notifyKycStatusChange(profile.id, 'approved')
           }
 
