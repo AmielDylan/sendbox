@@ -47,11 +47,7 @@ import { cn } from '@/lib/utils'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
 import { getCountryFlagEmoji } from '@/lib/utils/countries'
-import {
-  getKYCStatus,
-  prepareKYCAccount,
-  startKYCVerification,
-} from '@/lib/core/kyc/actions'
+import { prepareKYCAccount, startKYCVerification } from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
 import { getStripeConnectAllowedCountriesClient } from '@/lib/shared/stripe/connect-allowed-client'
 import {
@@ -163,7 +159,7 @@ export default function KYCPage() {
       setIsLoading(false)
       return
     }
-    loadKYCStatus()
+    setIsLoading(false)
   }, [isAdmin])
 
   useEffect(() => {
@@ -274,23 +270,6 @@ export default function KYCPage() {
     setSubmittedAt(nextSubmitted)
   }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
 
-  const loadKYCStatus = async () => {
-    setIsLoading(true)
-    try {
-      const result = await getKYCStatus()
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        setKycStatus(result.status as KYCStatus)
-        setSubmittedAt(result.submittedAt || null)
-      }
-    } catch {
-      toast.error('Erreur lors du chargement du statut KYC')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleStartVerification = async () => {
     if (step !== 'details') {
       toast.error('Préparez votre compte avant de continuer')
@@ -354,7 +333,9 @@ export default function KYCPage() {
       }
 
       toast.success('Vérification envoyée avec succès.')
-      await loadKYCStatus()
+      const submittedAt = new Date().toISOString()
+      setKycStatus('pending')
+      setSubmittedAt(submittedAt)
     } catch {
       toast.error('Une erreur est survenue. Veuillez réessayer.')
     } finally {
