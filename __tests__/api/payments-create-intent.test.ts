@@ -185,7 +185,7 @@ describe('POST /api/payments/create-intent', () => {
   })
 
   describe('Validation du statut de paiement', () => {
-    it('rejette si booking déjà payé', async () => {
+    it('retourne success si booking déjà payé', async () => {
       const paidBooking = createMockBooking({
         announcement_id: mockAnnouncement.id,
         sender_id: mockSender.id,
@@ -207,8 +207,9 @@ describe('POST /api/payments/create-intent', () => {
       const response = await POST(request)
       const data = await response.json()
 
-      expect(response.status).toBe(400)
-      expect(data.error).toMatch(/déjà payée/i)
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(data.alreadyPaid).toBe(true)
     })
   })
 
