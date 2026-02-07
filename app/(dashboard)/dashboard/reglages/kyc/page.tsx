@@ -84,11 +84,13 @@ export default function KYCPage() {
     []
   )
   const stripeSupportedSet = useMemo(
-    () => new Set(stripeSupportedCountries),
+    () => new Set<string>(stripeSupportedCountries),
     [stripeSupportedCountries]
   )
+  const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
   const isStripeCountrySupported =
-    !documentCountry || stripeSupportedSet.has(documentCountry)
+    !normalizedDocumentCountry ||
+    stripeSupportedSet.has(normalizedDocumentCountry)
   const canPrepareAccount =
     Boolean(documentType && documentCountry) && isStripeCountrySupported
 
