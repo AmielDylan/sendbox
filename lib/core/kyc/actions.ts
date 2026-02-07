@@ -35,6 +35,8 @@ const parseDob = (value?: string | null) => {
   }
 }
 
+const SUPPORTED_STRIPE_KYC_COUNTRIES: ConnectCountry[] = ['FR']
+
 /**
  * Prépare le compte Stripe Connect pour le pays du document KYC
  * (création ou recréation si le pays change)
@@ -75,6 +77,13 @@ export async function prepareKYCAccount(documentCountry: string) {
     documentCountry === 'BJ' || documentCountry === 'FR'
       ? documentCountry
       : 'FR'
+
+  if (!SUPPORTED_STRIPE_KYC_COUNTRIES.includes(targetCountry)) {
+    return {
+      error:
+        "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
+    }
+  }
 
   const contactEmail = profile.email || user.email || undefined
   const accountTokenData: AccountTokenData = {
@@ -222,6 +231,13 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       documentCountry === 'BJ' || documentCountry === 'FR'
         ? documentCountry
         : 'FR'
+
+    if (!SUPPORTED_STRIPE_KYC_COUNTRIES.includes(country)) {
+      return {
+        error:
+          "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
+      }
+    }
 
     const individual: Record<string, unknown> = {}
     if (firstName?.trim()) {

@@ -39,6 +39,7 @@ import {
   IconShieldLock,
   IconChevronDown,
   IconSearch,
+  IconAlertTriangle,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -77,6 +78,11 @@ export default function KYCPage() {
   const [countrySearch, setCountrySearch] = useState('')
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
+  const stripeSupportedCountries = useMemo(() => ['FR'], [])
+  const isStripeCountrySupported =
+    !documentCountry || stripeSupportedCountries.includes(documentCountry)
+  const canPrepareAccount =
+    Boolean(documentType && documentCountry) && isStripeCountrySupported
 
   const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
@@ -533,11 +539,23 @@ export default function KYCPage() {
                   </Popover>
                 </div>
 
+                {!isStripeCountrySupported && documentCountry && (
+                  <Alert>
+                    <IconAlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Pays non supporté</AlertTitle>
+                    <AlertDescription>
+                      La vérification Stripe n&apos;est pas disponible pour ce
+                      pays pour le moment. Utilisez un document français ou
+                      choisissez Mobile Wallet pour recevoir vos paiements.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <Button
                   type="button"
                   className="w-full"
                   onClick={handlePrepareAccount}
-                  disabled={isPreparingAccount}
+                  disabled={isPreparingAccount || !canPrepareAccount}
                 >
                   {isPreparingAccount ? (
                     <>
