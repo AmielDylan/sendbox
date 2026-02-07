@@ -44,6 +44,7 @@ import {
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
 import { getCountryFlagEmoji } from '@/lib/utils/countries'
@@ -772,9 +773,19 @@ export default function KYCPage() {
               </>
             )}
             {kycStatus === 'pending' && (
-              <p className="text-xs text-muted-foreground text-center">
-                Vérification en cours. Vous recevrez un email dès validation.
-              </p>
+              <Alert className="border-primary/20 bg-primary/5">
+                <IconClock className="h-4 w-4" />
+                <AlertTitle>Merci, votre vérification est en cours</AlertTitle>
+                <AlertDescription className="space-y-3">
+                  <p>
+                    Nous analysons vos documents. Vous pouvez revenir plus tard,
+                    l&apos;application se mettra à jour automatiquement.
+                  </p>
+                  <Button asChild size="sm">
+                    <Link href="/dashboard">Retour au tableau de bord</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
             )}
           </CardContent>
         </Card>
