@@ -5,8 +5,12 @@ import {
   getAccountRepresentative,
   isStripeAccountMissing,
   type AccountTokenData,
-  type ConnectCountry,
 } from '@/lib/services/stripe-connect'
+import {
+  getStripeConnectAllowedCountries,
+  getStripeConnectFallbackCountry,
+  resolveStripeConnectCountry,
+} from '@/lib/shared/stripe/connect-allowed'
 
 const parseDob = (value?: string | null) => {
   if (!value) return null
@@ -57,10 +61,27 @@ export async function POST() {
       })
     }
 
-    const country: ConnectCountry =
-      profile.country === 'BJ' || profile.country === 'FR'
-        ? profile.country
-        : 'FR'
+    const allowedCountries = getStripeConnectAllowedCountries()
+    const resolvedCountry = resolveStripeConnectCountry(
+      profile.country,
+      allowedCountries
+    )
+    const fallbackCountry = getStripeConnectFallbackCountry(allowedCountries)
+
+    if (!resolvedCountry && !fallbackCountry) {
+      return Response.json(
+        { error: 'Aucun pays Stripe Connect disponible' },
+        { status: 400 }
+      )
+    }
+
+    const country = resolvedCountry ?? fallbackCountry
+    if (!country) {
+      return Response.json(
+        { error: 'Aucun pays Stripe Connect disponible' },
+        { status: 400 }
+      )
+    }
 
     const individual: Record<string, unknown> = {}
     if (profile.firstname?.trim()) {

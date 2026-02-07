@@ -17,10 +17,14 @@ import {
   createConnectedAccount,
   getAccountRepresentative,
   isStripeAccountMissing,
+  isStripeCountryUnsupported,
   type AccountTokenData,
-  type ConnectCountry,
 } from '@/lib/services/stripe-connect'
 import { stripe } from '@/lib/shared/services/stripe/config'
+import {
+  getStripeConnectAllowedCountries,
+  resolveStripeConnectCountry,
+} from '@/lib/shared/stripe/connect-allowed'
 import type Stripe from 'stripe'
 
 const parseDob = (value?: string | null) => {
@@ -34,8 +38,6 @@ const parseDob = (value?: string | null) => {
     year: Number(year),
   }
 }
-
-const SUPPORTED_STRIPE_KYC_COUNTRIES: ConnectCountry[] = ['FR']
 
 /**
  * Prépare le compte Stripe Connect pour le pays du document KYC
@@ -73,12 +75,13 @@ export async function prepareKYCAccount(documentCountry: string) {
     }
   }
 
-  const targetCountry: ConnectCountry =
-    documentCountry === 'BJ' || documentCountry === 'FR'
-      ? documentCountry
-      : 'FR'
+  const allowedCountries = getStripeConnectAllowedCountries()
+  const targetCountry = resolveStripeConnectCountry(
+    documentCountry,
+    allowedCountries
+  )
 
-  if (!SUPPORTED_STRIPE_KYC_COUNTRIES.includes(targetCountry)) {
+  if (!targetCountry) {
     return {
       error:
         "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
@@ -91,27 +94,57 @@ export async function prepareKYCAccount(documentCountry: string) {
     tos_shown_and_accepted: true,
   }
 
-  const createAccount = async () =>
-    createConnectedAccount(profile.id, contactEmail, targetCountry, accountTokenData)
+  const createAccount = async () => {
+    try {
+      const accountId = await createConnectedAccount(
+        profile.id,
+        contactEmail,
+        targetCountry,
+        accountTokenData
+      )
+      return { accountId }
+    } catch (error) {
+      if (isStripeCountryUnsupported(error)) {
+        return {
+          accountId: null,
+          error:
+            "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
+        }
+      }
+      throw error
+    }
+  }
 
   let accountId = profile.stripe_connect_account_id || null
   let previousAccountId: string | null = null
   let status: 'ready' | 'created' | 'recreated' = 'ready'
 
   if (!accountId) {
-    accountId = await createAccount()
+    const created = await createAccount()
+    if (created.error) {
+      return { error: created.error }
+    }
+    accountId = created.accountId
     status = 'created'
   } else {
     try {
       const { account } = await getAccountRepresentative(accountId)
       if (account?.country && account.country !== targetCountry) {
         previousAccountId = accountId
-        accountId = await createAccount()
+        const created = await createAccount()
+        if (created.error) {
+          return { error: created.error }
+        }
+        accountId = created.accountId
         status = 'recreated'
       }
     } catch (error) {
       if (isStripeAccountMissing(error)) {
-        accountId = await createAccount()
+        const created = await createAccount()
+        if (created.error) {
+          return { error: created.error }
+        }
+        accountId = created.accountId
         status = 'created'
       } else {
         throw error
@@ -227,12 +260,13 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       postalCode,
     } = validation.data
 
-    const country: ConnectCountry =
-      documentCountry === 'BJ' || documentCountry === 'FR'
-        ? documentCountry
-        : 'FR'
+    const allowedCountries = getStripeConnectAllowedCountries()
+    const country = resolveStripeConnectCountry(
+      documentCountry,
+      allowedCountries
+    )
 
-    if (!SUPPORTED_STRIPE_KYC_COUNTRIES.includes(country)) {
+    if (!country) {
       return {
         error:
           "Stripe Connect n'est pas disponible pour ce pays pour le moment.",

@@ -6,8 +6,7 @@
 import 'server-only'
 
 import { stripe } from '@/lib/shared/services/stripe/config'
-
-export type ConnectCountry = 'FR' | 'BJ'
+import type { ConnectCountry } from '@/lib/shared/stripe/connect-countries'
 
 export const isStripeAccountMissing = (error: unknown) => {
   if (!error || typeof error !== 'object') return false
@@ -16,6 +15,16 @@ export const isStripeAccountMissing = (error: unknown) => {
   return (
     anyError.code === 'resource_missing' ||
     /no such account/i.test(message)
+  )
+}
+
+export const isStripeCountryUnsupported = (error: unknown) => {
+  if (!error || typeof error !== 'object') return false
+  const anyError = error as { code?: string; message?: string }
+  const message = typeof anyError.message === 'string' ? anyError.message : ''
+  return (
+    anyError.code === 'country_unsupported' ||
+    /country.*unsupported/i.test(message)
   )
 }
 
