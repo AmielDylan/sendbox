@@ -199,14 +199,14 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'pending',
-            kyc_submitted_at: new Date().toISOString(),
+            kyc_submitted_at: receivedAt,
             kyc_rejection_reason: null,
           },
           verificationSession
@@ -218,8 +218,9 @@ export async function POST(req: NextRequest) {
           verificationSession
         )
 
-        if (updated?.id) {
-          await notifyKycStatusChange(userId, 'pending')
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
+          await notifyKycStatusChange(targetUserId, 'pending')
         }
         break
       }
@@ -230,14 +231,14 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'approved',
-            kyc_reviewed_at: new Date().toISOString(),
+            kyc_reviewed_at: receivedAt,
             kyc_rejection_reason: null,
           },
           verificationSession
@@ -249,9 +250,10 @@ export async function POST(req: NextRequest) {
           verificationSession
         )
 
-        if (updated?.id) {
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
           console.log('✅ KYC approved for user:', userId)
-          await notifyKycStatusChange(userId, 'approved')
+          await notifyKycStatusChange(targetUserId, 'approved')
         }
         break
       }
@@ -262,8 +264,7 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
         const rejectionReason =
@@ -271,10 +272,11 @@ export async function POST(req: NextRequest) {
           verificationSession.last_error?.code ||
           'verification_failed'
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'rejected',
-            kyc_reviewed_at: new Date().toISOString(),
+            kyc_reviewed_at: receivedAt,
             kyc_rejection_reason: rejectionReason,
           },
           verificationSession
@@ -286,8 +288,9 @@ export async function POST(req: NextRequest) {
           verificationSession
         )
 
-        if (updated?.id) {
-          await notifyKycStatusChange(userId, 'rejected', rejectionReason)
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
+          await notifyKycStatusChange(targetUserId, 'rejected', rejectionReason)
         }
         break
       }
@@ -306,7 +309,9 @@ export async function POST(req: NextRequest) {
           !requirements?.past_due?.length
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, payout_method, stripe_payouts_enabled, kyc_status')
+          .select(
+            'id, payout_method, stripe_payouts_enabled, kyc_status, kyc_reviewed_at, kyc_submitted_at'
+          )
           .eq('stripe_connect_account_id', account.id)
           .maybeSingle()
 
@@ -323,8 +328,12 @@ export async function POST(req: NextRequest) {
         }
 
         if (account.individual?.verification?.status === 'verified') {
+          const reviewedAt = new Date().toISOString()
           updatePayload.kyc_status = 'approved'
-          updatePayload.kyc_reviewed_at = new Date().toISOString()
+          updatePayload.kyc_reviewed_at = profile?.kyc_reviewed_at || reviewedAt
+          if (!profile?.kyc_submitted_at) {
+            updatePayload.kyc_submitted_at = reviewedAt
+          }
           updatePayload.kyc_rejection_reason = null
         }
 
@@ -349,7 +358,11 @@ export async function POST(req: NextRequest) {
             await notifyKycStatusChange(profile.id, 'approved')
           }
 
-          if (payoutsEnabled && profile?.id && !profile?.stripe_payouts_enabled) {
+          if (
+            payoutsEnabled &&
+            profile?.id &&
+            !profile?.stripe_payouts_enabled
+          ) {
             await createSystemNotification({
               userId: profile.id,
               type: 'system_alert',
@@ -368,14 +381,14 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'incomplete',
-            kyc_reviewed_at: new Date().toISOString(),
+            kyc_reviewed_at: receivedAt,
             kyc_rejection_reason: 'verification_canceled',
           },
           verificationSession
@@ -387,9 +400,10 @@ export async function POST(req: NextRequest) {
           verificationSession
         )
 
-        if (updated?.id) {
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
           await notifyKycStatusChange(
-            userId,
+            targetUserId,
             'incomplete',
             'verification_canceled'
           )
@@ -403,14 +417,14 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'incomplete',
-            kyc_reviewed_at: new Date().toISOString(),
+            kyc_reviewed_at: receivedAt,
             kyc_rejection_reason: 'verification_redacted',
           },
           verificationSession
@@ -422,9 +436,10 @@ export async function POST(req: NextRequest) {
           verificationSession
         )
 
-        if (updated?.id) {
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
           await notifyKycStatusChange(
-            userId,
+            targetUserId,
             'incomplete',
             'verification_redacted'
           )
