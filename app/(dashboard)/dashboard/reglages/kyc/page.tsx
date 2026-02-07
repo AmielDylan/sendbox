@@ -46,7 +46,7 @@ import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
-import { COUNTRY_OPTIONS } from '@/lib/utils/countries'
+import { getCountryFlagEmoji } from '@/lib/utils/countries'
 import {
   getKYCStatus,
   prepareKYCAccount,
@@ -54,6 +54,10 @@ import {
 } from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
 import { getStripeConnectAllowedCountriesClient } from '@/lib/shared/stripe/connect-allowed-client'
+import {
+  getStripeIdentityDocumentTypes,
+  STRIPE_IDENTITY_SUPPORTED_COUNTRIES,
+} from '@/lib/shared/stripe/identity-documents'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 type DocumentType = 'passport' | 'national_id'
@@ -79,38 +83,80 @@ export default function KYCPage() {
   const [countrySearch, setCountrySearch] = useState('')
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
-  const stripeSupportedCountries = useMemo(
+  const stripeConnectCountries = useMemo(
     () => getStripeConnectAllowedCountriesClient(),
     []
   )
+  const stripeIdentitySet = useMemo(
+    () => new Set<string>(STRIPE_IDENTITY_SUPPORTED_COUNTRIES),
+    []
+  )
+  const allowedCountryCodes = useMemo(
+    () =>
+      stripeConnectCountries.filter(code => stripeIdentitySet.has(code)),
+    [stripeConnectCountries, stripeIdentitySet]
+  )
   const stripeSupportedSet = useMemo(
-    () => new Set<string>(stripeSupportedCountries),
-    [stripeSupportedCountries]
+    () => new Set<string>(allowedCountryCodes),
+    [allowedCountryCodes]
   )
   const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
   const isStripeCountrySupported =
     !normalizedDocumentCountry ||
     stripeSupportedSet.has(normalizedDocumentCountry)
+  const allowedDocumentTypes = useMemo(
+    () => getStripeIdentityDocumentTypes(normalizedDocumentCountry),
+    [normalizedDocumentCountry]
+  )
   const canPrepareAccount =
-    Boolean(documentType && documentCountry) && isStripeCountrySupported
+    Boolean(documentType && normalizedDocumentCountry) &&
+    isStripeCountrySupported
 
   const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
 
+  const countryOptions = useMemo(() => {
+    const displayNames =
+      typeof Intl !== 'undefined' && 'DisplayNames' in Intl
+        ? new Intl.DisplayNames(['fr'], { type: 'region' })
+        : null
+
+    return allowedCountryCodes
+      .map(code => ({
+        code,
+        name: displayNames?.of(code) || code,
+        flag: getCountryFlagEmoji(code),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  }, [allowedCountryCodes])
+
   const filteredCountries = useMemo(() => {
     const query = countrySearch.trim().toLowerCase()
-    const supportedOptions = COUNTRY_OPTIONS.filter(country =>
-      stripeSupportedSet.has(country.code)
-    )
     if (!query) {
-      return supportedOptions
+      return countryOptions
     }
-    return supportedOptions.filter(
+    return countryOptions.filter(
       country =>
         country.name.toLowerCase().includes(query) ||
         country.code.toLowerCase().includes(query)
     )
-  }, [countrySearch, stripeSupportedSet])
+  }, [countryOptions, countrySearch])
+
+  useEffect(() => {
+    if (!normalizedDocumentCountry) {
+      if (documentType) {
+        setDocumentType('')
+      }
+      return
+    }
+
+    if (
+      documentType &&
+      !allowedDocumentTypes.includes(documentType as DocumentType)
+    ) {
+      setDocumentType((allowedDocumentTypes[0] as DocumentType) || '')
+    }
+  }, [allowedDocumentTypes, documentType, normalizedDocumentCountry])
 
   useEffect(() => {
     if (isAdmin) {
@@ -316,7 +362,9 @@ export default function KYCPage() {
 
     setIsPreparingAccount(true)
     try {
-      const result = await prepareKYCAccount(documentCountry)
+    const result = await prepareKYCAccount(
+      normalizedDocumentCountry || documentCountry
+    )
       if (result.error) {
         toast.error(result.error)
         return
@@ -439,26 +487,6 @@ export default function KYCPage() {
             {step === 'document' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="documentType">Type de document</Label>
-                  <Select
-                    value={documentType}
-                    onValueChange={value =>
-                      setDocumentType(value as DocumentType)
-                    }
-                  >
-                    <SelectTrigger id="documentType">
-                      <SelectValue placeholder="Sélectionnez un document" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="passport">Passeport</SelectItem>
-                      <SelectItem value="national_id">
-                        Carte nationale d&apos;identité
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="documentCountry">
                     Pays d&apos;émission du document
                   </Label>
@@ -484,14 +512,14 @@ export default function KYCPage() {
                           <span className="flex items-center gap-2">
                             <span>
                               {
-                                COUNTRY_OPTIONS.find(
+                                countryOptions.find(
                                   country => country.code === documentCountry
                                 )?.flag
                               }
                             </span>
                             <span>
                               {
-                                COUNTRY_OPTIONS.find(
+                                countryOptions.find(
                                   country => country.code === documentCountry
                                 )?.name
                               }
@@ -550,6 +578,36 @@ export default function KYCPage() {
                       </div>
                     </PopoverContent>
                   </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="documentType">Type de document</Label>
+                  <Select
+                    value={documentType}
+                    onValueChange={value =>
+                      setDocumentType(value as DocumentType)
+                    }
+                    disabled={!normalizedDocumentCountry}
+                  >
+                    <SelectTrigger id="documentType">
+                      <SelectValue
+                        placeholder={
+                          normalizedDocumentCountry
+                            ? 'Sélectionnez un document'
+                            : 'Choisissez d’abord un pays'
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allowedDocumentTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type === 'passport'
+                            ? 'Passeport'
+                            : "Carte nationale d'identité"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {!isStripeCountrySupported && documentCountry && (

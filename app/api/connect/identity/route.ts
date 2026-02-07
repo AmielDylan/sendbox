@@ -4,6 +4,11 @@ import {
   getAccountRepresentative,
   isStripeAccountMissing,
 } from '@/lib/services/stripe-connect'
+import { normalizeCountryCode } from '@/lib/shared/stripe/connect-countries'
+import {
+  getStripeIdentityDocumentTypes,
+  isStripeIdentityCountrySupported,
+} from '@/lib/shared/stripe/identity-documents'
 
 type IdentityRequestBody = {
   documentType?: 'passport' | 'national_id'
@@ -84,11 +89,50 @@ export async function POST(req: Request) {
       )
     }
 
+    const normalizedCountry = normalizeCountryCode(
+      body?.documentCountry || account?.country || 'FR'
+    )
+
+    if (!normalizedCountry || !isStripeIdentityCountrySupported(normalizedCountry)) {
+      return Response.json(
+        {
+          error:
+            "La vérification d'identité n'est pas disponible pour ce pays.",
+        },
+        { status: 400 }
+      )
+    }
+
+    if (account?.country && account.country !== normalizedCountry) {
+      return Response.json(
+        {
+          error:
+            'Le compte de paiement doit être préparé pour le pays sélectionné.',
+        },
+        { status: 400 }
+      )
+    }
+
+    const allowedDocumentTypes =
+      getStripeIdentityDocumentTypes(normalizedCountry)
+    const selectedDocumentType =
+      body?.documentType &&
+      allowedDocumentTypes.includes(body.documentType)
+        ? body.documentType
+        : allowedDocumentTypes[0] || 'passport'
+
+    if (!allowedDocumentTypes.includes(selectedDocumentType)) {
+      return Response.json(
+        { error: 'Type de document non supporté pour ce pays.' },
+        { status: 400 }
+      )
+    }
+
     const session = await createIdentityVerificationSession({
       email: user.email,
       userId: user.id,
-      documentType: body?.documentType || 'passport',
-      documentCountry: body?.documentCountry || 'FR',
+      documentType: selectedDocumentType,
+      documentCountry: normalizedCountry,
       relatedPerson: {
         accountId: account.id,
         personId,

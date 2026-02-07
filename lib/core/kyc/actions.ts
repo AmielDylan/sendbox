@@ -25,6 +25,11 @@ import {
   getStripeConnectAllowedCountries,
   resolveStripeConnectCountry,
 } from '@/lib/shared/stripe/connect-allowed'
+import { normalizeCountryCode } from '@/lib/shared/stripe/connect-countries'
+import {
+  getStripeIdentityDocumentTypes,
+  isStripeIdentityCountrySupported,
+} from '@/lib/shared/stripe/identity-documents'
 import type Stripe from 'stripe'
 
 const parseDob = (value?: string | null) => {
@@ -75,9 +80,24 @@ export async function prepareKYCAccount(documentCountry: string) {
     }
   }
 
+  const normalizedCountry = normalizeCountryCode(documentCountry)
+
+  if (!normalizedCountry) {
+    return {
+      error: 'Pays du document requis',
+    }
+  }
+
+  if (!isStripeIdentityCountrySupported(normalizedCountry)) {
+    return {
+      error:
+        "La vérification d'identité n'est pas disponible pour ce pays.",
+    }
+  }
+
   const allowedCountries = getStripeConnectAllowedCountries()
   const targetCountry = resolveStripeConnectCountry(
-    documentCountry,
+    normalizedCountry,
     allowedCountries
   )
 
@@ -165,6 +185,7 @@ export async function prepareKYCAccount(documentCountry: string) {
     stripe_requirements: null,
     payout_status: 'disabled',
     country: targetCountry,
+    kyc_nationality: normalizedCountry,
   }
 
   const { error: updateError } = await supabase
@@ -260,9 +281,32 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       postalCode,
     } = validation.data
 
+    const normalizedCountry = normalizeCountryCode(documentCountry)
+
+    if (!normalizedCountry) {
+      return {
+        error: 'Pays du document requis',
+      }
+    }
+
+    if (!isStripeIdentityCountrySupported(normalizedCountry)) {
+      return {
+        error:
+          "La vérification d'identité n'est pas disponible pour ce pays.",
+      }
+    }
+
+    const allowedDocumentTypes =
+      getStripeIdentityDocumentTypes(normalizedCountry)
+    if (!allowedDocumentTypes.includes(documentType)) {
+      return {
+        error: 'Type de document non supporté pour ce pays.',
+      }
+    }
+
     const allowedCountries = getStripeConnectAllowedCountries()
     const country = resolveStripeConnectCountry(
-      documentCountry,
+      normalizedCountry,
       allowedCountries
     )
 
@@ -387,7 +431,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       email: contactEmail,
       userId: user.id,
       documentType,
-      documentCountry,
+      documentCountry: normalizedCountry,
       relatedPerson: {
         accountId,
         personId,
@@ -398,7 +442,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       .from('profiles')
       .update({
         kyc_document_type: documentType,
-        kyc_nationality: documentCountry,
+        kyc_nationality: normalizedCountry,
         kyc_rejection_reason: null,
         firstname: firstName?.trim() || profile.firstname,
         lastname: lastName?.trim() || profile.lastname,
