@@ -784,7 +784,7 @@ export default function KYCPage() {
 
                 <Button
                   type="button"
-                  className="w-full"
+                  className="mt-4 w-full"
                   onClick={handlePrepareAccount}
                   disabled={isPreparingAccount || !canPrepareAccount}
                 >
