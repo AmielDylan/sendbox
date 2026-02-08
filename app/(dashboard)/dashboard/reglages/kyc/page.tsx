@@ -572,6 +572,22 @@ export default function KYCPage() {
         </CardContent>
       </Card>
 
+      {displayStatus === 'approved' && (
+        <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge className="bg-green-500 text-white">Validé</Badge>
+            <p className="text-sm font-semibold">Identité vérifiée</p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Votre identité est confirmée. Vous pouvez poursuivre vos actions
+            sur Sendbox en toute sécurité.
+          </p>
+          <Button variant="outline" className="w-full">
+            Tout est OK
+          </Button>
+        </div>
+      )}
+
       {displayStatus !== 'approved' && (
         <Card>
           <CardHeader>
