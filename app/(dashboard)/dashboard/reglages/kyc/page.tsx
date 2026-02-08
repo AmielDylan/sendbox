@@ -67,6 +67,7 @@ export default function KYCPage() {
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
   const [accountCountry, setAccountCountry] = useState('')
+  const [formError, setFormError] = useState<string | null>(null)
   const [step, setStep] = useState<'document' | 'details'>('document')
   const [isPreparingAccount, setIsPreparingAccount] = useState(false)
   const [firstName, setFirstName] = useState('')
@@ -225,6 +226,9 @@ export default function KYCPage() {
     if (!documentCountry && (profile as any)?.kyc_nationality) {
       setDocumentCountry((profile as any).kyc_nationality as string)
     }
+    if (formError) {
+      setFormError(null)
+    }
   }, [
     profile,
     user,
@@ -238,6 +242,7 @@ export default function KYCPage() {
     postalCode,
     accountCountry,
     documentCountry,
+    formError,
   ])
 
   useEffect(() => {
@@ -329,6 +334,7 @@ export default function KYCPage() {
       return
     }
 
+    setFormError(null)
     setIsSubmitting(true)
 
     try {
@@ -347,6 +353,7 @@ export default function KYCPage() {
       })
 
       if (result.error) {
+        setFormError(result.error)
         toast.error(result.error)
         return
       }
@@ -358,7 +365,9 @@ export default function KYCPage() {
       }
 
       if (!result.verificationClientSecret) {
-        toast.error("Impossible d'initialiser la vérification.")
+        const message = "Impossible d'initialiser la vérification."
+        setFormError(message)
+        toast.error(message)
         return
       }
 
@@ -367,10 +376,11 @@ export default function KYCPage() {
       )
 
       if (error) {
-        toast.error(
+        const message =
           error.message ||
             "La vérification d'identité n'a pas pu être complétée."
-        )
+        setFormError(message)
+        toast.error(message)
         return
       }
 
@@ -379,7 +389,9 @@ export default function KYCPage() {
       setKycStatus('pending')
       setSubmittedAt(submittedAt)
     } catch {
-      toast.error('Une erreur est survenue. Veuillez réessayer.')
+      const message = 'Une erreur est survenue. Veuillez réessayer.'
+      setFormError(message)
+      toast.error(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -929,6 +941,9 @@ export default function KYCPage() {
                     'Vérifier mon identité'
                   )}
                 </Button>
+                {formError && (
+                  <p className="text-sm text-destructive">{formError}</p>
+                )}
               </>
             )}
             {kycStatus === 'pending' && (
