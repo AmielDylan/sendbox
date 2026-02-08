@@ -230,9 +230,6 @@ export default function KYCPage() {
     if (!documentCountry && (profile as any)?.kyc_nationality) {
       setDocumentCountry((profile as any).kyc_nationality as string)
     }
-    if (formError) {
-      setFormError(null)
-    }
   }, [
     profile,
     user,
@@ -246,7 +243,6 @@ export default function KYCPage() {
     postalCode,
     accountCountry,
     documentCountry,
-    formError,
   ])
 
   useEffect(() => {
