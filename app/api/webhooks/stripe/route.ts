@@ -335,11 +335,8 @@ export async function POST(req: NextRequest) {
 
         const individualVerificationStatus =
           account.individual?.verification?.status
-        const documentVerificationStatus =
-          account.individual?.verification?.document?.status
         const isIdentityVerified =
-          individualVerificationStatus === 'verified' ||
-          documentVerificationStatus === 'verified'
+          individualVerificationStatus === 'verified'
 
         if (isIdentityVerified) {
           const reviewedAt = new Date().toISOString()
