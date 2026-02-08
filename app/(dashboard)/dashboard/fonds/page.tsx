@@ -14,6 +14,7 @@ import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialS
 import { FEATURES } from '@/lib/shared/config/features'
 import { useAuth } from '@/hooks/use-auth'
 import { IconLoader2 } from '@tabler/icons-react'
+import { fetchConnectStatus } from '@/lib/shared/stripe/connect-status-client'
 
 export default function FundsPage() {
   const { user, profile, loading, refetch } = useAuth()
@@ -40,7 +41,8 @@ export default function FundsPage() {
   const canConfigurePayments = kycStatus === 'approved'
 
   const refreshConnectStatus = useCallback(async () => {
-    const res = await fetch('/api/connect/status')
+    const res = await fetchConnectStatus('funds')
+    if (!res) return
     if (!res.ok) {
       throw new Error('Erreur lors du chargement')
     }

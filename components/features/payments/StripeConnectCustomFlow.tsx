@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
+import { fetchConnectStatus } from '@/lib/shared/stripe/connect-status-client'
 
 interface StripeConnectCustomFlowProps {
   onCompleted?: () => void
@@ -75,7 +76,8 @@ export function StripeConnectCustomFlow({
     longPollRef.current = window.setInterval(async () => {
       longPollAttempts.current += 1
       try {
-        const res = await fetch('/api/connect/status')
+        const res = await fetchConnectStatus('connect_longpoll')
+        if (!res) return
         const data = await res.json().catch(() => ({}))
         if (res.ok && (data?.payouts_enabled || data?.payout_status === 'active')) {
           await refetch()
@@ -114,7 +116,8 @@ export function StripeConnectCustomFlow({
     pollRef.current = window.setInterval(async () => {
       attempts += 1
       try {
-        const res = await fetch('/api/connect/status')
+        const res = await fetchConnectStatus('connect_poll')
+        if (!res) return
         const data = await res.json().catch(() => ({}))
         if (res.ok && (data?.payouts_enabled || data?.payout_status === 'active')) {
           await refetch()
@@ -237,7 +240,7 @@ export function StripeConnectCustomFlow({
       }
 
       toast.success('Vérification envoyée.')
-      await fetch('/api/connect/status').catch(() => null)
+      await fetchConnectStatus('connect_identity').catch(() => null)
       await refetch()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Erreur inconnue')
@@ -343,7 +346,7 @@ export function StripeConnectCustomFlow({
                 <ConnectAccountOnboarding
                   onExit={async () => {
                     toast.success('Vérification terminée.')
-                    await fetch('/api/connect/status').catch(() => null)
+                    await fetchConnectStatus('connect_onboarding_exit').catch(() => null)
                     onCompleted?.()
                     startPolling()
                   }}
