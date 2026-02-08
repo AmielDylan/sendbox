@@ -489,9 +489,25 @@ export function OptimizedAuthProvider({
       | 'active'
       | 'disabled'
       | undefined
+    const payoutErrorCode = (profile as any)?.payout_error_code as
+      | string
+      | null
+      | undefined
+    const payoutErrorMessage = (profile as any)?.payout_error_message as
+      | string
+      | null
+      | undefined
     const stripeAccountId = (profile as any)?.stripe_connect_account_id as
       | string
       | undefined
+
+    if (payoutErrorCode || payoutErrorMessage) {
+      if (connectStatusPollingRef.current) {
+        clearInterval(connectStatusPollingRef.current)
+        connectStatusPollingRef.current = null
+      }
+      return
+    }
 
     if (
       payoutMethod !== 'stripe_bank' ||
