@@ -48,7 +48,10 @@ const parseDob = (value?: string | null) => {
  * Prépare le compte Stripe Connect pour le pays du document KYC
  * (création ou recréation si le pays change)
  */
-export async function prepareKYCAccount(documentCountry: string) {
+export async function prepareKYCAccount(input: {
+  accountCountry: string
+  documentCountry: string
+}) {
   const supabase = await createClient()
 
   const {
@@ -82,9 +85,27 @@ export async function prepareKYCAccount(documentCountry: string) {
     }
   }
 
-  const normalizedCountry = normalizeCountryCode(documentCountry)
+  const normalizedAccountCountry = normalizeCountryCode(input.accountCountry)
+  const normalizedDocumentCountry = normalizeCountryCode(input.documentCountry)
 
-  if (!normalizedCountry) {
+  if (!normalizedAccountCountry) {
+    await supabase
+      .from('profiles')
+      .update({
+        payout_error_code: 'account_country_missing',
+        payout_error_message: 'Pays de résidence requis',
+        payout_error_at: new Date().toISOString(),
+        ...(profile.payout_method === 'stripe_bank'
+          ? { payout_status: 'disabled' }
+          : {}),
+      } as any)
+      .eq('id', user.id)
+    return {
+      error: 'Pays de résidence requis',
+    }
+  }
+
+  if (!normalizedDocumentCountry) {
     await supabase
       .from('profiles')
       .update({
@@ -101,7 +122,7 @@ export async function prepareKYCAccount(documentCountry: string) {
     }
   }
 
-  if (!isStripeIdentityCountrySupported(normalizedCountry)) {
+  if (!isStripeIdentityCountrySupported(normalizedDocumentCountry)) {
     await supabase
       .from('profiles')
       .update({
@@ -122,7 +143,7 @@ export async function prepareKYCAccount(documentCountry: string) {
 
   const allowedCountries = getStripeConnectAllowedCountries()
   const targetCountry = resolveStripeConnectCountry(
-    normalizedCountry,
+    normalizedAccountCountry,
     allowedCountries
   )
 
@@ -132,7 +153,7 @@ export async function prepareKYCAccount(documentCountry: string) {
       .update({
         payout_error_code: 'connect_country_unsupported',
         payout_error_message:
-          "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
+          "Stripe Connect n'est pas disponible pour ce pays de résidence pour le moment.",
         payout_error_at: new Date().toISOString(),
         ...(profile.payout_method === 'stripe_bank'
           ? { payout_status: 'disabled' }
@@ -141,7 +162,7 @@ export async function prepareKYCAccount(documentCountry: string) {
       .eq('id', user.id)
     return {
       error:
-        "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
+        "Stripe Connect n'est pas disponible pour ce pays de résidence pour le moment.",
     }
   }
 
@@ -222,7 +243,7 @@ export async function prepareKYCAccount(documentCountry: string) {
     stripe_requirements: null,
     payout_status: 'disabled',
     country: targetCountry,
-    kyc_nationality: normalizedCountry,
+    kyc_nationality: normalizedDocumentCountry,
     payout_error_code: null,
     payout_error_message: null,
     payout_error_at: null,
@@ -313,6 +334,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       lastName,
       email: inputEmail,
       phone: inputPhone,
+      accountCountry,
       documentType,
       documentCountry,
       birthday,
@@ -321,15 +343,22 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       postalCode,
     } = validation.data
 
-    const normalizedCountry = normalizeCountryCode(documentCountry)
+    const normalizedDocumentCountry = normalizeCountryCode(documentCountry)
+    const normalizedAccountCountry = normalizeCountryCode(accountCountry)
 
-    if (!normalizedCountry) {
+    if (!normalizedAccountCountry) {
+      return {
+        error: 'Pays de résidence requis',
+      }
+    }
+
+    if (!normalizedDocumentCountry) {
       return {
         error: 'Pays du document requis',
       }
     }
 
-    if (!isStripeIdentityCountrySupported(normalizedCountry)) {
+    if (!isStripeIdentityCountrySupported(normalizedDocumentCountry)) {
       return {
         error:
           "La vérification d'identité n'est pas disponible pour ce pays.",
@@ -337,7 +366,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     }
 
     const allowedDocumentTypes =
-      getStripeIdentityDocumentTypes(normalizedCountry)
+      getStripeIdentityDocumentTypes(normalizedDocumentCountry)
     if (!allowedDocumentTypes.includes(documentType)) {
       return {
         error: 'Type de document non supporté pour ce pays.',
@@ -346,14 +375,14 @@ export async function startKYCVerification(input: StripeIdentityInput) {
 
     const allowedCountries = getStripeConnectAllowedCountries()
     const country = resolveStripeConnectCountry(
-      normalizedCountry,
+      normalizedAccountCountry,
       allowedCountries
     )
 
     if (!country) {
       return {
         error:
-          "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
+          "Stripe Connect n'est pas disponible pour ce pays de résidence pour le moment.",
       }
     }
 
@@ -429,7 +458,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     if (account?.country && account.country !== country) {
       return {
         error:
-          'Le compte de paiement doit être préparé pour le pays sélectionné.',
+          'Le compte de paiement doit être préparé pour votre pays de résidence.',
       }
     }
 
@@ -471,7 +500,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       email: contactEmail,
       userId: user.id,
       documentType,
-      documentCountry: normalizedCountry,
+      documentCountry: normalizedDocumentCountry,
       relatedPerson: {
         accountId,
         personId,
@@ -482,7 +511,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       .from('profiles')
       .update({
         kyc_document_type: documentType,
-        kyc_nationality: normalizedCountry,
+        kyc_nationality: normalizedDocumentCountry,
         kyc_rejection_reason: null,
         firstname: firstName?.trim() || profile.firstname,
         lastname: lastName?.trim() || profile.lastname,
@@ -491,7 +520,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
         city: city?.trim() || profile.city,
         postal_code: postalCode?.trim() || profile.postal_code,
         birthday: birthday || profile.birthday,
-        country: documentCountry || profile.country,
+        country: country || profile.country,
       })
       .eq('id', user.id)
 

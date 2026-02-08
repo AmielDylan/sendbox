@@ -16,6 +16,11 @@ export const stripeIdentitySchema = z.object({
   documentType: z.enum(DOCUMENT_TYPES, {
     message: 'Type de document invalide',
   }),
+  accountCountry: z
+    .string()
+    .min(2, 'Pays de résidence requis')
+    .max(2, 'Code pays invalide')
+    .regex(/^[A-Z]{2}$/, 'Code pays invalide'),
   documentCountry: z
     .string()
     .min(2, 'Pays du document requis')
