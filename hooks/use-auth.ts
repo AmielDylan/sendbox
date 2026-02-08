@@ -5,6 +5,7 @@
 
 'use client'
 
+import { useCallback } from 'react'
 import {
   useAuthStore,
   selectUser,
@@ -33,7 +34,7 @@ export function useAuth(): UseAuthReturn {
   const loading = useAuthStore(selectLoading)
   const clear = useAuthStore(state => state.clear)
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       // Nettoyer l'état Zustand
       clear()
@@ -49,9 +50,9 @@ export function useAuth(): UseAuthReturn {
     } catch (error) {
       console.error('Sign out error:', error)
     }
-  }
+  }, [clear, queryClient])
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     try {
       const supabase = createClient()
       const {
@@ -79,7 +80,7 @@ export function useAuth(): UseAuthReturn {
     } catch (error) {
       console.error('Refetch error:', error)
     }
-  }
+  }, [queryClient])
 
   return { user, profile, loading, signOut, refetch }
 }
