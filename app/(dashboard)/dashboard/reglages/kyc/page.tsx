@@ -521,9 +521,7 @@ export default function KYCPage() {
             {step === 'document' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="accountCountry">
-                    Pays de résidence (compte de paiement)
-                  </Label>
+                  <Label htmlFor="accountCountry">Pays de résidence</Label>
                   <Popover
                     open={accountCountryOpen}
                     onOpenChange={open => {
@@ -570,6 +568,7 @@ export default function KYCPage() {
                     <PopoverContent
                       side="bottom"
                       align="start"
+                      sideOffset={4}
                       className="w-[--radix-popover-trigger-width] p-0"
                     >
                       <div className="flex items-center gap-2 border-b px-3 py-2">
@@ -666,6 +665,7 @@ export default function KYCPage() {
                     <PopoverContent
                       side="bottom"
                       align="start"
+                      sideOffset={4}
                       className="w-[--radix-popover-trigger-width] p-0"
                     >
                       <div className="flex items-center gap-2 border-b px-3 py-2">
@@ -732,7 +732,7 @@ export default function KYCPage() {
                         }
                       />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent side="bottom" align="start">
                       {allowedDocumentTypes.map(type => (
                         <SelectItem key={type} value={type}>
                           {type === 'passport'
