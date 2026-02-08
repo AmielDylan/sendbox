@@ -538,6 +538,19 @@ export default function KYCPage() {
     }
   }
 
+  const getKycMessage = () => {
+    switch (displayStatus ?? kycStatus) {
+      case 'pending':
+        return "Votre vérification est en cours d'examen. Vous serez notifié par email."
+      case 'rejected':
+        return 'Votre vérification a été refusée. Corrigez vos informations puis relancez la procédure.'
+      case 'incomplete':
+        return "Aucune vérification en cours. Lancez la vérification pour continuer."
+      default:
+        return 'Sélectionnez votre document puis continuez la vérification.'
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -570,7 +583,7 @@ export default function KYCPage() {
           <CardHeader>
             <CardTitle>Lancer la vérification d'identité</CardTitle>
             <CardDescription>
-              Sélectionnez votre document puis continuez la vérification.
+              {getKycMessage()}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
