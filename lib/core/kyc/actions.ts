@@ -64,7 +64,9 @@ export async function prepareKYCAccount(documentCountry: string) {
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('id, role, email, stripe_connect_account_id, country')
+    .select(
+      'id, role, email, stripe_connect_account_id, country, payout_method, payout_status'
+    )
     .eq('id', user.id)
     .single()
 
@@ -83,12 +85,35 @@ export async function prepareKYCAccount(documentCountry: string) {
   const normalizedCountry = normalizeCountryCode(documentCountry)
 
   if (!normalizedCountry) {
+    await supabase
+      .from('profiles')
+      .update({
+        payout_error_code: 'document_country_missing',
+        payout_error_message: 'Pays du document requis',
+        payout_error_at: new Date().toISOString(),
+        ...(profile.payout_method === 'stripe_bank'
+          ? { payout_status: 'disabled' }
+          : {}),
+      } as any)
+      .eq('id', user.id)
     return {
       error: 'Pays du document requis',
     }
   }
 
   if (!isStripeIdentityCountrySupported(normalizedCountry)) {
+    await supabase
+      .from('profiles')
+      .update({
+        payout_error_code: 'identity_country_unsupported',
+        payout_error_message:
+          "La vérification d'identité n'est pas disponible pour ce pays.",
+        payout_error_at: new Date().toISOString(),
+        ...(profile.payout_method === 'stripe_bank'
+          ? { payout_status: 'disabled' }
+          : {}),
+      } as any)
+      .eq('id', user.id)
     return {
       error:
         "La vérification d'identité n'est pas disponible pour ce pays.",
@@ -102,6 +127,18 @@ export async function prepareKYCAccount(documentCountry: string) {
   )
 
   if (!targetCountry) {
+    await supabase
+      .from('profiles')
+      .update({
+        payout_error_code: 'connect_country_unsupported',
+        payout_error_message:
+          "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
+        payout_error_at: new Date().toISOString(),
+        ...(profile.payout_method === 'stripe_bank'
+          ? { payout_status: 'disabled' }
+          : {}),
+      } as any)
+      .eq('id', user.id)
     return {
       error:
         "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
@@ -186,6 +223,9 @@ export async function prepareKYCAccount(documentCountry: string) {
     payout_status: 'disabled',
     country: targetCountry,
     kyc_nationality: normalizedCountry,
+    payout_error_code: null,
+    payout_error_message: null,
+    payout_error_at: null,
   }
 
   const { error: updateError } = await supabase

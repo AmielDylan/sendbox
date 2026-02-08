@@ -15,7 +15,7 @@ export async function GET() {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'id, role, stripe_connect_account_id, stripe_payouts_enabled, stripe_onboarding_completed, payout_method, payout_status'
+      'id, role, stripe_connect_account_id, stripe_payouts_enabled, stripe_onboarding_completed, payout_method, payout_status, payout_error_code, payout_error_message, payout_error_at'
     )
     .eq('id', user.id)
     .single()
@@ -40,6 +40,25 @@ export async function GET() {
     | 'active'
     | 'disabled'
     | undefined
+  const payoutErrorCode = (profile as any)?.payout_error_code as
+    | string
+    | null
+    | undefined
+  const payoutErrorMessage = (profile as any)?.payout_error_message as
+    | string
+    | null
+    | undefined
+  const payoutErrorAt = (profile as any)?.payout_error_at as string | null | undefined
+
+  const buildUpdate = (payload: Record<string, any>) => {
+    const updates: Record<string, any> = {}
+    for (const [key, value] of Object.entries(payload)) {
+      if ((profile as any)?.[key] !== value) {
+        updates[key] = value
+      }
+    }
+    return updates
+  }
 
   if (!profile.stripe_connect_account_id) {
     return Response.json({
@@ -47,65 +66,122 @@ export async function GET() {
       onboarding_completed: false,
       payout_status: payoutStatus ?? null,
       payout_method: payoutMethod ?? null,
+      payout_error_code: payoutErrorCode ?? null,
+      payout_error_message: payoutErrorMessage ?? null,
+      payout_error_at: payoutErrorAt ?? null,
       requirements: null,
     })
   }
 
-  const status = await checkAccountStatus(profile.stripe_connect_account_id)
-  if (status.missing) {
-    const resetPayload: Record<string, any> = {
-      stripe_connect_account_id: null,
-      stripe_payouts_enabled: false,
-      stripe_onboarding_completed: false,
-      stripe_requirements: null,
-    }
-    if (payoutMethod === 'stripe_bank') {
-      resetPayload.payout_status = 'disabled'
+  try {
+    const status = await checkAccountStatus(profile.stripe_connect_account_id)
+    if (status.missing) {
+      const resetPayload: Record<string, any> = {
+        stripe_connect_account_id: null,
+        stripe_payouts_enabled: false,
+        stripe_onboarding_completed: false,
+        stripe_requirements: null,
+        payout_error_code: 'account_missing',
+        payout_error_message: 'Compte de paiement introuvable.',
+        payout_error_at: new Date().toISOString(),
+      }
+      if (payoutMethod === 'stripe_bank') {
+        resetPayload.payout_status = 'disabled'
+      }
+
+      const updates = buildUpdate(resetPayload)
+      if (Object.keys(updates).length > 0) {
+        await supabase.from('profiles').update(updates).eq('id', user.id)
+      }
+
+      return Response.json({
+        payouts_enabled: false,
+        onboarding_completed: false,
+        payout_status: resetPayload.payout_status ?? payoutStatus ?? null,
+        payout_method: payoutMethod ?? null,
+        payout_error_code: resetPayload.payout_error_code,
+        payout_error_message: resetPayload.payout_error_message,
+        payout_error_at: resetPayload.payout_error_at,
+        requirements: null,
+        missing_account: true,
+      })
     }
 
-    await supabase.from('profiles').update(resetPayload).eq('id', user.id)
+    const payoutsEnabled = Boolean(status.payoutsEnabled)
+    const requirements = status.requirements || null
+    const requirementsJson = requirements
+      ? (JSON.parse(JSON.stringify(requirements)) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
+      : null
+    const onboardingCompleted =
+      payoutsEnabled &&
+      !requirements?.currently_due?.length &&
+      !requirements?.past_due?.length
+
+    const shouldUpdatePayoutMethod = payoutMethod !== 'mobile_wallet'
+    const nextPayoutStatus = payoutsEnabled ? 'active' : 'pending'
+    const updatePayload: Record<string, any> = {
+      stripe_payouts_enabled: payoutsEnabled,
+      stripe_onboarding_completed: onboardingCompleted,
+      stripe_requirements: requirementsJson,
+      payout_error_code: null,
+      payout_error_message: null,
+      payout_error_at: null,
+    }
+
+    if (shouldUpdatePayoutMethod) {
+      updatePayload.payout_method = payoutMethod || 'stripe_bank'
+      updatePayload.payout_status = nextPayoutStatus
+    }
+
+    const updates = buildUpdate(updatePayload)
+    if (Object.keys(updates).length > 0) {
+      await supabase
+        .from('profiles')
+        .update(updates as any)
+        .eq('id', user.id)
+    }
 
     return Response.json({
-      payouts_enabled: false,
-      onboarding_completed: false,
-      payout_status: resetPayload.payout_status ?? payoutStatus ?? null,
-      payout_method: payoutMethod ?? null,
-      requirements: null,
-      missing_account: true,
+      payouts_enabled: payoutsEnabled,
+      onboarding_completed: onboardingCompleted,
+      payout_status: shouldUpdatePayoutMethod ? nextPayoutStatus : payoutStatus,
+      payout_method: shouldUpdatePayoutMethod
+        ? updatePayload.payout_method
+        : payoutMethod,
+      payout_error_code: null,
+      payout_error_message: null,
+      payout_error_at: null,
+      requirements: requirementsJson,
     })
+  } catch (error) {
+    const errorCode =
+      (error as { code?: string })?.code || 'stripe_status_error'
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : 'Erreur lors de la vérification du compte.'
+
+    const updatePayload: Record<string, any> = {
+      payout_error_code: errorCode,
+      payout_error_message: errorMessage,
+      payout_error_at: new Date().toISOString(),
+    }
+
+    if (payoutMethod === 'stripe_bank') {
+      updatePayload.payout_status = 'disabled'
+    }
+
+    const updates = buildUpdate(updatePayload)
+    if (Object.keys(updates).length > 0) {
+      await supabase
+        .from('profiles')
+        .update(updates as any)
+        .eq('id', user.id)
+    }
+
+    return Response.json(
+      { error: errorMessage, payout_error_code: errorCode },
+      { status: 502 }
+    )
   }
-  const payoutsEnabled = Boolean(status.payoutsEnabled)
-  const requirements = status.requirements || null
-  const requirementsJson = requirements
-    ? (JSON.parse(JSON.stringify(requirements)) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
-    : null
-  const onboardingCompleted =
-    payoutsEnabled &&
-    !requirements?.currently_due?.length &&
-    !requirements?.past_due?.length
-
-  const shouldUpdatePayoutMethod = payoutMethod !== 'mobile_wallet'
-  const nextPayoutStatus = payoutsEnabled ? 'active' : 'pending'
-  const updatePayload: Record<string, any> = {
-    stripe_payouts_enabled: payoutsEnabled,
-    stripe_onboarding_completed: onboardingCompleted,
-    stripe_requirements: requirementsJson,
-  }
-
-  if (shouldUpdatePayoutMethod) {
-    updatePayload.payout_method = payoutMethod || 'stripe_bank'
-    updatePayload.payout_status = nextPayoutStatus
-  }
-
-  await supabase.from('profiles').update(updatePayload as any).eq('id', user.id)
-
-  return Response.json({
-    payouts_enabled: payoutsEnabled,
-    onboarding_completed: onboardingCompleted,
-    payout_status: shouldUpdatePayoutMethod ? nextPayoutStatus : payoutStatus,
-    payout_method: shouldUpdatePayoutMethod
-      ? updatePayload.payout_method
-      : payoutMethod,
-    requirements: requirementsJson,
-  })
 }
