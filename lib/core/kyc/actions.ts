@@ -539,6 +539,20 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       message: 'Vérification Stripe Identity prête.',
     }
   } catch (error) {
+    const stripeMessage =
+      typeof (error as { raw?: { message?: string } })?.raw?.message === 'string'
+        ? (error as { raw?: { message?: string } }).raw!.message
+        : null
+    const genericMessage =
+      error instanceof Error && error.message
+        ? error.message
+        : 'Unknown error'
+    const userMessage =
+      stripeMessage && stripeMessage !== 'Unknown error'
+        ? stripeMessage
+        : genericMessage && genericMessage !== 'Unknown error'
+          ? genericMessage
+          : "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard."
     console.error('❌ Identity session creation failed:', {
       error,
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -550,8 +564,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 7),
     })
     return {
-      error:
-        "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard.",
+      error: userMessage,
     }
   }
 }
