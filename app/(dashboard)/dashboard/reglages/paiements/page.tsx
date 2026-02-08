@@ -258,9 +258,6 @@ export default function PaymentsSettingsPage() {
                     Votre compte bancaire est vérifié. Les virements sont
                     maintenant disponibles.
                   </p>
-                  <Button variant="outline" className="w-full">
-                    Tout est OK
-                  </Button>
                 </div>
               ) : (
                 <StripeConnectCustomFlow
