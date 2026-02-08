@@ -246,11 +246,29 @@ export default function PaymentsSettingsPage() {
             </div>
 
             {selectedMethod === 'stripe_bank' ? (
-              <StripeConnectCustomFlow
-                onCompleted={async () => {
-                  await refetch()
-                }}
-              />
+              currentStatus === 'active' ? (
+                <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge className="bg-green-500 text-white">Activé</Badge>
+                    <p className="text-sm font-semibold">
+                      Paiements activés
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Votre compte bancaire est vérifié. Les virements sont
+                    maintenant disponibles.
+                  </p>
+                  <Button variant="outline" className="w-full">
+                    Tout est OK
+                  </Button>
+                </div>
+              ) : (
+                <StripeConnectCustomFlow
+                  onCompleted={async () => {
+                    await refetch()
+                  }}
+                />
+              )
             ) : (
               <MobileWalletSetup
                 onCompleted={async () => {
