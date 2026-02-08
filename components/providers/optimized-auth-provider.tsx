@@ -25,6 +25,7 @@ import type { Session, User } from '@supabase/supabase-js'
 import { QUERY_KEYS, invalidateAuthQueries } from '@/lib/shared/query/config'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { toast } from 'sonner'
+import { fetchConnectStatus } from '@/lib/shared/stripe/connect-status-client'
 
 export interface Profile {
   id: string
@@ -533,7 +534,8 @@ export function OptimizedAuthProvider({
 
     const pollConnectStatus = async () => {
       try {
-        const res = await fetch('/api/connect/status')
+        const res = await fetchConnectStatus('auth_poll')
+        if (!res) return
         await res.json().catch(() => null)
       } catch (error) {
         console.warn('Connect status polling failed:', error)
