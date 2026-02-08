@@ -103,16 +103,6 @@ export async function POST(req: Request) {
       )
     }
 
-    if (account?.country && account.country !== normalizedCountry) {
-      return Response.json(
-        {
-          error:
-            'Le compte de paiement doit être préparé pour le pays sélectionné.',
-        },
-        { status: 400 }
-      )
-    }
-
     const allowedDocumentTypes =
       getStripeIdentityDocumentTypes(normalizedCountry)
     const selectedDocumentType =

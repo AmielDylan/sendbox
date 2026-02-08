@@ -66,6 +66,7 @@ export default function KYCPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
+  const [accountCountry, setAccountCountry] = useState('')
   const [step, setStep] = useState<'document' | 'details'>('document')
   const [isPreparingAccount, setIsPreparingAccount] = useState(false)
   const [firstName, setFirstName] = useState('')
@@ -76,8 +77,10 @@ export default function KYCPage() {
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
-  const [countryOpen, setCountryOpen] = useState(false)
-  const [countrySearch, setCountrySearch] = useState('')
+  const [documentCountryOpen, setDocumentCountryOpen] = useState(false)
+  const [documentCountrySearch, setDocumentCountrySearch] = useState('')
+  const [accountCountryOpen, setAccountCountryOpen] = useState(false)
+  const [accountCountrySearch, setAccountCountrySearch] = useState('')
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
   const stripeConnectCountries = useMemo(
@@ -88,56 +91,83 @@ export default function KYCPage() {
     () => new Set<string>(STRIPE_IDENTITY_SUPPORTED_COUNTRIES),
     []
   )
-  const allowedCountryCodes = useMemo(
-    () =>
-      stripeConnectCountries.filter(code => stripeIdentitySet.has(code)),
-    [stripeConnectCountries, stripeIdentitySet]
+  const connectCountrySet = useMemo(
+    () => new Set<string>(stripeConnectCountries),
+    [stripeConnectCountries]
   )
-  const stripeSupportedSet = useMemo(
-    () => new Set<string>(allowedCountryCodes),
-    [allowedCountryCodes]
-  )
+  const normalizedAccountCountry = accountCountry.trim().toUpperCase()
   const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
-  const isStripeCountrySupported =
+  const isConnectCountrySupported =
+    !normalizedAccountCountry ||
+    connectCountrySet.has(normalizedAccountCountry)
+  const isIdentityCountrySupported =
     !normalizedDocumentCountry ||
-    stripeSupportedSet.has(normalizedDocumentCountry)
+    stripeIdentitySet.has(normalizedDocumentCountry)
   const allowedDocumentTypes = useMemo(
     () => getStripeIdentityDocumentTypes(normalizedDocumentCountry),
     [normalizedDocumentCountry]
   )
   const canPrepareAccount =
-    Boolean(documentType && normalizedDocumentCountry) &&
-    isStripeCountrySupported
+    Boolean(
+      documentType && normalizedDocumentCountry && normalizedAccountCountry
+    ) &&
+    isConnectCountrySupported &&
+    isIdentityCountrySupported
 
   const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
 
-  const countryOptions = useMemo(() => {
+  const connectCountryOptions = useMemo(() => {
     const displayNames =
       typeof Intl !== 'undefined' && 'DisplayNames' in Intl
         ? new Intl.DisplayNames(['fr'], { type: 'region' })
         : null
 
-    return allowedCountryCodes
+    return stripeConnectCountries
       .map(code => ({
         code,
         name: displayNames?.of(code) || code,
         flag: getCountryFlagEmoji(code),
       }))
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
-  }, [allowedCountryCodes])
+  }, [stripeConnectCountries])
 
-  const filteredCountries = useMemo(() => {
-    const query = countrySearch.trim().toLowerCase()
+  const identityCountryOptions = useMemo(() => {
+    const displayNames =
+      typeof Intl !== 'undefined' && 'DisplayNames' in Intl
+        ? new Intl.DisplayNames(['fr'], { type: 'region' })
+        : null
+
+    return STRIPE_IDENTITY_SUPPORTED_COUNTRIES.map(code => ({
+      code,
+      name: displayNames?.of(code) || code,
+      flag: getCountryFlagEmoji(code),
+    })).sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  }, [])
+
+  const filteredConnectCountries = useMemo(() => {
+    const query = accountCountrySearch.trim().toLowerCase()
     if (!query) {
-      return countryOptions
+      return connectCountryOptions
     }
-    return countryOptions.filter(
+    return connectCountryOptions.filter(
       country =>
         country.name.toLowerCase().includes(query) ||
         country.code.toLowerCase().includes(query)
     )
-  }, [countryOptions, countrySearch])
+  }, [connectCountryOptions, accountCountrySearch])
+
+  const filteredIdentityCountries = useMemo(() => {
+    const query = documentCountrySearch.trim().toLowerCase()
+    if (!query) {
+      return identityCountryOptions
+    }
+    return identityCountryOptions.filter(
+      country =>
+        country.name.toLowerCase().includes(query) ||
+        country.code.toLowerCase().includes(query)
+    )
+  }, [identityCountryOptions, documentCountrySearch])
 
   useEffect(() => {
     if (!normalizedDocumentCountry) {
@@ -189,6 +219,12 @@ export default function KYCPage() {
     if (!postalCode && (profile as any)?.postal_code) {
       setPostalCode((profile as any).postal_code as string)
     }
+    if (!accountCountry && (profile as any)?.country) {
+      setAccountCountry((profile as any).country as string)
+    }
+    if (!documentCountry && (profile as any)?.kyc_nationality) {
+      setDocumentCountry((profile as any).kyc_nationality as string)
+    }
   }, [
     profile,
     user,
@@ -200,6 +236,8 @@ export default function KYCPage() {
     address,
     city,
     postalCode,
+    accountCountry,
+    documentCountry,
   ])
 
   useEffect(() => {
@@ -276,8 +314,10 @@ export default function KYCPage() {
       toast.error('Préparez votre compte avant de continuer')
       return
     }
-    if (!documentType || !documentCountry) {
-      toast.error('Veuillez sélectionner un document et un pays')
+    if (!documentType || !documentCountry || !accountCountry) {
+      toast.error(
+        'Veuillez sélectionner un pays de résidence et un document'
+      )
       return
     }
     if (!firstName || !lastName || !email || !phone) {
@@ -299,6 +339,7 @@ export default function KYCPage() {
         phone,
         documentType: documentType as DocumentType,
         documentCountry,
+        accountCountry,
         birthday: birthDate,
         address,
         city,
@@ -345,16 +386,19 @@ export default function KYCPage() {
   }
 
   const handlePrepareAccount = async () => {
-    if (!documentType || !documentCountry) {
-      toast.error('Veuillez sélectionner un document et un pays')
+    if (!documentType || !documentCountry || !accountCountry) {
+      toast.error(
+        'Veuillez sélectionner un pays de résidence et un document'
+      )
       return
     }
 
     setIsPreparingAccount(true)
     try {
-    const result = await prepareKYCAccount(
-      normalizedDocumentCountry || documentCountry
-    )
+    const result = await prepareKYCAccount({
+      accountCountry: normalizedAccountCountry || accountCountry,
+      documentCountry: normalizedDocumentCountry || documentCountry,
+    })
       if (result.error) {
         toast.error(result.error)
         return
@@ -477,15 +521,15 @@ export default function KYCPage() {
             {step === 'document' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="documentCountry">
-                    Pays d&apos;émission du document
+                  <Label htmlFor="accountCountry">
+                    Pays de résidence (compte de paiement)
                   </Label>
                   <Popover
-                    open={countryOpen}
+                    open={accountCountryOpen}
                     onOpenChange={open => {
-                      setCountryOpen(open)
+                      setAccountCountryOpen(open)
                       if (!open) {
-                        setCountrySearch('')
+                        setAccountCountrySearch('')
                       }
                     }}
                   >
@@ -494,7 +538,103 @@ export default function KYCPage() {
                         type="button"
                         variant="outline"
                         role="combobox"
-                        aria-expanded={countryOpen}
+                        aria-expanded={accountCountryOpen}
+                        className="w-full justify-between"
+                        id="accountCountry"
+                      >
+                        {accountCountry ? (
+                          <span className="flex items-center gap-2">
+                            <span>
+                              {
+                                connectCountryOptions.find(
+                                  country => country.code === accountCountry
+                                )?.flag
+                              }
+                            </span>
+                            <span>
+                              {
+                                connectCountryOptions.find(
+                                  country => country.code === accountCountry
+                                )?.name
+                              }
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Sélectionnez un pays
+                          </span>
+                        )}
+                        <IconChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="bottom"
+                      align="start"
+                      className="w-[--radix-popover-trigger-width] p-0"
+                    >
+                      <div className="flex items-center gap-2 border-b px-3 py-2">
+                        <IconSearch className="h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Rechercher un pays..."
+                          value={accountCountrySearch}
+                          onChange={event =>
+                            setAccountCountrySearch(event.target.value)
+                          }
+                          className="h-8 border-0 px-0 focus-visible:ring-0"
+                        />
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {filteredConnectCountries.length > 0 ? (
+                          filteredConnectCountries.map(country => (
+                            <button
+                              key={country.code}
+                              type="button"
+                              className={cn(
+                                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
+                                accountCountry === country.code && 'bg-accent'
+                              )}
+                              onClick={() => {
+                                setAccountCountry(country.code)
+                                setAccountCountryOpen(false)
+                                setAccountCountrySearch('')
+                              }}
+                            >
+                              <span>{country.flag}</span>
+                              <span>{country.name}</span>
+                              <span className="ml-auto text-xs text-muted-foreground">
+                                {country.code}
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <p className="px-3 py-2 text-sm text-muted-foreground">
+                            Aucun pays trouvé.
+                          </p>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="documentCountry">
+                    Pays d&apos;émission du document
+                  </Label>
+                  <Popover
+                    open={documentCountryOpen}
+                    onOpenChange={open => {
+                      setDocumentCountryOpen(open)
+                      if (!open) {
+                        setDocumentCountrySearch('')
+                      }
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={documentCountryOpen}
                         className="w-full justify-between"
                         id="documentCountry"
                       >
@@ -502,14 +642,14 @@ export default function KYCPage() {
                           <span className="flex items-center gap-2">
                             <span>
                               {
-                                countryOptions.find(
+                                identityCountryOptions.find(
                                   country => country.code === documentCountry
                                 )?.flag
                               }
                             </span>
                             <span>
                               {
-                                countryOptions.find(
+                                identityCountryOptions.find(
                                   country => country.code === documentCountry
                                 )?.name
                               }
@@ -532,14 +672,16 @@ export default function KYCPage() {
                         <IconSearch className="h-4 w-4 text-muted-foreground" />
                         <Input
                           placeholder="Rechercher un pays..."
-                          value={countrySearch}
-                          onChange={event => setCountrySearch(event.target.value)}
+                          value={documentCountrySearch}
+                          onChange={event =>
+                            setDocumentCountrySearch(event.target.value)
+                          }
                           className="h-8 border-0 px-0 focus-visible:ring-0"
                         />
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        {filteredCountries.length > 0 ? (
-                          filteredCountries.map(country => (
+                        {filteredIdentityCountries.length > 0 ? (
+                          filteredIdentityCountries.map(country => (
                             <button
                               key={country.code}
                               type="button"
@@ -549,8 +691,8 @@ export default function KYCPage() {
                               )}
                               onClick={() => {
                                 setDocumentCountry(country.code)
-                                setCountryOpen(false)
-                                setCountrySearch('')
+                                setDocumentCountryOpen(false)
+                                setDocumentCountrySearch('')
                               }}
                             >
                               <span>{country.flag}</span>
@@ -577,12 +719,14 @@ export default function KYCPage() {
                     onValueChange={value =>
                       setDocumentType(value as DocumentType)
                     }
-                    disabled={!normalizedDocumentCountry}
+                    disabled={
+                      !normalizedDocumentCountry || !isIdentityCountrySupported
+                    }
                   >
                     <SelectTrigger id="documentType">
                       <SelectValue
                         placeholder={
-                          normalizedDocumentCountry
+                          normalizedDocumentCountry && isIdentityCountrySupported
                             ? 'Sélectionnez un document'
                             : 'Choisissez d’abord un pays'
                         }
@@ -600,17 +744,48 @@ export default function KYCPage() {
                   </Select>
                 </div>
 
-                {!isStripeCountrySupported && documentCountry && (
+                {!isConnectCountrySupported && accountCountry && (
                   <Alert>
                     <IconAlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Pays non supporté</AlertTitle>
+                    <AlertTitle>Pays de résidence non supporté</AlertTitle>
                     <AlertDescription>
-                      Stripe Connect n&apos;est pas disponible pour ce pays
-                      pour le moment. Choisissez un pays pris en charge ou
-                      utilisez Mobile Wallet pour recevoir vos paiements.
+                      Stripe Connect n&apos;est pas disponible pour ce pays de
+                      résidence pour le moment. Choisissez un pays pris en
+                      charge ou utilisez Mobile Wallet pour recevoir vos
+                      paiements.
                     </AlertDescription>
                   </Alert>
                 )}
+
+                {!isIdentityCountrySupported && documentCountry && (
+                  <Alert>
+                    <IconAlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Pays de document non supporté</AlertTitle>
+                    <AlertDescription>
+                      Stripe Identity n&apos;est pas disponible pour ce pays de
+                      document. Choisissez un pays pris en charge ou utilisez
+                      un document accepté par Stripe.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {normalizedAccountCountry &&
+                  normalizedDocumentCountry &&
+                  normalizedAccountCountry !== normalizedDocumentCountry &&
+                  isConnectCountrySupported &&
+                  isIdentityCountrySupported && (
+                    <Alert>
+                      <IconAlertTriangle className="h-4 w-4" />
+                      <AlertTitle>
+                        Documents d&apos;un autre pays
+                      </AlertTitle>
+                      <AlertDescription>
+                        Vos documents peuvent provenir d&apos;un autre pays que
+                        votre résidence. Le compte de paiement reste créé dans
+                        votre pays de résidence.
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
                 <Button
                   type="button"
@@ -634,12 +809,13 @@ export default function KYCPage() {
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
                   <div className="text-sm">
+                    <span className="font-medium">Résidence :</span>{' '}
+                    {accountCountry || '—'} •{' '}
                     <span className="font-medium">Document :</span>{' '}
                     {documentType === 'passport'
                       ? 'Passeport'
                       : "Carte d'identité"}{' '}
-                    •{' '}
-                    <span className="font-medium">Pays :</span>{' '}
+                    • <span className="font-medium">Pays :</span>{' '}
                     {documentCountry || '—'}
                   </div>
                   <Button
