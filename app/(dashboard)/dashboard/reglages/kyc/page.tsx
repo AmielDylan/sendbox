@@ -39,15 +39,22 @@ import {
   IconShieldLock,
   IconChevronDown,
   IconSearch,
+  IconAlertTriangle,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
-import { COUNTRY_OPTIONS } from '@/lib/utils/countries'
-import { getKYCStatus, startKYCVerification } from '@/lib/core/kyc/actions'
+import { getCountryFlagEmoji } from '@/lib/utils/countries'
+import { prepareKYCAccount, startKYCVerification } from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
+import { getStripeConnectAllowedCountriesClient } from '@/lib/shared/stripe/connect-allowed-client'
+import {
+  getStripeIdentityDocumentTypes,
+  STRIPE_IDENTITY_SUPPORTED_COUNTRIES,
+} from '@/lib/shared/stripe/identity-documents'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 type DocumentType = 'passport' | 'national_id'
@@ -59,6 +66,10 @@ export default function KYCPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
+  const [accountCountry, setAccountCountry] = useState('')
+  const [formError, setFormError] = useState<string | null>(null)
+  const [step, setStep] = useState<'document' | 'details'>('document')
+  const [isPreparingAccount, setIsPreparingAccount] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -67,32 +78,120 @@ export default function KYCPage() {
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
-  const [countryOpen, setCountryOpen] = useState(false)
-  const [countrySearch, setCountrySearch] = useState('')
+  const [documentCountryOpen, setDocumentCountryOpen] = useState(false)
+  const [documentCountrySearch, setDocumentCountrySearch] = useState('')
+  const [accountCountryOpen, setAccountCountryOpen] = useState(false)
+  const [accountCountrySearch, setAccountCountrySearch] = useState('')
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
+  const stripeConnectCountries = useMemo(
+    () => getStripeConnectAllowedCountriesClient(),
+    []
+  )
+  const stripeIdentitySet = useMemo(
+    () => new Set<string>(STRIPE_IDENTITY_SUPPORTED_COUNTRIES),
+    []
+  )
+  const connectCountrySet = useMemo(
+    () => new Set<string>(stripeConnectCountries),
+    [stripeConnectCountries]
+  )
+  const normalizedAccountCountry = accountCountry.trim().toUpperCase()
+  const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
+  const isConnectCountrySupported =
+    !normalizedAccountCountry ||
+    connectCountrySet.has(normalizedAccountCountry)
+  const isIdentityCountrySupported =
+    !normalizedDocumentCountry ||
+    stripeIdentitySet.has(normalizedDocumentCountry)
+  const allowedDocumentTypes = useMemo(
+    () => getStripeIdentityDocumentTypes(normalizedDocumentCountry),
+    [normalizedDocumentCountry]
+  )
+  const canPrepareAccount =
+    Boolean(
+      documentType && normalizedDocumentCountry && normalizedAccountCountry
+    ) &&
+    isConnectCountrySupported &&
+    isIdentityCountrySupported
 
   const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
 
-  const filteredCountries = useMemo(() => {
-    const query = countrySearch.trim().toLowerCase()
+  const connectCountryOptions = useMemo(() => {
+    const displayNames =
+      typeof Intl !== 'undefined' && 'DisplayNames' in Intl
+        ? new Intl.DisplayNames(['fr'], { type: 'region' })
+        : null
+
+    return stripeConnectCountries
+      .map(code => ({
+        code,
+        name: displayNames?.of(code) || code,
+        flag: getCountryFlagEmoji(code),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  }, [stripeConnectCountries])
+
+  const identityCountryOptions = useMemo(() => {
+    const displayNames =
+      typeof Intl !== 'undefined' && 'DisplayNames' in Intl
+        ? new Intl.DisplayNames(['fr'], { type: 'region' })
+        : null
+
+    return STRIPE_IDENTITY_SUPPORTED_COUNTRIES.map(code => ({
+      code,
+      name: displayNames?.of(code) || code,
+      flag: getCountryFlagEmoji(code),
+    })).sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  }, [])
+
+  const filteredConnectCountries = useMemo(() => {
+    const query = accountCountrySearch.trim().toLowerCase()
     if (!query) {
-      return COUNTRY_OPTIONS
+      return connectCountryOptions
     }
-    return COUNTRY_OPTIONS.filter(
+    return connectCountryOptions.filter(
       country =>
         country.name.toLowerCase().includes(query) ||
         country.code.toLowerCase().includes(query)
     )
-  }, [countrySearch])
+  }, [connectCountryOptions, accountCountrySearch])
+
+  const filteredIdentityCountries = useMemo(() => {
+    const query = documentCountrySearch.trim().toLowerCase()
+    if (!query) {
+      return identityCountryOptions
+    }
+    return identityCountryOptions.filter(
+      country =>
+        country.name.toLowerCase().includes(query) ||
+        country.code.toLowerCase().includes(query)
+    )
+  }, [identityCountryOptions, documentCountrySearch])
+
+  useEffect(() => {
+    if (!normalizedDocumentCountry) {
+      if (documentType) {
+        setDocumentType('')
+      }
+      return
+    }
+
+    if (
+      documentType &&
+      !allowedDocumentTypes.includes(documentType as DocumentType)
+    ) {
+      setDocumentType((allowedDocumentTypes[0] as DocumentType) || '')
+    }
+  }, [allowedDocumentTypes, documentType, normalizedDocumentCountry])
 
   useEffect(() => {
     if (isAdmin) {
       setIsLoading(false)
       return
     }
-    loadKYCStatus()
+    setIsLoading(false)
   }, [isAdmin])
 
   useEffect(() => {
@@ -121,6 +220,15 @@ export default function KYCPage() {
     if (!postalCode && (profile as any)?.postal_code) {
       setPostalCode((profile as any).postal_code as string)
     }
+    if (!accountCountry && (profile as any)?.country) {
+      setAccountCountry((profile as any).country as string)
+    }
+    if (!documentCountry && (profile as any)?.kyc_nationality) {
+      setDocumentCountry((profile as any).kyc_nationality as string)
+    }
+    if (formError) {
+      setFormError(null)
+    }
   }, [
     profile,
     user,
@@ -132,6 +240,9 @@ export default function KYCPage() {
     address,
     city,
     postalCode,
+    accountCountry,
+    documentCountry,
+    formError,
   ])
 
   useEffect(() => {
@@ -193,28 +304,25 @@ export default function KYCPage() {
         supabase.removeChannel(channel)
       }
     }
-  }, [supabase])
+  }, [supabase, isAdmin, user?.id])
 
-  const loadKYCStatus = async () => {
-    setIsLoading(true)
-    try {
-      const result = await getKYCStatus()
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        setKycStatus(result.status as KYCStatus)
-        setSubmittedAt(result.submittedAt || null)
-      }
-    } catch {
-      toast.error('Erreur lors du chargement du statut KYC')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  useEffect(() => {
+    if (!profile) return
+    const nextStatus = (profile as any)?.kyc_status ?? null
+    const nextSubmitted = (profile as any)?.kyc_submitted_at ?? null
+    setKycStatus(nextStatus)
+    setSubmittedAt(nextSubmitted)
+  }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
 
   const handleStartVerification = async () => {
-    if (!documentType || !documentCountry) {
-      toast.error('Veuillez sélectionner un document et un pays')
+    if (step !== 'details') {
+      toast.error('Préparez votre compte avant de continuer')
+      return
+    }
+    if (!documentType || !documentCountry || !accountCountry) {
+      toast.error(
+        'Veuillez sélectionner un pays de résidence et un document'
+      )
       return
     }
     if (!firstName || !lastName || !email || !phone) {
@@ -226,6 +334,7 @@ export default function KYCPage() {
       return
     }
 
+    setFormError(null)
     setIsSubmitting(true)
 
     try {
@@ -236,6 +345,7 @@ export default function KYCPage() {
         phone,
         documentType: documentType as DocumentType,
         documentCountry,
+        accountCountry,
         birthday: birthDate,
         address,
         city,
@@ -243,6 +353,7 @@ export default function KYCPage() {
       })
 
       if (result.error) {
+        setFormError(result.error)
         toast.error(result.error)
         return
       }
@@ -254,7 +365,9 @@ export default function KYCPage() {
       }
 
       if (!result.verificationClientSecret) {
-        toast.error("Impossible d'initialiser la vérification.")
+        const message = "Impossible d'initialiser la vérification."
+        setFormError(message)
+        toast.error(message)
         return
       }
 
@@ -263,19 +376,54 @@ export default function KYCPage() {
       )
 
       if (error) {
-        toast.error(
+        const message =
           error.message ||
             "La vérification d'identité n'a pas pu être complétée."
-        )
+        setFormError(message)
+        toast.error(message)
         return
       }
 
       toast.success('Vérification envoyée avec succès.')
-      await loadKYCStatus()
+      const submittedAt = new Date().toISOString()
+      setKycStatus('pending')
+      setSubmittedAt(submittedAt)
     } catch {
-      toast.error('Une erreur est survenue. Veuillez réessayer.')
+      const message = 'Une erreur est survenue. Veuillez réessayer.'
+      setFormError(message)
+      toast.error(message)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handlePrepareAccount = async () => {
+    if (!documentType || !documentCountry || !accountCountry) {
+      toast.error(
+        'Veuillez sélectionner un pays de résidence et un document'
+      )
+      return
+    }
+
+    setIsPreparingAccount(true)
+    try {
+    const result = await prepareKYCAccount({
+      accountCountry: normalizedAccountCountry || accountCountry,
+      documentCountry: normalizedDocumentCountry || documentCountry,
+    })
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      setStep('details')
+      toast.success('Compte prêt pour la vérification')
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Erreur lors de la préparation'
+      )
+    } finally {
+      setIsPreparingAccount(false)
     }
   }
 
@@ -382,239 +530,436 @@ export default function KYCPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Type de document */}
-            <div className="space-y-2">
-              <Label htmlFor="documentType">Type de document</Label>
-              <Select
-                value={documentType}
-                onValueChange={value => setDocumentType(value as DocumentType)}
-              >
-                <SelectTrigger id="documentType">
-                  <SelectValue placeholder="Sélectionnez un document" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="passport">Passeport</SelectItem>
-                  <SelectItem value="national_id">
-                    Carte nationale d&apos;identité
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {step === 'document' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="accountCountry">Pays de résidence</Label>
+                  <Popover
+                    open={accountCountryOpen}
+                    onOpenChange={open => {
+                      setAccountCountryOpen(open)
+                      if (!open) {
+                        setAccountCountrySearch('')
+                      }
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={accountCountryOpen}
+                        className="w-full justify-between"
+                        id="accountCountry"
+                      >
+                        {accountCountry ? (
+                          <span className="flex items-center gap-2">
+                            <span>
+                              {
+                                connectCountryOptions.find(
+                                  country => country.code === accountCountry
+                                )?.flag
+                              }
+                            </span>
+                            <span>
+                              {
+                                connectCountryOptions.find(
+                                  country => country.code === accountCountry
+                                )?.name
+                              }
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Sélectionnez un pays
+                          </span>
+                        )}
+                        <IconChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="bottom"
+                      align="start"
+                      sideOffset={4}
+                      className="w-[--radix-popover-trigger-width] p-0"
+                    >
+                      <div className="flex items-center gap-2 border-b px-3 py-2">
+                        <IconSearch className="h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Rechercher un pays..."
+                          value={accountCountrySearch}
+                          onChange={event =>
+                            setAccountCountrySearch(event.target.value)
+                          }
+                          className="h-8 border-0 px-0 focus-visible:ring-0"
+                        />
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {filteredConnectCountries.length > 0 ? (
+                          filteredConnectCountries.map(country => (
+                            <button
+                              key={country.code}
+                              type="button"
+                              className={cn(
+                                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
+                                accountCountry === country.code && 'bg-accent'
+                              )}
+                              onClick={() => {
+                                setAccountCountry(country.code)
+                                setAccountCountryOpen(false)
+                                setAccountCountrySearch('')
+                              }}
+                            >
+                              <span>{country.flag}</span>
+                              <span>{country.name}</span>
+                              <span className="ml-auto text-xs text-muted-foreground">
+                                {country.code}
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <p className="px-3 py-2 text-sm text-muted-foreground">
+                            Aucun pays trouvé.
+                          </p>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-            {/* Pays d'émission */}
-            <div className="space-y-2">
-              <Label htmlFor="documentCountry">
-                Pays d&apos;émission du document
-              </Label>
-              <Popover
-                open={countryOpen}
-                onOpenChange={open => {
-                  setCountryOpen(open)
-                  if (!open) {
-                    setCountrySearch('')
-                  }
-                }}
-              >
-                <PopoverTrigger asChild>
+                <div className="space-y-2">
+                  <Label htmlFor="documentCountry">
+                    Pays d&apos;émission du document à vérifier
+                  </Label>
+                  <Popover
+                    open={documentCountryOpen}
+                    onOpenChange={open => {
+                      setDocumentCountryOpen(open)
+                      if (!open) {
+                        setDocumentCountrySearch('')
+                      }
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={documentCountryOpen}
+                        className="w-full justify-between"
+                        id="documentCountry"
+                      >
+                        {documentCountry ? (
+                          <span className="flex items-center gap-2">
+                            <span>
+                              {
+                                identityCountryOptions.find(
+                                  country => country.code === documentCountry
+                                )?.flag
+                              }
+                            </span>
+                            <span>
+                              {
+                                identityCountryOptions.find(
+                                  country => country.code === documentCountry
+                                )?.name
+                              }
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            Sélectionnez un pays
+                          </span>
+                        )}
+                        <IconChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="bottom"
+                      align="start"
+                      sideOffset={4}
+                      className="w-[--radix-popover-trigger-width] p-0"
+                    >
+                      <div className="flex items-center gap-2 border-b px-3 py-2">
+                        <IconSearch className="h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Rechercher un pays..."
+                          value={documentCountrySearch}
+                          onChange={event =>
+                            setDocumentCountrySearch(event.target.value)
+                          }
+                          className="h-8 border-0 px-0 focus-visible:ring-0"
+                        />
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {filteredIdentityCountries.length > 0 ? (
+                          filteredIdentityCountries.map(country => (
+                            <button
+                              key={country.code}
+                              type="button"
+                              className={cn(
+                                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
+                                documentCountry === country.code && 'bg-accent'
+                              )}
+                              onClick={() => {
+                                setDocumentCountry(country.code)
+                                setDocumentCountryOpen(false)
+                                setDocumentCountrySearch('')
+                              }}
+                            >
+                              <span>{country.flag}</span>
+                              <span>{country.name}</span>
+                              <span className="ml-auto text-xs text-muted-foreground">
+                                {country.code}
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <p className="px-3 py-2 text-sm text-muted-foreground">
+                            Aucun pays trouvé.
+                          </p>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="documentType">Type de document</Label>
+                  <Select
+                    value={documentType}
+                    onValueChange={value =>
+                      setDocumentType(value as DocumentType)
+                    }
+                    disabled={
+                      !normalizedDocumentCountry || !isIdentityCountrySupported
+                    }
+                  >
+                    <SelectTrigger id="documentType">
+                      <SelectValue
+                        placeholder={
+                          normalizedDocumentCountry && isIdentityCountrySupported
+                            ? 'Sélectionnez un document'
+                            : 'Choisissez d’abord un pays'
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent side="bottom" align="start">
+                      {allowedDocumentTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type === 'passport'
+                            ? 'Passeport'
+                            : "Carte nationale d'identité"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {!isConnectCountrySupported && accountCountry && (
+                  <Alert>
+                    <IconAlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Pays de résidence non supporté</AlertTitle>
+                    <AlertDescription>
+                      Stripe Connect n&apos;est pas disponible pour ce pays de
+                      résidence pour le moment. Choisissez un pays pris en
+                      charge ou utilisez Mobile Wallet pour recevoir vos
+                      paiements.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {!isIdentityCountrySupported && documentCountry && (
+                  <Alert>
+                    <IconAlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Pays de document non supporté</AlertTitle>
+                    <AlertDescription>
+                      Stripe Identity n&apos;est pas disponible pour ce pays de
+                      document. Choisissez un pays pris en charge ou utilisez
+                      un document accepté par Stripe.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={handlePrepareAccount}
+                  disabled={isPreparingAccount || !canPrepareAccount}
+                >
+                  {isPreparingAccount ? (
+                    <>
+                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Préparation en cours...
+                    </>
+                  ) : (
+                    'Continuer'
+                  )}
+                </Button>
+              </>
+            )}
+
+            {step === 'details' && (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
+                  <div className="text-sm">
+                    <span className="font-medium">Résidence :</span>{' '}
+                    {accountCountry || '—'} •{' '}
+                    <span className="font-medium">Document :</span>{' '}
+                    {documentType === 'passport'
+                      ? 'Passeport'
+                      : "Carte d'identité"}{' '}
+                    • <span className="font-medium">Pays :</span>{' '}
+                    {documentCountry || '—'}
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
-                    role="combobox"
-                    aria-expanded={countryOpen}
-                    className="w-full justify-between"
-                    id="documentCountry"
+                    size="sm"
+                    onClick={() => setStep('document')}
+                    disabled={isSubmitting}
                   >
-                    {documentCountry ? (
-                      <span className="flex items-center gap-2">
-                        <span>
-                          {
-                            COUNTRY_OPTIONS.find(
-                              country => country.code === documentCountry
-                            )?.flag
-                          }
-                        </span>
-                        <span>
-                          {
-                            COUNTRY_OPTIONS.find(
-                              country => country.code === documentCountry
-                            )?.name
-                          }
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Sélectionnez un pays
-                      </span>
-                    )}
-                    <IconChevronDown className="h-4 w-4 opacity-50" />
+                    Modifier
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  side="bottom"
-                  align="start"
-                  className="w-[--radix-popover-trigger-width] p-0"
-                >
-                  <div className="flex items-center gap-2 border-b px-3 py-2">
-                    <IconSearch className="h-4 w-4 text-muted-foreground" />
+                </div>
+
+                <div className="space-y-4 rounded-lg border border-border/60 p-4">
+                  <p className="text-sm font-semibold">
+                    Informations personnelles
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">Prénom</Label>
+                      <Input
+                        id="firstName"
+                        placeholder="Amiel"
+                        value={firstName}
+                        onChange={event => setFirstName(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Nom</Label>
+                      <Input
+                        id="lastName"
+                        placeholder="Adjovi"
+                        value={lastName}
+                        onChange={event => setLastName(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={event => setEmail(event.target.value)}
+                        disabled
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Téléphone</Label>
+                      <Input
+                        id="phone"
+                        placeholder="+33612345678"
+                        value={phone}
+                        onChange={event => setPhone(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="birthDate">Date de naissance</Label>
                     <Input
-                      placeholder="Rechercher un pays..."
-                      value={countrySearch}
-                      onChange={event => setCountrySearch(event.target.value)}
-                      className="h-8 border-0 px-0 focus-visible:ring-0"
+                      id="birthDate"
+                      type="date"
+                      value={birthDate}
+                      onChange={event => setBirthDate(event.target.value)}
                     />
                   </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {filteredCountries.length > 0 ? (
-                      filteredCountries.map(country => (
-                        <button
-                          key={country.code}
-                          type="button"
-                          className={cn(
-                            'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
-                            documentCountry === country.code && 'bg-accent'
-                          )}
-                          onClick={() => {
-                            setDocumentCountry(country.code)
-                            setCountryOpen(false)
-                            setCountrySearch('')
-                          }}
-                        >
-                          <span>{country.flag}</span>
-                          <span>{country.name}</span>
-                          <span className="ml-auto text-xs text-muted-foreground">
-                            {country.code}
-                          </span>
-                        </button>
-                      ))
-                    ) : (
-                      <p className="px-3 py-2 text-sm text-muted-foreground">
-                        Aucun pays trouvé.
-                      </p>
-                    )}
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Adresse</Label>
+                    <Input
+                      id="address"
+                      placeholder="28 Route de Bonsecours"
+                      value={address}
+                      onChange={event => setAddress(event.target.value)}
+                    />
                   </div>
-                </PopoverContent>
-              </Popover>
-            </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">Ville</Label>
+                      <Input
+                        id="city"
+                        placeholder="Paris"
+                        value={city}
+                        onChange={event => setCity(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="postalCode">Code postal</Label>
+                      <Input
+                        id="postalCode"
+                        placeholder="75012"
+                        value={postalCode}
+                        onChange={event => setPostalCode(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            <div className="space-y-4 rounded-lg border border-border/60 p-4">
-              <p className="text-sm font-semibold">Informations personnelles</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="Amiel"
-                    value={firstName}
-                    onChange={event => setFirstName(event.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Adjovi"
-                    value={lastName}
-                    onChange={event => setLastName(event.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={event => setEmail(event.target.value)}
-                    disabled
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone</Label>
-                  <Input
-                    id="phone"
-                    placeholder="+33612345678"
-                    value={phone}
-                    onChange={event => setPhone(event.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="birthDate">Date de naissance</Label>
-                <Input
-                  id="birthDate"
-                  type="date"
-                  value={birthDate}
-                  onChange={event => setBirthDate(event.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Adresse</Label>
-                <Input
-                  id="address"
-                  placeholder="28 Route de Bonsecours"
-                  value={address}
-                  onChange={event => setAddress(event.target.value)}
-                />
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
-                  <Input
-                    id="city"
-                    placeholder="Paris"
-                    value={city}
-                    onChange={event => setCity(event.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Code postal</Label>
-                  <Input
-                    id="postalCode"
-                    placeholder="75012"
-                    value={postalCode}
-                    onChange={event => setPostalCode(event.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+                <Alert>
+                  <IconShieldLock className="h-4 w-4" />
+                  <AlertTitle>Sécurité & confidentialité</AlertTitle>
+                  <AlertDescription>
+                    <p>
+                      La vérification est opérée par un prestataire sécurisé.
+                      Nous ne stockons pas vos documents, uniquement le statut
+                      de vérification et les informations déclarées.
+                    </p>
+                    <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
+                      <li>Données chiffrées pendant le transfert.</li>
+                      <li>Utilisation strictement liée à la conformité KYC.</li>
+                      <li>Vous pouvez relancer la vérification si besoin.</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
 
-            <Alert>
-              <IconShieldLock className="h-4 w-4" />
-              <AlertTitle>Sécurité & confidentialité</AlertTitle>
-              <AlertDescription>
-                <p>
-                  La vérification est opérée par un prestataire sécurisé. Nous ne
-                  stockons pas vos documents, uniquement le statut de
-                  vérification et les informations déclarées.
-                </p>
-                <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
-                  <li>Données chiffrées pendant le transfert.</li>
-                  <li>Utilisation strictement liée à la conformité KYC.</li>
-                  <li>Vous pouvez relancer la vérification si besoin.</li>
-                </ul>
-              </AlertDescription>
-            </Alert>
-
-            <Button
-              type="button"
-              className="w-full"
-              disabled={isSubmitting || kycStatus === 'pending'}
-              onClick={handleStartVerification}
-            >
-              {isSubmitting ? (
-                <>
-                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Ouverture de la vérification...
-                </>
-              ) : (
-                'Vérifier mon identité'
-              )}
-            </Button>
+                <Button
+                  type="button"
+                  className="w-full"
+                  disabled={isSubmitting || kycStatus === 'pending'}
+                  onClick={handleStartVerification}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Ouverture de la vérification...
+                    </>
+                  ) : (
+                    'Vérifier mon identité'
+                  )}
+                </Button>
+                {formError && (
+                  <p className="text-sm text-destructive">{formError}</p>
+                )}
+              </>
+            )}
             {kycStatus === 'pending' && (
-              <p className="text-xs text-muted-foreground text-center">
-                Vérification en cours. Vous recevrez un email dès validation.
-              </p>
+              <Alert className="border-primary/20 bg-primary/5">
+                <IconClock className="h-4 w-4" />
+                <AlertTitle>Merci, votre vérification est en cours</AlertTitle>
+                <AlertDescription className="space-y-3">
+                  <p>
+                    Nous analysons vos documents. Vous pouvez revenir plus tard,
+                    l&apos;application se mettra à jour automatiquement.
+                  </p>
+                  <Button asChild size="sm">
+                    <Link href="/dashboard">Retour au tableau de bord</Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
             )}
           </CardContent>
         </Card>

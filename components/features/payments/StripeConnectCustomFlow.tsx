@@ -138,7 +138,15 @@ export function StripeConnectCustomFlow({
       | 'pending'
       | 'disabled'
       | undefined
-    if (payoutStatus === 'active') {
+    const payoutErrorCode = (profile as any)?.payout_error_code as
+      | string
+      | null
+      | undefined
+    const payoutErrorMessage = (profile as any)?.payout_error_message as
+      | string
+      | null
+      | undefined
+    if (payoutStatus === 'active' || payoutErrorCode || payoutErrorMessage) {
       stopPolling()
       stopLongPolling()
     }
@@ -157,8 +165,21 @@ export function StripeConnectCustomFlow({
       | 'pending'
       | 'disabled'
       | undefined
+    const payoutErrorCode = (profile as any)?.payout_error_code as
+      | string
+      | null
+      | undefined
+    const payoutErrorMessage = (profile as any)?.payout_error_message as
+      | string
+      | null
+      | undefined
 
-    if (!showPendingNotice || payoutStatus === 'active') {
+    if (
+      !showPendingNotice ||
+      payoutStatus === 'active' ||
+      payoutErrorCode ||
+      payoutErrorMessage
+    ) {
       stopLongPolling()
       return
     }

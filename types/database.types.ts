@@ -589,6 +589,9 @@ export type Database = {
           stripe_requirements: Json | null
           payout_method: string | null
           payout_status: string | null
+          payout_error_code: string | null
+          payout_error_message: string | null
+          payout_error_at: string | null
           wallet_operator: string | null
           wallet_phone: string | null
           wallet_verified_at: string | null
@@ -642,6 +645,9 @@ export type Database = {
           stripe_requirements?: Json | null
           payout_method?: string | null
           payout_status?: string | null
+          payout_error_code?: string | null
+          payout_error_message?: string | null
+          payout_error_at?: string | null
           wallet_operator?: string | null
           wallet_phone?: string | null
           wallet_verified_at?: string | null
@@ -695,6 +701,9 @@ export type Database = {
           stripe_requirements?: Json | null
           payout_method?: string | null
           payout_status?: string | null
+          payout_error_code?: string | null
+          payout_error_message?: string | null
+          payout_error_at?: string | null
           wallet_operator?: string | null
           wallet_phone?: string | null
           wallet_verified_at?: string | null

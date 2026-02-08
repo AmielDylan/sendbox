@@ -62,6 +62,12 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  console.log('🔔 Stripe webhook received:', {
+    id: event.id,
+    type: event.type,
+    livemode: event.livemode,
+  })
+
   const supabase = createAdminClient()
   const paymentsEnabled = getPaymentsMode() === 'stripe'
 
@@ -140,6 +146,57 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const updateKycProfile = async (
+    userId: string | null | undefined,
+    updateData: Record<string, unknown>,
+    session: Stripe.Identity.VerificationSession
+  ) => {
+    let updatedRow: { id?: string } | null = null
+
+    if (userId) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', userId)
+        .select('id')
+
+      if (error) {
+        console.error('❌ Failed to update profile by user_id:', error)
+      } else if (data && data.length > 0) {
+        updatedRow = data[0]
+      }
+    }
+
+    if (!updatedRow) {
+      const accountId = session.metadata?.stripe_account_id
+      if (accountId) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('stripe_connect_account_id', accountId)
+          .select('id')
+
+        if (error) {
+          console.error(
+            '❌ Failed to update profile by stripe_connect_account_id:',
+            error
+          )
+        } else if (data && data.length > 0) {
+          updatedRow = data[0]
+        }
+      }
+    }
+
+    if (!updatedRow) {
+      console.error(
+        '❌ Unable to update profile for verification session:',
+        session.id
+      )
+    }
+
+    return updatedRow
+  }
+
   try {
     switch (event.type) {
       case 'identity.verification_session.processing': {
@@ -148,28 +205,28 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'pending',
-            kyc_submitted_at: new Date().toISOString(),
+            kyc_submitted_at: receivedAt,
             kyc_rejection_reason: null,
           },
           verificationSession
         )
 
-        const { error } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', userId)
+        const updated = await updateKycProfile(
+          userId,
+          updateData,
+          verificationSession
+        )
 
-        if (error) {
-          console.error('❌ Failed to update KYC status (processing):', error)
-        } else {
-          await notifyKycStatusChange(userId, 'pending')
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
+          await notifyKycStatusChange(targetUserId, 'pending')
         }
         break
       }
@@ -180,29 +237,29 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'approved',
-            kyc_reviewed_at: new Date().toISOString(),
+            kyc_reviewed_at: receivedAt,
             kyc_rejection_reason: null,
           },
           verificationSession
         )
 
-        const { error } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', userId)
+        const updated = await updateKycProfile(
+          userId,
+          updateData,
+          verificationSession
+        )
 
-        if (error) {
-          console.error('❌ Failed to update KYC status (verified):', error)
-        } else {
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
           console.log('✅ KYC approved for user:', userId)
-          await notifyKycStatusChange(userId, 'approved')
+          await notifyKycStatusChange(targetUserId, 'approved')
         }
         break
       }
@@ -213,8 +270,7 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
         const rejectionReason =
@@ -222,27 +278,25 @@ export async function POST(req: NextRequest) {
           verificationSession.last_error?.code ||
           'verification_failed'
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'rejected',
-            kyc_reviewed_at: new Date().toISOString(),
+            kyc_reviewed_at: receivedAt,
             kyc_rejection_reason: rejectionReason,
           },
           verificationSession
         )
 
-        const { error } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', userId)
+        const updated = await updateKycProfile(
+          userId,
+          updateData,
+          verificationSession
+        )
 
-        if (error) {
-          console.error(
-            '❌ Failed to update KYC status (requires_input):',
-            error
-          )
-        } else {
-          await notifyKycStatusChange(userId, 'rejected', rejectionReason)
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
+          await notifyKycStatusChange(targetUserId, 'rejected', rejectionReason)
         }
         break
       }
@@ -261,7 +315,9 @@ export async function POST(req: NextRequest) {
           !requirements?.past_due?.length
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id, payout_method, stripe_payouts_enabled')
+          .select(
+            'id, payout_method, stripe_payouts_enabled, kyc_status, kyc_reviewed_at, kyc_submitted_at'
+          )
           .eq('stripe_connect_account_id', account.id)
           .maybeSingle()
 
@@ -277,6 +333,21 @@ export async function POST(req: NextRequest) {
           stripe_requirements: requirementsJson,
         }
 
+        const individualVerificationStatus =
+          account.individual?.verification?.status
+        const isIdentityVerified =
+          individualVerificationStatus === 'verified'
+
+        if (isIdentityVerified) {
+          const reviewedAt = new Date().toISOString()
+          updatePayload.kyc_status = 'approved'
+          updatePayload.kyc_reviewed_at = profile?.kyc_reviewed_at || reviewedAt
+          if (!profile?.kyc_submitted_at) {
+            updatePayload.kyc_submitted_at = reviewedAt
+          }
+          updatePayload.kyc_rejection_reason = null
+        }
+
         if (shouldUpdatePayoutMethod) {
           updatePayload.payout_method = payoutMethod || 'stripe_bank'
           updatePayload.payout_status = nextPayoutStatus
@@ -289,14 +360,24 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error('❌ Failed to update connect status:', error)
-        } else if (payoutsEnabled && profile?.id && !profile?.stripe_payouts_enabled) {
-          await createSystemNotification({
-            userId: profile.id,
-            type: 'system_alert',
-            title: 'Paiements activés',
-            content:
-              'Votre compte bancaire est vérifié. Les virements sont maintenant disponibles.',
-          })
+        } else {
+          if (isIdentityVerified && profile?.id && profile?.kyc_status !== 'approved') {
+            await notifyKycStatusChange(profile.id, 'approved')
+          }
+
+          if (
+            payoutsEnabled &&
+            profile?.id &&
+            !profile?.stripe_payouts_enabled
+          ) {
+            await createSystemNotification({
+              userId: profile.id,
+              type: 'system_alert',
+              title: 'Paiements activés',
+              content:
+                'Votre compte bancaire est vérifié. Les virements sont maintenant disponibles.',
+            })
+          }
         }
         break
       }
@@ -307,29 +388,29 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'incomplete',
-            kyc_reviewed_at: new Date().toISOString(),
+            kyc_reviewed_at: receivedAt,
             kyc_rejection_reason: 'verification_canceled',
           },
           verificationSession
         )
 
-        const { error } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', userId)
+        const updated = await updateKycProfile(
+          userId,
+          updateData,
+          verificationSession
+        )
 
-        if (error) {
-          console.error('❌ Failed to update KYC status (canceled):', error)
-        } else {
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
           await notifyKycStatusChange(
-            userId,
+            targetUserId,
             'incomplete',
             'verification_canceled'
           )
@@ -343,29 +424,29 @@ export async function POST(req: NextRequest) {
         const userId = verificationSession.metadata?.user_id
 
         if (!userId) {
-          console.error('❌ Missing user_id in verification session metadata')
-          break
+          console.warn('⚠️ Missing user_id in verification session metadata')
         }
 
+        const receivedAt = new Date().toISOString()
         const updateData = withIdentityMetadata(
           {
             kyc_status: 'incomplete',
-            kyc_reviewed_at: new Date().toISOString(),
+            kyc_reviewed_at: receivedAt,
             kyc_rejection_reason: 'verification_redacted',
           },
           verificationSession
         )
 
-        const { error } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', userId)
+        const updated = await updateKycProfile(
+          userId,
+          updateData,
+          verificationSession
+        )
 
-        if (error) {
-          console.error('❌ Failed to update KYC status (redacted):', error)
-        } else {
+        const targetUserId = updated?.id || userId
+        if (targetUserId) {
           await notifyKycStatusChange(
-            userId,
+            targetUserId,
             'incomplete',
             'verification_redacted'
           )
