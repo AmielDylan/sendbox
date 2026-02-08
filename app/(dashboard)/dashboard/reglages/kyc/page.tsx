@@ -617,7 +617,7 @@ export default function KYCPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="documentCountry">
-                    Pays d&apos;émission du document
+                    Pays d&apos;émission du document à vérifier
                   </Label>
                   <Popover
                     open={documentCountryOpen}
@@ -769,23 +769,6 @@ export default function KYCPage() {
                   </Alert>
                 )}
 
-                {normalizedAccountCountry &&
-                  normalizedDocumentCountry &&
-                  normalizedAccountCountry !== normalizedDocumentCountry &&
-                  isConnectCountrySupported &&
-                  isIdentityCountrySupported && (
-                    <Alert>
-                      <IconAlertTriangle className="h-4 w-4" />
-                      <AlertTitle>
-                        Documents d&apos;un autre pays
-                      </AlertTitle>
-                      <AlertDescription>
-                        Vos documents peuvent provenir d&apos;un autre pays que
-                        votre résidence. Le compte de paiement reste créé dans
-                        votre pays de résidence.
-                      </AlertDescription>
-                    </Alert>
-                  )}
 
                 <Button
                   type="button"
