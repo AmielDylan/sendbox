@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -61,6 +61,7 @@ type DocumentType = 'passport' | 'national_id'
 
 export default function KYCPage() {
   const [kycStatus, setKycStatus] = useState<KYCStatus>(null)
+  const [displayStatus, setDisplayStatus] = useState<KYCStatus>(null)
   const [submittedAt, setSubmittedAt] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -82,8 +83,11 @@ export default function KYCPage() {
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
   const [accountCountryOpen, setAccountCountryOpen] = useState(false)
   const [accountCountrySearch, setAccountCountrySearch] = useState('')
+  const pendingHoldUntilRef = useRef<number | null>(null)
+  const pendingTimeoutRef = useRef<number | null>(null)
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
+  const PENDING_MIN_MS = 5000
   const stripeConnectCountries = useMemo(
     () => getStripeConnectAllowedCountriesClient(),
     []
@@ -314,6 +318,57 @@ export default function KYCPage() {
     setSubmittedAt(nextSubmitted)
   }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
 
+  useEffect(() => {
+    return () => {
+      if (pendingTimeoutRef.current) {
+        window.clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (pendingTimeoutRef.current) {
+      window.clearTimeout(pendingTimeoutRef.current)
+      pendingTimeoutRef.current = null
+    }
+
+    if (kycStatus === 'pending') {
+      pendingHoldUntilRef.current = Date.now() + PENDING_MIN_MS
+      setDisplayStatus('pending')
+      return
+    }
+
+    if (kycStatus === 'approved') {
+      const holdUntil = pendingHoldUntilRef.current
+      if (holdUntil && Date.now() < holdUntil) {
+        setDisplayStatus('pending')
+        pendingTimeoutRef.current = window.setTimeout(() => {
+          setDisplayStatus('approved')
+          pendingHoldUntilRef.current = null
+        }, holdUntil - Date.now())
+        return () => {
+          if (pendingTimeoutRef.current) {
+            window.clearTimeout(pendingTimeoutRef.current)
+            pendingTimeoutRef.current = null
+          }
+        }
+      }
+    }
+
+    if (kycStatus !== 'pending') {
+      pendingHoldUntilRef.current = null
+    }
+    setDisplayStatus(kycStatus)
+
+    return () => {
+      if (pendingTimeoutRef.current) {
+        window.clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+    }
+  }, [kycStatus])
+
   const handleStartVerification = async () => {
     if (step !== 'details') {
       toast.error('Préparez votre compte avant de continuer')
@@ -454,7 +509,7 @@ export default function KYCPage() {
   }
 
   const getStatusBadge = () => {
-    switch (kycStatus) {
+    switch (displayStatus ?? kycStatus) {
       case 'approved':
         return (
           <Badge variant="default" className="bg-green-500">
@@ -521,7 +576,7 @@ export default function KYCPage() {
         </CardContent>
       </Card>
 
-      {kycStatus !== 'approved' && (
+      {displayStatus !== 'approved' && (
         <Card>
           <CardHeader>
             <CardTitle>Lancer la vérification d'identité</CardTitle>
@@ -530,7 +585,7 @@ export default function KYCPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {step === 'document' && (
+            {displayStatus !== 'pending' && step === 'document' && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="accountCountry">Pays de résidence</Label>
@@ -800,7 +855,7 @@ export default function KYCPage() {
               </>
             )}
 
-            {step === 'details' && (
+            {displayStatus !== 'pending' && step === 'details' && (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
                   <div className="text-sm">
@@ -946,7 +1001,7 @@ export default function KYCPage() {
                 )}
               </>
             )}
-            {kycStatus === 'pending' && (
+            {displayStatus === 'pending' && (
               <Alert className="border-primary/20 bg-primary/5">
                 <IconClock className="h-4 w-4" />
                 <AlertTitle>Merci, votre vérification est en cours</AlertTitle>
