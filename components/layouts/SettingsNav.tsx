@@ -7,15 +7,11 @@
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { Badge } from '@/components/ui/badge'
 import {
   IconUser,
   IconIdBadge2,
   IconShield,
   IconCreditCard,
-  IconCircleCheck,
-  IconAlertCircle,
-  IconClock,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
@@ -126,7 +122,6 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
       href: '/dashboard/reglages/kyc',
       icon: IconShield,
       description: 'KYC et documents',
-      badge: kycStatus,
       kycOnly: true, // Marqueur pour filtrage conditionnel
       userOnly: true,
     },
@@ -145,37 +140,6 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
     }
     return true
   })
-
-  const getKYCBadge = () => {
-    if (kycStatus === 'approved') {
-      return (
-        <Badge
-          variant="secondary"
-          className="ml-auto bg-emerald-50 text-emerald-700"
-        >
-          <IconCircleCheck className="mr-1 h-3 w-3" />
-          Validé
-        </Badge>
-      )
-    }
-    if (kycStatus === 'pending') {
-      return (
-        <Badge variant="warning" className="ml-auto">
-          <IconClock className="mr-1 h-3 w-3" />
-          En attente
-        </Badge>
-      )
-    }
-    if (kycStatus === 'rejected') {
-      return (
-        <Badge variant="destructive" className="ml-auto">
-          <IconAlertCircle className="mr-1 h-3 w-3" />
-          Rejeté
-        </Badge>
-      )
-    }
-    return null
-  }
 
   return (
     <nav className="space-y-1 p-2">
@@ -202,7 +166,6 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
                 {item.description}
               </div>
             </div>
-            {item.badge && getKYCBadge()}
           </Link>
         )
       })}
