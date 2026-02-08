@@ -545,46 +545,23 @@ export default function KYCPage() {
           description="Nous vérifions vos documents pour sécuriser votre compte."
       />
 
-      {/* Statut actuel */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Statut de votre KYC</CardTitle>
-          <CardDescription>
-            {kycStatus === 'approved' &&
-              'Votre identité a été vérifiée. Toutes les actions sont débloquées.'}
-            {kycStatus === 'pending' &&
-              "Votre vérification est en cours d'examen. Vous serez notifié par email."}
-            {kycStatus === 'rejected' &&
-              'Votre vérification a été refusée. Vous pouvez relancer une vérification.'}
-            {(kycStatus === 'incomplete' || !kycStatus) &&
-              "Aucune vérification en cours. Lancez la vérification pour continuer."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
+      {displayStatus === 'approved' && (
+        <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
+          <div className="flex flex-wrap items-center gap-3">
             {getStatusBadge()}
+            <p className="text-sm font-semibold">Identité vérifiée</p>
+          </div>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              Votre identité est confirmée. Vous pouvez poursuivre vos actions
+              sur Sendbox en toute sécurité.
+            </p>
             {submittedAt && (
-              <p className="text-sm text-muted-foreground">
+              <p>
                 Soumis le {format(new Date(submittedAt), 'PP', { locale: fr })}
               </p>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {displayStatus === 'approved' && (
-        <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge className="bg-green-500 text-white">Validé</Badge>
-            <p className="text-sm font-semibold">Identité vérifiée</p>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Votre identité est confirmée. Vous pouvez poursuivre vos actions
-            sur Sendbox en toute sécurité.
-          </p>
-          <Button variant="outline" className="w-full">
-            Tout est OK
-          </Button>
         </div>
       )}
 
