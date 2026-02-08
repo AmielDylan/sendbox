@@ -87,7 +87,7 @@ export default function KYCPage() {
   const pendingTimeoutRef = useRef<number | null>(null)
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
-  const PENDING_MIN_MS = 5000
+  const PENDING_MIN_MS = 30000
   const stripeConnectCountries = useMemo(
     () => getStripeConnectAllowedCountriesClient(),
     []
