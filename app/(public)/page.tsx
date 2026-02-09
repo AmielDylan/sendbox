@@ -24,6 +24,7 @@ import {
   IconCheck,
 } from '@tabler/icons-react'
 import { LandingCta } from '@/components/landing/LandingCta'
+import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 
 const features = [
   {
@@ -359,6 +360,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <LatestAnnouncementsCarousel />
 
       {/* Benefits - Dual audience */}
       <section className="py-20 sm:py-28 bg-muted/30 relative">
