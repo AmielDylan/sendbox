@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from('announcements')
     .select(
-      'id, departure_city, departure_country, arrival_city, arrival_country, departure_date, arrival_date, available_kg, price_per_kg, created_at, status, profiles:profiles (firstname, lastname, avatar_url)'
+      'id, traveler_id, departure_city, departure_country, arrival_city, arrival_country, departure_date, arrival_date, available_kg, price_per_kg, created_at, status, profiles:profiles (firstname, lastname, avatar_url)'
     )
     .in('status', ['active', 'partially_booked', 'fully_booked'])
     .order('created_at', { ascending: false })
@@ -36,5 +36,28 @@ export async function GET(request: Request) {
     )
   }
 
-  return Response.json({ data: data ?? [] })
+  const rows = data ?? []
+  const missingProfileIds = rows
+    .filter(row => !row.profiles && (row as any).traveler_id)
+    .map(row => (row as any).traveler_id)
+
+  if (missingProfileIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, firstname, lastname, avatar_url')
+      .in('id', missingProfileIds)
+
+    const profileMap = new Map(
+      (profiles ?? []).map(profile => [profile.id, profile])
+    )
+
+    for (const row of rows) {
+      const travelerId = (row as any).traveler_id
+      if (!row.profiles && travelerId && profileMap.has(travelerId)) {
+        ;(row as any).profiles = profileMap.get(travelerId) as any
+      }
+    }
+  }
+
+  return Response.json({ data: rows })
 }
