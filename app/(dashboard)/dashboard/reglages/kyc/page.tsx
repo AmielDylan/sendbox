@@ -50,7 +50,7 @@ import { createClient } from '@/lib/shared/db/client'
 import { getCountryFlagEmoji } from '@/lib/utils/countries'
 import { prepareKYCAccount, startKYCVerification } from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
-import { getStripeConnectAllowedCountriesClient } from '@/lib/shared/stripe/connect-allowed-client'
+import { getResidenceCountries } from '@/lib/shared/kyc/residence-countries'
 import {
   getStripeIdentityDocumentTypes,
   STRIPE_IDENTITY_SUPPORTED_COUNTRIES,
@@ -88,23 +88,20 @@ export default function KYCPage() {
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
   const PENDING_MIN_MS = 30000
-  const stripeConnectCountries = useMemo(
-    () => getStripeConnectAllowedCountriesClient(),
-    []
-  )
+  const residenceCountries = useMemo(() => getResidenceCountries(), [])
   const stripeIdentitySet = useMemo(
     () => new Set<string>(STRIPE_IDENTITY_SUPPORTED_COUNTRIES),
     []
   )
-  const connectCountrySet = useMemo(
-    () => new Set<string>(stripeConnectCountries),
-    [stripeConnectCountries]
+  const residenceCountrySet = useMemo(
+    () => new Set<string>(residenceCountries),
+    [residenceCountries]
   )
   const normalizedAccountCountry = accountCountry.trim().toUpperCase()
   const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
-  const isConnectCountrySupported =
+  const isResidenceCountrySupported =
     !normalizedAccountCountry ||
-    connectCountrySet.has(normalizedAccountCountry)
+    residenceCountrySet.has(normalizedAccountCountry)
   const isIdentityCountrySupported =
     !normalizedDocumentCountry ||
     stripeIdentitySet.has(normalizedDocumentCountry)
@@ -116,7 +113,7 @@ export default function KYCPage() {
     Boolean(
       documentType && normalizedDocumentCountry && normalizedAccountCountry
     ) &&
-    isConnectCountrySupported &&
+    isResidenceCountrySupported &&
     isIdentityCountrySupported
 
   const stripePromise = useMemo(() => getStripeClient(), [])
@@ -128,14 +125,14 @@ export default function KYCPage() {
         ? new Intl.DisplayNames(['fr'], { type: 'region' })
         : null
 
-    return stripeConnectCountries
+    return residenceCountries
       .map(code => ({
         code,
         name: displayNames?.of(code) || code,
         flag: getCountryFlagEmoji(code),
       }))
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
-  }, [stripeConnectCountries])
+  }, [residenceCountries])
 
   const identityCountryOptions = useMemo(() => {
     const displayNames =
@@ -352,9 +349,7 @@ export default function KYCPage() {
       }
     }
 
-    if (kycStatus !== 'pending') {
-      pendingHoldUntilRef.current = null
-    }
+    pendingHoldUntilRef.current = null
     setDisplayStatus(kycStatus)
 
     return () => {
@@ -822,15 +817,14 @@ export default function KYCPage() {
                   </Select>
                 </div>
 
-                {!isConnectCountrySupported && accountCountry && (
+                {!isResidenceCountrySupported && accountCountry && (
                   <Alert>
                     <IconAlertTriangle className="h-4 w-4" />
                     <AlertTitle>Pays de résidence non supporté</AlertTitle>
                     <AlertDescription>
-                      Stripe Connect n&apos;est pas disponible pour ce pays de
-                      résidence pour le moment. Choisissez un pays pris en
-                      charge ou utilisez Mobile Wallet pour recevoir vos
-                      paiements.
+                      Pour le moment, seules la France et le Bénin sont
+                      disponibles. Choisissez un pays pris en charge pour
+                      continuer.
                     </AlertDescription>
                   </Alert>
                 )}

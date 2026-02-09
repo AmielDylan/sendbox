@@ -7,7 +7,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useForm, Controller, useWatch } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { registerSchema, type RegisterInput } from '@/lib/core/auth/validations'
 import { signUp } from '@/lib/core/auth/actions'
@@ -17,11 +17,6 @@ import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
   Card,
   CardContent,
   CardDescription,
@@ -29,41 +24,8 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { IconLoader2, IconPackage, IconChevronDown } from '@tabler/icons-react'
+import { IconLoader2, IconPackage } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
-import { getCountryFlagEmoji } from '@/lib/utils/countries'
-
-const PHONE_COUNTRIES = [
-  { code: 'FR', name: 'France', dialCode: '+33' },
-  { code: 'BJ', name: 'Bénin', dialCode: '+229' },
-  { code: 'CI', name: "Côte d'Ivoire", dialCode: '+225' },
-  { code: 'SN', name: 'Sénégal', dialCode: '+221' },
-  { code: 'TG', name: 'Togo', dialCode: '+228' },
-  { code: 'BF', name: 'Burkina Faso', dialCode: '+226' },
-  { code: 'ML', name: 'Mali', dialCode: '+223' },
-  { code: 'NE', name: 'Niger', dialCode: '+227' },
-  { code: 'GN', name: 'Guinée', dialCode: '+224' },
-  { code: 'CM', name: 'Cameroun', dialCode: '+237' },
-  { code: 'CD', name: 'Rép. Dém. du Congo', dialCode: '+243' },
-  { code: 'CG', name: 'Congo', dialCode: '+242' },
-  { code: 'GA', name: 'Gabon', dialCode: '+241' },
-  { code: 'MA', name: 'Maroc', dialCode: '+212' },
-  { code: 'DZ', name: 'Algérie', dialCode: '+213' },
-  { code: 'TN', name: 'Tunisie', dialCode: '+216' },
-  { code: 'BE', name: 'Belgique', dialCode: '+32' },
-  { code: 'CH', name: 'Suisse', dialCode: '+41' },
-  { code: 'CA', name: 'Canada', dialCode: '+1' },
-  { code: 'LU', name: 'Luxembourg', dialCode: '+352' },
-  { code: 'MC', name: 'Monaco', dialCode: '+377' },
-]
-  .map(country => ({
-    ...country,
-    flag: getCountryFlagEmoji(country.code),
-  }))
-  .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
-
-const DEFAULT_PHONE_COUNTRY =
-  PHONE_COUNTRIES.find(country => country.code === 'FR') || PHONE_COUNTRIES[0]
 
 const PASSWORD_CHECKS = [
   {
@@ -86,9 +48,6 @@ function RegisterForm() {
   const { user, loading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [authCheckComplete, setAuthCheckComplete] = useState(false)
-  const [phoneCountry, setPhoneCountry] = useState(DEFAULT_PHONE_COUNTRY)
-  const [phoneDigits, setPhoneDigits] = useState('')
-  const [phoneOpen, setPhoneOpen] = useState(false)
 
   // Tous les hooks doivent être définis avant toute condition de rendu
   const {
@@ -116,26 +75,6 @@ function RegisterForm() {
       : passwordScore <= 4
         ? 'bg-amber-500'
         : 'bg-emerald-500'
-
-  const watchedPhone = useWatch({ control, name: 'phone' }) || ''
-
-  useEffect(() => {
-    if (!watchedPhone) {
-      return
-    }
-    const matchedCountry = PHONE_COUNTRIES.find(country =>
-      watchedPhone.startsWith(country.dialCode)
-    )
-    if (matchedCountry && matchedCountry.code !== phoneCountry.code) {
-      setPhoneCountry(matchedCountry)
-    }
-    const digitsOnly = watchedPhone
-      .replace(matchedCountry?.dialCode || '', '')
-      .replace(/\D/g, '')
-    if (digitsOnly && digitsOnly !== phoneDigits) {
-      setPhoneDigits(digitsOnly)
-    }
-  }, [watchedPhone, phoneCountry.code, phoneDigits])
 
   // Vérification d'authentification avec timeout
   useEffect(() => {
@@ -282,105 +221,6 @@ function RegisterForm() {
                   {errors.email.message}
                 </p>
               )}
-            </div>
-
-            {/* Téléphone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">Téléphone</Label>
-              <Controller
-                name="phone"
-                control={control}
-                render={({ field }) => (
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Popover open={phoneOpen} onOpenChange={setPhoneOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={phoneOpen}
-                          className="h-10 w-full justify-between sm:w-[200px]"
-                        >
-                          <span className="flex items-center gap-2">
-                            <span>{phoneCountry.flag}</span>
-                            <span className="text-sm">
-                              {phoneCountry.dialCode}
-                            </span>
-                          </span>
-                          <IconChevronDown className="h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        side="bottom"
-                        align="start"
-                        className="w-[--radix-popover-trigger-width] p-0"
-                      >
-                        <div className="max-h-60 overflow-y-auto">
-                          {PHONE_COUNTRIES.map(country => (
-                            <button
-                              key={country.code}
-                              type="button"
-                              className={cn(
-                                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
-                                phoneCountry.code === country.code &&
-                                  'bg-accent'
-                              )}
-                              onClick={() => {
-                                setPhoneCountry(country)
-                                const nextValue = phoneDigits
-                                  ? `${country.dialCode}${phoneDigits}`
-                                  : ''
-                                field.onChange(nextValue)
-                                setPhoneOpen(false)
-                              }}
-                            >
-                              <span>{country.flag}</span>
-                              <span className="flex-1">{country.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {country.dialCode}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      inputMode="numeric"
-                      autoComplete="tel-national"
-                      placeholder="612345678"
-                      className="h-10"
-                      value={phoneDigits}
-                      onChange={event => {
-                        const digits = event.target.value.replace(/\D/g, '')
-                        setPhoneDigits(digits)
-                        const nextValue = digits
-                          ? `${phoneCountry.dialCode}${digits}`
-                          : ''
-                        field.onChange(nextValue)
-                      }}
-                      aria-invalid={errors.phone ? 'true' : 'false'}
-                      aria-describedby={
-                        errors.phone ? 'phone-error' : undefined
-                      }
-                    />
-                  </div>
-                )}
-              />
-              {errors.phone && (
-                <p
-                  id="phone-error"
-                  className="text-sm text-destructive"
-                  role="alert"
-                >
-                  {errors.phone.message}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Choisissez l&apos;indicatif puis entrez le numéro (chiffres
-                uniquement).
-              </p>
             </div>
 
             {/* Mot de passe */}

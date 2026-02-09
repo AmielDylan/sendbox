@@ -589,9 +589,18 @@ export type Database = {
           stripe_requirements: Json | null
           payout_method: string | null
           payout_status: string | null
+          payout_provider: string | null
           payout_error_code: string | null
           payout_error_message: string | null
           payout_error_at: string | null
+          flutterwave_subaccount_id: string | null
+          flutterwave_recipient_id: string | null
+          flutterwave_recipient_type: string | null
+          flutterwave_recipient_currency: string | null
+          flutterwave_bank_account_number: string | null
+          flutterwave_bank_code: string | null
+          flutterwave_bank_account_name: string | null
+          fedapay_id: string | null
           wallet_operator: string | null
           wallet_phone: string | null
           wallet_verified_at: string | null
@@ -645,9 +654,18 @@ export type Database = {
           stripe_requirements?: Json | null
           payout_method?: string | null
           payout_status?: string | null
+          payout_provider?: string | null
           payout_error_code?: string | null
           payout_error_message?: string | null
           payout_error_at?: string | null
+          flutterwave_subaccount_id?: string | null
+          flutterwave_recipient_id?: string | null
+          flutterwave_recipient_type?: string | null
+          flutterwave_recipient_currency?: string | null
+          flutterwave_bank_account_number?: string | null
+          flutterwave_bank_code?: string | null
+          flutterwave_bank_account_name?: string | null
+          fedapay_id?: string | null
           wallet_operator?: string | null
           wallet_phone?: string | null
           wallet_verified_at?: string | null
@@ -701,9 +719,18 @@ export type Database = {
           stripe_requirements?: Json | null
           payout_method?: string | null
           payout_status?: string | null
+          payout_provider?: string | null
           payout_error_code?: string | null
           payout_error_message?: string | null
           payout_error_at?: string | null
+          flutterwave_subaccount_id?: string | null
+          flutterwave_recipient_id?: string | null
+          flutterwave_recipient_type?: string | null
+          flutterwave_recipient_currency?: string | null
+          flutterwave_bank_account_number?: string | null
+          flutterwave_bank_code?: string | null
+          flutterwave_bank_account_name?: string | null
+          fedapay_id?: string | null
           wallet_operator?: string | null
           wallet_phone?: string | null
           wallet_verified_at?: string | null

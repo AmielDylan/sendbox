@@ -15,7 +15,7 @@ export async function GET() {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'id, role, stripe_connect_account_id, stripe_payouts_enabled, stripe_onboarding_completed, payout_method, payout_status, payout_error_code, payout_error_message, payout_error_at'
+      'id, role, payout_provider, stripe_connect_account_id, stripe_payouts_enabled, stripe_onboarding_completed, payout_method, payout_status, payout_error_code, payout_error_message, payout_error_at'
     )
     .eq('id', user.id)
     .single()
@@ -33,7 +33,14 @@ export async function GET() {
 
   const payoutMethod = (profile as any)?.payout_method as
     | 'stripe_bank'
+    | 'bank_transfer'
     | 'mobile_wallet'
+    | undefined
+  const payoutProvider = (profile as any)?.payout_provider as
+    | 'stripe'
+    | 'flutterwave'
+    | 'fedapay'
+    | null
     | undefined
   const payoutStatus = (profile as any)?.payout_status as
     | 'pending'
@@ -58,6 +65,19 @@ export async function GET() {
       }
     }
     return updates
+  }
+
+  if (payoutProvider && payoutProvider !== 'stripe') {
+    return Response.json({
+      payouts_enabled: false,
+      onboarding_completed: false,
+      payout_status: payoutStatus ?? null,
+      payout_method: payoutMethod ?? null,
+      payout_error_code: payoutErrorCode ?? null,
+      payout_error_message: payoutErrorMessage ?? null,
+      payout_error_at: payoutErrorAt ?? null,
+      requirements: null,
+    })
   }
 
   if (!profile.stripe_connect_account_id) {
@@ -117,7 +137,8 @@ export async function GET() {
       !requirements?.currently_due?.length &&
       !requirements?.past_due?.length
 
-    const shouldUpdatePayoutMethod = payoutMethod !== 'mobile_wallet'
+    const shouldUpdatePayoutMethod =
+      payoutMethod !== 'mobile_wallet' && payoutMethod !== 'bank_transfer'
     const nextPayoutStatus = payoutsEnabled ? 'active' : 'pending'
     const updatePayload: Record<string, any> = {
       stripe_payouts_enabled: payoutsEnabled,

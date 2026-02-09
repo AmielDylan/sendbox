@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, role, stripe_connect_account_id')
+      .select('id, role, payout_provider, stripe_connect_account_id')
       .eq('id', user.id)
       .single()
 
@@ -40,6 +40,13 @@ export async function POST(req: Request) {
       return Response.json(
         { error: 'Accès réservé aux utilisateurs' },
         { status: 403 }
+      )
+    }
+
+    if ((profile as any)?.payout_provider && (profile as any).payout_provider !== 'stripe') {
+      return Response.json(
+        { error: 'Compte non-Stripe: identité indisponible.' },
+        { status: 400 }
       )
     }
 

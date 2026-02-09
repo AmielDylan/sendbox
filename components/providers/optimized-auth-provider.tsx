@@ -483,6 +483,7 @@ export function OptimizedAuthProvider({
 
     const payoutMethod = (profile as any)?.payout_method as
       | 'stripe_bank'
+      | 'bank_transfer'
       | 'mobile_wallet'
       | undefined
     const payoutStatus = (profile as any)?.payout_status as
@@ -615,20 +616,9 @@ export function OptimizedAuthProvider({
   }, [profile])
 
   useEffect(() => {
-    if (!profile?.id || !user?.id) return
-
     if (connectBootstrapRequested.current) return
-
-    if (profile.role === 'admin') return
-
-    if ((profile as any)?.stripe_connect_account_id) return
-
     connectBootstrapRequested.current = true
-    fetch('/api/connect/bootstrap', { method: 'POST' }).catch(error => {
-      console.warn('Connect bootstrap failed:', error)
-      connectBootstrapRequested.current = false
-    })
-  }, [profile, user?.id])
+  }, [])
 
   useEffect(() => {
     lastKycStatus.current = (profile as any)?.kyc_status ?? null
