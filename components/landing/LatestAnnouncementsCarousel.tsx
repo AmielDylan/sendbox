@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/hooks/use-auth'
 import { IconArrowRight, IconCalendar, IconMapPin } from '@tabler/icons-react'
 import { format } from 'date-fns'
@@ -22,6 +23,11 @@ type AnnouncementPreview = {
   price_per_kg: number | null
   created_at: string | null
   status: string | null
+  profiles?: {
+    firstname: string | null
+    lastname: string | null
+    avatar_url: string | null
+  } | null
 }
 
 const formatDate = (value?: string | null) => {
@@ -152,6 +158,14 @@ export function LatestAnnouncementsCarousel() {
                   typeof item.available_kg === 'number'
                     ? `${item.available_kg} kg dispo`
                     : null
+                const travelerProfile = item.profiles
+                const travelerName = travelerProfile?.firstname || 'Voyageur'
+                const travelerInitials = travelerName
+                  .split(' ')
+                  .map(part => part[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase()
 
                 return (
                   <Link
@@ -170,6 +184,21 @@ export function LatestAnnouncementsCarousel() {
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <IconCalendar className="h-3.5 w-3.5" />
                           {departure || 'Date à venir'}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-2">
+                        <Avatar className="h-7 w-7 text-xs">
+                          <AvatarImage
+                            src={travelerProfile?.avatar_url || ''}
+                            alt={travelerName}
+                          />
+                          <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
+                            {travelerInitials || 'S'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {travelerName}
                         </span>
                       </div>
 
