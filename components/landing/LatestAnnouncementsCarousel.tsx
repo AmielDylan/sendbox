@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 
 type AnnouncementPreview = {
   id: string
+  traveler_id?: string | null
   departure_city: string | null
   departure_country: string | null
   arrival_city: string | null
@@ -180,7 +181,10 @@ export function LatestAnnouncementsCarousel() {
                     ? `${item.available_kg} kg dispo`
                     : null
                 const travelerProfile = item.profiles
-                const travelerName = travelerProfile?.firstname || 'Voyageur'
+                const travelerName =
+                  travelerProfile?.firstname ||
+                  travelerProfile?.lastname ||
+                  'Voyageur'
                 const travelerInitials = travelerName
                   .split(' ')
                   .map(part => part[0])
