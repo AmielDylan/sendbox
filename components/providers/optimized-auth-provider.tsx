@@ -25,6 +25,7 @@ import type { Session, User } from '@supabase/supabase-js'
 import { QUERY_KEYS, invalidateAuthQueries } from '@/lib/shared/query/config'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { toast } from 'sonner'
+import { fetchConnectStatus } from '@/lib/shared/stripe/connect-status-client'
 
 export interface Profile {
   id: string
@@ -482,6 +483,7 @@ export function OptimizedAuthProvider({
 
     const payoutMethod = (profile as any)?.payout_method as
       | 'stripe_bank'
+      | 'bank_transfer'
       | 'mobile_wallet'
       | undefined
     const payoutStatus = (profile as any)?.payout_status as
@@ -533,7 +535,8 @@ export function OptimizedAuthProvider({
 
     const pollConnectStatus = async () => {
       try {
-        const res = await fetch('/api/connect/status')
+        const res = await fetchConnectStatus('auth_poll')
+        if (!res) return
         await res.json().catch(() => null)
       } catch (error) {
         console.warn('Connect status polling failed:', error)
@@ -613,20 +616,9 @@ export function OptimizedAuthProvider({
   }, [profile])
 
   useEffect(() => {
-    if (!profile?.id || !user?.id) return
-
     if (connectBootstrapRequested.current) return
-
-    if (profile.role === 'admin') return
-
-    if ((profile as any)?.stripe_connect_account_id) return
-
     connectBootstrapRequested.current = true
-    fetch('/api/connect/bootstrap', { method: 'POST' }).catch(error => {
-      console.warn('Connect bootstrap failed:', error)
-      connectBootstrapRequested.current = false
-    })
-  }, [profile, user?.id])
+  }, [])
 
   useEffect(() => {
     lastKycStatus.current = (profile as any)?.kyc_status ?? null

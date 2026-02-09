@@ -9,6 +9,10 @@ import { stripe } from '@/lib/shared/services/stripe/config'
 import { toStripeAmount } from '@/lib/core/payments/calculations'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 import { getPaymentsMode } from '@/lib/shared/config/features'
+import {
+  createFlutterwaveBankTransfer,
+  createFlutterwaveMobileMoneyTransfer,
+} from '@/lib/services/flutterwave'
 import { createFedaPayPayout } from '@/lib/services/fedapay'
 
 const EUR = 'eur'
@@ -119,7 +123,7 @@ export async function releaseTransferForBooking(
   const { data: traveler } = await admin
     .from('profiles')
     .select(
-      'stripe_connect_account_id, stripe_payouts_enabled, payout_method, payout_status, wallet_operator, wallet_phone, firstname, lastname, email'
+      'stripe_connect_account_id, stripe_payouts_enabled, payout_provider, payout_method, payout_status, wallet_operator, wallet_phone, flutterwave_bank_account_number, flutterwave_bank_code, flutterwave_bank_account_name, flutterwave_recipient_currency, kyc_status, firstname, lastname, email'
     )
     .eq('id', booking.traveler_id)
     .single()
@@ -130,7 +134,14 @@ export async function releaseTransferForBooking(
 
   const payoutMethod = (traveler as any)?.payout_method as
     | 'stripe_bank'
+    | 'bank_transfer'
     | 'mobile_wallet'
+    | undefined
+  const payoutProvider = (traveler as any)?.payout_provider as
+    | 'stripe'
+    | 'flutterwave'
+    | 'fedapay'
+    | null
     | undefined
   const payoutStatus = (traveler as any)?.payout_status as
     | 'pending'
@@ -143,6 +154,96 @@ export async function releaseTransferForBooking(
 
   if (travelerAmount <= 0) {
     return { error: 'invalid_transfer_amount' }
+  }
+
+  if (
+    (payoutProvider === 'flutterwave' || payoutProvider === 'fedapay') &&
+    traveler?.kyc_status !== 'approved'
+  ) {
+    return { error: 'kyc_not_approved' }
+  }
+
+  if (payoutProvider === 'fedapay') {
+    if (payoutMethod !== 'mobile_wallet') {
+      return { error: 'wallet_not_configured' }
+    }
+
+    if (!(traveler as any)?.wallet_operator || !(traveler as any)?.wallet_phone) {
+      return { error: 'wallet_not_configured' }
+    }
+
+    const operatorRaw = String((traveler as any)?.wallet_operator || '')
+    const operator = /wave/i.test(operatorRaw)
+      ? 'wave'
+      : /orange/i.test(operatorRaw)
+        ? 'orange'
+        : /togocom|togocel/i.test(operatorRaw)
+          ? 'togocom'
+          : /mtn[_-]?guinea|mtn\s*guinee/i.test(operatorRaw)
+            ? 'mtn_guinea'
+            : /moov/i.test(operatorRaw)
+              ? 'moov'
+              : /celtis|celtiis|sbin/i.test(operatorRaw)
+                ? 'sbin'
+                : 'mtn_open'
+
+    const payout = await createFedaPayPayout({
+      amount: travelerAmount,
+      currency: (payment.currency || XOF).toUpperCase(),
+      operator,
+      phoneNumber: (traveler as any)?.wallet_phone,
+      countryCode: (traveler as any)?.country || undefined,
+      receiverName: [traveler?.firstname, traveler?.lastname]
+        .filter(Boolean)
+        .join(' ')
+        .trim(),
+      description: 'Sendbox payout',
+      reference: bookingId,
+      customer: {
+        email: traveler?.email || undefined,
+        firstname: traveler?.firstname || undefined,
+        lastname: traveler?.lastname || undefined,
+        phoneNumber: (traveler as any)?.wallet_phone,
+      },
+    })
+
+    const transferStatus = normalizeWalletStatus(payout?.status)
+
+    await (admin as any).from('transfers').insert({
+      booking_id: bookingId,
+      stripe_transfer_id: null,
+      external_transfer_id: payout?.id || null,
+      payout_provider: 'fedapay',
+      amount: travelerAmount,
+      currency: (payment.currency || XOF).toLowerCase(),
+      status: transferStatus,
+      attempted_at: new Date().toISOString(),
+    })
+
+    if (transferStatus === 'paid') {
+      await admin
+        .from('bookings')
+        .update({
+          payout_at: new Date().toISOString(),
+          payout_id: payout?.id || null,
+        })
+        .eq('id', bookingId)
+    }
+
+    await createSystemNotification({
+      userId: booking.traveler_id,
+      type: 'payment_confirmed',
+      title: 'Paiement débloqué',
+      content:
+        'Votre paiement sécurisé est en cours de transfert vers votre Mobile Wallet.',
+      bookingId: booking.id,
+    })
+
+    return {
+      success: true,
+      transferId: payout?.id,
+      status: transferStatus,
+    }
   }
 
   if (payoutMethod === 'mobile_wallet') {
@@ -167,29 +268,39 @@ export async function releaseTransferForBooking(
       return { error: 'wallet_currency_not_supported' }
     }
 
-    const payout = await createFedaPayPayout({
+    const networkMap: Record<string, string> = {
+      mtn_open: 'MTN',
+      mtn: 'MTN',
+      moov: 'MOOV',
+      sbin: 'CELTIIS',
+      celtiis: 'CELTIIS',
+      celtis: 'CELTIIS',
+    }
+    const operator = String((traveler as any)?.wallet_operator || '')
+    const network =
+      networkMap[operator.toLowerCase()] ||
+      operator ||
+      (traveler as any)?.wallet_operator
+
+    const payout = await createFlutterwaveMobileMoneyTransfer({
       amount: travelerAmount,
-      currency: payoutCurrency.toUpperCase(),
-      operator: (traveler as any)?.wallet_operator,
+      sourceCurrency: payoutCurrency.toUpperCase(),
+      destinationCurrency: payoutCurrency.toUpperCase(),
       phoneNumber: (traveler as any)?.wallet_phone,
-      receiverName: [traveler?.firstname, traveler?.lastname]
-        .filter(Boolean)
-        .join(' ')
-        .trim(),
+      network,
+      narration: 'Sendbox payout',
       reference: bookingId,
-      metadata: {
-        booking_id: bookingId,
-        reason,
-      },
     })
 
-    const transferStatus = normalizeWalletStatus(payout.status)
+    const transferStatus = normalizeWalletStatus(
+      payout?.data?.status || payout?.status
+    )
 
     await (admin as any).from('transfers').insert({
       booking_id: bookingId,
       stripe_transfer_id: null,
-      external_transfer_id: payout.id,
-      payout_provider: 'fedapay',
+      external_transfer_id: payout?.data?.id || payout?.id || null,
+      payout_provider: 'flutterwave',
       amount: travelerAmount,
       currency: payoutCurrency,
       status: transferStatus,
@@ -201,7 +312,7 @@ export async function releaseTransferForBooking(
         .from('bookings')
         .update({
           payout_at: new Date().toISOString(),
-          payout_id: payout.id,
+          payout_id: payout?.data?.id || payout?.id || null,
         })
         .eq('id', bookingId)
     }
@@ -217,7 +328,65 @@ export async function releaseTransferForBooking(
 
     return {
       success: true,
-      transferId: payout.id,
+      transferId: payout?.data?.id || payout?.id,
+      status: transferStatus,
+    }
+  }
+
+  if (payoutMethod === 'bank_transfer') {
+    if (payoutStatus !== 'active') {
+      return { error: 'bank_not_active' }
+    }
+
+    const accountNumber = (traveler as any)?.flutterwave_bank_account_number
+    const bankCode = (traveler as any)?.flutterwave_bank_code
+    const accountName = (traveler as any)?.flutterwave_bank_account_name
+    const destinationCurrency =
+      (traveler as any)?.flutterwave_recipient_currency || XOF
+
+    if (!accountNumber || !bankCode || !accountName) {
+      return { error: 'bank_not_configured' }
+    }
+
+    const payout = await createFlutterwaveBankTransfer({
+      amount: travelerAmount,
+      sourceCurrency: (payment.currency || XOF).toUpperCase(),
+      destinationCurrency,
+      accountNumber,
+      bankCode,
+      accountName,
+      narration: 'Sendbox payout',
+      reference: bookingId,
+    })
+
+    const transferStatus = normalizeWalletStatus(
+      payout?.data?.status || payout?.status
+    )
+
+    await (admin as any).from('transfers').insert({
+      booking_id: bookingId,
+      stripe_transfer_id: null,
+      external_transfer_id: payout?.data?.id || payout?.id || null,
+      payout_provider: 'flutterwave',
+      amount: travelerAmount,
+      currency: (payment.currency || XOF).toLowerCase(),
+      status: transferStatus,
+      attempted_at: new Date().toISOString(),
+    })
+
+    if (transferStatus === 'paid') {
+      await admin
+        .from('bookings')
+        .update({
+          payout_at: new Date().toISOString(),
+          payout_id: payout?.data?.id || payout?.id || null,
+        })
+        .eq('id', bookingId)
+    }
+
+    return {
+      success: true,
+      transferId: payout?.data?.id || payout?.id,
       status: transferStatus,
     }
   }

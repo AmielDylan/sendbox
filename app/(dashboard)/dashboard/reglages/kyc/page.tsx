@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,7 +50,7 @@ import { createClient } from '@/lib/shared/db/client'
 import { getCountryFlagEmoji } from '@/lib/utils/countries'
 import { prepareKYCAccount, startKYCVerification } from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
-import { getStripeConnectAllowedCountriesClient } from '@/lib/shared/stripe/connect-allowed-client'
+import { getResidenceCountries } from '@/lib/shared/kyc/residence-countries'
 import {
   getStripeIdentityDocumentTypes,
   STRIPE_IDENTITY_SUPPORTED_COUNTRIES,
@@ -61,6 +61,7 @@ type DocumentType = 'passport' | 'national_id'
 
 export default function KYCPage() {
   const [kycStatus, setKycStatus] = useState<KYCStatus>(null)
+  const [displayStatus, setDisplayStatus] = useState<KYCStatus>(null)
   const [submittedAt, setSubmittedAt] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -82,25 +83,25 @@ export default function KYCPage() {
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
   const [accountCountryOpen, setAccountCountryOpen] = useState(false)
   const [accountCountrySearch, setAccountCountrySearch] = useState('')
+  const pendingHoldUntilRef = useRef<number | null>(null)
+  const pendingTimeoutRef = useRef<number | null>(null)
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
-  const stripeConnectCountries = useMemo(
-    () => getStripeConnectAllowedCountriesClient(),
-    []
-  )
+  const PENDING_MIN_MS = 30000
+  const residenceCountries = useMemo(() => getResidenceCountries(), [])
   const stripeIdentitySet = useMemo(
     () => new Set<string>(STRIPE_IDENTITY_SUPPORTED_COUNTRIES),
     []
   )
-  const connectCountrySet = useMemo(
-    () => new Set<string>(stripeConnectCountries),
-    [stripeConnectCountries]
+  const residenceCountrySet = useMemo(
+    () => new Set<string>(residenceCountries),
+    [residenceCountries]
   )
   const normalizedAccountCountry = accountCountry.trim().toUpperCase()
   const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
-  const isConnectCountrySupported =
+  const isResidenceCountrySupported =
     !normalizedAccountCountry ||
-    connectCountrySet.has(normalizedAccountCountry)
+    residenceCountrySet.has(normalizedAccountCountry)
   const isIdentityCountrySupported =
     !normalizedDocumentCountry ||
     stripeIdentitySet.has(normalizedDocumentCountry)
@@ -112,7 +113,7 @@ export default function KYCPage() {
     Boolean(
       documentType && normalizedDocumentCountry && normalizedAccountCountry
     ) &&
-    isConnectCountrySupported &&
+    isResidenceCountrySupported &&
     isIdentityCountrySupported
 
   const stripePromise = useMemo(() => getStripeClient(), [])
@@ -124,14 +125,14 @@ export default function KYCPage() {
         ? new Intl.DisplayNames(['fr'], { type: 'region' })
         : null
 
-    return stripeConnectCountries
+    return residenceCountries
       .map(code => ({
         code,
         name: displayNames?.of(code) || code,
         flag: getCountryFlagEmoji(code),
       }))
       .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
-  }, [stripeConnectCountries])
+  }, [residenceCountries])
 
   const identityCountryOptions = useMemo(() => {
     const displayNames =
@@ -226,9 +227,6 @@ export default function KYCPage() {
     if (!documentCountry && (profile as any)?.kyc_nationality) {
       setDocumentCountry((profile as any).kyc_nationality as string)
     }
-    if (formError) {
-      setFormError(null)
-    }
   }, [
     profile,
     user,
@@ -242,7 +240,6 @@ export default function KYCPage() {
     postalCode,
     accountCountry,
     documentCountry,
-    formError,
   ])
 
   useEffect(() => {
@@ -313,6 +310,55 @@ export default function KYCPage() {
     setKycStatus(nextStatus)
     setSubmittedAt(nextSubmitted)
   }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
+
+  useEffect(() => {
+    return () => {
+      if (pendingTimeoutRef.current) {
+        window.clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (pendingTimeoutRef.current) {
+      window.clearTimeout(pendingTimeoutRef.current)
+      pendingTimeoutRef.current = null
+    }
+
+    if (kycStatus === 'pending') {
+      pendingHoldUntilRef.current = Date.now() + PENDING_MIN_MS
+      setDisplayStatus('pending')
+      return
+    }
+
+    if (kycStatus === 'approved') {
+      const holdUntil = pendingHoldUntilRef.current
+      if (holdUntil && Date.now() < holdUntil) {
+        setDisplayStatus('pending')
+        pendingTimeoutRef.current = window.setTimeout(() => {
+          setDisplayStatus('approved')
+          pendingHoldUntilRef.current = null
+        }, holdUntil - Date.now())
+        return () => {
+          if (pendingTimeoutRef.current) {
+            window.clearTimeout(pendingTimeoutRef.current)
+            pendingTimeoutRef.current = null
+          }
+        }
+      }
+    }
+
+    pendingHoldUntilRef.current = null
+    setDisplayStatus(kycStatus)
+
+    return () => {
+      if (pendingTimeoutRef.current) {
+        window.clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+    }
+  }, [kycStatus])
 
   const handleStartVerification = async () => {
     if (step !== 'details') {
@@ -416,6 +462,15 @@ export default function KYCPage() {
         return
       }
 
+      if (pendingTimeoutRef.current) {
+        window.clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+      pendingHoldUntilRef.current = null
+      setSubmittedAt(null)
+      setKycStatus('incomplete')
+      setDisplayStatus('incomplete')
+      setFormError(null)
       setStep('details')
       toast.success('Compte prêt pour la vérification')
     } catch (error) {
@@ -454,7 +509,7 @@ export default function KYCPage() {
   }
 
   const getStatusBadge = () => {
-    switch (kycStatus) {
+    switch (displayStatus ?? kycStatus) {
       case 'approved':
         return (
           <Badge variant="default" className="bg-green-500">
@@ -487,6 +542,19 @@ export default function KYCPage() {
     }
   }
 
+  const getKycMessage = () => {
+    switch (displayStatus ?? kycStatus) {
+      case 'pending':
+        return "Votre vérification est en cours d'examen. Vous serez notifié par email."
+      case 'rejected':
+        return 'Votre vérification a été refusée. Corrigez vos informations puis relancez la procédure.'
+      case 'incomplete':
+        return "Aucune vérification en cours. Lancez la vérification pour continuer."
+      default:
+        return 'Sélectionnez votre document puis continuez la vérification.'
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -494,43 +562,36 @@ export default function KYCPage() {
           description="Nous vérifions vos documents pour sécuriser votre compte."
       />
 
-      {/* Statut actuel */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Statut de votre KYC</CardTitle>
-          <CardDescription>
-            {kycStatus === 'approved' &&
-              'Votre identité a été vérifiée. Toutes les actions sont débloquées.'}
-            {kycStatus === 'pending' &&
-              "Votre vérification est en cours d'examen. Vous serez notifié par email."}
-            {kycStatus === 'rejected' &&
-              'Votre vérification a été refusée. Vous pouvez relancer une vérification.'}
-            {(kycStatus === 'incomplete' || !kycStatus) &&
-              "Aucune vérification en cours. Lancez la vérification pour continuer."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
+      {displayStatus === 'approved' && (
+        <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
+          <div className="flex flex-wrap items-center gap-3">
             {getStatusBadge()}
+            <p className="text-sm font-semibold">Identité vérifiée</p>
+          </div>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              Votre identité est confirmée. Vous pouvez poursuivre vos actions
+              sur Sendbox en toute sécurité.
+            </p>
             {submittedAt && (
-              <p className="text-sm text-muted-foreground">
+              <p>
                 Soumis le {format(new Date(submittedAt), 'PP', { locale: fr })}
               </p>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
-      {kycStatus !== 'approved' && (
+      {displayStatus !== 'approved' && (
         <Card>
           <CardHeader>
             <CardTitle>Lancer la vérification d'identité</CardTitle>
             <CardDescription>
-              Sélectionnez votre document puis continuez la vérification.
+              {getKycMessage()}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {step === 'document' && (
+            {displayStatus !== 'pending' && step === 'document' && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="accountCountry">Pays de résidence</Label>
@@ -756,15 +817,14 @@ export default function KYCPage() {
                   </Select>
                 </div>
 
-                {!isConnectCountrySupported && accountCountry && (
+                {!isResidenceCountrySupported && accountCountry && (
                   <Alert>
                     <IconAlertTriangle className="h-4 w-4" />
                     <AlertTitle>Pays de résidence non supporté</AlertTitle>
                     <AlertDescription>
-                      Stripe Connect n&apos;est pas disponible pour ce pays de
-                      résidence pour le moment. Choisissez un pays pris en
-                      charge ou utilisez Mobile Wallet pour recevoir vos
-                      paiements.
+                      Pour le moment, seules la France et le Bénin sont
+                      disponibles. Choisissez un pays pris en charge pour
+                      continuer.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -784,7 +844,7 @@ export default function KYCPage() {
 
                 <Button
                   type="button"
-                  className="w-full"
+                  className="mt-4 w-full"
                   onClick={handlePrepareAccount}
                   disabled={isPreparingAccount || !canPrepareAccount}
                 >
@@ -800,7 +860,7 @@ export default function KYCPage() {
               </>
             )}
 
-            {step === 'details' && (
+            {displayStatus !== 'pending' && step === 'details' && (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
                   <div className="text-sm">
@@ -946,7 +1006,7 @@ export default function KYCPage() {
                 )}
               </>
             )}
-            {kycStatus === 'pending' && (
+            {displayStatus === 'pending' && (
               <Alert className="border-primary/20 bg-primary/5">
                 <IconClock className="h-4 w-4" />
                 <AlertTitle>Merci, votre vérification est en cours</AlertTitle>

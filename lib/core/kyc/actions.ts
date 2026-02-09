@@ -26,6 +26,7 @@ import {
   resolveStripeConnectCountry,
 } from '@/lib/shared/stripe/connect-allowed'
 import { normalizeCountryCode } from '@/lib/shared/stripe/connect-countries'
+import { isResidenceCountry } from '@/lib/shared/kyc/residence-countries'
 import {
   getStripeIdentityDocumentTypes,
   isStripeIdentityCountrySupported,
@@ -95,9 +96,7 @@ export async function prepareKYCAccount(input: {
         payout_error_code: 'account_country_missing',
         payout_error_message: 'Pays de résidence requis',
         payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method === 'stripe_bank'
-          ? { payout_status: 'disabled' }
-          : {}),
+        ...(profile.payout_method ? { payout_status: 'disabled' } : {}),
       } as any)
       .eq('id', user.id)
     return {
@@ -112,13 +111,29 @@ export async function prepareKYCAccount(input: {
         payout_error_code: 'document_country_missing',
         payout_error_message: 'Pays du document requis',
         payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method === 'stripe_bank'
+        ...(profile.payout_method ? { payout_status: 'disabled' } : {}),
+      } as any)
+      .eq('id', user.id)
+    return {
+      error: 'Pays du document requis',
+    }
+  }
+
+  if (!isResidenceCountry(normalizedAccountCountry)) {
+    await supabase
+      .from('profiles')
+      .update({
+        payout_error_code: 'residence_country_unsupported',
+        payout_error_message:
+          "Pays de résidence non pris en charge pour le moment.",
+        payout_error_at: new Date().toISOString(),
+        ...(profile.payout_method
           ? { payout_status: 'disabled' }
           : {}),
       } as any)
       .eq('id', user.id)
     return {
-      error: 'Pays du document requis',
+      error: "Pays de résidence non pris en charge pour le moment.",
     }
   }
 
@@ -130,9 +145,7 @@ export async function prepareKYCAccount(input: {
         payout_error_message:
           "La vérification d'identité n'est pas disponible pour ce pays.",
         payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method === 'stripe_bank'
-          ? { payout_status: 'disabled' }
-          : {}),
+        ...(profile.payout_method ? { payout_status: 'disabled' } : {}),
       } as any)
       .eq('id', user.id)
     return {
@@ -148,21 +161,61 @@ export async function prepareKYCAccount(input: {
   )
 
   if (!targetCountry) {
-    await supabase
+    const localProvider =
+      normalizedAccountCountry === 'BJ' ? 'fedapay' : 'flutterwave'
+    const updatePayload: Record<string, unknown> = {
+      payout_provider: localProvider,
+      stripe_connect_account_id: null,
+      stripe_payouts_enabled: false,
+      stripe_onboarding_completed: false,
+      stripe_requirements: null,
+      payout_method: null,
+      payout_status: 'disabled',
+      wallet_operator: null,
+      wallet_phone: null,
+      wallet_verified_at: null,
+      wallet_otp_code: null,
+      wallet_otp_expires_at: null,
+      flutterwave_subaccount_id: null,
+      flutterwave_recipient_id: null,
+      flutterwave_recipient_type: null,
+      flutterwave_recipient_currency: null,
+      fedapay_id: null,
+      country: normalizedAccountCountry,
+      kyc_status: 'incomplete',
+      kyc_submitted_at: null,
+      kyc_reviewed_at: null,
+      kyc_rejection_reason: null,
+      kyc_document_type: null,
+      kyc_nationality: normalizedDocumentCountry,
+      payout_error_code: null,
+      payout_error_message: null,
+      payout_error_at: null,
+    }
+
+    const { error: updateError } = await supabase
       .from('profiles')
-      .update({
-        payout_error_code: 'connect_country_unsupported',
-        payout_error_message:
-          "Stripe Connect n'est pas disponible pour ce pays de résidence pour le moment.",
-        payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method === 'stripe_bank'
-          ? { payout_status: 'disabled' }
-          : {}),
-      } as any)
+      .update(updatePayload as any)
       .eq('id', user.id)
+
+    if (updateError) {
+      return {
+        error: "Impossible d'enregistrer le fournisseur local",
+      }
+    }
+
+    if (profile.stripe_connect_account_id) {
+      try {
+        await stripe.accounts.del(profile.stripe_connect_account_id)
+      } catch (error) {
+        console.warn('Failed to delete previous Stripe account:', error)
+      }
+    }
+
     return {
-      error:
-        "Stripe Connect n'est pas disponible pour ce pays de résidence pour le moment.",
+      success: true,
+      status: 'local',
+      accountId: null,
     }
   }
 
@@ -178,7 +231,8 @@ export async function prepareKYCAccount(input: {
         profile.id,
         contactEmail,
         targetCountry,
-        accountTokenData
+        accountTokenData,
+        'express'
       )
       return { accountId }
     } catch (error) {
@@ -237,12 +291,29 @@ export async function prepareKYCAccount(input: {
   }
 
   const updatePayload: Record<string, unknown> = {
+    payout_provider: 'stripe',
     stripe_connect_account_id: accountId,
     stripe_payouts_enabled: false,
     stripe_onboarding_completed: false,
     stripe_requirements: null,
+    flutterwave_subaccount_id: null,
+    flutterwave_recipient_id: null,
+    flutterwave_recipient_type: null,
+    flutterwave_recipient_currency: null,
+    fedapay_id: null,
+    payout_method: null,
     payout_status: 'disabled',
+    wallet_operator: null,
+    wallet_phone: null,
+    wallet_verified_at: null,
+    wallet_otp_code: null,
+    wallet_otp_expires_at: null,
     country: targetCountry,
+    kyc_status: 'incomplete',
+    kyc_submitted_at: null,
+    kyc_reviewed_at: null,
+    kyc_rejection_reason: null,
+    kyc_document_type: null,
     kyc_nationality: normalizedDocumentCountry,
     payout_error_code: null,
     payout_error_message: null,
@@ -303,7 +374,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'id, email, kyc_status, role, stripe_connect_account_id, firstname, lastname, phone, address, city, postal_code, birthday, country'
+      'id, email, kyc_status, role, payout_provider, stripe_connect_account_id, firstname, lastname, phone, address, city, postal_code, birthday, country'
     )
     .eq('id', user.id)
     .single()
@@ -374,17 +445,11 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     }
 
     const allowedCountries = getStripeConnectAllowedCountries()
-    const country = resolveStripeConnectCountry(
+    const targetCountry = resolveStripeConnectCountry(
       normalizedAccountCountry,
       allowedCountries
     )
-
-    if (!country) {
-      return {
-        error:
-          "Stripe Connect n'est pas disponible pour ce pays de résidence pour le moment.",
-      }
-    }
+    const usesStripe = Boolean(targetCountry)
 
     const individual: Record<string, unknown> = {}
     if (firstName?.trim()) {
@@ -413,12 +478,12 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       individual.dob = dob
     }
 
-    if (address?.trim()) {
+    if (address?.trim() && targetCountry) {
       individual.address = {
         line1: address.trim(),
         city: city?.trim() || undefined,
         postal_code: postalCode?.trim() || undefined,
-        country,
+        country: targetCountry,
       }
     }
 
@@ -431,6 +496,45 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     const accountId = profile.stripe_connect_account_id || null
     const contactEmail =
       inputEmail?.trim() || profile.email || user.email || null
+
+    if (!usesStripe) {
+      const localProvider =
+        normalizedAccountCountry === 'BJ' ? 'fedapay' : 'flutterwave'
+      const session = await createIdentityVerificationSession({
+        email: contactEmail,
+        userId: user.id,
+        documentType,
+        documentCountry: normalizedDocumentCountry,
+      })
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          payout_provider: localProvider,
+          kyc_document_type: documentType,
+          kyc_nationality: normalizedDocumentCountry,
+          kyc_rejection_reason: null,
+          firstname: firstName?.trim() || profile.firstname,
+          lastname: lastName?.trim() || profile.lastname,
+          phone: inputPhone?.trim() || profile.phone,
+          address: address?.trim() || profile.address,
+          city: city?.trim() || profile.city,
+          postal_code: postalCode?.trim() || profile.postal_code,
+          birthday: birthday || profile.birthday,
+          country: normalizedAccountCountry || profile.country,
+        })
+        .eq('id', user.id)
+
+      if (updateError) {
+        console.error('Error updating profile KYC metadata:', updateError)
+      }
+
+      return {
+        success: true,
+        verificationClientSecret: session.clientSecret,
+        message: 'Vérification Stripe Identity prête.',
+      }
+    }
 
     if (!accountId) {
       return {
@@ -455,7 +559,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       throw error
     }
 
-    if (account?.country && account.country !== country) {
+    if (account?.country && account.country !== targetCountry) {
       return {
         error:
           'Le compte de paiement doit être préparé pour votre pays de résidence.',
@@ -510,6 +614,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
+        payout_provider: 'stripe',
         kyc_document_type: documentType,
         kyc_nationality: normalizedDocumentCountry,
         kyc_rejection_reason: null,
@@ -520,7 +625,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
         city: city?.trim() || profile.city,
         postal_code: postalCode?.trim() || profile.postal_code,
         birthday: birthday || profile.birthday,
-        country: country || profile.country,
+        country: targetCountry || profile.country,
       })
       .eq('id', user.id)
 
@@ -534,6 +639,20 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       message: 'Vérification Stripe Identity prête.',
     }
   } catch (error) {
+    const stripeMessage =
+      typeof (error as { raw?: { message?: string } })?.raw?.message === 'string'
+        ? (error as { raw?: { message?: string } }).raw!.message
+        : null
+    const genericMessage =
+      error instanceof Error && error.message
+        ? error.message
+        : 'Unknown error'
+    const userMessage =
+      stripeMessage && stripeMessage !== 'Unknown error'
+        ? stripeMessage
+        : genericMessage && genericMessage !== 'Unknown error'
+          ? genericMessage
+          : "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard."
     console.error('❌ Identity session creation failed:', {
       error,
       message: error instanceof Error ? error.message : 'Unknown error',
@@ -545,8 +664,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 7),
     })
     return {
-      error:
-        "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard.",
+      error: userMessage,
     }
   }
 }

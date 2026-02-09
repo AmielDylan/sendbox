@@ -359,9 +359,11 @@ export function PublicHeader() {
                               {initials}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="flex flex-col">
-                            <p className="text-sm font-medium">{displayName}</p>
-                            <p className="text-xs text-muted-foreground">
+                          <div className="flex min-w-0 flex-col">
+                            <p className="text-sm font-medium truncate">
+                              {displayName}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
                               {user?.email}
                             </p>
                           </div>

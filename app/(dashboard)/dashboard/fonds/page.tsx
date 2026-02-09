@@ -14,6 +14,7 @@ import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialS
 import { FEATURES } from '@/lib/shared/config/features'
 import { useAuth } from '@/hooks/use-auth'
 import { IconLoader2 } from '@tabler/icons-react'
+import { fetchConnectStatus } from '@/lib/shared/stripe/connect-status-client'
 
 export default function FundsPage() {
   const { user, profile, loading, refetch } = useAuth()
@@ -21,6 +22,7 @@ export default function FundsPage() {
   const payoutsEnabled = Boolean(profile?.stripe_payouts_enabled)
   const payoutMethod = (profile as any)?.payout_method as
     | 'stripe_bank'
+    | 'bank_transfer'
     | 'mobile_wallet'
     | undefined
   const payoutStatus = (profile as any)?.payout_status as
@@ -29,6 +31,7 @@ export default function FundsPage() {
     | 'disabled'
     | undefined
   const isStripeSelected = payoutMethod === 'stripe_bank'
+  const isBankTransferSelected = payoutMethod === 'bank_transfer'
   const isWalletSelected = payoutMethod === 'mobile_wallet'
 
   const kycStatus = (profile?.kyc_status ?? null) as
@@ -40,7 +43,8 @@ export default function FundsPage() {
   const canConfigurePayments = kycStatus === 'approved'
 
   const refreshConnectStatus = useCallback(async () => {
-    const res = await fetch('/api/connect/status')
+    const res = await fetchConnectStatus('funds')
+    if (!res) return
     if (!res.ok) {
       throw new Error('Erreur lors du chargement')
     }
@@ -154,6 +158,15 @@ export default function FundsPage() {
                     </Link>
                   </Button>
                 )}
+                {isBankTransferSelected && (
+                  <Button asChild>
+                    <Link href="/dashboard/reglages/paiements">
+                      {payoutStatus === 'active'
+                        ? 'Gérer mon compte bancaire'
+                        : 'Finaliser la vérification'}
+                    </Link>
+                  </Button>
+                )}
                 {isWalletSelected && (
                   <Button asChild>
                     <Link href="/dashboard/reglages/paiements">
@@ -183,7 +196,8 @@ export default function FundsPage() {
             )}
             {canConfigurePayments && payoutStatus === 'pending' && (
               <p className="text-xs text-muted-foreground">
-                Vérification en cours pour {isWalletSelected ? 'le wallet' : 'le compte bancaire'}.
+                Vérification en cours pour{' '}
+                {isWalletSelected ? 'le wallet' : 'le compte bancaire'}.
               </p>
             )}
             {canConfigurePayments && payoutStatus === 'active' && isWalletSelected && (
