@@ -467,6 +467,15 @@ export default function KYCPage() {
         return
       }
 
+      if (pendingTimeoutRef.current) {
+        window.clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+      pendingHoldUntilRef.current = null
+      setSubmittedAt(null)
+      setKycStatus('incomplete')
+      setDisplayStatus('incomplete')
+      setFormError(null)
       setStep('details')
       toast.success('Compte prêt pour la vérification')
     } catch (error) {

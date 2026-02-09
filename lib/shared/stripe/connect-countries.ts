@@ -15,7 +15,6 @@ export const STRIPE_CONNECT_SUPPORTED_COUNTRIES = [
   'BE',
   'BG',
   'BH',
-  'BJ',
   'BN',
   'BO',
   'BS',
