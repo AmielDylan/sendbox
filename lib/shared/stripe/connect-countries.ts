@@ -15,6 +15,7 @@ export const STRIPE_CONNECT_SUPPORTED_COUNTRIES = [
   'BE',
   'BG',
   'BH',
+  'BJ',
   'BN',
   'BO',
   'BS',
@@ -110,6 +111,16 @@ export const STRIPE_CONNECT_SUPPORTED_COUNTRIES = [
 
 export type ConnectCountry =
   (typeof STRIPE_CONNECT_SUPPORTED_COUNTRIES)[number]
+
+// Countries blocked for account creation (can still be valid for other flows).
+export const STRIPE_CONNECT_ACCOUNT_CREATION_BLOCKLIST: ConnectCountry[] = [
+  'BJ',
+]
+
+export const STRIPE_CONNECT_ACCOUNT_CREATION_COUNTRIES: ConnectCountry[] =
+  STRIPE_CONNECT_SUPPORTED_COUNTRIES.filter(
+    code => !STRIPE_CONNECT_ACCOUNT_CREATION_BLOCKLIST.includes(code)
+  )
 
 const SUPPORTED_SET = new Set(STRIPE_CONNECT_SUPPORTED_COUNTRIES)
 

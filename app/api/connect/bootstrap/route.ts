@@ -11,6 +11,7 @@ import {
   getStripeConnectFallbackCountry,
   resolveStripeConnectCountry,
 } from '@/lib/shared/stripe/connect-allowed'
+import { isResidenceCountry } from '@/lib/shared/kyc/residence-countries'
 
 const parseDob = (value?: string | null) => {
   if (!value) return null
@@ -38,7 +39,7 @@ export async function POST() {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
-        'id, role, email, firstname, lastname, phone, address, city, postal_code, birthday, country, stripe_connect_account_id'
+        'id, role, email, payout_provider, firstname, lastname, phone, address, city, postal_code, birthday, country, stripe_connect_account_id'
       )
       .eq('id', user.id)
       .single()
@@ -54,6 +55,13 @@ export async function POST() {
       )
     }
 
+    if ((profile as any)?.payout_provider && (profile as any).payout_provider !== 'stripe') {
+      return Response.json(
+        { error: 'Compte non-Stripe: bootstrap indisponible.' },
+        { status: 400 }
+      )
+    }
+
     if (profile.stripe_connect_account_id) {
       return Response.json({
         status: 'exists',
@@ -62,8 +70,24 @@ export async function POST() {
     }
 
     const allowedCountries = getStripeConnectAllowedCountries()
+    const normalizedCountry = profile.country?.trim().toUpperCase() || null
+
+    if (!normalizedCountry) {
+      return Response.json(
+        { error: 'Pays de résidence requis' },
+        { status: 400 }
+      )
+    }
+
+    if (normalizedCountry && !isResidenceCountry(normalizedCountry)) {
+      return Response.json(
+        { error: 'Pays de résidence non pris en charge' },
+        { status: 400 }
+      )
+    }
+
     const resolvedCountry = resolveStripeConnectCountry(
-      profile.country,
+      normalizedCountry,
       allowedCountries
     )
     const fallbackCountry = getStripeConnectFallbackCountry(allowedCountries)
@@ -117,7 +141,8 @@ export async function POST() {
       profile.id,
       profile.email || user.email || undefined,
       country,
-      accountTokenData
+      accountTokenData,
+      'express'
     )
 
     const status = await checkAccountStatus(accountId)
@@ -133,6 +158,7 @@ export async function POST() {
         stripe_payouts_enabled: Boolean(status.payoutsEnabled),
         stripe_onboarding_completed: Boolean(status.payoutsEnabled),
         stripe_requirements: requirementsJson,
+        payout_provider: 'stripe',
       } as any)
       .eq('id', profile.id)
 

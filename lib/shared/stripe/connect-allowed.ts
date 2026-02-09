@@ -2,6 +2,7 @@ import 'server-only'
 
 import {
   STRIPE_CONNECT_SUPPORTED_COUNTRIES,
+  STRIPE_CONNECT_ACCOUNT_CREATION_COUNTRIES,
   normalizeCountryCode,
   parseStripeConnectCountryList,
   type ConnectCountry,
@@ -14,7 +15,7 @@ export const getStripeConnectAllowedCountries = (): ConnectCountry[] => {
   const parsed = parseStripeConnectCountryList(envList)
   return parsed.length > 0
     ? parsed
-    : [...STRIPE_CONNECT_SUPPORTED_COUNTRIES]
+    : [...STRIPE_CONNECT_ACCOUNT_CREATION_COUNTRIES]
 }
 
 export const getStripeConnectFallbackCountry = (

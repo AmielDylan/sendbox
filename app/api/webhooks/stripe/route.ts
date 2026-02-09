@@ -316,21 +316,33 @@ export async function POST(req: NextRequest) {
         const { data: profile } = await supabase
           .from('profiles')
           .select(
-            'id, payout_method, stripe_payouts_enabled, kyc_status, kyc_reviewed_at, kyc_submitted_at'
+            'id, payout_provider, payout_method, stripe_payouts_enabled, kyc_status, kyc_reviewed_at, kyc_submitted_at'
           )
           .eq('stripe_connect_account_id', account.id)
           .maybeSingle()
 
         const payoutMethod = (profile as any)?.payout_method as
           | 'stripe_bank'
+          | 'bank_transfer'
           | 'mobile_wallet'
           | undefined
-        const shouldUpdatePayoutMethod = payoutMethod !== 'mobile_wallet'
+        const payoutProvider = (profile as any)?.payout_provider as
+          | 'stripe'
+          | 'flutterwave'
+          | 'fedapay'
+          | null
+          | undefined
+        const shouldUpdatePayoutMethod =
+          payoutProvider !== 'flutterwave' &&
+          payoutProvider !== 'fedapay' &&
+          payoutMethod !== 'mobile_wallet' &&
+          payoutMethod !== 'bank_transfer'
         const nextPayoutStatus = payoutsEnabled ? 'active' : 'pending'
         const updatePayload: Record<string, any> = {
           stripe_payouts_enabled: payoutsEnabled,
           stripe_onboarding_completed: onboardingCompleted,
           stripe_requirements: requirementsJson,
+          payout_provider: 'stripe',
         }
 
         const individualVerificationStatus =

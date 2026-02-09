@@ -68,7 +68,6 @@ export async function signUp(formData: RegisterInput) {
         data: {
           firstname: validation.data.firstname,
           lastname: validation.data.lastname,
-          phone: validation.data.phone,
         },
       },
     })
@@ -94,7 +93,6 @@ export async function signUp(formData: RegisterInput) {
       const profileUpdates: Record<string, unknown> = {
         firstname: validation.data.firstname,
         lastname: validation.data.lastname,
-        phone: validation.data.phone,
         kyc_status: 'incomplete',
       }
 
@@ -151,7 +149,6 @@ export async function signUp(formData: RegisterInput) {
                 email: validation.data.email,
                 firstname: validation.data.firstname,
                 lastname: validation.data.lastname,
-                phone: validation.data.phone,
                 kyc_status: 'incomplete',
               })
 

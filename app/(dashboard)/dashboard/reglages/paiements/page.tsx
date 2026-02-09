@@ -31,10 +31,11 @@ import { FEATURES } from '@/lib/shared/config/features'
 import { useAuth } from '@/hooks/use-auth'
 import { StripeConnectCustomFlow } from '@/components/features/payments/StripeConnectCustomFlow'
 import { MobileWalletSetup } from '@/components/features/payments/MobileWalletSetup'
+import { FlutterwaveBankSetup } from '@/components/features/payments/FlutterwaveBankSetup'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
 
-type PayoutMethod = 'stripe_bank' | 'mobile_wallet'
+type PayoutMethod = 'stripe_bank' | 'mobile_wallet' | 'bank_transfer'
 
 type MethodCard = {
   id: PayoutMethod
@@ -53,6 +54,12 @@ export default function PaymentsSettingsPage() {
 
   const currentMethod = (profile as any)?.payout_method as
     | PayoutMethod
+    | undefined
+  const payoutProvider = (profile as any)?.payout_provider as
+    | 'stripe'
+    | 'flutterwave'
+    | 'fedapay'
+    | null
     | undefined
   const currentStatus = (profile as any)?.payout_status as
     | 'pending'
@@ -75,8 +82,36 @@ export default function PaymentsSettingsPage() {
     }
   }, [currentMethod])
 
-  const methods = useMemo<MethodCard[]>(
-    () => [
+  const methods = useMemo<MethodCard[]>(() => {
+    if (payoutProvider === 'flutterwave') {
+      return [
+        {
+          id: 'bank_transfer',
+          title: 'Virement Bancaire',
+          description: 'Compte bancaire local ou international.',
+          icon: IconBuildingBank,
+        },
+        {
+          id: 'mobile_wallet',
+          title: 'Mobile Wallet',
+          description: 'MTN, Moov, Celtis via Flutterwave.',
+          icon: IconDeviceMobile,
+        },
+      ]
+    }
+
+    if (payoutProvider === 'fedapay') {
+      return [
+        {
+          id: 'mobile_wallet',
+          title: 'Mobile Wallet',
+          description: 'MTN, Moov, Celtiis via FedaPay.',
+          icon: IconDeviceMobile,
+        },
+      ]
+    }
+
+    return [
       {
         id: 'stripe_bank',
         title: 'Compte Bancaire',
@@ -84,15 +119,8 @@ export default function PaymentsSettingsPage() {
         icon: IconBuildingBank,
         disabled: !FEATURES.STRIPE_PAYMENTS,
       },
-      {
-        id: 'mobile_wallet',
-        title: 'Mobile Wallet',
-        description: 'MTN, Moov, Celtis via FedaPay.',
-        icon: IconDeviceMobile,
-      },
-    ],
-    []
-  )
+    ]
+  }, [payoutProvider])
 
   if (isAdmin) {
     return (
@@ -134,6 +162,27 @@ export default function PaymentsSettingsPage() {
     )
   }
 
+  if (!payoutProvider) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Paramètres de Paiement"
+          description="Définissez votre pays de résidence pour activer votre mode de paiement."
+        />
+        <Alert>
+          <AlertTitle>Profil incomplet</AlertTitle>
+          <AlertDescription>
+            Complétez votre vérification d&apos;identité pour activer votre mode
+            de paiement.
+          </AlertDescription>
+        </Alert>
+        <Button asChild>
+          <Link href="/dashboard/reglages/kyc">Compléter le profil</Link>
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -141,7 +190,7 @@ export default function PaymentsSettingsPage() {
         description="Sélectionnez votre mode de réception puis finalisez la vérification."
       />
 
-      {!FEATURES.STRIPE_PAYMENTS && (
+      {payoutProvider === 'stripe' && !FEATURES.STRIPE_PAYMENTS && (
         <Alert>
           <AlertTitle>Virements bancaires désactivés</AlertTitle>
           <AlertDescription>
@@ -213,12 +262,16 @@ export default function PaymentsSettingsPage() {
                 <p className="text-sm font-semibold">
                   {selectedMethod === 'stripe_bank'
                     ? 'Compte Bancaire'
-                    : 'Mobile Wallet'}
+                    : selectedMethod === 'bank_transfer'
+                      ? 'Virement Bancaire'
+                      : 'Mobile Wallet'}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {selectedMethod === 'stripe_bank'
                     ? 'Ajoutez votre IBAN pour activer les virements.'
-                    : 'Choisissez votre opérateur et validez votre numéro par OTP.'}
+                    : selectedMethod === 'bank_transfer'
+                      ? 'Renseignez votre compte bancaire pour recevoir vos gains.'
+                      : 'Choisissez votre opérateur et validez votre numéro par OTP.'}
                 </p>
               </div>
               <AlertDialog open={changeModeOpen} onOpenChange={setChangeModeOpen}>
@@ -266,6 +319,12 @@ export default function PaymentsSettingsPage() {
                   }}
                 />
               )
+            ) : selectedMethod === 'bank_transfer' ? (
+              <FlutterwaveBankSetup
+                onCompleted={async () => {
+                  await refetch()
+                }}
+              />
             ) : (
               <MobileWalletSetup
                 onCompleted={async () => {

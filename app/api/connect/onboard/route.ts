@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
-        'id, role, email, stripe_connect_account_id, firstname, lastname, phone, address, city, postal_code, birthday, country'
+        'id, role, email, payout_provider, stripe_connect_account_id, firstname, lastname, phone, address, city, postal_code, birthday, country'
       )
       .eq('id', user.id)
       .single()
@@ -88,6 +88,13 @@ export async function POST(req: Request) {
       return Response.json(
         { error: 'Accès réservé aux utilisateurs' },
         { status: 403 }
+      )
+    }
+
+    if ((profile as any)?.payout_provider && (profile as any).payout_provider !== 'stripe') {
+      return Response.json(
+        { error: 'Compte non-Stripe: onboarding indisponible.' },
+        { status: 400 }
       )
     }
 
@@ -183,12 +190,13 @@ export async function POST(req: Request) {
         user.id,
         accountEmail,
         country,
-        accountTokenData
+        accountTokenData,
+        'express'
       )
 
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ stripe_connect_account_id: accountId })
+        .update({ stripe_connect_account_id: accountId, payout_provider: 'stripe' })
         .eq('id', user.id)
 
       if (updateError) {
@@ -202,18 +210,19 @@ export async function POST(req: Request) {
     if (accountId) {
       try {
         const existingAccount = await stripe.accounts.retrieve(accountId)
-        if (existingAccount.type !== 'custom') {
+        if (existingAccount.type !== 'express') {
           const newAccountId = await createConnectedAccount(
             user.id,
             accountEmail,
             country,
-            accountTokenData
+            accountTokenData,
+            'express'
           )
           accountId = newAccountId
 
           const { error: replaceError } = await supabase
             .from('profiles')
-            .update({ stripe_connect_account_id: newAccountId })
+            .update({ stripe_connect_account_id: newAccountId, payout_provider: 'stripe' })
             .eq('id', user.id)
 
           if (replaceError) {
@@ -229,13 +238,14 @@ export async function POST(req: Request) {
             user.id,
             accountEmail,
             country,
-            accountTokenData
+            accountTokenData,
+            'express'
           )
           accountId = newAccountId
 
           const { error: replaceError } = await supabase
             .from('profiles')
-            .update({ stripe_connect_account_id: newAccountId })
+            .update({ stripe_connect_account_id: newAccountId, payout_provider: 'stripe' })
             .eq('id', user.id)
 
           if (replaceError) {
@@ -320,6 +330,7 @@ export async function POST(req: Request) {
       .update({
         payout_method: 'stripe_bank',
         payout_status: 'pending',
+        payout_provider: 'stripe',
         wallet_operator: null,
         wallet_phone: null,
         wallet_verified_at: null,

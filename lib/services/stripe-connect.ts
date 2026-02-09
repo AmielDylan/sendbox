@@ -43,7 +43,8 @@ export async function createConnectedAccount(
   userId: string,
   email: string | undefined,
   country: ConnectCountry,
-  accountTokenData?: AccountTokenData
+  accountTokenData?: AccountTokenData,
+  accountType: 'custom' | 'express' = 'custom'
 ) {
   const accountToken = accountTokenData
     ? await stripe.tokens.create({
@@ -56,7 +57,7 @@ export async function createConnectedAccount(
     : null
 
   const account = await stripe.accounts.create({
-    type: 'custom',
+    type: accountType,
     country,
     ...(email ? { email } : {}),
     capabilities: {

@@ -18,9 +18,6 @@ export const registerSchema = z
     confirmPassword: z.string(),
     firstname: z.string().min(2, 'Minimum 2 caractères').max(50),
     lastname: z.string().min(2, 'Minimum 2 caractères').max(50),
-    phone: z
-      .string()
-      .regex(/^\+\d{6,15}$/, 'Format : indicatif + numéro (6 à 15 chiffres)'),
     terms: z.boolean().refine(val => val === true, {
       message: 'Vous devez accepter les CGU',
     }),
