@@ -29,11 +29,18 @@ type AnnouncementPreview = {
   price_per_kg: number | null
   created_at: string | null
   status: string | null
-  profiles?: {
-    firstname: string | null
-    lastname: string | null
-    avatar_url: string | null
-  } | null
+  profiles?:
+    | {
+        firstname: string | null
+        lastname: string | null
+        avatar_url: string | null
+      }
+    | {
+        firstname: string | null
+        lastname: string | null
+        avatar_url: string | null
+      }[]
+    | null
 }
 
 const formatRelativeDate = (value?: string | null) => {
@@ -180,7 +187,9 @@ export function LatestAnnouncementsCarousel() {
                   typeof item.available_kg === 'number'
                     ? `${item.available_kg} kg dispo`
                     : null
-                const travelerProfile = item.profiles
+                const travelerProfile = Array.isArray(item.profiles)
+                  ? item.profiles[0] ?? null
+                  : item.profiles
                 const travelerName =
                   travelerProfile?.firstname ||
                   travelerProfile?.lastname ||
@@ -200,7 +209,7 @@ export function LatestAnnouncementsCarousel() {
                     href={href}
                     className="snap-start"
                   >
-                    <Card className="group min-w-[240px] sm:min-w-[280px] border-2 border-border bg-background p-4 transition-all duration-300 hover:border-primary/60 hover:shadow-xl">
+                    <Card className="group min-w-[240px] sm:min-w-[280px] border-2 border-border bg-background p-3 transition-all duration-300 hover:border-primary/60 hover:shadow-xl">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Avatar className="h-7 w-7 text-xs">
                           <AvatarImage
@@ -228,7 +237,7 @@ export function LatestAnnouncementsCarousel() {
                         </span>
                       </div>
 
-                      <div className="mt-4 space-y-2">
+                      <div className="mt-3 space-y-2">
                         <p className="text-base font-semibold text-foreground">
                           {origin} → {destination}
                         </p>
@@ -238,7 +247,7 @@ export function LatestAnnouncementsCarousel() {
                         </div>
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between">
+                      <div className="mt-3 flex items-center justify-between">
                         <span className="text-sm font-semibold text-foreground">
                           {price}
                         </span>
