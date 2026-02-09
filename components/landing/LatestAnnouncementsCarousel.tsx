@@ -7,7 +7,12 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/hooks/use-auth'
 import { IconArrowRight, IconCalendar, IconMapPin } from '@tabler/icons-react'
-import { format } from 'date-fns'
+import {
+  format,
+  differenceInMinutes,
+  differenceInHours,
+  differenceInDays,
+} from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 
@@ -30,11 +35,28 @@ type AnnouncementPreview = {
   } | null
 }
 
-const formatDate = (value?: string | null) => {
+const formatRelativeDate = (value?: string | null) => {
   if (!value) return null
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return null
-  return format(date, 'd MMM', { locale: fr })
+  const now = new Date()
+  const diffMinutes = Math.max(0, differenceInMinutes(now, date))
+  const diffHours = Math.max(0, differenceInHours(now, date))
+  const diffDays = Math.max(0, differenceInDays(now, date))
+
+  if (diffDays > 5) {
+    return { label: format(date, 'dd/MM/yyyy'), isNew: false }
+  }
+  if (diffDays >= 1) {
+    return { label: `il y a ${diffDays} j`, isNew: true }
+  }
+  if (diffHours >= 1) {
+    return { label: `il y a ${diffHours} h`, isNew: true }
+  }
+  if (diffMinutes >= 1) {
+    return { label: `il y a ${diffMinutes} min`, isNew: true }
+  }
+  return { label: 'à l’instant', isNew: true }
 }
 
 export function LatestAnnouncementsCarousel() {
@@ -149,7 +171,6 @@ export function LatestAnnouncementsCarousel() {
                   item.departure_city || item.departure_country || '—'
                 const destination =
                   item.arrival_city || item.arrival_country || '—'
-                const departure = formatDate(item.departure_date)
                 const price =
                   typeof item.price_per_kg === 'number'
                     ? `${item.price_per_kg}€ / kg`
@@ -166,6 +187,8 @@ export function LatestAnnouncementsCarousel() {
                   .join('')
                   .slice(0, 2)
                   .toUpperCase()
+                const relativeDate = formatRelativeDate(item.created_at)
+                const isNew = relativeDate?.isNew ?? true
 
                 return (
                   <Link
@@ -174,20 +197,7 @@ export function LatestAnnouncementsCarousel() {
                     className="snap-start"
                   >
                     <Card className="group min-w-[240px] sm:min-w-[280px] border-2 border-border bg-background p-4 transition-all duration-300 hover:border-primary/60 hover:shadow-xl">
-                      <div className="flex items-center justify-between">
-                        <Badge
-                          variant="secondary"
-                          className="bg-primary/10 text-primary"
-                        >
-                          Nouveau
-                        </Badge>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <IconCalendar className="h-3.5 w-3.5" />
-                          {departure || 'Date à venir'}
-                        </span>
-                      </div>
-
-                      <div className="mt-3 flex items-center gap-2">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Avatar className="h-7 w-7 text-xs">
                           <AvatarImage
                             src={travelerProfile?.avatar_url || ''}
@@ -197,8 +207,20 @@ export function LatestAnnouncementsCarousel() {
                             {travelerInitials || 'S'}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-xs font-medium text-muted-foreground">
+                        <span className="font-medium text-foreground truncate max-w-[120px]">
                           {travelerName}
+                        </span>
+                        {isNew && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-primary/10 text-primary shrink-0"
+                          >
+                            Nouveau
+                          </Badge>
+                        )}
+                        <span className="ml-auto flex items-center gap-1 shrink-0">
+                          <IconCalendar className="h-3.5 w-3.5" />
+                          {relativeDate?.label || '—'}
                         </span>
                       </div>
 
@@ -212,7 +234,7 @@ export function LatestAnnouncementsCarousel() {
                         </div>
                       </div>
 
-                      <div className="mt-5 flex items-center justify-between">
+                      <div className="mt-4 flex items-center justify-between">
                         <span className="text-sm font-semibold text-foreground">
                           {price}
                         </span>

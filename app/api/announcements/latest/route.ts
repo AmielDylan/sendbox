@@ -1,9 +1,18 @@
 import { createClient } from '@/lib/shared/db/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/database.types'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  const supabase = await createClient()
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabase =
+    serviceRoleKey && supabaseUrl
+      ? createAdminClient<Database>(supabaseUrl, serviceRoleKey, {
+          auth: { autoRefreshToken: false, persistSession: false },
+        })
+      : await createClient()
   const { searchParams } = new URL(request.url)
   const rawLimit = Number(searchParams.get('limit') || 10)
   const limit = Number.isFinite(rawLimit)
