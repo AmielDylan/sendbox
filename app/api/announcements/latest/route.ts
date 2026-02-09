@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from('announcements')
     .select(
-      'id, origin_city, origin_country, destination_city, destination_country, departure_date, arrival_date, max_weight_kg, price_per_kg, created_at, status'
+      'id, departure_city, departure_country, arrival_city, arrival_country, departure_date, arrival_date, available_kg, price_per_kg, created_at, status'
     )
     .in('status', ['active', 'partially_booked', 'fully_booked'])
     .order('created_at', { ascending: false })

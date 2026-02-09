@@ -12,13 +12,13 @@ import { cn } from '@/lib/utils'
 
 type AnnouncementPreview = {
   id: string
-  origin_city: string | null
-  origin_country: string | null
-  destination_city: string | null
-  destination_country: string | null
+  departure_city: string | null
+  departure_country: string | null
+  arrival_city: string | null
+  arrival_country: string | null
   departure_date: string | null
   arrival_date: string | null
-  max_weight_kg: number | null
+  available_kg: number | null
   price_per_kg: number | null
   created_at: string | null
   status: string | null
@@ -139,17 +139,18 @@ export function LatestAnnouncementsCarousel() {
             {!loading &&
               items.map(item => {
                 const href = user?.id ? `/annonces/${item.id}` : '/register'
-                const origin = item.origin_city || item.origin_country || '—'
+                const origin =
+                  item.departure_city || item.departure_country || '—'
                 const destination =
-                  item.destination_city || item.destination_country || '—'
+                  item.arrival_city || item.arrival_country || '—'
                 const departure = formatDate(item.departure_date)
                 const price =
                   typeof item.price_per_kg === 'number'
                     ? `${item.price_per_kg}€ / kg`
                     : 'Tarif à définir'
                 const maxKg =
-                  typeof item.max_weight_kg === 'number'
-                    ? `${item.max_weight_kg} kg dispo`
+                  typeof item.available_kg === 'number'
+                    ? `${item.available_kg} kg dispo`
                     : null
 
                 return (
