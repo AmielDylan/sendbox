@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from('announcements')
     .select(
-      'id, traveler_id, departure_city, departure_country, arrival_city, arrival_country, departure_date, arrival_date, available_kg, price_per_kg, created_at, status, profiles:profiles (firstname, lastname, avatar_url)'
+      'id, traveler_id, departure_city, departure_country, arrival_city, arrival_country, departure_date, arrival_date, available_kg, price_per_kg, created_at, status, profiles:profiles!announcements_traveler_id_fkey (firstname, lastname, avatar_url)'
     )
     .in('status', ['active', 'partially_booked', 'fully_booked'])
     .order('created_at', { ascending: false })
