@@ -231,7 +231,7 @@ export async function prepareKYCAccount(input: {
         contactEmail,
         targetCountry,
         accountTokenData,
-        'express'
+        'custom'
       )
       return { accountId }
     } catch (error) {
