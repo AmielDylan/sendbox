@@ -177,7 +177,7 @@ export default function HomePage() {
                   width={600}
                   height={600}
                   priority
-                  className="w-64 sm:w-80 md:w-96 lg:w-full h-auto rounded-2xl"
+                  className="w-full h-auto max-w-none rounded-2xl"
                 />
               </div>
             </div>

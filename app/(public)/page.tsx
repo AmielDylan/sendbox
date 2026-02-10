@@ -194,7 +194,7 @@ export default function HomePage() {
             <div className="relative mt-10 lg:mt-0 lg:pl-8 animate-fade-in-up animation-delay-300">
               <div className="relative">
                 {/* Main illustration container */}
-                <div className="relative aspect-square max-w-[280px] sm:max-w-md mx-auto">
+                <div className="relative aspect-square w-full max-w-none mx-auto">
                   {/* Decorative ring */}
                   <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin-slow"></div>
                   <div
