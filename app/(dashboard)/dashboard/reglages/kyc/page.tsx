@@ -847,8 +847,8 @@ export default function KYCPage() {
                     <IconShieldLock className="h-4 w-4" />
                     <AlertTitle>Merci de patienter</AlertTitle>
                     <AlertDescription>
-                      Nous mettons en place votre compte de paiement pour
-                      pouvoir lancer la vérification de votre identité.
+                      Nous mettons en place les configurations pour pouvoir
+                      lancer la vérification de votre identité.
                     </AlertDescription>
                   </Alert>
                 )}
