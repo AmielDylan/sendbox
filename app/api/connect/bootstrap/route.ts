@@ -134,7 +134,6 @@ export async function POST() {
     const accountTokenData: AccountTokenData = {
       business_type: 'individual',
       individual: Object.keys(individual).length > 0 ? individual : undefined,
-      tos_shown_and_accepted: true,
     }
 
     const accountId = await createConnectedAccount(
