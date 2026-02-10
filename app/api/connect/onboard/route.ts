@@ -179,7 +179,6 @@ export async function POST(req: Request) {
     const accountTokenData = {
       business_type: 'individual' as const,
       individual: Object.keys(individual).length > 0 ? individual : undefined,
-      tos_shown_and_accepted: true,
     }
 
     let accountId = profile.stripe_connect_account_id || null
@@ -277,7 +276,6 @@ export async function POST(req: Request) {
           account: {
             business_type: 'individual',
             individual,
-            tos_shown_and_accepted: true,
           },
         })
 

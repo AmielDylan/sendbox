@@ -46,12 +46,19 @@ export async function createConnectedAccount(
   accountTokenData?: AccountTokenData,
   accountType: 'custom' | 'express' = 'custom'
 ) {
+  const shouldIncludeTos =
+    accountType === 'custom' &&
+    (accountTokenData?.tos_shown_and_accepted ?? true)
   const accountToken = accountTokenData
     ? await stripe.tokens.create({
         account: {
           ...accountTokenData,
-          tos_shown_and_accepted:
-            accountTokenData.tos_shown_and_accepted ?? true,
+          ...(shouldIncludeTos
+            ? {
+                tos_shown_and_accepted:
+                  accountTokenData.tos_shown_and_accepted ?? true,
+              }
+            : {}),
         },
       })
     : null

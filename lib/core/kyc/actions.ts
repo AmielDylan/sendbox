@@ -222,7 +222,6 @@ export async function prepareKYCAccount(input: {
   const contactEmail = profile.email || user.email || undefined
   const accountTokenData: AccountTokenData = {
     business_type: 'individual',
-    tos_shown_and_accepted: true,
   }
 
   const createAccount = async () => {
@@ -490,7 +489,6 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     const accountTokenData: AccountTokenData = {
       business_type: 'individual',
       individual: Object.keys(individual).length > 0 ? individual : undefined,
-      tos_shown_and_accepted: true,
     }
 
     const accountId = profile.stripe_connect_account_id || null
@@ -571,7 +569,6 @@ export async function startKYCVerification(input: StripeIdentityInput) {
         account: {
           business_type: 'individual',
           individual,
-          tos_shown_and_accepted: true,
         },
       })
 
