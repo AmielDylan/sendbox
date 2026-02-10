@@ -170,14 +170,14 @@ export default function HomePage() {
               </div>
 
               {/* Right: Hero Image */}
-              <div className="relative hidden lg:block animate-fade-in-up animation-delay-200">
+              <div className="relative mt-10 flex justify-center lg:mt-0 lg:block animate-fade-in-up animation-delay-200">
                 <Image
                   src="/images/hero.png"
                   alt="Sendbox - Covalisage international"
                   width={600}
                   height={600}
                   priority
-                  className="w-full h-auto rounded-2xl"
+                  className="w-full h-auto max-w-none rounded-2xl"
                 />
               </div>
             </div>
@@ -335,10 +335,10 @@ export default function HomePage() {
               </div>
 
               {/* Right: Visual */}
-              <div className="relative animate-fade-in-up animation-delay-300 hidden sm:block">
-                <div className="relative aspect-square max-w-lg mx-auto lg:ml-auto">
+              <div className="relative animate-fade-in-up animation-delay-300">
+                <div className="relative aspect-square max-w-xs sm:max-w-lg mx-auto lg:ml-auto">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-emerald-500/20 rounded-3xl"></div>
-                  <div className="relative h-full rounded-3xl overflow-hidden border-2 border-border bg-muted/20 p-12">
+                  <div className="relative h-full rounded-3xl overflow-hidden border-2 border-border bg-muted/20 p-6 sm:p-12">
                     <Image
                       src="/images/illustrations/covoiturage.svg"
                       alt="Processus de covalisage"

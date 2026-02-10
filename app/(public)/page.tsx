@@ -191,31 +191,31 @@ export default function HomePage() {
             </div>
 
             {/* Right: Visual */}
-            <div className="relative lg:pl-8 animate-fade-in-up animation-delay-300">
+            <div className="relative mt-10 lg:mt-0 lg:pl-8 animate-fade-in-up animation-delay-300">
               <div className="relative">
                 {/* Main illustration container */}
-                <div className="relative aspect-square max-w-md mx-auto">
+                <div className="relative aspect-square w-full max-w-none mx-auto">
                   {/* Decorative ring */}
                   <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-spin-slow"></div>
                   <div
-                    className="absolute inset-4 rounded-full border border-primary/10 animate-spin-slow animation-delay-1000"
+                    className="absolute inset-3 sm:inset-4 rounded-full border border-primary/10 animate-spin-slow animation-delay-1000"
                     style={{ animationDirection: 'reverse' }}
                   ></div>
 
                   {/* Center image */}
-                  <div className="absolute inset-8 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-emerald-500/20 backdrop-blur-sm border border-primary/30 shadow-2xl">
+                  <div className="absolute inset-5 sm:inset-8 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-emerald-500/20 backdrop-blur-sm border border-primary/30 shadow-2xl">
                     <Image
                       src="/images/illustrations/envoi-colis.svg"
                       alt="Covalisage France-Bénin"
                       width={400}
                       height={400}
                       priority
-                      className="w-full h-full object-contain p-8"
+                      className="w-full h-full object-contain p-5 sm:p-8"
                     />
                   </div>
 
                   {/* Floating badges */}
-                  <div className="absolute top-8 -left-4 animate-float">
+                  <div className="absolute top-4 -left-2 sm:top-8 sm:-left-4 animate-float">
                     <div className="bg-background border-2 border-primary rounded-2xl px-4 py-3 shadow-xl">
                       <div className="flex items-center gap-2">
                         <IconPlane className="h-5 w-5 text-primary" />
@@ -226,7 +226,7 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="absolute bottom-12 -right-4 animate-float animation-delay-1000">
+                  <div className="absolute bottom-6 -right-2 sm:bottom-12 sm:-right-4 animate-float animation-delay-1000">
                     <div className="bg-background border-2 border-emerald-500 rounded-2xl px-4 py-3 shadow-xl">
                       <div className="flex items-center gap-2">
                         <IconPackage className="h-5 w-5 text-emerald-600" />
@@ -343,10 +343,10 @@ export default function HomePage() {
             </div>
 
             {/* Right: Visual */}
-            <div className="relative animate-fade-in-up animation-delay-300 hidden sm:block">
-              <div className="relative aspect-square max-w-lg mx-auto lg:ml-auto">
+            <div className="relative animate-fade-in-up animation-delay-300">
+              <div className="relative aspect-square max-w-xs sm:max-w-lg mx-auto lg:ml-auto">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-emerald-500/20 rounded-3xl"></div>
-                <div className="relative h-full rounded-3xl overflow-hidden border-2 border-border bg-muted/20 p-12">
+                <div className="relative h-full rounded-3xl overflow-hidden border-2 border-border bg-muted/20 p-6 sm:p-12">
                   <Image
                     src="/images/illustrations/covoiturage.svg"
                     alt="Processus de covalisage"
