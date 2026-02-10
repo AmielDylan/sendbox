@@ -141,7 +141,7 @@ export async function POST() {
       profile.email || user.email || undefined,
       country,
       accountTokenData,
-      'express'
+      'custom'
     )
 
     const status = await checkAccountStatus(accountId)

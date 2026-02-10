@@ -190,7 +190,7 @@ export async function POST(req: Request) {
         accountEmail,
         country,
         accountTokenData,
-        'express'
+        'custom'
       )
 
       const { error: updateError } = await supabase
@@ -209,13 +209,13 @@ export async function POST(req: Request) {
     if (accountId) {
       try {
         const existingAccount = await stripe.accounts.retrieve(accountId)
-        if (existingAccount.type !== 'express') {
+        if (existingAccount.type !== 'custom') {
           const newAccountId = await createConnectedAccount(
             user.id,
             accountEmail,
             country,
             accountTokenData,
-            'express'
+            'custom'
           )
           accountId = newAccountId
 
@@ -238,7 +238,7 @@ export async function POST(req: Request) {
             accountEmail,
             country,
             accountTokenData,
-            'express'
+            'custom'
           )
           accountId = newAccountId
 
