@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
@@ -83,6 +84,7 @@ export default function KYCPage() {
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
   const [accountCountryOpen, setAccountCountryOpen] = useState(false)
   const [accountCountrySearch, setAccountCountrySearch] = useState('')
+  const [stripeTosAccepted, setStripeTosAccepted] = useState(false)
   const pendingHoldUntilRef = useRef<number | null>(null)
   const pendingTimeoutRef = useRef<number | null>(null)
   const { profile, user } = useAuth()
@@ -102,6 +104,8 @@ export default function KYCPage() {
   const isResidenceCountrySupported =
     !normalizedAccountCountry ||
     residenceCountrySet.has(normalizedAccountCountry)
+  const requiresStripeTos =
+    normalizedAccountCountry === 'FR' && isResidenceCountrySupported
   const isIdentityCountrySupported =
     !normalizedDocumentCountry ||
     stripeIdentitySet.has(normalizedDocumentCountry)
@@ -186,6 +190,12 @@ export default function KYCPage() {
       setDocumentType((allowedDocumentTypes[0] as DocumentType) || '')
     }
   }, [allowedDocumentTypes, documentType, normalizedDocumentCountry])
+
+  useEffect(() => {
+    if (!requiresStripeTos) {
+      setStripeTosAccepted(false)
+    }
+  }, [requiresStripeTos])
 
   useEffect(() => {
     if (isAdmin) {
@@ -379,6 +389,10 @@ export default function KYCPage() {
       toast.error('Veuillez compléter vos informations personnelles')
       return
     }
+    if (requiresStripeTos && !stripeTosAccepted) {
+      toast.error("Veuillez accepter les conditions d'utilisation Stripe")
+      return
+    }
 
     setFormError(null)
     setIsSubmitting(true)
@@ -448,6 +462,10 @@ export default function KYCPage() {
       toast.error(
         'Veuillez sélectionner un pays de résidence et un document'
       )
+      return
+    }
+    if (requiresStripeTos && !stripeTosAccepted) {
+      toast.error("Veuillez accepter les conditions d'utilisation Stripe")
       return
     }
 
@@ -784,6 +802,21 @@ export default function KYCPage() {
                     </PopoverContent>
                   </Popover>
                 </div>
+
+                {requiresStripeTos && (
+                  <div className="flex items-start gap-2 pt-2">
+                    <Checkbox
+                      id="stripe-tos"
+                      checked={stripeTosAccepted}
+                      onCheckedChange={checked =>
+                        setStripeTosAccepted(Boolean(checked))
+                      }
+                    />
+                    <Label htmlFor="stripe-tos" className="text-sm font-normal">
+                      J&apos;accepte les conditions d&apos;utilisation de Stripe
+                    </Label>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="documentType">Type de document</Label>
