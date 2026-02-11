@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { fetchConnectStatus } from '@/lib/shared/stripe/connect-status-client'
+import type { Stripe } from '@stripe/stripe-js'
 
 interface StripeConnectCustomFlowProps {
   onCompleted?: () => void
@@ -45,6 +46,70 @@ export function StripeConnectCustomFlow({
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
 
   const stripePromise = useMemo(() => getStripeClient(), [])
+
+  const parseDob = (value?: string | null) => {
+    if (!value) return null
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!match) return null
+    const [, year, month, day] = match
+    return {
+      day: Number(day),
+      month: Number(month),
+      year: Number(year),
+    }
+  }
+
+  const buildIndividualPayload = () => {
+    const individual: Record<string, unknown> = {}
+    const firstName = (profile as any)?.firstname as string | undefined
+    const lastName = (profile as any)?.lastname as string | undefined
+    const email = (profile as any)?.email as string | undefined
+    const phone = (profile as any)?.phone as string | undefined
+    const address = (profile as any)?.address as string | undefined
+    const city = (profile as any)?.city as string | undefined
+    const postalCode = (profile as any)?.postal_code as string | undefined
+    const country = (profile as any)?.country as string | undefined
+    const birthday = (profile as any)?.birthday as string | undefined
+
+    if (firstName?.trim()) individual.first_name = firstName.trim()
+    if (lastName?.trim()) individual.last_name = lastName.trim()
+    if (email?.trim()) individual.email = email.trim()
+    if (phone?.trim()) individual.phone = phone.trim()
+    const dob = parseDob(birthday)
+    if (dob) individual.dob = dob
+
+    if (address?.trim() || city?.trim() || postalCode?.trim()) {
+      individual.address = {
+        line1: address?.trim() || undefined,
+        city: city?.trim() || undefined,
+        postal_code: postalCode?.trim() || undefined,
+        country: country?.trim() || undefined,
+      }
+    }
+
+    return individual
+  }
+
+  const createAccountToken = async (stripe: Stripe) => {
+    const accountPayload = {
+      business_type: 'individual',
+      tos_shown_and_accepted: true,
+    } as any
+    const individual = buildIndividualPayload()
+    if (Object.keys(individual).length > 0) {
+      accountPayload.individual = individual
+    }
+
+    const tokenResult = await stripe.createToken('account', accountPayload)
+    if (tokenResult.error || !tokenResult.token?.id) {
+      throw new Error(
+        tokenResult.error?.message ||
+          'Impossible de préparer le compte de paiement.'
+      )
+    }
+
+    return tokenResult.token.id
+  }
 
   const connectInstance = useMemo(() => {
     if (!clientSecret || !publishableKey) return null
@@ -252,10 +317,18 @@ export function StripeConnectCustomFlow({
   const handleSubmit = async (payload: ConnectOnboardingPayload) => {
     setLoading(true)
     try {
+      let accountTokenId: string | undefined
+      const stripe = await stripePromise
+      if (!stripe) {
+        throw new Error("Le service de paiement n'est pas disponible.")
+      }
+
+      accountTokenId = await createAccountToken(stripe)
+
       const res = await fetch('/api/connect/onboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, accountTokenId }),
       })
 
       const data = await res.json().catch(() => ({}))

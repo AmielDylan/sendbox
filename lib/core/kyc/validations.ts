@@ -32,6 +32,7 @@ export const stripeIdentitySchema = z.object({
   address: z.string().min(3, "Adresse requise"),
   city: z.string().min(2, 'Ville requise'),
   postalCode: z.string().min(2, 'Code postal requis'),
+  accountTokenId: z.string().optional(),
 })
 
 export type StripeIdentityInput = z.infer<typeof stripeIdentitySchema>

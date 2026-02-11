@@ -18,6 +18,7 @@ import {
   getAccountRepresentative,
   isStripeAccountMissing,
   isStripeCountryUnsupported,
+  isStripeLiveMode,
   type AccountTokenData,
 } from '@/lib/services/stripe-connect'
 import { stripe } from '@/lib/shared/services/stripe/config'
@@ -52,6 +53,7 @@ const parseDob = (value?: string | null) => {
 export async function prepareKYCAccount(input: {
   accountCountry: string
   documentCountry: string
+  accountTokenId?: string
 }) {
   const supabase = await createClient()
 
@@ -231,10 +233,18 @@ export async function prepareKYCAccount(input: {
         contactEmail,
         targetCountry,
         accountTokenData,
-        'custom'
+        'custom',
+        input.accountTokenId
       )
       return { accountId }
     } catch (error) {
+      if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+        return {
+          accountId: null,
+          error:
+            'Impossible de préparer le compte de paiement. Réessayez la vérification.',
+        }
+      }
       if (isStripeCountryUnsupported(error)) {
         return {
           accountId: null,
@@ -399,7 +409,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
   const email = profile.email || user.email || null
 
   try {
-    const {
+  const {
       firstName,
       lastName,
       email: inputEmail,
@@ -411,6 +421,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       address,
       city,
       postalCode,
+      accountTokenId,
     } = validation.data
 
     const normalizedDocumentCountry = normalizeCountryCode(documentCountry)
@@ -565,16 +576,27 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     }
 
     if (Object.keys(individual).length > 0) {
-      const accountToken = await stripe.tokens.create({
-        account: {
-          business_type: 'individual',
-          individual,
-        },
-      })
+      if (accountTokenId) {
+        await stripe.accounts.update(accountId, {
+          account_token: accountTokenId,
+        })
+      } else if (!isStripeLiveMode()) {
+        const accountToken = await stripe.tokens.create({
+          account: {
+            business_type: 'individual',
+            individual,
+          },
+        })
 
-      await stripe.accounts.update(accountId, {
-        account_token: accountToken.id,
-      })
+        await stripe.accounts.update(accountId, {
+          account_token: accountToken.id,
+        })
+      } else {
+        return {
+          error:
+            'Impossible de mettre à jour le compte. Réessayez la vérification.',
+        }
+      }
     }
 
     const fallbackProfileUrl = `https://www.gosendbox.com/profil/${user.id}`

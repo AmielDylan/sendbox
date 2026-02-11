@@ -3,7 +3,10 @@ import {
   createAccountSession,
   createConnectedAccount,
 } from '@/lib/services/stripe-connect'
-import { isStripeAccountMissing } from '@/lib/services/stripe-connect'
+import {
+  isStripeAccountMissing,
+  isStripeLiveMode,
+} from '@/lib/services/stripe-connect'
 import { stripe } from '@/lib/shared/services/stripe/config'
 import {
   getStripeConnectAllowedCountries,
@@ -16,6 +19,7 @@ type OnboardRequestBody = {
     iban?: string
     bic?: string
   }
+  accountTokenId?: string
 }
 
 const parseDob = (value?: string) => {
@@ -103,6 +107,8 @@ export async function POST(req: Request) {
       .catch(() => ({} as OnboardRequestBody))
 
     const bank = body?.bankData || {}
+    const accountTokenId =
+      typeof body?.accountTokenId === 'string' ? body.accountTokenId : null
     if (!bank?.accountHolder?.trim() || !bank?.iban?.trim()) {
       return Response.json(
         { error: 'Informations bancaires requises' },
@@ -182,16 +188,29 @@ export async function POST(req: Request) {
     }
 
     let accountId = profile.stripe_connect_account_id || null
+    let usedAccountTokenForCreation = false
     const accountEmail = profile.email || user.email
 
     if (!accountId) {
-      accountId = await createConnectedAccount(
-        user.id,
-        accountEmail,
-        country,
-        accountTokenData,
-        'custom'
-      )
+      try {
+        accountId = await createConnectedAccount(
+          user.id,
+          accountEmail,
+          country,
+          accountTokenData,
+          'custom',
+          accountTokenId || undefined
+        )
+        usedAccountTokenForCreation = Boolean(accountTokenId)
+      } catch (error) {
+        if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+          return Response.json(
+            { error: "Impossible de préparer le compte de paiement." },
+            { status: 400 }
+          )
+        }
+        throw error
+      }
 
       const { error: updateError } = await supabase
         .from('profiles')
@@ -210,14 +229,27 @@ export async function POST(req: Request) {
       try {
         const existingAccount = await stripe.accounts.retrieve(accountId)
         if (existingAccount.type !== 'custom') {
-          const newAccountId = await createConnectedAccount(
-            user.id,
-            accountEmail,
-            country,
-            accountTokenData,
-            'custom'
-          )
+          let newAccountId: string
+          try {
+            newAccountId = await createConnectedAccount(
+              user.id,
+              accountEmail,
+              country,
+              accountTokenData,
+              'custom',
+              accountTokenId || undefined
+            )
+          } catch (error) {
+            if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+              return Response.json(
+                { error: "Impossible de préparer le compte de paiement." },
+                { status: 400 }
+              )
+            }
+            throw error
+          }
           accountId = newAccountId
+          usedAccountTokenForCreation = Boolean(accountTokenId)
 
           const { error: replaceError } = await supabase
             .from('profiles')
@@ -232,15 +264,28 @@ export async function POST(req: Request) {
           }
         }
       } catch (error) {
-        if (isStripeAccountMissing(error)) {
-          const newAccountId = await createConnectedAccount(
-            user.id,
-            accountEmail,
-            country,
-            accountTokenData,
-            'custom'
-          )
+      if (isStripeAccountMissing(error)) {
+          let newAccountId: string
+          try {
+            newAccountId = await createConnectedAccount(
+              user.id,
+              accountEmail,
+              country,
+              accountTokenData,
+              'custom',
+              accountTokenId || undefined
+            )
+          } catch (error) {
+            if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+              return Response.json(
+                { error: "Impossible de préparer le compte de paiement." },
+                { status: 400 }
+              )
+            }
+            throw error
+          }
           accountId = newAccountId
+          usedAccountTokenForCreation = Boolean(accountTokenId)
 
           const { error: replaceError } = await supabase
             .from('profiles')
@@ -270,18 +315,31 @@ export async function POST(req: Request) {
       )
     }
 
-    if (Object.keys(individual).length > 0) {
+    if (Object.keys(individual).length > 0 && !usedAccountTokenForCreation) {
       try {
-        const accountToken = await stripe.tokens.create({
-          account: {
-            business_type: 'individual',
-            individual,
-          },
-        })
+        if (accountTokenId) {
+          await stripe.accounts.update(accountId, {
+            account_token: accountTokenId,
+          })
+        } else {
+          if (isStripeLiveMode()) {
+            return Response.json(
+              { error: "Impossible de mettre à jour le compte de paiement." },
+              { status: 400 }
+            )
+          }
 
-        await stripe.accounts.update(accountId, {
-          account_token: accountToken.id,
-        })
+          const accountToken = await stripe.tokens.create({
+            account: {
+              business_type: 'individual',
+              individual,
+            },
+          })
+
+          await stripe.accounts.update(accountId, {
+            account_token: accountToken.id,
+          })
+        }
       } catch (error) {
         console.error('Stripe account update error:', error)
         return Response.json(

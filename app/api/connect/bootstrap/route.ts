@@ -25,7 +25,7 @@ const parseDob = (value?: string | null) => {
   }
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const supabase = await createClient()
     const {
@@ -99,6 +99,11 @@ export async function POST() {
       )
     }
 
+    const body = await req
+      .json()
+      .catch(() => ({} as { accountTokenId?: string }))
+    const accountTokenId =
+      typeof body?.accountTokenId === 'string' ? body.accountTokenId : undefined
     const country = resolvedCountry ?? fallbackCountry
     if (!country) {
       return Response.json(
@@ -136,13 +141,25 @@ export async function POST() {
       individual: Object.keys(individual).length > 0 ? individual : undefined,
     }
 
-    const accountId = await createConnectedAccount(
-      profile.id,
-      profile.email || user.email || undefined,
-      country,
-      accountTokenData,
-      'custom'
-    )
+    let accountId: string
+    try {
+      accountId = await createConnectedAccount(
+        profile.id,
+        profile.email || user.email || undefined,
+        country,
+        accountTokenData,
+        'custom',
+        accountTokenId
+      )
+    } catch (error) {
+      if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+        return Response.json(
+          { error: "Compte de paiement indisponible pour le moment." },
+          { status: 400 }
+        )
+      }
+      throw error
+    }
 
     const status = await checkAccountStatus(accountId)
     const requirements = status.requirements || null
