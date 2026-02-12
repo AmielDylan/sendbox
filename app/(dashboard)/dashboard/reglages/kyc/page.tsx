@@ -108,8 +108,24 @@ export default function KYCPage() {
     () => new Set<string>(residenceCountries),
     [residenceCountries]
   )
-  const normalizedAccountCountry = accountCountry.trim().toUpperCase()
-  const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
+  const profileAccountCountry = (profile as any)?.country as string | undefined
+  const profileDocumentCountry = (profile as any)?.kyc_nationality as
+    | string
+    | undefined
+  const profileDocumentType = (profile as any)?.kyc_document_type as
+    | DocumentType
+    | undefined
+  const effectiveAccountCountry = accountCountry || profileAccountCountry || ''
+  const effectiveDocumentCountry =
+    documentCountry || profileDocumentCountry || ''
+  const effectiveDocumentType =
+    documentType || profileDocumentType || ('' as DocumentType | '')
+  const normalizedAccountCountry = effectiveAccountCountry
+    .trim()
+    .toUpperCase()
+  const normalizedDocumentCountry = effectiveDocumentCountry
+    .trim()
+    .toUpperCase()
   const isStripeConnectCountry =
     Boolean(normalizedAccountCountry) &&
     stripeConnectCountrySet.has(normalizedAccountCountry as any)
@@ -125,7 +141,9 @@ export default function KYCPage() {
   )
   const canPrepareAccount =
     Boolean(
-      documentType && normalizedDocumentCountry && normalizedAccountCountry
+      effectiveDocumentType &&
+        normalizedDocumentCountry &&
+        normalizedAccountCountry
     ) &&
     isResidenceCountrySupported &&
     isIdentityCountrySupported
@@ -317,14 +335,14 @@ export default function KYCPage() {
     if (!postalCode && (profile as any)?.postal_code) {
       setPostalCode((profile as any).postal_code as string)
     }
-    if (!accountCountry && (profile as any)?.country) {
-      setAccountCountry((profile as any).country as string)
+    if (!accountCountry && profileAccountCountry) {
+      setAccountCountry(profileAccountCountry)
     }
-    if (!documentCountry && (profile as any)?.kyc_nationality) {
-      setDocumentCountry((profile as any).kyc_nationality as string)
+    if (!documentCountry && profileDocumentCountry) {
+      setDocumentCountry(profileDocumentCountry)
     }
-    if (!documentType && (profile as any)?.kyc_document_type) {
-      setDocumentType((profile as any).kyc_document_type as DocumentType)
+    if (!documentType && profileDocumentType) {
+      setDocumentType(profileDocumentType)
     }
   }, [
     profile,
@@ -340,6 +358,9 @@ export default function KYCPage() {
     accountCountry,
     documentCountry,
     documentType,
+    profileAccountCountry,
+    profileDocumentCountry,
+    profileDocumentType,
   ])
 
   useEffect(() => {
@@ -542,7 +563,11 @@ export default function KYCPage() {
       toast.error('Préparez votre compte avant de continuer')
       return
     }
-    if (!documentType || !documentCountry || !accountCountry) {
+    if (
+      !effectiveDocumentType ||
+      !normalizedDocumentCountry ||
+      !normalizedAccountCountry
+    ) {
       toast.error('Veuillez sélectionner un pays de résidence et un document')
       return
     }
@@ -578,9 +603,19 @@ export default function KYCPage() {
           address,
           city,
           postalCode,
-          country: normalizedAccountCountry || accountCountry,
+          country: normalizedAccountCountry,
         })
         accountTokenId = await createAccountToken(stripe, individualPayload)
+      }
+
+      if (profileAccountCountry && !accountCountry) {
+        setAccountCountry(profileAccountCountry)
+      }
+      if (profileDocumentCountry && !documentCountry) {
+        setDocumentCountry(profileDocumentCountry)
+      }
+      if (profileDocumentType && !documentType) {
+        setDocumentType(profileDocumentType)
       }
 
       const result = await startKYCVerification({
@@ -588,9 +623,9 @@ export default function KYCPage() {
         lastName,
         email,
         phone,
-        documentType: documentType as DocumentType,
-        documentCountry,
-        accountCountry,
+        documentType: effectiveDocumentType as DocumentType,
+        documentCountry: normalizedDocumentCountry,
+        accountCountry: normalizedAccountCountry,
         birthday: birthDate,
         address,
         city,
@@ -654,7 +689,11 @@ export default function KYCPage() {
   }
 
   const handlePrepareAccount = async () => {
-    if (!documentType || !documentCountry || !accountCountry) {
+    if (
+      !effectiveDocumentType ||
+      !normalizedDocumentCountry ||
+      !normalizedAccountCountry
+    ) {
       toast.error('Veuillez sélectionner un pays de résidence et un document')
       return
     }
@@ -677,15 +716,15 @@ export default function KYCPage() {
           address,
           city,
           postalCode,
-          country: normalizedAccountCountry || accountCountry,
+          country: normalizedAccountCountry,
         })
         accountTokenId = await createAccountToken(stripe, individualPayload)
       }
 
       const result = await prepareKYCAccount({
-        accountCountry: normalizedAccountCountry || accountCountry,
-        documentCountry: normalizedDocumentCountry || documentCountry,
-        documentType: documentType as DocumentType,
+        accountCountry: normalizedAccountCountry,
+        documentCountry: normalizedDocumentCountry,
+        documentType: effectiveDocumentType as DocumentType,
         accountTokenId,
       })
       if (result.error) {
@@ -1107,13 +1146,15 @@ export default function KYCPage() {
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
                     <div className="text-sm">
                       <span className="font-medium">Résidence :</span>{' '}
-                      {accountCountry || '—'} •{' '}
+                      {effectiveAccountCountry || '—'} •{' '}
                       <span className="font-medium">Document :</span>{' '}
-                      {documentType === 'passport'
+                      {effectiveDocumentType === 'passport'
                         ? 'Passeport'
-                        : "Carte d'identité"}{' '}
+                        : effectiveDocumentType
+                          ? "Carte d'identité"
+                          : '—'}{' '}
                       • <span className="font-medium">Pays :</span>{' '}
-                      {documentCountry || '—'}
+                      {effectiveDocumentCountry || '—'}
                     </div>
                     <Button
                       type="button"
