@@ -88,6 +88,7 @@ export default function KYCPage() {
   const [verificationSessionId, setVerificationSessionId] = useState<
     string | null
   >(null)
+  const [forceDetails, setForceDetails] = useState(false)
   const pendingHoldUntilRef = useRef<number | null>(null)
   const pendingTimeoutRef = useRef<number | null>(null)
   const statusSyncTimeoutRef = useRef<number | null>(null)
@@ -405,6 +406,9 @@ export default function KYCPage() {
     const nextSubmitted = (profile as any)?.kyc_submitted_at ?? null
     setKycStatus(nextStatus)
     setSubmittedAt(nextSubmitted)
+    if (nextStatus === 'approved' || nextStatus === 'rejected') {
+      setForceDetails(false)
+    }
   }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
 
   useEffect(() => {
@@ -555,6 +559,7 @@ export default function KYCPage() {
       const submittedAt = new Date().toISOString()
       setKycStatus('pending')
       setSubmittedAt(submittedAt)
+      setForceDetails(false)
 
       const syncStatus = async (
         sessionId: string,
@@ -663,6 +668,7 @@ export default function KYCPage() {
       setDisplayStatus('incomplete')
       setFormError(null)
       setStep('details')
+      setForceDetails(true)
       toast.success('Compte prêt pour la vérification')
     } catch (error) {
       toast.error(
@@ -1061,7 +1067,7 @@ export default function KYCPage() {
               </>
             )}
 
-            {displayStatus !== 'pending' && step === 'details' && (
+            {step === 'details' && (displayStatus !== 'pending' || forceDetails) && (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
                   <div className="text-sm">
@@ -1078,7 +1084,10 @@ export default function KYCPage() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setStep('document')}
+                    onClick={() => {
+                      setStep('document')
+                      setForceDetails(false)
+                    }}
                     disabled={isSubmitting}
                   >
                     Modifier
@@ -1190,7 +1199,7 @@ export default function KYCPage() {
                 <Button
                   type="button"
                   className="w-full"
-                  disabled={isSubmitting || kycStatus === 'pending'}
+                  disabled={isSubmitting || (kycStatus === 'pending' && !forceDetails)}
                   onClick={handleStartVerification}
                 >
                   {isSubmitting ? (
@@ -1207,7 +1216,7 @@ export default function KYCPage() {
                 )}
               </>
             )}
-            {displayStatus === 'pending' && (
+            {displayStatus === 'pending' && !forceDetails && (
               <Alert className="border-primary/20 bg-primary/5">
                 <IconClock className="h-4 w-4" />
                 <AlertTitle>Merci, votre vérification est en cours</AlertTitle>
