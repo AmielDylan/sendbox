@@ -323,6 +323,9 @@ export default function KYCPage() {
     if (!documentCountry && (profile as any)?.kyc_nationality) {
       setDocumentCountry((profile as any).kyc_nationality as string)
     }
+    if (!documentType && (profile as any)?.kyc_document_type) {
+      setDocumentType((profile as any).kyc_document_type as DocumentType)
+    }
   }, [
     profile,
     user,
@@ -336,6 +339,7 @@ export default function KYCPage() {
     postalCode,
     accountCountry,
     documentCountry,
+    documentType,
   ])
 
   useEffect(() => {
