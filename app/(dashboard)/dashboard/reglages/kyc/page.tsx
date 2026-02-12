@@ -684,6 +684,7 @@ export default function KYCPage() {
       const result = await prepareKYCAccount({
         accountCountry: normalizedAccountCountry || accountCountry,
         documentCountry: normalizedDocumentCountry || documentCountry,
+        documentType: documentType as DocumentType,
         accountTokenId,
       })
       if (result.error) {
