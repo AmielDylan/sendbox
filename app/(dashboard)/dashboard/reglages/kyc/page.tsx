@@ -65,7 +65,6 @@ export default function KYCPage() {
   const [kycStatus, setKycStatus] = useState<KYCStatus>(null)
   const [displayStatus, setDisplayStatus] = useState<KYCStatus>(null)
   const [submittedAt, setSubmittedAt] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
@@ -299,13 +298,7 @@ export default function KYCPage() {
     return tokenResult.token.id
   }
 
-  useEffect(() => {
-    if (isAdmin) {
-      setIsLoading(false)
-      return
-    }
-    setIsLoading(false)
-  }, [isAdmin])
+  // No page-level loading state needed; UI reacts to profile changes.
 
   useEffect(() => {
     if (!profile) return
@@ -751,14 +744,6 @@ export default function KYCPage() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
-  }
-
   if (isAdmin) {
     return (
       <div className="space-y-6">
@@ -1109,7 +1094,7 @@ export default function KYCPage() {
                   </Alert>
                 )}
 
-                {isPreparingAccount && normalizedAccountCountry === 'FR' && (
+                {isPreparingAccount && (
                   <Alert>
                     <IconShieldLock className="h-4 w-4" />
                     <AlertTitle>Merci de patienter</AlertTitle>
@@ -1232,7 +1217,7 @@ export default function KYCPage() {
                       <Label htmlFor="address">Adresse</Label>
                       <Input
                         id="address"
-                        placeholder="28 Route de Bonsecours"
+                        placeholder="Adresse"
                         value={address}
                         onChange={event => setAddress(event.target.value)}
                       />
@@ -1240,21 +1225,21 @@ export default function KYCPage() {
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="city">Ville</Label>
-                        <Input
-                          id="city"
-                          placeholder="Paris"
-                          value={city}
-                          onChange={event => setCity(event.target.value)}
-                        />
+                      <Input
+                        id="city"
+                        placeholder="Ville"
+                        value={city}
+                        onChange={event => setCity(event.target.value)}
+                      />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="postalCode">Code postal</Label>
-                        <Input
-                          id="postalCode"
-                          placeholder="75012"
-                          value={postalCode}
-                          onChange={event => setPostalCode(event.target.value)}
-                        />
+                      <Input
+                        id="postalCode"
+                        placeholder="Code postal"
+                        value={postalCode}
+                        onChange={event => setPostalCode(event.target.value)}
+                      />
                       </div>
                     </div>
                   </div>
