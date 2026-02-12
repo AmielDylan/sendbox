@@ -1,6 +1,12 @@
 import { stripe } from '@/lib/shared/services/stripe/config'
-import { calculateBookingAmounts, toStripeAmount } from '@/lib/core/payments/calculations'
-import { COMMISSION_RATE, MAX_INSURANCE_COVERAGE } from '@/lib/core/bookings/validations'
+import {
+  calculateBookingAmounts,
+  toStripeAmount,
+} from '@/lib/core/payments/calculations'
+import {
+  COMMISSION_RATE,
+  MAX_INSURANCE_COVERAGE,
+} from '@/lib/core/bookings/validations'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 interface CreatePaymentIntentResult {

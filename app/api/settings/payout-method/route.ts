@@ -25,8 +25,7 @@ const stripCountryPrefix = (input: string, country?: string) => {
   return input
 }
 
-const isCeltisOperator = (value: string) =>
-  /(celtis|celtiis|sbin)/i.test(value)
+const isCeltisOperator = (value: string) => /(celtis|celtiis|sbin)/i.test(value)
 
 export async function POST(req: Request) {
   try {
@@ -39,9 +38,9 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    const body = (await req.json().catch(() => null)) as
-      | PayoutMethodRequest
-      | null
+    const body = (await req
+      .json()
+      .catch(() => null)) as PayoutMethodRequest | null
 
     if (!body?.method) {
       return Response.json({ error: 'Méthode invalide' }, { status: 400 })
@@ -126,7 +125,10 @@ export async function POST(req: Request) {
         .eq('id', user.id)
 
       if (error) {
-        return Response.json({ error: 'Mise à jour impossible' }, { status: 500 })
+        return Response.json(
+          { error: 'Mise à jour impossible' },
+          { status: 500 }
+        )
       }
 
       return Response.json({ status: payoutStatus })
@@ -197,13 +199,19 @@ export async function POST(req: Request) {
         .eq('id', user.id)
 
       if (error) {
-        return Response.json({ error: 'Mise à jour impossible' }, { status: 500 })
+        return Response.json(
+          { error: 'Mise à jour impossible' },
+          { status: 500 }
+        )
       }
 
       return Response.json({ status: 'active' })
     }
 
-    if (payoutProvider && !['flutterwave', 'fedapay'].includes(payoutProvider)) {
+    if (
+      payoutProvider &&
+      !['flutterwave', 'fedapay'].includes(payoutProvider)
+    ) {
       return Response.json(
         { error: 'Méthode réservée aux comptes Flutterwave/FedaPay' },
         { status: 400 }
@@ -218,9 +226,7 @@ export async function POST(req: Request) {
     }
 
     const operatorRaw =
-      typeof body.walletOperator === 'string'
-        ? body.walletOperator.trim()
-        : ''
+      typeof body.walletOperator === 'string' ? body.walletOperator.trim() : ''
     if (!operatorRaw) {
       return Response.json({ error: 'Opérateur invalide' }, { status: 400 })
     }
@@ -281,7 +287,10 @@ export async function POST(req: Request) {
         .eq('id', user.id)
 
       if (error) {
-        return Response.json({ error: 'Validation impossible' }, { status: 500 })
+        return Response.json(
+          { error: 'Validation impossible' },
+          { status: 500 }
+        )
       }
 
       return Response.json({ status: 'active' })

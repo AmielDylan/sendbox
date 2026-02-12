@@ -51,7 +51,9 @@ const isCeltisNetwork = (option: NetworkOption | undefined, value?: string) => {
   const raw = `${option?.label || ''} ${option?.description || ''} ${
     value || ''
   }`.toLowerCase()
-  return raw.includes('celtis') || raw.includes('celtiis') || raw.includes('sbin')
+  return (
+    raw.includes('celtis') || raw.includes('celtiis') || raw.includes('sbin')
+  )
 }
 
 export function MobileWalletSetup({ onCompleted }: MobileWalletSetupProps) {
@@ -143,7 +145,9 @@ export function MobileWalletSetup({ onCompleted }: MobileWalletSetupProps) {
 
             const label = prettifyLabel(rawLabel)
             const description =
-              item?.name && typeof item?.name === 'string' && item.name !== label
+              item?.name &&
+              typeof item?.name === 'string' &&
+              item.name !== label
                 ? item.name
                 : undefined
 

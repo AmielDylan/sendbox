@@ -25,7 +25,8 @@ const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !STRIPE_SECRET_KEY) {
   console.error("❌ Variables d'environnement manquantes:")
   if (!SUPABASE_URL) console.error('   - NEXT_PUBLIC_SUPABASE_URL')
-  if (!SUPABASE_SERVICE_ROLE_KEY) console.error('   - SUPABASE_SERVICE_ROLE_KEY')
+  if (!SUPABASE_SERVICE_ROLE_KEY)
+    console.error('   - SUPABASE_SERVICE_ROLE_KEY')
   if (!STRIPE_SECRET_KEY) console.error('   - STRIPE_SECRET_KEY')
   process.exit(1)
 }
@@ -37,7 +38,9 @@ const allowLive = args.includes('--allow-live')
 const skipStripe = args.includes('--skip-stripe')
 
 if (STRIPE_SECRET_KEY.startsWith('sk_live') && !allowLive && !dryRun) {
-  console.error('❌ Clé Stripe LIVE détectée. Ajoutez --allow-live pour continuer.')
+  console.error(
+    '❌ Clé Stripe LIVE détectée. Ajoutez --allow-live pour continuer.'
+  )
   process.exit(1)
 }
 
@@ -128,7 +131,9 @@ async function deleteStripeAccounts(accountIds: string[]): Promise<void> {
 
 async function resetProfiles(): Promise<void> {
   if (dryRun) {
-    console.log('🧪 [DRY RUN] Réinitialisation des champs Stripe/payout dans profiles')
+    console.log(
+      '🧪 [DRY RUN] Réinitialisation des champs Stripe/payout dans profiles'
+    )
     return
   }
 

@@ -188,7 +188,7 @@ export function LatestAnnouncementsCarousel() {
                     ? `${item.available_kg} kg dispo`
                     : null
                 const travelerProfile = Array.isArray(item.profiles)
-                  ? item.profiles[0] ?? null
+                  ? (item.profiles[0] ?? null)
                   : item.profiles
                 const travelerName =
                   travelerProfile?.firstname ||
@@ -204,11 +204,7 @@ export function LatestAnnouncementsCarousel() {
                 const isNew = relativeDate?.isNew ?? true
 
                 return (
-                  <Link
-                    key={item.id}
-                    href={href}
-                    className="snap-start"
-                  >
+                  <Link key={item.id} href={href} className="snap-start">
                     <Card className="group min-w-[240px] sm:min-w-[280px] border-2 border-border bg-background p-3 transition-all duration-300 hover:border-primary/60 hover:shadow-xl">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Avatar className="h-7 w-7 text-xs">

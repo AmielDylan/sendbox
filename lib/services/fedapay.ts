@@ -285,9 +285,7 @@ export async function listFedaPayCountries(): Promise<{
   }
 }
 
-export async function listFedaPayPaymentMethods(
-  country?: string
-): Promise<{
+export async function listFedaPayPaymentMethods(country?: string): Promise<{
   data: FedaPayPaymentMethod[]
   source: 'api' | 'fallback'
 }> {
@@ -502,8 +500,9 @@ export async function createFedaPayPayout(
   let payout = payoutData?.payout || payoutData?.data || payoutData
   if (!payoutRes.ok) {
     const message = extractErrorMessage(payoutData)
-    const shouldRetry =
-      /recipient|phone_number|mode|customer/i.test(message || '')
+    const shouldRetry = /recipient|phone_number|mode|customer/i.test(
+      message || ''
+    )
     if (!shouldRetry) {
       throw new Error(message)
     }

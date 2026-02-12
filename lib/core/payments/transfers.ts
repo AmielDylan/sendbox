@@ -105,7 +105,11 @@ export async function releaseTransferForBooking(
     .maybeSingle()
 
   if (existingTransfer) {
-    return { success: true, alreadyTransferred: true, status: existingTransfer.status }
+    return {
+      success: true,
+      alreadyTransferred: true,
+      status: existingTransfer.status,
+    }
   }
 
   const { data: payment } = await (admin as any)
@@ -168,7 +172,10 @@ export async function releaseTransferForBooking(
       return { error: 'wallet_not_configured' }
     }
 
-    if (!(traveler as any)?.wallet_operator || !(traveler as any)?.wallet_phone) {
+    if (
+      !(traveler as any)?.wallet_operator ||
+      !(traveler as any)?.wallet_phone
+    ) {
       return { error: 'wallet_not_configured' }
     }
 
@@ -252,14 +259,16 @@ export async function releaseTransferForBooking(
         userId: booking.traveler_id,
         type: 'system_alert',
         title: 'Activez votre Mobile Wallet',
-        content:
-          'Validez votre numéro Mobile Wallet pour recevoir vos gains.',
+        content: 'Validez votre numéro Mobile Wallet pour recevoir vos gains.',
         bookingId: booking.id,
       })
       return { error: 'wallet_not_verified' }
     }
 
-    if (!(traveler as any)?.wallet_operator || !(traveler as any)?.wallet_phone) {
+    if (
+      !(traveler as any)?.wallet_operator ||
+      !(traveler as any)?.wallet_phone
+    ) {
       return { error: 'wallet_not_configured' }
     }
 
@@ -399,7 +408,10 @@ export async function releaseTransferForBooking(
     return { error: 'stripe_not_configured' }
   }
 
-  if (!traveler?.stripe_connect_account_id || !traveler.stripe_payouts_enabled) {
+  if (
+    !traveler?.stripe_connect_account_id ||
+    !traveler.stripe_payouts_enabled
+  ) {
     await createSystemNotification({
       userId: booking.traveler_id,
       type: 'system_alert',

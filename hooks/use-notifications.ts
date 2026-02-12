@@ -138,9 +138,7 @@ export function useNotifications(limit: number = 20) {
           },
           payload => {
             const removedNotif = payload.old as Notification
-            setNotifications(prev =>
-              prev.filter(n => n.id !== removedNotif.id)
-            )
+            setNotifications(prev => prev.filter(n => n.id !== removedNotif.id))
             if (!removedNotif.read_at) {
               setUnreadCount(prev => Math.max(0, prev - 1))
             }

@@ -55,7 +55,10 @@ export async function POST(req: Request) {
       )
     }
 
-    if ((profile as any)?.payout_provider && (profile as any).payout_provider !== 'stripe') {
+    if (
+      (profile as any)?.payout_provider &&
+      (profile as any).payout_provider !== 'stripe'
+    ) {
       return Response.json(
         { error: 'Compte non-Stripe: bootstrap indisponible.' },
         { status: 400 }
@@ -101,7 +104,7 @@ export async function POST(req: Request) {
 
     const body = await req
       .json()
-      .catch(() => ({} as { accountTokenId?: string }))
+      .catch(() => ({}) as { accountTokenId?: string })
     const accountTokenId =
       typeof body?.accountTokenId === 'string' ? body.accountTokenId : undefined
     const country = resolvedCountry ?? fallbackCountry
@@ -152,9 +155,12 @@ export async function POST(req: Request) {
         accountTokenId
       )
     } catch (error) {
-      if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+      if (
+        error instanceof Error &&
+        error.message === 'ACCOUNT_TOKEN_REQUIRED'
+      ) {
         return Response.json(
-          { error: "Compte de paiement indisponible pour le moment." },
+          { error: 'Compte de paiement indisponible pour le moment.' },
           { status: 400 }
         )
       }

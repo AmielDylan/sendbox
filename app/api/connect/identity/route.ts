@@ -43,7 +43,10 @@ export async function POST(req: Request) {
       )
     }
 
-    if ((profile as any)?.payout_provider && (profile as any).payout_provider !== 'stripe') {
+    if (
+      (profile as any)?.payout_provider &&
+      (profile as any).payout_provider !== 'stripe'
+    ) {
       return Response.json(
         { error: 'Compte non-Stripe: identité indisponible.' },
         { status: 400 }
@@ -59,9 +62,9 @@ export async function POST(req: Request) {
 
     const accountId = profile.stripe_connect_account_id
 
-    const body = (await req.json().catch(() => null)) as
-      | IdentityRequestBody
-      | null
+    const body = (await req
+      .json()
+      .catch(() => null)) as IdentityRequestBody | null
 
     let accountData: { account: any; personId: string | null }
     try {
@@ -100,7 +103,10 @@ export async function POST(req: Request) {
       body?.documentCountry || account?.country || 'FR'
     )
 
-    if (!normalizedCountry || !isStripeIdentityCountrySupported(normalizedCountry)) {
+    if (
+      !normalizedCountry ||
+      !isStripeIdentityCountrySupported(normalizedCountry)
+    ) {
       return Response.json(
         {
           error:
@@ -113,8 +119,7 @@ export async function POST(req: Request) {
     const allowedDocumentTypes =
       getStripeIdentityDocumentTypes(normalizedCountry)
     const selectedDocumentType =
-      body?.documentType &&
-      allowedDocumentTypes.includes(body.documentType)
+      body?.documentType && allowedDocumentTypes.includes(body.documentType)
         ? body.documentType
         : allowedDocumentTypes[0] || 'passport'
 
