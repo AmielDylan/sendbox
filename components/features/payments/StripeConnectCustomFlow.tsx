@@ -42,8 +42,7 @@ export function StripeConnectCustomFlow({
     profileRef.current = profile
   }, [profile])
 
-  const publishableKey =
-    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
 
   const stripePromise = useMemo(() => getStripeClient(), [])
 
@@ -144,7 +143,10 @@ export function StripeConnectCustomFlow({
         const res = await fetchConnectStatus('connect_longpoll')
         if (!res) return
         const data = await res.json().catch(() => ({}))
-        if (res.ok && (data?.payouts_enabled || data?.payout_status === 'active')) {
+        if (
+          res.ok &&
+          (data?.payouts_enabled || data?.payout_status === 'active')
+        ) {
           await refetch()
           toast.success('Paiements activés.')
           stopLongPolling()
@@ -184,7 +186,10 @@ export function StripeConnectCustomFlow({
         const res = await fetchConnectStatus('connect_poll')
         if (!res) return
         const data = await res.json().catch(() => ({}))
-        if (res.ok && (data?.payouts_enabled || data?.payout_status === 'active')) {
+        if (
+          res.ok &&
+          (data?.payouts_enabled || data?.payout_status === 'active')
+        ) {
           await refetch()
           toast.success('Paiements activés.')
           stopPolling()
@@ -286,9 +291,7 @@ export function StripeConnectCustomFlow({
       const res = await fetch('/api/connect/identity', { method: 'POST' })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        throw new Error(
-          data?.error || 'Impossible de démarrer la vérification'
-        )
+        throw new Error(data?.error || 'Impossible de démarrer la vérification')
       }
 
       const stripe = await stripePromise
@@ -394,7 +397,8 @@ export function StripeConnectCustomFlow({
             <CardContent className="space-y-4">
               <Alert>
                 <AlertDescription>
-                  Cliquez sur le bouton ci-dessous pour continuer la vérification.
+                  Cliquez sur le bouton ci-dessous pour continuer la
+                  vérification.
                 </AlertDescription>
               </Alert>
               <Alert>
@@ -418,7 +422,9 @@ export function StripeConnectCustomFlow({
                 <ConnectAccountOnboarding
                   onExit={async () => {
                     toast.success('Vérification terminée.')
-                    await fetchConnectStatus('connect_onboarding_exit').catch(() => null)
+                    await fetchConnectStatus('connect_onboarding_exit').catch(
+                      () => null
+                    )
                     onCompleted?.()
                     startPolling()
                   }}

@@ -2,9 +2,7 @@ import {
   listFlutterwaveBanks,
   listFlutterwaveMobileNetworks,
 } from '@/lib/services/flutterwave'
-import {
-  listFedaPayPaymentMethods,
-} from '@/lib/services/fedapay'
+import { listFedaPayPaymentMethods } from '@/lib/services/fedapay'
 
 export type BankOption = {
   code: string

@@ -13,8 +13,7 @@ export const isStripeAccountMissing = (error: unknown) => {
   const anyError = error as { code?: string; message?: string }
   const message = typeof anyError.message === 'string' ? anyError.message : ''
   return (
-    anyError.code === 'resource_missing' ||
-    /no such account/i.test(message)
+    anyError.code === 'resource_missing' || /no such account/i.test(message)
   )
 }
 

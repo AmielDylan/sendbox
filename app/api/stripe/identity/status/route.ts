@@ -18,14 +18,12 @@ const mapRejectionMessage = (code?: string | null, reason?: string | null) => {
       'Le nom ne correspond pas au document. Corrigez vos informations.',
     matching_dob_mismatch:
       'La date de naissance ne correspond pas au document. Vérifiez votre saisie.',
-    document_expired:
-      'Le document est expiré. Utilisez un document valide.',
-    document_invalid:
-      'Le document semble invalide. Essayez un autre document.',
+    document_expired: 'Le document est expiré. Utilisez un document valide.',
+    document_invalid: 'Le document semble invalide. Essayez un autre document.',
     document_too_old:
       'Le document est trop ancien. Utilisez un document plus récent.',
     selfie_mismatch:
-      "Le selfie ne correspond pas au document. Réessayez dans de meilleures conditions.",
+      'Le selfie ne correspond pas au document. Réessayez dans de meilleures conditions.',
     verification_failed:
       "La vérification n'a pas abouti. Réessayez avec un document valide.",
   }
@@ -50,9 +48,8 @@ export async function POST(req: Request) {
     )
   }
 
-  const body = await req.json().catch(() => ({} as { sessionId?: string }))
-  const sessionId =
-    typeof body?.sessionId === 'string' ? body.sessionId : null
+  const body = await req.json().catch(() => ({}) as { sessionId?: string })
+  const sessionId = typeof body?.sessionId === 'string' ? body.sessionId : null
 
   if (!sessionId) {
     return NextResponse.json(

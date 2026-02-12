@@ -48,15 +48,13 @@ async function setKYCStatus(
   console.log(`🔧 Setting KYC status to: ${targetStatus}`)
   console.log('')
 
-  let targetProfile:
-    | {
-        id: string
-        firstname: string | null
-        lastname: string | null
-        email: string
-        kyc_status: string | null
-      }
-    | null = null
+  let targetProfile: {
+    id: string
+    firstname: string | null
+    lastname: string | null
+    email: string
+    kyc_status: string | null
+  } | null = null
 
   if (selector.userId || selector.email) {
     const query = supabase
@@ -171,7 +169,9 @@ if (
   console.log('  - incomplete')
   console.log('')
   console.log('Example:')
-  console.log('  npx tsx scripts/set-kyc-status.ts approved --email user@mail.com')
+  console.log(
+    '  npx tsx scripts/set-kyc-status.ts approved --email user@mail.com'
+  )
   process.exit(1)
 }
 

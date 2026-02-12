@@ -109,8 +109,7 @@ export const STRIPE_CONNECT_SUPPORTED_COUNTRIES = [
   'ZA',
 ] as const
 
-export type ConnectCountry =
-  (typeof STRIPE_CONNECT_SUPPORTED_COUNTRIES)[number]
+export type ConnectCountry = (typeof STRIPE_CONNECT_SUPPORTED_COUNTRIES)[number]
 
 // Countries blocked for account creation (can still be valid for other flows).
 export const STRIPE_CONNECT_ACCOUNT_CREATION_BLOCKLIST: ConnectCountry[] = [

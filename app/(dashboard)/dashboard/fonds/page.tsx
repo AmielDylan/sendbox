@@ -200,11 +200,14 @@ export default function FundsPage() {
                 {isWalletSelected ? 'le wallet' : 'le compte bancaire'}.
               </p>
             )}
-            {canConfigurePayments && payoutStatus === 'active' && isWalletSelected && (
-              <p className="text-xs text-muted-foreground">
-                Mobile Wallet vérifié. Les paiements seront envoyés sur votre numéro.
-              </p>
-            )}
+            {canConfigurePayments &&
+              payoutStatus === 'active' &&
+              isWalletSelected && (
+                <p className="text-xs text-muted-foreground">
+                  Mobile Wallet vérifié. Les paiements seront envoyés sur votre
+                  numéro.
+                </p>
+              )}
           </div>
         </CardContent>
       </Card>

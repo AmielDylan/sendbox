@@ -128,15 +128,13 @@ export async function prepareKYCAccount(input: {
       .update({
         payout_error_code: 'residence_country_unsupported',
         payout_error_message:
-          "Pays de résidence non pris en charge pour le moment.",
+          'Pays de résidence non pris en charge pour le moment.',
         payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method
-          ? { payout_status: 'disabled' }
-          : {}),
+        ...(profile.payout_method ? { payout_status: 'disabled' } : {}),
       } as any)
       .eq('id', user.id)
     return {
-      error: "Pays de résidence non pris en charge pour le moment.",
+      error: 'Pays de résidence non pris en charge pour le moment.',
     }
   }
 
@@ -152,8 +150,7 @@ export async function prepareKYCAccount(input: {
       } as any)
       .eq('id', user.id)
     return {
-      error:
-        "La vérification d'identité n'est pas disponible pour ce pays.",
+      error: "La vérification d'identité n'est pas disponible pour ce pays.",
     }
   }
 
@@ -239,7 +236,10 @@ export async function prepareKYCAccount(input: {
       )
       return { accountId }
     } catch (error) {
-      if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+      if (
+        error instanceof Error &&
+        error.message === 'ACCOUNT_TOKEN_REQUIRED'
+      ) {
         return {
           accountId: null,
           error:
@@ -410,7 +410,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
   const email = profile.email || user.email || null
 
   try {
-  const {
+    const {
       firstName,
       lastName,
       email: inputEmail,
@@ -442,13 +442,13 @@ export async function startKYCVerification(input: StripeIdentityInput) {
 
     if (!isStripeIdentityCountrySupported(normalizedDocumentCountry)) {
       return {
-        error:
-          "La vérification d'identité n'est pas disponible pour ce pays.",
+        error: "La vérification d'identité n'est pas disponible pour ce pays.",
       }
     }
 
-    const allowedDocumentTypes =
-      getStripeIdentityDocumentTypes(normalizedDocumentCountry)
+    const allowedDocumentTypes = getStripeIdentityDocumentTypes(
+      normalizedDocumentCountry
+    )
     if (!allowedDocumentTypes.includes(documentType)) {
       return {
         error: 'Type de document non supporté pour ce pays.',
@@ -550,7 +550,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     if (!accountId) {
       return {
         error:
-          "Compte de paiement manquant. Relancez la préparation avant la vérification.",
+          'Compte de paiement manquant. Relancez la préparation avant la vérification.',
       }
     }
 
@@ -662,13 +662,12 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     }
   } catch (error) {
     const stripeMessage =
-      typeof (error as { raw?: { message?: string } })?.raw?.message === 'string'
+      typeof (error as { raw?: { message?: string } })?.raw?.message ===
+      'string'
         ? (error as { raw?: { message?: string } }).raw!.message
         : null
     const genericMessage =
-      error instanceof Error && error.message
-        ? error.message
-        : 'Unknown error'
+      error instanceof Error && error.message ? error.message : 'Unknown error'
     const userMessage =
       stripeMessage && stripeMessage !== 'Unknown error'
         ? stripeMessage

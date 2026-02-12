@@ -9,8 +9,10 @@ export const isResidenceCountry = (
   value?: string | null
 ): value is ResidenceCountry => {
   const normalized = normalizeResidenceCountry(value)
-  return Boolean(normalized) &&
+  return (
+    Boolean(normalized) &&
     RESIDENCE_COUNTRIES.includes(normalized as ResidenceCountry)
+  )
 }
 
 export const getResidenceCountries = () => [...RESIDENCE_COUNTRIES]

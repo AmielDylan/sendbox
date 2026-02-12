@@ -517,8 +517,7 @@ function PaymentPageContent() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <IconLock className="h-4 w-4 text-primary" />
                   <span>
-                    Paiement sécurisé, libéré après confirmation ou sous 7
-                    jours
+                    Paiement sécurisé, libéré après confirmation ou sous 7 jours
                   </span>
                 </div>
               </div>
