@@ -35,6 +35,14 @@ export type AccountTokenData = {
   tos_shown_and_accepted?: boolean
 }
 
+export const isStripeLiveMode = () => {
+  const key =
+    process.env.STRIPE_SECRET_KEY ||
+    process.env.STRIPE_PRIVATE_LIVE_SECRET_KEY ||
+    ''
+  return key.startsWith('sk_live')
+}
+
 /**
  * Create a Stripe Connect Custom account for a traveler
  * Custom = verification is embedded in Sendbox (whitelabel)
@@ -44,24 +52,33 @@ export async function createConnectedAccount(
   email: string | undefined,
   country: ConnectCountry,
   accountTokenData?: AccountTokenData,
-  accountType: 'custom' | 'express' = 'custom'
+  accountType: 'custom' | 'express' = 'custom',
+  accountTokenId?: string
 ) {
   const shouldIncludeTos =
     accountType === 'custom' &&
     (accountTokenData?.tos_shown_and_accepted ?? true)
-  const accountToken = accountTokenData
-    ? await stripe.tokens.create({
-        account: {
-          ...accountTokenData,
-          ...(shouldIncludeTos
-            ? {
-                tos_shown_and_accepted:
-                  accountTokenData.tos_shown_and_accepted ?? true,
-              }
-            : {}),
-        },
-      })
-    : null
+
+  let resolvedAccountTokenId = accountTokenId || null
+
+  if (!resolvedAccountTokenId && accountTokenData) {
+    if (isStripeLiveMode()) {
+      throw new Error('ACCOUNT_TOKEN_REQUIRED')
+    }
+
+    const accountToken = await stripe.tokens.create({
+      account: {
+        ...accountTokenData,
+        ...(shouldIncludeTos
+          ? {
+              tos_shown_and_accepted:
+                accountTokenData.tos_shown_and_accepted ?? true,
+            }
+          : {}),
+      },
+    })
+    resolvedAccountTokenId = accountToken.id
+  }
 
   const account = await stripe.accounts.create({
     type: accountType,
@@ -70,8 +87,8 @@ export async function createConnectedAccount(
     capabilities: {
       transfers: { requested: true },
     },
-    ...(accountToken?.id
-      ? { account_token: accountToken.id }
+    ...(resolvedAccountTokenId
+      ? { account_token: resolvedAccountTokenId }
       : { business_type: 'individual' }),
     metadata: {
       sendbox_user_id: userId,

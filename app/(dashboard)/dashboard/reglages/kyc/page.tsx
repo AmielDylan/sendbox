@@ -45,12 +45,14 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import type { Stripe } from '@stripe/stripe-js'
 import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
 import { getCountryFlagEmoji } from '@/lib/utils/countries'
 import { prepareKYCAccount, startKYCVerification } from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
 import { getResidenceCountries } from '@/lib/shared/kyc/residence-countries'
+import { getStripeConnectAllowedCountriesClient } from '@/lib/shared/stripe/connect-allowed-client'
 import {
   getStripeIdentityDocumentTypes,
   STRIPE_IDENTITY_SUPPORTED_COUNTRIES,
@@ -93,12 +95,19 @@ export default function KYCPage() {
     () => new Set<string>(STRIPE_IDENTITY_SUPPORTED_COUNTRIES),
     []
   )
+  const stripeConnectCountrySet = useMemo(
+    () => new Set(getStripeConnectAllowedCountriesClient()),
+    []
+  )
   const residenceCountrySet = useMemo(
     () => new Set<string>(residenceCountries),
     [residenceCountries]
   )
   const normalizedAccountCountry = accountCountry.trim().toUpperCase()
   const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
+  const isStripeConnectCountry =
+    Boolean(normalizedAccountCountry) &&
+    stripeConnectCountrySet.has(normalizedAccountCountry as any)
   const isResidenceCountrySupported =
     !normalizedAccountCountry ||
     residenceCountrySet.has(normalizedAccountCountry)
@@ -186,6 +195,88 @@ export default function KYCPage() {
       setDocumentType((allowedDocumentTypes[0] as DocumentType) || '')
     }
   }, [allowedDocumentTypes, documentType, normalizedDocumentCountry])
+
+  const parseDob = (value?: string) => {
+    if (!value) return null
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (!match) return null
+    const [, year, month, day] = match
+    return {
+      day: Number(day),
+      month: Number(month),
+      year: Number(year),
+    }
+  }
+
+  const buildIndividualPayload = (options: {
+    firstName?: string
+    lastName?: string
+    email?: string
+    phone?: string
+    birthDate?: string
+    address?: string
+    city?: string
+    postalCode?: string
+    country?: string
+  }) => {
+    const individual: Record<string, unknown> = {}
+
+    if (options.firstName?.trim()) {
+      individual.first_name = options.firstName.trim()
+    }
+    if (options.lastName?.trim()) {
+      individual.last_name = options.lastName.trim()
+    }
+    if (options.email?.trim()) {
+      individual.email = options.email.trim()
+    }
+    if (options.phone?.trim()) {
+      individual.phone = options.phone.trim()
+    }
+    const dob = parseDob(options.birthDate)
+    if (dob) {
+      individual.dob = dob
+    }
+
+    if (
+      options.address?.trim() ||
+      options.city?.trim() ||
+      options.postalCode?.trim()
+    ) {
+      individual.address = {
+        line1: options.address?.trim() || undefined,
+        city: options.city?.trim() || undefined,
+        postal_code: options.postalCode?.trim() || undefined,
+        country: options.country?.trim() || undefined,
+      }
+    }
+
+    return individual
+  }
+
+  const createAccountToken = async (
+    stripe: Stripe,
+    individual: Record<string, unknown>
+  ) => {
+    const accountPayload = {
+      business_type: 'individual',
+      tos_shown_and_accepted: true,
+    } as any
+
+    if (Object.keys(individual).length > 0) {
+      accountPayload.individual = individual
+    }
+
+    const tokenResult = await stripe.createToken('account', accountPayload)
+    if (tokenResult.error || !tokenResult.token?.id) {
+      throw new Error(
+        tokenResult.error?.message ||
+          'Impossible de préparer le compte de paiement.'
+      )
+    }
+
+    return tokenResult.token.id
+  }
 
 
   useEffect(() => {
@@ -385,6 +476,28 @@ export default function KYCPage() {
     setIsSubmitting(true)
 
     try {
+      const stripe = await stripePromise
+      if (!stripe) {
+        toast.error("Le service de vérification n'est pas disponible. Réessayez.")
+        return
+      }
+
+      let accountTokenId: string | undefined
+      if (isStripeConnectCountry) {
+        const individualPayload = buildIndividualPayload({
+          firstName,
+          lastName,
+          email,
+          phone,
+          birthDate,
+          address,
+          city,
+          postalCode,
+          country: normalizedAccountCountry || accountCountry,
+        })
+        accountTokenId = await createAccountToken(stripe, individualPayload)
+      }
+
       const result = await startKYCVerification({
         firstName,
         lastName,
@@ -397,17 +510,12 @@ export default function KYCPage() {
         address,
         city,
         postalCode,
+        accountTokenId,
       })
 
       if (result.error) {
         setFormError(result.error)
         toast.error(result.error)
-        return
-      }
-
-      const stripe = await stripePromise
-      if (!stripe) {
-        toast.error("Le service de vérification n'est pas disponible. Réessayez.")
         return
       }
 
@@ -454,10 +562,32 @@ export default function KYCPage() {
 
     setIsPreparingAccount(true)
     try {
-    const result = await prepareKYCAccount({
-      accountCountry: normalizedAccountCountry || accountCountry,
-      documentCountry: normalizedDocumentCountry || documentCountry,
-    })
+      let accountTokenId: string | undefined
+      if (isStripeConnectCountry) {
+        const stripe = await stripePromise
+        if (!stripe) {
+          throw new Error("Le service de paiement n'est pas disponible.")
+        }
+
+        const individualPayload = buildIndividualPayload({
+          firstName,
+          lastName,
+          email,
+          phone,
+          birthDate,
+          address,
+          city,
+          postalCode,
+          country: normalizedAccountCountry || accountCountry,
+        })
+        accountTokenId = await createAccountToken(stripe, individualPayload)
+      }
+
+      const result = await prepareKYCAccount({
+        accountCountry: normalizedAccountCountry || accountCountry,
+        documentCountry: normalizedDocumentCountry || documentCountry,
+        accountTokenId,
+      })
       if (result.error) {
         toast.error(result.error)
         return
