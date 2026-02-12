@@ -120,9 +120,7 @@ export default function KYCPage() {
     documentCountry || profileDocumentCountry || ''
   const effectiveDocumentType =
     documentType || profileDocumentType || ('' as DocumentType | '')
-  const normalizedAccountCountry = effectiveAccountCountry
-    .trim()
-    .toUpperCase()
+  const normalizedAccountCountry = effectiveAccountCountry.trim().toUpperCase()
   const normalizedDocumentCountry = effectiveDocumentCountry
     .trim()
     .toUpperCase()
@@ -142,8 +140,8 @@ export default function KYCPage() {
   const canPrepareAccount =
     Boolean(
       effectiveDocumentType &&
-        normalizedDocumentCountry &&
-        normalizedAccountCountry
+      normalizedDocumentCountry &&
+      normalizedAccountCountry
     ) &&
     isResidenceCountrySupported &&
     isIdentityCountrySupported

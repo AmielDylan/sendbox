@@ -243,7 +243,9 @@ export function OptimizedAuthProvider({
           }
         } else if (!data) {
           console.warn('[Auth] Profile not found for user:', userId)
-          setProfile(null)
+          if (profile?.id !== userId) {
+            setProfile(null)
+          }
           setError(null)
           queueProfileRetry('profile_not_found')
         } else {
