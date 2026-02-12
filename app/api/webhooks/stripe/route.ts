@@ -22,6 +22,12 @@ export async function POST(req: NextRequest) {
   const body = await req.text()
   const headersList = await headers()
   const signature = headersList.get('stripe-signature')
+  const isProd = process.env.NODE_ENV === 'production'
+  const devLog = (...args: unknown[]) => {
+    if (!isProd) {
+      devLog(...args)
+    }
+  }
 
   if (!signature) {
     return NextResponse.json(
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  console.log('🔔 Stripe webhook received:', {
+  devLog('🔔 Stripe webhook received:', {
     id: event.id,
     type: event.type,
     livemode: event.livemode,
@@ -258,7 +264,7 @@ export async function POST(req: NextRequest) {
 
         const targetUserId = updated?.id || userId
         if (targetUserId) {
-          console.log('✅ KYC approved for user:', userId)
+          devLog('✅ KYC approved for user:', userId)
           await notifyKycStatusChange(targetUserId, 'approved')
         }
         break
@@ -468,13 +474,13 @@ export async function POST(req: NextRequest) {
 
       case 'payment_intent.succeeded': {
         if (!paymentsEnabled) {
-          console.log('Stripe payments disabled, skipping payment events')
+          devLog('Stripe payments disabled, skipping payment events')
           break
         }
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const booking_id = paymentIntent.metadata.booking_id
 
-        console.log('🔔 Webhook payment_intent.succeeded received:', {
+        devLog('🔔 Webhook payment_intent.succeeded received:', {
           booking_id,
           payment_intent_id: paymentIntent.id,
           amount: paymentIntent.amount,
@@ -497,7 +503,7 @@ export async function POST(req: NextRequest) {
           break
         }
 
-        console.log('📦 Booking found:', {
+        devLog('📦 Booking found:', {
           id: booking.id,
           status: booking.status,
           paid_at: booking.paid_at,
@@ -523,7 +529,7 @@ export async function POST(req: NextRequest) {
 
         // Vérifier que le booking n'est pas déjà payé (idempotency)
         if (booking.paid_at) {
-          console.log('⏭️  Booking already paid, skipping:', booking_id)
+          devLog('⏭️  Booking already paid, skipping:', booking_id)
           break
         }
 
@@ -542,19 +548,19 @@ export async function POST(req: NextRequest) {
           throw updateError
         }
 
-        console.log('✅ Booking updated to paid')
+        devLog('✅ Booking updated to paid')
 
         // Générer le QR code seulement s'il n'existe pas (le trigger le crée normalement)
         if (!booking.qr_code) {
           try {
             const qrCode = await generateBookingQRCode(booking_id)
-            console.log('✅ QR code generated:', qrCode)
+            devLog('✅ QR code generated:', qrCode)
           } catch (error) {
             console.error('❌ Failed to generate QR code:', error)
             // Ne pas bloquer le webhook si la génération du QR échoue
           }
         } else {
-          console.log('ℹ️  QR code already exists:', booking.qr_code)
+          devLog('ℹ️  QR code already exists:', booking.qr_code)
         }
 
         // Créer la transaction
@@ -581,7 +587,7 @@ export async function POST(req: NextRequest) {
         if (transactionError) {
           console.error('❌ Failed to create transaction:', transactionError)
         } else {
-          console.log('✅ Transaction created')
+          devLog('✅ Transaction created')
         }
 
         // Récupérer les emails des utilisateurs pour l'envoi d'emails
@@ -624,7 +630,7 @@ export async function POST(req: NextRequest) {
               sender: senderNotification.error,
             })
           } else {
-            console.log('✅ Notifications sent')
+            devLog('✅ Notifications sent')
           }
         } catch (notifError) {
           console.error(
@@ -654,7 +660,7 @@ export async function POST(req: NextRequest) {
         // Envoyer email avec reçu à l'expéditeur
         if (senderProfile?.email && receiptUrl) {
           try {
-            console.log("📧 Envoi email reçu à l'expéditeur:", {
+            devLog("📧 Envoi email reçu à l'expéditeur:", {
               to: senderProfile.email,
               receiptUrl,
               amount: totalAmount,
@@ -671,7 +677,7 @@ export async function POST(req: NextRequest) {
               },
             })
 
-            console.log("✅ Email reçu envoyé à l'expéditeur")
+            devLog("✅ Email reçu envoyé à l'expéditeur")
           } catch (emailError) {
             console.error(
               '❌ Failed to send receipt email (non-blocking):',
@@ -683,7 +689,7 @@ export async function POST(req: NextRequest) {
         // Envoyer email de notification de paiement au voyageur
         if (travelerProfile?.email) {
           try {
-            console.log('📧 Envoi email notification au voyageur:', {
+            devLog('📧 Envoi email notification au voyageur:', {
               to: travelerProfile.email,
               amount: totalAmount,
             })
@@ -698,7 +704,7 @@ export async function POST(req: NextRequest) {
               },
             })
 
-            console.log('✅ Email notification envoyé au voyageur')
+            devLog('✅ Email notification envoyé au voyageur')
           } catch (emailError) {
             console.error(
               '❌ Failed to send traveler email (non-blocking):',
@@ -710,7 +716,7 @@ export async function POST(req: NextRequest) {
         // Générer contrat de transport PDF
         try {
           await generateTransportContract(booking_id)
-          console.log('✅ Transport contract generated')
+          devLog('✅ Transport contract generated')
         } catch (pdfError) {
           console.error(
             '❌ Failed to generate contract (non-blocking):',
@@ -718,13 +724,13 @@ export async function POST(req: NextRequest) {
           )
         }
 
-        console.log('✅✅✅ Payment succeeded for booking:', booking_id)
+        devLog('✅✅✅ Payment succeeded for booking:', booking_id)
         break
       }
 
       case 'payment_intent.payment_failed': {
         if (!paymentsEnabled) {
-          console.log('Stripe payments disabled, skipping payment events')
+          devLog('Stripe payments disabled, skipping payment events')
           break
         }
         const paymentIntent = event.data.object as Stripe.PaymentIntent
@@ -760,14 +766,14 @@ export async function POST(req: NextRequest) {
             },
           })
 
-          console.log('Payment failed for booking:', booking_id)
+          devLog('Payment failed for booking:', booking_id)
         }
         break
       }
 
       case 'charge.refunded': {
         if (!paymentsEnabled) {
-          console.log('Stripe payments disabled, skipping payment events')
+          devLog('Stripe payments disabled, skipping payment events')
           break
         }
         const charge = event.data.object as Stripe.Charge
@@ -810,7 +816,7 @@ export async function POST(req: NextRequest) {
               .update({ status: 'cancelled' })
               .eq('id', booking.id)
 
-            console.log('Refund processed for booking:', booking.id)
+            devLog('Refund processed for booking:', booking.id)
           }
         }
         break
@@ -853,7 +859,7 @@ export async function POST(req: NextRequest) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        devLog(`Unhandled event type: ${event.type}`)
     }
 
     return NextResponse.json({ received: true })
