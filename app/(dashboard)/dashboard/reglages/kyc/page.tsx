@@ -85,8 +85,12 @@ export default function KYCPage() {
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
   const [accountCountryOpen, setAccountCountryOpen] = useState(false)
   const [accountCountrySearch, setAccountCountrySearch] = useState('')
+  const [verificationSessionId, setVerificationSessionId] = useState<
+    string | null
+  >(null)
   const pendingHoldUntilRef = useRef<number | null>(null)
   const pendingTimeoutRef = useRef<number | null>(null)
+  const statusSyncTimeoutRef = useRef<number | null>(null)
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
   const PENDING_MIN_MS = 30000
@@ -409,6 +413,10 @@ export default function KYCPage() {
         window.clearTimeout(pendingTimeoutRef.current)
         pendingTimeoutRef.current = null
       }
+      if (statusSyncTimeoutRef.current) {
+        window.clearTimeout(statusSyncTimeoutRef.current)
+        statusSyncTimeoutRef.current = null
+      }
     }
   }, [])
 
@@ -539,10 +547,62 @@ export default function KYCPage() {
         return
       }
 
+      if (result.verificationSessionId) {
+        setVerificationSessionId(result.verificationSessionId)
+      }
+
       toast.success('Vérification envoyée avec succès.')
       const submittedAt = new Date().toISOString()
       setKycStatus('pending')
       setSubmittedAt(submittedAt)
+
+      const syncStatus = async (
+        sessionId: string,
+        attempt: number
+      ): Promise<void> => {
+        try {
+          const res = await fetch('/api/stripe/identity/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId }),
+          })
+          const data = await res.json().catch(() => ({}))
+          if (!res.ok) {
+            return
+          }
+
+          if (data?.kycStatus) {
+            setKycStatus(data.kycStatus)
+            if (data.submittedAt) {
+              setSubmittedAt(data.submittedAt)
+            }
+            if (data.kycStatus === 'rejected') {
+              setFormError(
+                data.rejectionReason ||
+                  "La vérification d'identité a échoué. Corrigez vos informations."
+              )
+              setStep('details')
+              pendingHoldUntilRef.current = null
+            }
+            if (data.kycStatus !== 'pending') {
+              return
+            }
+          }
+
+          if (data?.status === 'processing' && attempt < 2) {
+            statusSyncTimeoutRef.current = window.setTimeout(() => {
+              syncStatus(sessionId, attempt + 1)
+            }, attempt === 0 ? 5000 : 10000)
+          }
+        } catch {
+          // Silent fallback; webhook remains the primary source.
+        }
+      }
+
+      const sessionId = result.verificationSessionId
+      if (sessionId) {
+        await syncStatus(sessionId, 0)
+      }
     } catch {
       const message = 'Une erreur est survenue. Veuillez réessayer.'
       setFormError(message)

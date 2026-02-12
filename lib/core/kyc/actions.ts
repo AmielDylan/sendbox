@@ -541,6 +541,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
       return {
         success: true,
         verificationClientSecret: session.clientSecret,
+        verificationSessionId: session.id,
         message: 'Vérification Stripe Identity prête.',
       }
     }
@@ -655,6 +656,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
     return {
       success: true,
       verificationClientSecret: session.clientSecret,
+      verificationSessionId: session.id,
       message: 'Vérification Stripe Identity prête.',
     }
   } catch (error) {
