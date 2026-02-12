@@ -80,6 +80,7 @@ export default function KYCPage() {
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [documentCountryOpen, setDocumentCountryOpen] = useState(false)
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
   const [accountCountryOpen, setAccountCountryOpen] = useState(false)
@@ -147,6 +148,39 @@ export default function KYCPage() {
 
   const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
+
+  const clearFieldError = (field: string) => {
+    setFieldErrors(prev => {
+      if (!prev[field]) return prev
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
+  }
+
+  const validateDetailsForm = () => {
+    const errors: Record<string, string> = {}
+
+    if (!firstName.trim()) errors.firstName = 'Champ requis'
+    if (!lastName.trim()) errors.lastName = 'Champ requis'
+    if (!email.trim()) errors.email = 'Champ requis'
+    if (!phone.trim()) errors.phone = 'Champ requis'
+    if (!birthDate.trim()) errors.birthDate = 'Champ requis'
+    if (!address.trim()) errors.address = 'Champ requis'
+    if (!city.trim()) errors.city = 'Champ requis'
+    if (!postalCode.trim()) errors.postalCode = 'Champ requis'
+
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      const firstErrorField = Object.keys(errors)[0]
+      const el = document.getElementById(firstErrorField)
+      if (el instanceof HTMLElement) {
+        el.focus()
+      }
+      return false
+    }
+    return true
+  }
 
   const connectCountryOptions = useMemo(() => {
     const displayNames =
@@ -562,12 +596,8 @@ export default function KYCPage() {
       toast.error('Veuillez sélectionner un pays de résidence et un document')
       return
     }
-    if (!firstName || !lastName || !email || !phone) {
-      toast.error('Veuillez compléter vos informations personnelles')
-      return
-    }
-    if (!birthDate || !address || !city || !postalCode) {
-      toast.error('Veuillez compléter vos informations personnelles')
+    if (!validateDetailsForm()) {
+      setFormError('Veuillez corriger les champs en erreur.')
       return
     }
 
@@ -1164,84 +1194,204 @@ export default function KYCPage() {
                       Informations personnelles
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">Prénom</Label>
-                        <Input
-                          id="firstName"
-                          placeholder="Amiel"
-                          value={firstName}
-                          onChange={event => setFirstName(event.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Nom</Label>
-                        <Input
-                          id="lastName"
-                          placeholder="Adjovi"
-                          value={lastName}
-                          onChange={event => setLastName(event.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={event => setEmail(event.target.value)}
-                          disabled
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Téléphone</Label>
-                        <Input
-                          id="phone"
-                          placeholder="+33612345678"
-                          value={phone}
-                          onChange={event => setPhone(event.target.value)}
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">Prénom</Label>
+                      <Input
+                        id="firstName"
+                        placeholder="Amiel"
+                        value={firstName}
+                        onChange={event => {
+                          setFirstName(event.target.value)
+                          if (fieldErrors.firstName) {
+                            clearFieldError('firstName')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('firstName')}
+                        aria-invalid={Boolean(fieldErrors.firstName)}
+                        className={cn(
+                          fieldErrors.firstName && 'border-destructive'
+                        )}
+                      />
+                      {fieldErrors.firstName && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.firstName}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="birthDate">Date de naissance</Label>
+                      <Label htmlFor="lastName">Nom</Label>
                       <Input
-                        id="birthDate"
-                        type="date"
-                        value={birthDate}
-                        onChange={event => setBirthDate(event.target.value)}
+                        id="lastName"
+                        placeholder="Adjovi"
+                        value={lastName}
+                        onChange={event => {
+                          setLastName(event.target.value)
+                          if (fieldErrors.lastName) {
+                            clearFieldError('lastName')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('lastName')}
+                        aria-invalid={Boolean(fieldErrors.lastName)}
+                        className={cn(
+                          fieldErrors.lastName && 'border-destructive'
+                        )}
                       />
+                      {fieldErrors.lastName && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.lastName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={event => {
+                          setEmail(event.target.value)
+                          if (fieldErrors.email) {
+                            clearFieldError('email')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('email')}
+                        aria-invalid={Boolean(fieldErrors.email)}
+                        className={cn(
+                          fieldErrors.email && 'border-destructive'
+                        )}
+                        disabled
+                      />
+                      {fieldErrors.email && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.email}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="address">Adresse</Label>
+                      <Label htmlFor="phone">Téléphone</Label>
                       <Input
-                        id="address"
-                        placeholder="Adresse"
-                        value={address}
-                        onChange={event => setAddress(event.target.value)}
+                        id="phone"
+                        placeholder="+33612345678"
+                        value={phone}
+                        onChange={event => {
+                          setPhone(event.target.value)
+                          if (fieldErrors.phone) {
+                            clearFieldError('phone')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('phone')}
+                        aria-invalid={Boolean(fieldErrors.phone)}
+                        className={cn(
+                          fieldErrors.phone && 'border-destructive'
+                        )}
                       />
+                      {fieldErrors.phone && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.phone}
+                        </p>
+                      )}
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="city">Ville</Label>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="birthDate">Date de naissance</Label>
+                    <Input
+                      id="birthDate"
+                      type="date"
+                      value={birthDate}
+                      onChange={event => {
+                        setBirthDate(event.target.value)
+                        if (fieldErrors.birthDate) {
+                          clearFieldError('birthDate')
+                        }
+                      }}
+                      onFocus={() => clearFieldError('birthDate')}
+                      aria-invalid={Boolean(fieldErrors.birthDate)}
+                      className={cn(
+                        fieldErrors.birthDate && 'border-destructive'
+                      )}
+                    />
+                    {fieldErrors.birthDate && (
+                      <p className="text-xs text-destructive">
+                        {fieldErrors.birthDate}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Adresse</Label>
+                    <Input
+                      id="address"
+                      placeholder="Adresse"
+                      value={address}
+                      onChange={event => {
+                        setAddress(event.target.value)
+                        if (fieldErrors.address) {
+                          clearFieldError('address')
+                        }
+                      }}
+                      onFocus={() => clearFieldError('address')}
+                      aria-invalid={Boolean(fieldErrors.address)}
+                      className={cn(
+                        fieldErrors.address && 'border-destructive'
+                      )}
+                    />
+                    {fieldErrors.address && (
+                      <p className="text-xs text-destructive">
+                        {fieldErrors.address}
+                      </p>
+                    )}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">Ville</Label>
                       <Input
                         id="city"
                         placeholder="Ville"
                         value={city}
-                        onChange={event => setCity(event.target.value)}
+                        onChange={event => {
+                          setCity(event.target.value)
+                          if (fieldErrors.city) {
+                            clearFieldError('city')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('city')}
+                        aria-invalid={Boolean(fieldErrors.city)}
+                        className={cn(
+                          fieldErrors.city && 'border-destructive'
+                        )}
                       />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="postalCode">Code postal</Label>
+                      {fieldErrors.city && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.city}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="postalCode">Code postal</Label>
                       <Input
                         id="postalCode"
                         placeholder="Code postal"
                         value={postalCode}
-                        onChange={event => setPostalCode(event.target.value)}
+                        onChange={event => {
+                          setPostalCode(event.target.value)
+                          if (fieldErrors.postalCode) {
+                            clearFieldError('postalCode')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('postalCode')}
+                        aria-invalid={Boolean(fieldErrors.postalCode)}
+                        className={cn(
+                          fieldErrors.postalCode && 'border-destructive'
+                        )}
                       />
-                      </div>
+                      {fieldErrors.postalCode && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.postalCode}
+                        </p>
+                      )}
                     </div>
+                  </div>
                   </div>
 
                   <Alert>
