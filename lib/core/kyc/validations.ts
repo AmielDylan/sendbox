@@ -29,7 +29,7 @@ export const stripeIdentitySchema = z.object({
   birthday: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date de naissance invalide'),
-  address: z.string().min(3, "Adresse requise"),
+  address: z.string().min(3, 'Adresse requise'),
   city: z.string().min(2, 'Ville requise'),
   postalCode: z.string().min(2, 'Code postal requis'),
   accountTokenId: z.string().optional(),

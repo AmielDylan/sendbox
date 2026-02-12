@@ -95,16 +95,17 @@ export async function POST(req: Request) {
       )
     }
 
-    if ((profile as any)?.payout_provider && (profile as any).payout_provider !== 'stripe') {
+    if (
+      (profile as any)?.payout_provider &&
+      (profile as any).payout_provider !== 'stripe'
+    ) {
       return Response.json(
         { error: 'Compte non-Stripe: onboarding indisponible.' },
         { status: 400 }
       )
     }
 
-    const body = await req
-      .json()
-      .catch(() => ({} as OnboardRequestBody))
+    const body = await req.json().catch(() => ({}) as OnboardRequestBody)
 
     const bank = body?.bankData || {}
     const accountTokenId =
@@ -135,8 +136,7 @@ export async function POST(req: Request) {
     const reqHost =
       req.headers.get('x-forwarded-host') || req.headers.get('host')
     const reqProto = req.headers.get('x-forwarded-proto') || 'http'
-    const baseUrl =
-      reqOrigin || (reqHost ? `${reqProto}://${reqHost}` : null)
+    const baseUrl = reqOrigin || (reqHost ? `${reqProto}://${reqHost}` : null)
     const defaultProfileUrl = baseUrl
       ? `${baseUrl.replace(/\/$/, '')}/profil/${user.id}`
       : null
@@ -203,9 +203,12 @@ export async function POST(req: Request) {
         )
         usedAccountTokenForCreation = Boolean(accountTokenId)
       } catch (error) {
-        if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+        if (
+          error instanceof Error &&
+          error.message === 'ACCOUNT_TOKEN_REQUIRED'
+        ) {
           return Response.json(
-            { error: "Impossible de préparer le compte de paiement." },
+            { error: 'Impossible de préparer le compte de paiement.' },
             { status: 400 }
           )
         }
@@ -214,7 +217,10 @@ export async function POST(req: Request) {
 
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ stripe_connect_account_id: accountId, payout_provider: 'stripe' })
+        .update({
+          stripe_connect_account_id: accountId,
+          payout_provider: 'stripe',
+        })
         .eq('id', user.id)
 
       if (updateError) {
@@ -240,9 +246,12 @@ export async function POST(req: Request) {
               accountTokenId || undefined
             )
           } catch (error) {
-            if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+            if (
+              error instanceof Error &&
+              error.message === 'ACCOUNT_TOKEN_REQUIRED'
+            ) {
               return Response.json(
-                { error: "Impossible de préparer le compte de paiement." },
+                { error: 'Impossible de préparer le compte de paiement.' },
                 { status: 400 }
               )
             }
@@ -253,7 +262,10 @@ export async function POST(req: Request) {
 
           const { error: replaceError } = await supabase
             .from('profiles')
-            .update({ stripe_connect_account_id: newAccountId, payout_provider: 'stripe' })
+            .update({
+              stripe_connect_account_id: newAccountId,
+              payout_provider: 'stripe',
+            })
             .eq('id', user.id)
 
           if (replaceError) {
@@ -264,7 +276,7 @@ export async function POST(req: Request) {
           }
         }
       } catch (error) {
-      if (isStripeAccountMissing(error)) {
+        if (isStripeAccountMissing(error)) {
           let newAccountId: string
           try {
             newAccountId = await createConnectedAccount(
@@ -276,9 +288,12 @@ export async function POST(req: Request) {
               accountTokenId || undefined
             )
           } catch (error) {
-            if (error instanceof Error && error.message === 'ACCOUNT_TOKEN_REQUIRED') {
+            if (
+              error instanceof Error &&
+              error.message === 'ACCOUNT_TOKEN_REQUIRED'
+            ) {
               return Response.json(
-                { error: "Impossible de préparer le compte de paiement." },
+                { error: 'Impossible de préparer le compte de paiement.' },
                 { status: 400 }
               )
             }
@@ -289,7 +304,10 @@ export async function POST(req: Request) {
 
           const { error: replaceError } = await supabase
             .from('profiles')
-            .update({ stripe_connect_account_id: newAccountId, payout_provider: 'stripe' })
+            .update({
+              stripe_connect_account_id: newAccountId,
+              payout_provider: 'stripe',
+            })
             .eq('id', user.id)
 
           if (replaceError) {
@@ -301,7 +319,7 @@ export async function POST(req: Request) {
         } else {
           console.error('Stripe account fetch error:', error)
           return Response.json(
-          { error: "Impossible d'accéder au compte de paiement" },
+            { error: "Impossible d'accéder au compte de paiement" },
             { status: 500 }
           )
         }
@@ -324,7 +342,7 @@ export async function POST(req: Request) {
         } else {
           if (isStripeLiveMode()) {
             return Response.json(
-              { error: "Impossible de mettre à jour le compte de paiement." },
+              { error: 'Impossible de mettre à jour le compte de paiement.' },
               { status: 400 }
             )
           }
@@ -357,7 +375,7 @@ export async function POST(req: Request) {
       } catch (error) {
         console.error('Stripe business profile error:', error)
         return Response.json(
-          { error: "Impossible de démarrer la vérification." },
+          { error: 'Impossible de démarrer la vérification.' },
           { status: 400 }
         )
       }
@@ -410,7 +428,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Stripe connect onboarding error:', error)
     return Response.json(
-      { error: "Impossible de démarrer la vérification" },
+      { error: 'Impossible de démarrer la vérification' },
       { status: 500 }
     )
   }

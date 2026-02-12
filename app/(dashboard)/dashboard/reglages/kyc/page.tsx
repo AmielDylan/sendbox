@@ -283,7 +283,6 @@ export default function KYCPage() {
     return tokenResult.token.id
   }
 
-
   useEffect(() => {
     if (isAdmin) {
       setIsLoading(false)
@@ -540,9 +539,7 @@ export default function KYCPage() {
       return
     }
     if (!documentType || !documentCountry || !accountCountry) {
-      toast.error(
-        'Veuillez sélectionner un pays de résidence et un document'
-      )
+      toast.error('Veuillez sélectionner un pays de résidence et un document')
       return
     }
     if (!firstName || !lastName || !email || !phone) {
@@ -560,7 +557,9 @@ export default function KYCPage() {
     try {
       const stripe = await stripePromise
       if (!stripe) {
-        toast.error("Le service de vérification n'est pas disponible. Réessayez.")
+        toast.error(
+          "Le service de vérification n'est pas disponible. Réessayez."
+        )
         return
       }
 
@@ -615,7 +614,7 @@ export default function KYCPage() {
       if (error) {
         const message =
           error.message ||
-            "La vérification d'identité n'a pas pu être complétée."
+          "La vérification d'identité n'a pas pu être complétée."
         setFormError(message)
         toast.error(message)
         return
@@ -652,9 +651,7 @@ export default function KYCPage() {
 
   const handlePrepareAccount = async () => {
     if (!documentType || !documentCountry || !accountCountry) {
-      toast.error(
-        'Veuillez sélectionner un pays de résidence et un document'
-      )
+      toast.error('Veuillez sélectionner un pays de résidence et un document')
       return
     }
 
@@ -780,7 +777,7 @@ export default function KYCPage() {
       case 'rejected':
         return 'Votre vérification a été refusée. Corrigez vos informations puis relancez la procédure.'
       case 'incomplete':
-        return "Aucune vérification en cours. Lancez la vérification pour continuer."
+        return 'Aucune vérification en cours. Lancez la vérification pour continuer.'
       default:
         return 'Sélectionnez votre document puis continuez la vérification.'
     }
@@ -790,7 +787,7 @@ export default function KYCPage() {
     <div className="space-y-6">
       <PageHeader
         title="Vérification d'identité (KYC)"
-          description="Nous vérifions vos documents pour sécuriser votre compte."
+        description="Nous vérifions vos documents pour sécuriser votre compte."
       />
 
       {displayStatus === 'approved' && (
@@ -817,9 +814,7 @@ export default function KYCPage() {
         <Card>
           <CardHeader>
             <CardTitle>Lancer la vérification d'identité</CardTitle>
-            <CardDescription>
-              {getKycMessage()}
-            </CardDescription>
+            <CardDescription>{getKycMessage()}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {displayStatus !== 'pending' && step === 'document' && (
@@ -1030,7 +1025,8 @@ export default function KYCPage() {
                     <SelectTrigger id="documentType">
                       <SelectValue
                         placeholder={
-                          normalizedDocumentCountry && isIdentityCountrySupported
+                          normalizedDocumentCountry &&
+                          isIdentityCountrySupported
                             ? 'Sélectionnez un document'
                             : 'Choisissez d’abord un pays'
                         }
@@ -1066,8 +1062,8 @@ export default function KYCPage() {
                     <AlertTitle>Pays de document non supporté</AlertTitle>
                     <AlertDescription>
                       Stripe Identity n&apos;est pas disponible pour ce pays de
-                      document. Choisissez un pays pris en charge ou utilisez
-                      un document accepté par Stripe.
+                      document. Choisissez un pays pris en charge ou utilisez un
+                      document accepté par Stripe.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -1101,159 +1097,166 @@ export default function KYCPage() {
               </>
             )}
 
-            {step === 'details' && (displayStatus !== 'pending' || forceDetails) && (
-              <>
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
-                  <div className="text-sm">
-                    <span className="font-medium">Résidence :</span>{' '}
-                    {accountCountry || '—'} •{' '}
-                    <span className="font-medium">Document :</span>{' '}
-                    {documentType === 'passport'
-                      ? 'Passeport'
-                      : "Carte d'identité"}{' '}
-                    • <span className="font-medium">Pays :</span>{' '}
-                    {documentCountry || '—'}
+            {step === 'details' &&
+              (displayStatus !== 'pending' || forceDetails) && (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
+                    <div className="text-sm">
+                      <span className="font-medium">Résidence :</span>{' '}
+                      {accountCountry || '—'} •{' '}
+                      <span className="font-medium">Document :</span>{' '}
+                      {documentType === 'passport'
+                        ? 'Passeport'
+                        : "Carte d'identité"}{' '}
+                      • <span className="font-medium">Pays :</span>{' '}
+                      {documentCountry || '—'}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setStep('document')
+                        setForceDetails(false)
+                        setVerificationSessionId(null)
+                        if (typeof window !== 'undefined') {
+                          sessionStorage.removeItem(
+                            'kyc_verification_session_id'
+                          )
+                        }
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      Modifier
+                    </Button>
                   </div>
+
+                  <div className="space-y-4 rounded-lg border border-border/60 p-4">
+                    <p className="text-sm font-semibold">
+                      Informations personnelles
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Prénom</Label>
+                        <Input
+                          id="firstName"
+                          placeholder="Amiel"
+                          value={firstName}
+                          onChange={event => setFirstName(event.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Nom</Label>
+                        <Input
+                          id="lastName"
+                          placeholder="Adjovi"
+                          value={lastName}
+                          onChange={event => setLastName(event.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={event => setEmail(event.target.value)}
+                          disabled
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Téléphone</Label>
+                        <Input
+                          id="phone"
+                          placeholder="+33612345678"
+                          value={phone}
+                          onChange={event => setPhone(event.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="birthDate">Date de naissance</Label>
+                      <Input
+                        id="birthDate"
+                        type="date"
+                        value={birthDate}
+                        onChange={event => setBirthDate(event.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="address">Adresse</Label>
+                      <Input
+                        id="address"
+                        placeholder="28 Route de Bonsecours"
+                        value={address}
+                        onChange={event => setAddress(event.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">Ville</Label>
+                        <Input
+                          id="city"
+                          placeholder="Paris"
+                          value={city}
+                          onChange={event => setCity(event.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="postalCode">Code postal</Label>
+                        <Input
+                          id="postalCode"
+                          placeholder="75012"
+                          value={postalCode}
+                          onChange={event => setPostalCode(event.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Alert>
+                    <IconShieldLock className="h-4 w-4" />
+                    <AlertTitle>Sécurité & confidentialité</AlertTitle>
+                    <AlertDescription>
+                      <p>
+                        La vérification est opérée par un prestataire sécurisé.
+                        Nous ne stockons pas vos documents, uniquement le statut
+                        de vérification et les informations déclarées.
+                      </p>
+                      <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
+                        <li>Données chiffrées pendant le transfert.</li>
+                        <li>
+                          Utilisation strictement liée à la conformité KYC.
+                        </li>
+                        <li>Vous pouvez relancer la vérification si besoin.</li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setStep('document')
-                      setForceDetails(false)
-                      setVerificationSessionId(null)
-                      if (typeof window !== 'undefined') {
-                        sessionStorage.removeItem('kyc_verification_session_id')
-                      }
-                    }}
-                    disabled={isSubmitting}
+                    className="w-full"
+                    disabled={
+                      isSubmitting || (kycStatus === 'pending' && !forceDetails)
+                    }
+                    onClick={handleStartVerification}
                   >
-                    Modifier
+                    {isSubmitting ? (
+                      <>
+                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Ouverture de la vérification...
+                      </>
+                    ) : (
+                      'Vérifier mon identité'
+                    )}
                   </Button>
-                </div>
-
-                <div className="space-y-4 rounded-lg border border-border/60 p-4">
-                  <p className="text-sm font-semibold">
-                    Informations personnelles
-                  </p>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">Prénom</Label>
-                      <Input
-                        id="firstName"
-                        placeholder="Amiel"
-                        value={firstName}
-                        onChange={event => setFirstName(event.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Nom</Label>
-                      <Input
-                        id="lastName"
-                        placeholder="Adjovi"
-                        value={lastName}
-                        onChange={event => setLastName(event.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={event => setEmail(event.target.value)}
-                        disabled
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        placeholder="+33612345678"
-                        value={phone}
-                        onChange={event => setPhone(event.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="birthDate">Date de naissance</Label>
-                    <Input
-                      id="birthDate"
-                      type="date"
-                      value={birthDate}
-                      onChange={event => setBirthDate(event.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Adresse</Label>
-                    <Input
-                      id="address"
-                      placeholder="28 Route de Bonsecours"
-                      value={address}
-                      onChange={event => setAddress(event.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">Ville</Label>
-                      <Input
-                        id="city"
-                        placeholder="Paris"
-                        value={city}
-                        onChange={event => setCity(event.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="postalCode">Code postal</Label>
-                      <Input
-                        id="postalCode"
-                        placeholder="75012"
-                        value={postalCode}
-                        onChange={event => setPostalCode(event.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <Alert>
-                  <IconShieldLock className="h-4 w-4" />
-                  <AlertTitle>Sécurité & confidentialité</AlertTitle>
-                  <AlertDescription>
-                    <p>
-                      La vérification est opérée par un prestataire sécurisé.
-                      Nous ne stockons pas vos documents, uniquement le statut
-                      de vérification et les informations déclarées.
-                    </p>
-                    <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
-                      <li>Données chiffrées pendant le transfert.</li>
-                      <li>Utilisation strictement liée à la conformité KYC.</li>
-                      <li>Vous pouvez relancer la vérification si besoin.</li>
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-
-                <Button
-                  type="button"
-                  className="w-full"
-                  disabled={isSubmitting || (kycStatus === 'pending' && !forceDetails)}
-                  onClick={handleStartVerification}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Ouverture de la vérification...
-                    </>
-                  ) : (
-                    'Vérifier mon identité'
+                  {formError && (
+                    <p className="text-sm text-destructive">{formError}</p>
                   )}
-                </Button>
-                {formError && (
-                  <p className="text-sm text-destructive">{formError}</p>
-                )}
-              </>
-            )}
+                </>
+              )}
             {displayStatus === 'pending' && !forceDetails && (
               <Alert className="border-primary/20 bg-primary/5">
                 <IconClock className="h-4 w-4" />

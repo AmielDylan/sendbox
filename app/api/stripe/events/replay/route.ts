@@ -130,7 +130,9 @@ const handleAccountUpdated = async (
   const payoutsEnabled = Boolean(account.payouts_enabled)
   const requirements = account.requirements || null
   const requirementsJson = requirements
-    ? (JSON.parse(JSON.stringify(requirements)) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
+    ? (JSON.parse(
+        JSON.stringify(requirements)
+      ) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
     : null
   const onboardingCompleted =
     payoutsEnabled &&
@@ -169,8 +171,7 @@ const handleAccountUpdated = async (
   }
 
   const individualVerificationStatus = account.individual?.verification?.status
-  const isIdentityVerified =
-    individualVerificationStatus === 'verified'
+  const isIdentityVerified = individualVerificationStatus === 'verified'
 
   if (isIdentityVerified) {
     const reviewedAt = new Date().toISOString()
@@ -199,7 +200,11 @@ const handleAccountUpdated = async (
   if (error) {
     console.error('❌ Failed to update connect status:', error)
   } else {
-    if (isIdentityVerified && profile?.id && profile?.kyc_status !== 'approved') {
+    if (
+      isIdentityVerified &&
+      profile?.id &&
+      profile?.kyc_status !== 'approved'
+    ) {
       await notifyKycStatusChange(profile.id, 'approved')
     }
 
@@ -273,7 +278,9 @@ export async function POST(req: NextRequest) {
 
       if (event.type === 'identity.verification_session.verified') {
         status = 'approved'
-      } else if (event.type === 'identity.verification_session.requires_input') {
+      } else if (
+        event.type === 'identity.verification_session.requires_input'
+      ) {
         status = 'rejected'
         rejectionReason =
           verificationSession.last_error?.reason ||
@@ -293,14 +300,8 @@ export async function POST(req: NextRequest) {
       const updateData = withIdentityMetadata(
         {
           kyc_status: status,
-          kyc_submitted_at:
-            status === 'pending'
-              ? receivedAt
-              : undefined,
-          kyc_reviewed_at:
-            status === 'pending'
-              ? undefined
-              : receivedAt,
+          kyc_submitted_at: status === 'pending' ? receivedAt : undefined,
+          kyc_reviewed_at: status === 'pending' ? undefined : receivedAt,
           kyc_rejection_reason: status === 'approved' ? null : rejectionReason,
         },
         verificationSession
@@ -315,7 +316,11 @@ export async function POST(req: NextRequest) {
       )
 
       if (updated?.id || userId) {
-        await notifyKycStatusChange(updated?.id || userId, status, rejectionReason)
+        await notifyKycStatusChange(
+          updated?.id || userId,
+          status,
+          rejectionReason
+        )
       }
 
       return NextResponse.json({
@@ -327,11 +332,7 @@ export async function POST(req: NextRequest) {
 
     case 'account.updated': {
       const account = event.data.object as Stripe.Account
-      const result = await handleAccountUpdated(
-        adminClient,
-        account,
-        dryRun
-      )
+      const result = await handleAccountUpdated(adminClient, account, dryRun)
 
       return NextResponse.json({
         processed: true,

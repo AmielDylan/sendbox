@@ -313,7 +313,9 @@ export async function POST(req: NextRequest) {
         const payoutsEnabled = Boolean(account.payouts_enabled)
         const requirements = account.requirements || null
         const requirementsJson = requirements
-          ? (JSON.parse(JSON.stringify(requirements)) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
+          ? (JSON.parse(
+              JSON.stringify(requirements)
+            ) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
           : null
         const onboardingCompleted =
           payoutsEnabled &&
@@ -353,8 +355,7 @@ export async function POST(req: NextRequest) {
 
         const individualVerificationStatus =
           account.individual?.verification?.status
-        const isIdentityVerified =
-          individualVerificationStatus === 'verified'
+        const isIdentityVerified = individualVerificationStatus === 'verified'
 
         if (isIdentityVerified) {
           const reviewedAt = new Date().toISOString()
@@ -379,7 +380,11 @@ export async function POST(req: NextRequest) {
         if (error) {
           console.error('❌ Failed to update connect status:', error)
         } else {
-          if (isIdentityVerified && profile?.id && profile?.kyc_status !== 'approved') {
+          if (
+            isIdentityVerified &&
+            profile?.id &&
+            profile?.kyc_status !== 'approved'
+          ) {
             await notifyKycStatusChange(profile.id, 'approved')
           }
 
@@ -494,7 +499,9 @@ export async function POST(req: NextRequest) {
         // Vérifier que le booking existe et n'est pas déjà payé (idempotency)
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
-          .select('id, paid_at, qr_code, status, commission_amount, insurance_premium')
+          .select(
+            'id, paid_at, qr_code, status, commission_amount, insurance_premium'
+          )
           .eq('id', booking_id)
           .single()
 
