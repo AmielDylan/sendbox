@@ -317,13 +317,12 @@ export function StripeConnectCustomFlow({
   const handleSubmit = async (payload: ConnectOnboardingPayload) => {
     setLoading(true)
     try {
-      let accountTokenId: string | undefined
       const stripe = await stripePromise
       if (!stripe) {
         throw new Error("Le service de paiement n'est pas disponible.")
       }
 
-      accountTokenId = await createAccountToken(stripe)
+      const accountTokenId = await createAccountToken(stripe)
 
       const res = await fetch('/api/connect/onboard', {
         method: 'POST',
