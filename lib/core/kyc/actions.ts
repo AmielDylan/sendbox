@@ -53,6 +53,7 @@ const parseDob = (value?: string | null) => {
 export async function prepareKYCAccount(input: {
   accountCountry: string
   documentCountry: string
+  documentType?: StripeIdentityInput['documentType']
   accountTokenId?: string
 }) {
   const supabase = await createClient()
@@ -188,7 +189,7 @@ export async function prepareKYCAccount(input: {
       kyc_submitted_at: null,
       kyc_reviewed_at: null,
       kyc_rejection_reason: null,
-      kyc_document_type: null,
+      kyc_document_type: input.documentType ?? null,
       kyc_nationality: normalizedDocumentCountry,
       payout_error_code: null,
       payout_error_message: null,
@@ -322,7 +323,7 @@ export async function prepareKYCAccount(input: {
     kyc_submitted_at: null,
     kyc_reviewed_at: null,
     kyc_rejection_reason: null,
-    kyc_document_type: null,
+    kyc_document_type: input.documentType ?? null,
     kyc_nationality: normalizedDocumentCountry,
     payout_error_code: null,
     payout_error_message: null,
