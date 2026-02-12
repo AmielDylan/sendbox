@@ -417,6 +417,14 @@ export default function KYCPage() {
       setStep('details')
       setForceDetails(true)
     }
+    if (nextStatus === 'incomplete') {
+      const hasDocument = Boolean((profile as any)?.kyc_document_type)
+      const hasNationality = Boolean((profile as any)?.kyc_nationality)
+      if (hasDocument && hasNationality) {
+        setStep('details')
+        setForceDetails(true)
+      }
+    }
   }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
 
   useEffect(() => {
