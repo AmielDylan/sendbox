@@ -24,7 +24,7 @@ export const supabaseAdmin = createClient<Database>(
  */
 export async function createTestUser(options?: {
   email?: string
-  role?: 'sender' | 'traveler' | 'both' | 'admin'
+  role?: 'user' | 'partner' | 'admin'
   firstName?: string
   lastName?: string
 }) {
@@ -47,9 +47,9 @@ export async function createTestUser(options?: {
   const { error: profileError } = await supabaseAdmin
     .from('profiles')
     .update({
-      role: options?.role || 'sender',
-      first_name: options?.firstName || 'Test',
-      last_name: options?.lastName || 'User',
+      role: options?.role || 'user',
+      firstname: options?.firstName || 'Test',
+      lastname: options?.lastName || 'User',
     })
     .eq('id', authData.user.id)
 
