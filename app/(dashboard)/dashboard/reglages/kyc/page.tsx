@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Popover,
   PopoverContent,
@@ -80,6 +81,7 @@ export default function KYCPage() {
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
+  const [confirmIdentity, setConfirmIdentity] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [documentCountryOpen, setDocumentCountryOpen] = useState(false)
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
@@ -169,6 +171,10 @@ export default function KYCPage() {
     if (!address.trim()) errors.address = 'Champ requis'
     if (!city.trim()) errors.city = 'Champ requis'
     if (!postalCode.trim()) errors.postalCode = 'Champ requis'
+    if (!confirmIdentity) {
+      errors.confirmIdentity =
+        "Veuillez confirmer que vos informations correspondent au document."
+    }
 
     setFieldErrors(errors)
     if (Object.keys(errors).length > 0) {
@@ -762,6 +768,7 @@ export default function KYCPage() {
       setKycStatus('incomplete')
       setDisplayStatus('incomplete')
       setFormError(null)
+      setConfirmIdentity(false)
       setStep('details')
       setForceDetails(true)
       toast.success('Compte prêt pour la vérification')
@@ -1173,13 +1180,14 @@ export default function KYCPage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        setStep('document')
-                        setForceDetails(false)
-                        setVerificationSessionId(null)
-                        if (typeof window !== 'undefined') {
-                          sessionStorage.removeItem(
-                            'kyc_verification_session_id'
+                    onClick={() => {
+                      setStep('document')
+                      setForceDetails(false)
+                      setConfirmIdentity(false)
+                      setVerificationSessionId(null)
+                      if (typeof window !== 'undefined') {
+                        sessionStorage.removeItem(
+                          'kyc_verification_session_id'
                           )
                         }
                       }}
@@ -1394,9 +1402,9 @@ export default function KYCPage() {
                   </div>
                   </div>
 
-                  <Alert>
-                    <IconShieldLock className="h-4 w-4" />
-                    <AlertTitle>Sécurité & confidentialité</AlertTitle>
+                <Alert>
+                  <IconShieldLock className="h-4 w-4" />
+                  <AlertTitle>Sécurité & confidentialité</AlertTitle>
                     <AlertDescription>
                       <p>
                         La vérification est opérée par un prestataire sécurisé.
@@ -1410,10 +1418,43 @@ export default function KYCPage() {
                         </li>
                         <li>Vous pouvez relancer la vérification si besoin.</li>
                       </ul>
-                    </AlertDescription>
-                  </Alert>
+                  </AlertDescription>
+                </Alert>
 
-                  <Button
+                <div className="space-y-2">
+                  <div
+                    className={cn(
+                      'flex items-start gap-3 rounded-lg border border-border/60 px-4 py-3 text-sm',
+                      fieldErrors.confirmIdentity && 'border-destructive'
+                    )}
+                  >
+                    <Checkbox
+                      id="confirmIdentity"
+                      checked={confirmIdentity}
+                      onCheckedChange={value => {
+                        setConfirmIdentity(Boolean(value))
+                        if (fieldErrors.confirmIdentity) {
+                          clearFieldError('confirmIdentity')
+                        }
+                      }}
+                    />
+                    <Label
+                      htmlFor="confirmIdentity"
+                      className="cursor-pointer text-sm font-normal leading-5"
+                    >
+                      Je confirme que les informations renseignées sont
+                      conformes aux données présentes sur ma pièce
+                      d&apos;identité.
+                    </Label>
+                  </div>
+                  {fieldErrors.confirmIdentity && (
+                    <p className="text-xs text-destructive">
+                      {fieldErrors.confirmIdentity}
+                    </p>
+                  )}
+                </div>
+
+                <Button
                     type="button"
                     className="w-full"
                     disabled={
