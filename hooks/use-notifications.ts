@@ -26,6 +26,9 @@ export function useNotifications(limit: number = 20) {
     const supabase = createClient()
     let channel: any = null
     let isActive = true
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null
+    let retryAttempts = 0
+    const isProd = process.env.NODE_ENV === 'production'
 
     const getChannelName = (userId: string) => {
       const suffix =
@@ -33,6 +36,136 @@ export function useNotifications(limit: number = 20) {
           ? crypto.randomUUID()
           : Math.random().toString(36).slice(2)
       return `notifications:${userId}:${suffix}`
+    }
+
+    const scheduleRetry = (reason: string, userId: string) => {
+      if (!isActive) return
+      retryAttempts += 1
+      const delay = Math.min(1000 * Math.pow(2, retryAttempts - 1), 30000)
+
+      if (!isProd) {
+        console.warn(`[Realtime] Retrying notifications channel (${reason})`)
+      }
+
+      if (retryTimeout) {
+        clearTimeout(retryTimeout)
+      }
+
+      retryTimeout = setTimeout(() => {
+        if (!isActive) return
+        subscribeToNotificationsChannel(userId).catch(() => null)
+      }, delay)
+    }
+
+    const subscribeToNotificationsChannel = async (userId: string) => {
+      if (!isActive) return
+
+      if (channel) {
+        supabase.removeChannel(channel)
+        channel = null
+      }
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        scheduleRetry('missing_session', userId)
+        return
+      }
+
+      await supabase.realtime.setAuth(session.access_token)
+
+      channel = supabase
+        .channel(getChannelName(userId))
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          payload => {
+            const newNotif = payload.new as Notification
+
+            setNotifications(prev => [newNotif, ...prev.slice(0, limit - 1)])
+            setUnreadCount(prev => prev + 1)
+
+            toast.info(newNotif.title, {
+              description: newNotif.content,
+              action: newNotif.booking_id
+                ? {
+                    label: 'Voir',
+                    onClick: () => {
+                      window.location.href = `/dashboard/colis/${newNotif.booking_id}`
+                    },
+                  }
+                : undefined,
+              duration: 5000,
+            })
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          payload => {
+            const updatedNotif = payload.new as Notification
+
+            setNotifications(prev =>
+              prev.map(n => (n.id === updatedNotif.id ? updatedNotif : n))
+            )
+
+            setNotifications(current => {
+              const unread = current.filter(n => !n.read_at).length
+              setUnreadCount(unread)
+              return current
+            })
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          payload => {
+            const removedNotif = payload.old as Notification
+            setNotifications(prev =>
+              prev.filter(n => n.id !== removedNotif.id)
+            )
+            if (!removedNotif.read_at) {
+              setUnreadCount(prev => Math.max(0, prev - 1))
+            }
+          }
+        )
+        .subscribe((status, err) => {
+          if (status === 'SUBSCRIBED') {
+            retryAttempts = 0
+            console.log('✅ Subscribed to notifications realtime')
+          } else if (status === 'CHANNEL_ERROR') {
+            console.error('❌ Realtime subscription error', err)
+            if (!isProd) {
+              toast.error('Erreur de connexion temps réel')
+            }
+            scheduleRetry('channel_error', userId)
+          } else if (status === 'TIMED_OUT') {
+            console.error('⏱️ Realtime subscription timed out', err)
+            if (!isProd) {
+              toast.warning('Connexion temps réel lente')
+            }
+            scheduleRetry('timed_out', userId)
+          } else if (status === 'CLOSED') {
+            console.log('🔌 Realtime channel closed')
+          }
+        })
     }
 
     const loadNotifications = async () => {
@@ -51,10 +184,6 @@ export function useNotifications(limit: number = 20) {
             setIsLoading(false)
           }
           return
-        }
-
-        if (session?.access_token) {
-          await supabase.realtime.setAuth(session.access_token)
         }
 
         // Charger les notifications
@@ -87,94 +216,13 @@ export function useNotifications(limit: number = 20) {
 
         // Souscrire aux notifications temps réel avec filtrage serveur
         // IMPORTANT: Le filtre doit correspondre exactement à ce que le serveur RLS permet
-        channel = supabase
-          .channel(getChannelName(user.id))
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'notifications',
-              filter: `user_id=eq.${user.id}`,
-            },
-            payload => {
-              const newNotif = payload.new as Notification
-
-              setNotifications(prev => [newNotif, ...prev.slice(0, limit - 1)])
-              setUnreadCount(prev => prev + 1)
-
-              // Afficher toast
-              toast.info(newNotif.title, {
-                description: newNotif.content,
-                action: newNotif.booking_id
-                  ? {
-                      label: 'Voir',
-                      onClick: () => {
-                        window.location.href = `/dashboard/colis/${newNotif.booking_id}`
-                      },
-                    }
-                  : undefined,
-                duration: 5000,
-              })
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'notifications',
-              filter: `user_id=eq.${user.id}`,
-            },
-            payload => {
-              const updatedNotif = payload.new as Notification
-
-              setNotifications(prev =>
-                prev.map(n => (n.id === updatedNotif.id ? updatedNotif : n))
-              )
-
-              setNotifications(current => {
-                const unread = current.filter(n => !n.read_at).length
-                setUnreadCount(unread)
-                return current
-              })
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: 'DELETE',
-              schema: 'public',
-              table: 'notifications',
-              filter: `user_id=eq.${user.id}`,
-            },
-            payload => {
-              const removedNotif = payload.old as Notification
-              setNotifications(prev =>
-                prev.filter(n => n.id !== removedNotif.id)
-              )
-              if (!removedNotif.read_at) {
-                setUnreadCount(prev => Math.max(0, prev - 1))
-              }
-            }
-          )
-          .subscribe(status => {
-            if (status === 'SUBSCRIBED') {
-              console.log('✅ Subscribed to notifications realtime')
-            } else if (status === 'CHANNEL_ERROR') {
-              console.error('❌ Realtime subscription error')
-              toast.error('Erreur de connexion temps réel')
-            } else if (status === 'TIMED_OUT') {
-              console.error('⏱️ Realtime subscription timed out')
-              toast.warning('Connexion temps réel lente')
-            } else if (status === 'CLOSED') {
-              console.log('🔌 Realtime channel closed')
-            }
-          })
+        await subscribeToNotificationsChannel(user.id)
       } catch (error) {
         console.error('Error loading notifications:', error)
         if (isActive) {
-          toast.error('Erreur lors du chargement des notifications')
+          if (!isProd) {
+            toast.error('Erreur lors du chargement des notifications')
+          }
         }
       } finally {
         if (isActive) {
@@ -187,6 +235,10 @@ export function useNotifications(limit: number = 20) {
 
     return () => {
       isActive = false
+      if (retryTimeout) {
+        clearTimeout(retryTimeout)
+        retryTimeout = null
+      }
       if (channel) {
         supabase.removeChannel(channel)
         console.log('🧹 Unsubscribed from notifications channel')
