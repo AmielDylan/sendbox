@@ -48,7 +48,12 @@ import {
   IconShield,
   IconInfoCircle,
 } from '@tabler/icons-react'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import {
   MAX_PHOTOS,
   MAX_FILE_SIZE,
@@ -234,9 +239,15 @@ function NewBookingPageContent() {
     return null
   }
 
-  const travelerName =
-    `${announcement.traveler_firstname || ''} ${announcement.traveler_lastname || ''}`.trim() ||
+  const travelerName = getShortDisplayName(
+    announcement.traveler_firstname || null,
+    announcement.traveler_lastname || null,
     'Voyageur'
+  )
+  const travelerNameParts = getShortNameParts(
+    announcement.traveler_firstname || null,
+    announcement.traveler_lastname || null
+  )
   const travelerAvatar = getAvatarUrl(
     announcement.traveler_avatar_url,
     announcement.traveler_id || travelerName
@@ -276,8 +287,8 @@ function NewBookingPageContent() {
                   <AvatarImage src={travelerAvatar} alt={travelerName} />
                   <AvatarFallback>
                     {generateInitials(
-                      announcement.traveler_firstname,
-                      announcement.traveler_lastname
+                      travelerNameParts.firstName,
+                      travelerNameParts.lastName
                     )}
                   </AvatarFallback>
                 </Avatar>

@@ -16,7 +16,12 @@ import {
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { AnnouncementResult } from '@/lib/shared/db/queries/announcements'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 
 interface AnnouncementCardProps {
   announcement: AnnouncementResult
@@ -29,12 +34,18 @@ export function AnnouncementCard({
   showMatchScore = false,
   disabled = false,
 }: AnnouncementCardProps) {
-  const travelerName =
-    `${announcement.traveler_first_name || ''} ${announcement.traveler_last_name || ''}`.trim() ||
+  const travelerName = getShortDisplayName(
+    announcement.traveler_first_name,
+    announcement.traveler_last_name,
     'Voyageur'
-  const travelerInitials = generateInitials(
+  )
+  const travelerNameParts = getShortNameParts(
     announcement.traveler_first_name,
     announcement.traveler_last_name
+  )
+  const travelerInitials = generateInitials(
+    travelerNameParts.firstName,
+    travelerNameParts.lastName
   )
   const travelerAvatar = getAvatarUrl(
     announcement.traveler_avatar_url,

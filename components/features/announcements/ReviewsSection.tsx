@@ -7,7 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { IconStar } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 
 interface Review {
   id: string
@@ -46,12 +51,18 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {reviews.map(review => {
-          const raterName =
-            `${review.rater_firstname || ''} ${review.rater_lastname || ''}`.trim() ||
+          const raterName = getShortDisplayName(
+            review.rater_firstname,
+            review.rater_lastname,
             'Utilisateur'
-          const raterInitials = generateInitials(
+          )
+          const raterNameParts = getShortNameParts(
             review.rater_firstname,
             review.rater_lastname
+          )
+          const raterInitials = generateInitials(
+            raterNameParts.firstName,
+            raterNameParts.lastName
           )
           const raterAvatar = getAvatarUrl(review.rater_avatar_url, raterName)
 
