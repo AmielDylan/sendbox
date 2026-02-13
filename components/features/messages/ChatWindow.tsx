@@ -121,6 +121,9 @@ export function ChatWindow({
     otherUserAvatar,
     otherUserId || otherUserName
   )
+  const otherNameTokens = (otherUserName || '').trim().split(/\s+/).filter(Boolean)
+  const otherFirstName = otherNameTokens[0] || null
+  const otherLastName = otherNameTokens[1] || null
 
   // Hook de présence pour le statut en ligne et typing indicators
   const { isUserOnline, isUserTyping, sendTypingStatus, stopTyping } =
@@ -170,8 +173,8 @@ export function ChatWindow({
 
     // Créer objet receiver minimal
     const receiverInfo = {
-      firstname: otherUserName?.split(' ')[0] || null,
-      lastname: otherUserName?.split(' ')[1] || null,
+      firstname: otherFirstName,
+      lastname: otherLastName,
       avatar_url: otherUserAvatar,
     }
 
@@ -259,10 +262,7 @@ export function ChatWindow({
           <Avatar>
             <AvatarImage src={otherAvatar} alt={otherUserName || ''} />
             <AvatarFallback>
-              {generateInitials(
-                otherUserName?.split(' ')[0] || null,
-                otherUserName?.split(' ')[1] || null
-              )}
+              {generateInitials(otherFirstName, otherLastName)}
             </AvatarFallback>
           </Avatar>
           <div>

@@ -48,7 +48,12 @@ import { useAuth } from '@/hooks/use-auth'
 import { FEATURES, isFeatureEnabled } from '@/lib/shared/config/features'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
-import { getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import { FeedbackDialog } from '@/components/feedback-dialog'
 
 interface DashboardLayoutProps {
@@ -364,15 +369,16 @@ function UserMenu() {
     )
   }
 
-  const displayName = profile
-    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() ||
-      'Utilisateur'
-    : 'Utilisateur'
-
-  const initials = profile
-    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() ||
-      'U'
-    : 'U'
+  const displayName = getShortDisplayName(
+    (profile as any)?.firstname || null,
+    (profile as any)?.lastname || null,
+    'Utilisateur'
+  )
+  const nameParts = getShortNameParts(
+    (profile as any)?.firstname || null,
+    (profile as any)?.lastname || null
+  )
+  const initials = generateInitials(nameParts.firstName, nameParts.lastName)
   const avatarUrl = getAvatarUrl(
     (profile as any)?.avatar_url || null,
     (profile as any)?.id || user?.id || displayName

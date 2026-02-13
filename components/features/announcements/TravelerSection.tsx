@@ -13,7 +13,12 @@ import {
   IconBriefcase,
   IconCalendar,
 } from '@tabler/icons-react'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -38,8 +43,9 @@ export function TravelerSection({
   memberSince,
   kycStatus,
 }: TravelerSectionProps) {
-  const fullName = `${firstName || ''} ${lastName || ''}`.trim() || 'Voyageur'
-  const initials = generateInitials(firstName, lastName)
+  const fullName = getShortDisplayName(firstName, lastName, 'Voyageur')
+  const nameParts = getShortNameParts(firstName, lastName)
+  const initials = generateInitials(nameParts.firstName, nameParts.lastName)
   const avatarSource = getAvatarUrl(avatarUrl, travelerId || fullName)
 
   return (

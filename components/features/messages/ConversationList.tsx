@@ -8,7 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { IconLoader2 } from '@tabler/icons-react'
@@ -85,13 +90,18 @@ export function ConversationList({
     <ScrollArea className="h-full">
       <div className="space-y-1 p-2">
         {conversations.map(conversation => {
-          const otherUserName =
-            `${conversation.other_user_firstname || ''} ${
-              conversation.other_user_lastname || ''
-            }`.trim() || 'Utilisateur'
-          const otherUserInitials = generateInitials(
+          const otherUserName = getShortDisplayName(
+            conversation.other_user_firstname,
+            conversation.other_user_lastname,
+            'Utilisateur'
+          )
+          const otherUserParts = getShortNameParts(
             conversation.other_user_firstname,
             conversation.other_user_lastname
+          )
+          const otherUserInitials = generateInitials(
+            otherUserParts.firstName,
+            otherUserParts.lastName
           )
           const otherUserAvatar = getAvatarUrl(
             conversation.other_user_avatar_url,

@@ -37,7 +37,12 @@ import {
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import { formatPrice } from '@/lib/core/bookings/calculations'
 import { acceptBooking, refuseBooking } from '@/lib/core/bookings/requests'
 import { toast } from 'sonner'
@@ -116,9 +121,16 @@ export function BookingRequestCard({
 
   const senderFirstName = booking.sender?.firstname ?? null
   const senderLastName = booking.sender?.lastname ?? null
-  const senderName =
-    `${senderFirstName || ''} ${senderLastName || ''}`.trim() || 'Expéditeur'
-  const senderInitials = generateInitials(senderFirstName, senderLastName)
+  const senderName = getShortDisplayName(
+    senderFirstName,
+    senderLastName,
+    'Expéditeur'
+  )
+  const senderParts = getShortNameParts(senderFirstName, senderLastName)
+  const senderInitials = generateInitials(
+    senderParts.firstName,
+    senderParts.lastName
+  )
   const senderAvatarUrl = booking.sender?.avatar_url ?? null
   const senderAvatar = getAvatarUrl(senderAvatarUrl, senderName)
   const isNew =

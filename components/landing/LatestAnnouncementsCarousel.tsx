@@ -15,6 +15,11 @@ import {
 } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import {
+  generateInitials,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 
 type AnnouncementPreview = {
   id: string
@@ -190,16 +195,19 @@ export function LatestAnnouncementsCarousel() {
                 const travelerProfile = Array.isArray(item.profiles)
                   ? (item.profiles[0] ?? null)
                   : item.profiles
-                const travelerName =
-                  travelerProfile?.firstname ||
-                  travelerProfile?.lastname ||
+                const travelerName = getShortDisplayName(
+                  travelerProfile?.firstname || null,
+                  travelerProfile?.lastname || null,
                   'Voyageur'
-                const travelerInitials = travelerName
-                  .split(' ')
-                  .map(part => part[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase()
+                )
+                const travelerParts = getShortNameParts(
+                  travelerProfile?.firstname || null,
+                  travelerProfile?.lastname || null
+                )
+                const travelerInitials = generateInitials(
+                  travelerParts.firstName,
+                  travelerParts.lastName
+                )
                 const relativeDate = formatRelativeDate(item.created_at)
                 const isNew = relativeDate?.isNew ?? true
 

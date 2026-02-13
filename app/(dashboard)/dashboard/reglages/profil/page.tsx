@@ -31,7 +31,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
 import { IconLoader2, IconUpload } from '@tabler/icons-react'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import { useAuth } from '@/hooks/use-auth'
 
 export default function ProfilePage() {
@@ -177,6 +182,15 @@ export default function ProfilePage() {
     avatarPreview || profile?.avatar_url || null,
     profile?.id || profile?.email || 'user'
   )
+  const displayName = getShortDisplayName(
+    profile?.firstname || null,
+    profile?.lastname || null,
+    'Utilisateur'
+  )
+  const nameParts = getShortNameParts(
+    profile?.firstname || null,
+    profile?.lastname || null
+  )
 
   return (
     <div className="space-y-6">
@@ -197,16 +211,11 @@ export default function ProfilePage() {
             <Avatar className="h-20 w-20">
               <AvatarImage src={avatarSource} alt="Avatar" />
               <AvatarFallback className="text-2xl">
-                {generateInitials(
-                  profile?.firstname || null,
-                  profile?.lastname || null
-                )}
+                {generateInitials(nameParts.firstName, nameParts.lastName)}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-2 flex-1">
-              <h2 className="text-xl font-semibold">
-                {profile?.firstname} {profile?.lastname}
-              </h2>
+              <h2 className="text-xl font-semibold">{displayName}</h2>
               <p className="text-muted-foreground">{profile?.email}</p>
             </div>
           </div>
@@ -232,10 +241,7 @@ export default function ProfilePage() {
                 <Avatar className="h-20 w-20">
                   <AvatarImage src={avatarSource} alt="Avatar" />
                   <AvatarFallback>
-                    {generateInitials(
-                      profile?.firstname || null,
-                      profile?.lastname || null
-                    )}
+                    {generateInitials(nameParts.firstName, nameParts.lastName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
