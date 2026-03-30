@@ -20,7 +20,7 @@ import {
   IconLogout,
   IconUser,
   IconSearch,
-  IconSpeakerphone,
+  IconPlaneDeparture,
   IconAlertTriangle,
   IconCreditCard,
 } from '@tabler/icons-react'
@@ -81,9 +81,9 @@ const navItems: NavItem[] = [
     // badge dynamique géré par useUnreadCount
   },
   {
-    title: 'Annonces',
+    title: 'Voyages',
     href: '/dashboard/annonces',
-    icon: IconSpeakerphone,
+    icon: IconPlaneDeparture,
   },
   {
     title: 'Colis',
