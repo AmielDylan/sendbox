@@ -1,5 +1,5 @@
 /**
- * Page "Mes annonces" dans le dashboard
+ * Page "Mes voyages" dans le dashboard
  */
 
 'use client'
@@ -85,12 +85,12 @@ export default function MyAnnouncementsPage() {
   const announcements = data?.data || []
   const emptyTitle =
     activeTab === 'draft'
-      ? 'Aucun brouillon'
+      ? 'Aucun voyage en attente'
       : activeTab === 'completed'
-        ? 'Aucune annonce terminée'
+        ? 'Aucun voyage terminé'
         : activeTab === 'active'
-          ? 'Aucune annonce publiée'
-          : 'Aucune annonce'
+          ? 'Aucun voyage en cours'
+          : 'Aucun voyage enregistré'
 
   // Gérer le rafraîchissement après création (Safari)
   useEffect(() => {
@@ -183,18 +183,18 @@ export default function MyAnnouncementsPage() {
     <div className="space-y-8">
       <div>
         <PageHeader
-          title="Mes annonces"
-          description="Gérez vos annonces de trajets"
+          title="Mes voyages"
+          description="Enregistrez vos trajets — Sendbox vous assigne une valise vérifiée"
           breadcrumbs={[
             { label: 'Dashboard', href: '/dashboard' },
-            { label: 'Annonces' },
+            { label: 'Voyages' },
           ]}
           actions={
             announcements.length > 0 ? (
               <Link href="/dashboard/annonces/new">
                 <Button className="shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5">
                   <IconPlus className="mr-2 h-4 w-4" />
-                  Nouvelle annonce
+                  Enregistrer un voyage
                 </Button>
               </Link>
             ) : undefined
@@ -211,10 +211,10 @@ export default function MyAnnouncementsPage() {
       >
         <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)}>
           <TabsList>
-            <TabsTrigger value="all">Toutes</TabsTrigger>
-            <TabsTrigger value="active">Publiées</TabsTrigger>
-            <TabsTrigger value="draft">Brouillons</TabsTrigger>
-            <TabsTrigger value="completed">Terminées</TabsTrigger>
+            <TabsTrigger value="all">Tous</TabsTrigger>
+            <TabsTrigger value="active">En cours</TabsTrigger>
+            <TabsTrigger value="draft">En attente</TabsTrigger>
+            <TabsTrigger value="completed">Terminés</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="space-y-4">
@@ -232,13 +232,13 @@ export default function MyAnnouncementsPage() {
                     <div className="space-y-2">
                       <p className="text-lg text-foreground">{emptyTitle}</p>
                       <p className="text-sm text-muted-foreground max-w-sm">
-                        Créez votre première annonce pour proposer un trajet
+                        Enregistrez votre prochain trajet et Sendbox vous assignera une valise vérifiée à transporter
                       </p>
                     </div>
                     <Link href="/dashboard/annonces/new" className="mt-2">
                       <Button className="shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5">
                         <IconPlus className="mr-2 h-4 w-4" />
-                        Créer une annonce
+                        Enregistrer un voyage
                       </Button>
                     </Link>
                   </div>
@@ -269,11 +269,6 @@ export default function MyAnnouncementsPage() {
                             </span>
                           </h3>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span className="font-medium text-primary">
-                              {announcement.price_per_kg} €
-                            </span>{' '}
-                            / kg
-                            <span>•</span>
                             <span>
                               {announcement.available_kg} kg disponibles
                             </span>
@@ -452,9 +447,9 @@ export default function MyAnnouncementsPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer l'annonce</DialogTitle>
+            <DialogTitle>Supprimer le voyage</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer cette annonce ? Cette action
+              Êtes-vous sûr de vouloir supprimer ce voyage ? Cette action
               est irréversible.
             </DialogDescription>
           </DialogHeader>
