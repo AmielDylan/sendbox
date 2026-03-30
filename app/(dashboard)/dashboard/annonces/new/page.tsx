@@ -60,7 +60,7 @@ import { useDebounce } from '@/hooks/use-debounce'
 const STEPS = [
   { id: 1, title: 'Trajet', icon: IconMapPin },
   { id: 2, title: 'Capacité', icon: IconPackage },
-  { id: 3, title: 'Publication', icon: IconCheck },
+  { id: 3, title: 'Confirmation', icon: IconCheck },
 ] as const
 
 export default function NewAnnouncementPage() {
@@ -91,7 +91,7 @@ export default function NewAnnouncementPage() {
     resolver: zodResolver(createAnnouncementSchema),
     defaultValues: {
       available_kg: 5,
-      price_per_kg: 10,
+      price_per_kg: 10, // Tarif Sendbox par défaut, non exposé dans le formulaire
     },
   })
 
@@ -101,7 +101,6 @@ export default function NewAnnouncementPage() {
   const arrivalCity = watch('arrival_city')
   const departureDate = watch('departure_date')
   const availableKg = watch('available_kg')
-  const pricePerKg = watch('price_per_kg')
 
   const debouncedDepartureCity = useDebounce(departureCity || '', 300)
   const debouncedArrivalCity = useDebounce(arrivalCity || '', 300)
@@ -146,7 +145,7 @@ export default function NewAnnouncementPage() {
         'arrival_date',
       ]
     } else if (currentStep === 2) {
-      fieldsToValidate = ['available_kg', 'price_per_kg']
+      fieldsToValidate = ['available_kg']
     }
 
     const isValid = await trigger(fieldsToValidate)
@@ -193,7 +192,7 @@ export default function NewAnnouncementPage() {
       }
 
       if (result.success && result.announcementId) {
-        toast.success(result.message || 'Annonce créée avec succès')
+        toast.success(result.message || 'Voyage soumis avec succès ! Sendbox vous contactera pour vous assigner une valise.')
 
         // Invalider les queries pour forcer le rafraîchissement
         queryClient.invalidateQueries({ queryKey: ['user-announcements'] })
@@ -234,12 +233,12 @@ export default function NewAnnouncementPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Créer une annonce"
-        description="Publiez votre trajet et proposez votre espace disponible"
+        title="Enregistrer mon voyage"
+        description="Indiquez votre trajet — Sendbox vous assignera une valise vérifiée à transporter"
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Annonces', href: '/dashboard/annonces' },
-          { label: 'Nouvelle annonce' },
+          { label: 'Voyages', href: '/dashboard/annonces' },
+          { label: 'Nouveau voyage' },
         ]}
       />
 
@@ -311,14 +310,14 @@ export default function NewAnnouncementPage() {
           <CardHeader>
             <CardTitle>
               {currentStep === 1 && 'Informations du trajet'}
-              {currentStep === 2 && 'Capacité et tarification'}
+              {currentStep === 2 && 'Capacité disponible'}
               {currentStep === 3 && 'Récapitulatif'}
             </CardTitle>
             <CardDescription>
               {currentStep === 1 && 'Renseignez les détails de votre trajet'}
-              {currentStep === 2 && "Définissez l'espace disponible et le prix"}
+              {currentStep === 2 && "Indiquez l'espace bagage que vous pouvez consacrer à la valise Sendbox"}
               {currentStep === 3 &&
-                'Vérifiez les informations avant publication'}
+                'Vérifiez vos informations avant de soumettre votre voyage à Sendbox'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -601,28 +600,12 @@ export default function NewAnnouncementPage() {
                   )}
                 </div>
 
-                {/* Prix par kilo */}
-                <div className="space-y-2">
-                  <Label htmlFor="price_per_kg">
-                    Prix par kilo : {pricePerKg} €
-                  </Label>
-                  <Input
-                    id="price_per_kg"
-                    type="number"
-                    min={5}
-                    max={100}
-                    step={1}
-                    {...register('price_per_kg', { valueAsNumber: true })}
-                    aria-invalid={errors.price_per_kg ? 'true' : 'false'}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Entre 5 € et 100 € par kilo
+                {/* Info Sendbox */}
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                  <p className="text-sm text-primary font-medium">Rémunération fixée par Sendbox</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Sendbox fixe votre commission en fonction du trajet et du poids transporté. Vous recevrez le détail avant de confirmer la prise en charge de la valise.
                   </p>
-                  {errors.price_per_kg && (
-                    <p className="text-sm text-destructive" role="alert">
-                      {errors.price_per_kg.message}
-                    </p>
-                  )}
                 </div>
 
                 {/* Description */}
@@ -676,12 +659,9 @@ export default function NewAnnouncementPage() {
                     <p className="text-sm text-muted-foreground">
                       Poids disponible : {availableKg} kg
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      Prix : {pricePerKg} € / kg
+                    <p className="text-xs text-primary mt-2">
+                      Sendbox vous communiquera votre commission avant assignation de la valise.
                     </p>
-                    <Badge className="mt-2">
-                      Total max : {availableKg * pricePerKg} €
-                    </Badge>
                   </div>
 
                   {watch('description') && (
@@ -714,23 +694,7 @@ export default function NewAnnouncementPage() {
                   <IconArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleDraftClick}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting && submitMode === 'draft' ? (
-                      <>
-                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Enregistrement...
-                      </>
-                    ) : (
-                      'Enregistrer en brouillon'
-                    )}
-                  </Button>
-                  <Button
+                <Button
                     type="button"
                     onClick={handlePublishClick}
                     disabled={isSubmitting}
@@ -738,16 +702,15 @@ export default function NewAnnouncementPage() {
                     {isSubmitting && submitMode === 'publish' ? (
                       <>
                         <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Publication...
+                        Envoi en cours...
                       </>
                     ) : (
                       <>
                         <IconCheck className="mr-2 h-4 w-4" />
-                        Publier l'annonce
+                        Soumettre mon voyage
                       </>
                     )}
                   </Button>
-                </div>
               )}
             </div>
           </CardContent>

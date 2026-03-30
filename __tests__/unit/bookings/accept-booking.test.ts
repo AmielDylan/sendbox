@@ -94,7 +94,8 @@ describe('acceptBooking', () => {
     expect(result.error).toMatch(/demande introuvable/i)
   })
 
-  it('rejette si KYC non approuvé (pending)', async () => {
+  // KYC désactivé pour le MVP (KYC_ENABLED: false) — réactiver quand KYC est réactivé
+  it.skip('rejette si KYC non approuvé (pending)', async () => {
     const travelerPendingKYC = createMockUser({
       id: 'traveler-pending-1',
       email: 'traveler-pending@test.com',
@@ -128,7 +129,7 @@ describe('acceptBooking', () => {
     expect(result.error).toMatch(/vérification en cours/i)
   })
 
-  it('rejette si KYC non approuvé (incomplete)', async () => {
+  it.skip('rejette si KYC non approuvé (incomplete)', async () => {
     const travelerIncompleteKYC = createMockUser({
       id: 'traveler-incomplete-1',
       email: 'traveler-incomplete@test.com',
@@ -162,7 +163,7 @@ describe('acceptBooking', () => {
     expect(result.error).toMatch(/vérification d'identité incomplète/i)
   })
 
-  it('rejette si KYC non approuvé (rejected)', async () => {
+  it.skip('rejette si KYC non approuvé (rejected)', async () => {
     const travelerRejectedKYC = createMockUser({
       id: 'traveler-rejected-1',
       email: 'traveler-rejected@test.com',

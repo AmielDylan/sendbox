@@ -30,23 +30,23 @@ import { PublicFooter } from '@/components/layouts/PublicFooter'
 
 const features = [
   {
-    title: 'Tarifs transparents',
+    title: 'Tarifs fixes Sendbox',
     description:
-      "Économisez jusqu'à 60% sur vos envois avec des prix fixes et sans surprise.",
+      "Des prix clairs, fixés par Sendbox. Pas de négociation, pas de surprise — vous savez ce que vous payez dès le départ.",
     icon: IconCurrencyEuro,
     accent: 'teal',
   },
   {
-    title: 'Voyageurs vérifiés',
+    title: 'Valises vérifiées Sendbox',
     description:
-      'Chaque transporteur vérifié par KYC, avec évaluations et badges de confiance.',
+      'Chaque valise est préparée, scellée et vérifiée par Sendbox avant le départ. Aucun colis suspect ne passe.',
     icon: IconShieldCheck,
     accent: 'emerald',
   },
   {
-    title: 'Livraison rapide',
+    title: 'Dépôt en agence',
     description:
-      'Suivez votre colis en temps réel et communiquez directement avec le voyageur.',
+      'Le voyageur dépose la valise Sendbox à une agence partenaire à destination. Les destinataires la récupèrent à leur convenance.',
     icon: IconClock,
     accent: 'amber',
   },
@@ -54,15 +54,15 @@ const features = [
 
 const benefits = {
   travelers: [
-    'Rentabilisez vos voyages',
-    'Paiement sécurisé garanti',
-    'Flexibilité totale',
-    'Communauté solidaire',
+    'Commission fixe, sans négociation',
+    'Valise préparée par Sendbox',
+    'Paiement garanti après livraison',
+    'Zéro organisation côté voyageur',
   ],
   senders: [
-    'Prix imbattables',
-    'Remise en main propre',
-    'Suivi en direct',
+    'Colis vérifié par Sendbox',
+    'Retrait en agence partenaire',
+    'Suivi QR code en temps réel',
     'Support réactif 24/7',
   ],
 }
@@ -70,30 +70,30 @@ const benefits = {
 const steps = [
   {
     number: '01',
-    title: 'Trouvez votre trajet',
+    title: 'Enregistrez votre voyage',
     description:
-      'Parcourez les annonces de voyageurs sur votre itinéraire France-Bénin.',
+      'Indiquez votre trajet, vos dates et l\'espace disponible dans vos bagages.',
     visual: 'search',
   },
   {
     number: '02',
-    title: "Réservez l'espace",
+    title: 'Sendbox prépare votre valise',
     description:
-      'Sélectionnez le voyageur et indiquez les détails de votre colis.',
+      'Sendbox vérifie et scelle une valise avec les colis des expéditeurs. QR code et cadenas inclus.',
     visual: 'book',
   },
   {
     number: '03',
-    title: 'Remettez en personne',
+    title: 'Voyagez et déposez à l\'agence',
     description:
-      'Rencontrez le voyageur et confiez-lui votre colis en toute sécurité.',
+      'Voyagez normalement. À destination, déposez la valise Sendbox à l\'agence partenaire.',
     visual: 'handoff',
   },
   {
     number: '04',
-    title: 'Suivez la livraison',
+    title: 'Recevez votre commission',
     description:
-      'Recevez des notifications à chaque étape et chattez en direct.',
+      'Une fois la livraison confirmée, votre commission est versée automatiquement.',
     visual: 'track',
   },
 ]
@@ -116,25 +116,26 @@ export default function HomePage() {
               {/* Left: Content */}
               <div className="space-y-6 animate-fade-in-up">
                 <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
-                  Transformez chaque{' '}
+                  Gagnez de l'argent en{' '}
                   <span className="relative inline-block">
-                    <span className="relative z-10 text-primary">voyage</span>
+                    <span className="relative z-10 text-primary">voyageant</span>
                     <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
                   </span>{' '}
-                  en solution d'envoi sécurisée
+                  avec une valise Sendbox
                 </h1>
 
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  La plateforme de covalisage qui connecte voyageurs et
-                  expéditeurs pour des envois{' '}
+                  Sendbox vérifie les colis, prépare la valise et garantit la livraison.
+                  Vous transportez, vous{' '}
                   <span className="text-foreground font-semibold">
-                    économiques
+                    touchez votre commission
                   </span>
-                  ,{' '}
-                  <span className="text-foreground font-semibold">rapides</span>{' '}
+                  .{' '}
+                  <span className="text-foreground font-semibold">Simple</span>,{' '}
+                  <span className="text-foreground font-semibold">sécurisé</span>{' '}
                   et{' '}
                   <span className="text-foreground font-semibold">
-                    sécurisés
+                    sans risque
                   </span>
                   .
                 </p>
@@ -301,7 +302,7 @@ export default function HomePage() {
                 Simple & Efficace
               </Badge>
               <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold max-w-3xl">
-                4 étapes pour envoyer votre colis
+                Comment ça marche en 4 étapes
               </h2>
             </div>
 
@@ -410,7 +411,7 @@ export default function HomePage() {
                     variant="outline"
                   >
                     <Link href="/register">
-                      Créer une annonce
+                      Enregistrer un voyage
                       <IconArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                     </Link>
                   </Button>

@@ -8,7 +8,7 @@ export const FEATURES = {
    * Si false : création d'annonces autorisée avec seulement email + téléphone
    * Si true : KYC requis avant création d'annonces
    */
-  KYC_ENABLED: true,
+  KYC_ENABLED: false,
 
   /**
    * Messagerie temps réel
@@ -18,12 +18,12 @@ export const FEATURES = {
   /**
    * Paiements Stripe
    */
-  STRIPE_PAYMENTS: true,
+  STRIPE_PAYMENTS: false,
 
   /**
    * Paiements simulés (flow complet sans Stripe)
    */
-  PAYMENTS_SIMULATION: false,
+  PAYMENTS_SIMULATION: true,
 
   /**
    * Dashboard Admin
@@ -34,7 +34,7 @@ export const FEATURES = {
    * Mode Beta
    */
   BETA_MODE: true,
-  MAX_BETA_USERS: 50,
+  MAX_BETA_USERS: 100,
   MAX_BOOKING_AMOUNT: 200,
 
   /**
