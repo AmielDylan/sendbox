@@ -212,9 +212,8 @@ export default function FundsPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         <FinancialSummaryCard userId={user.id} role="traveler" />
-        <FinancialSummaryCard userId={user.id} role="requester" />
       </div>
     </div>
   )

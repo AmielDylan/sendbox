@@ -22,6 +22,7 @@ import {
   IconShield,
   IconCheck,
   IconClock,
+  IconPlaneDeparture,
   IconSpeakerphone,
 } from '@tabler/icons-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
@@ -243,12 +244,6 @@ export default function DashboardPage() {
     loadDashboardData()
   }, [user?.id])
 
-  const sentAcceptedTotal =
-    stats.sentStatus.accepted +
-    stats.sentStatus.paid +
-    stats.sentStatus.deposited +
-    stats.sentStatus.in_transit +
-    stats.sentStatus.delivered
   const receivedAcceptedTotal =
     stats.receivedStatus.accepted +
     stats.receivedStatus.paid +
@@ -262,28 +257,7 @@ export default function DashboardPage() {
       ? 'md:grid-cols-2'
       : 'md:grid-cols-1'
 
-  // Configuration des charts pour EvilCharts
-  const sentRequestChartData = [
-    {
-      status: 'En attente',
-      value: stats.sentStatus.pending,
-      fill: 'var(--chart-1)',
-    },
-    { status: 'Acceptées', value: sentAcceptedTotal, fill: 'var(--chart-2)' },
-    {
-      status: 'Annulées',
-      value: stats.sentStatus.cancelled,
-      fill: 'var(--chart-5)',
-    },
-  ]
-
-  const sentRequestChartConfig = {
-    value: { label: 'Demandes' },
-    pending: { label: 'En attente', color: 'var(--chart-1)' },
-    accepted: { label: 'Acceptées', color: 'var(--chart-2)' },
-    cancelled: { label: 'Annulées', color: 'var(--chart-5)' },
-  } satisfies ChartConfig
-
+  // Configuration des charts
   const receivedRequestChartData = [
     {
       status: 'En attente',
@@ -358,8 +332,8 @@ export default function DashboardPage() {
         actions={
           <Button asChild>
             <Link href="/dashboard/annonces/new">
-              <IconSpeakerphone className="mr-2 h-4 w-4" />
-              Nouvelle annonce
+              <IconPlaneDeparture className="mr-2 h-4 w-4" />
+              Enregistrer un voyage
             </Link>
           </Button>
         }
@@ -488,43 +462,6 @@ export default function DashboardPage() {
       )}
 
       <div className="flex flex-wrap gap-4">
-        <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
-          <CardHeader className="p-5 pb-3 space-y-1">
-            <CardTitle className="text-sm font-semibold">
-              Demandes envoyées
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Demandes créées sur les annonces
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-5 pt-0 space-y-4">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Total</span>
-              <span className="font-semibold text-foreground">
-                {isLoadingStats ? '—' : sumCounts(stats.sentStatus)}
-              </span>
-            </div>
-            <ChartContainer
-              config={sentRequestChartConfig}
-              className="h-[200px] w-full"
-            >
-              <BarChart accessibilityLayer data={sentRequestChartData}>
-                <XAxis
-                  dataKey="status"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Bar dataKey="value" radius={4} />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
         <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
           <CardHeader className="p-5 pb-3 space-y-1">
             <CardTitle className="text-sm font-semibold">
