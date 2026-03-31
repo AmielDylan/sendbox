@@ -22,6 +22,9 @@ import {
   IconCircleCheck,
   IconArrowNarrowRight,
   IconCalendar,
+  IconLuggage,
+  IconShieldCheck,
+  IconMapPin,
 } from '@tabler/icons-react'
 import Link from 'next/link'
 
@@ -190,17 +193,45 @@ export default async function PublicAnnouncementDetailPage({
 
           {/* Sidebar (4 cols) */}
           <div className="lg:col-span-4 space-y-6 h-fit lg:sticky lg:top-24">
-            {/* Traveler Card */}
-            <TravelerSection
-              travelerId={announcement.traveler_id}
-              firstName={announcement.traveler_firstname}
-              lastName={announcement.traveler_lastname}
-              avatarUrl={announcement.traveler_avatar_url}
-              rating={announcement.traveler_rating}
-              servicesCount={announcement.traveler_services_count}
-              memberSince={announcement.traveler_member_since || undefined}
-              kycStatus={announcement.traveler_kyc_status || undefined}
-            />
+            {/* Sendbox Service Card OR Traveler Card */}
+            {announcement.is_sendbox ? (
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <IconLuggage className="h-5 w-5 text-primary" stroke={1.5} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-primary">Service Sendbox</p>
+                    <p className="text-xs text-muted-foreground">Envoi géré par Sendbox</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <IconShieldCheck className="h-4 w-4 text-primary shrink-0" stroke={1.5} />
+                    <span>Contenu vérifié et scellé par Sendbox</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <IconMapPin className="h-4 w-4 text-primary shrink-0" stroke={1.5} />
+                    <span>Dépôt en agence partenaire à destination</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <IconPackage className="h-4 w-4 text-primary shrink-0" stroke={1.5} />
+                    <span>Suivi QR code inclus</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <TravelerSection
+                travelerId={announcement.traveler_id}
+                firstName={announcement.traveler_firstname}
+                lastName={announcement.traveler_lastname}
+                avatarUrl={announcement.traveler_avatar_url}
+                rating={announcement.traveler_rating}
+                servicesCount={announcement.traveler_services_count}
+                memberSince={announcement.traveler_member_since || undefined}
+                kycStatus={announcement.traveler_kyc_status || undefined}
+              />
+            )}
 
             {/* Owner Stats */}
             {isOwner && (
@@ -240,7 +271,24 @@ export default async function PublicAnnouncementDetailPage({
 
             {/* Booking / CTA Box */}
             <div className="rounded-xl border border-border/60 shadow-lg bg-card overflow-hidden">
-              {canBook ? (
+              {announcement.is_sendbox ? (
+                <div className="p-6 text-center space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                    <IconLuggage className="h-6 w-6 text-primary" stroke={1.5} />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold">Réserver un espace</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Cet envoi est géré par Sendbox. Réservez votre espace directement via notre service.
+                    </p>
+                  </div>
+                  <Link href="/sendbox" className="block w-full">
+                    <Button className="w-full h-11 rounded-lg">
+                      Voir les disponibilités Sendbox
+                    </Button>
+                  </Link>
+                </div>
+              ) : canBook ? (
                 <div className="p-1">
                   <BookingForm
                     announcementId={announcement.id}
