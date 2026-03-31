@@ -24,7 +24,7 @@ import {
   IconCheck,
 } from '@tabler/icons-react'
 import { LandingCta } from '@/components/landing/LandingCta'
-import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
+import { TrustStatsBlock } from '@/components/landing/TrustStatsBlock'
 import { PublicHeader } from '@/components/layouts/PublicHeader'
 import { PublicFooter } from '@/components/layouts/PublicFooter'
 
@@ -354,7 +354,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <LatestAnnouncementsCarousel />
+        <TrustStatsBlock />
 
         {/* Benefits - Dual audience */}
         <section className="py-20 sm:py-28 bg-muted/30 relative">
@@ -446,15 +446,23 @@ export default function HomePage() {
                     ))}
                   </ul>
 
-                  <Button
-                    asChild
-                    className="w-full sm:w-auto group/btn bg-emerald-600 hover:bg-emerald-700 text-white"
-                  >
-                    <Link href="/recherche">
-                      <IconMapPin className="h-4 w-4" />
-                      Rechercher un trajet
-                    </Link>
-                  </Button>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      asChild
+                      className="w-full sm:w-auto group/btn bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <Link href="/sendbox">
+                        <IconPackage className="h-4 w-4" />
+                        Envoyer avec Sendbox
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="sm" className="w-full sm:w-auto text-muted-foreground">
+                      <Link href="/recherche">
+                        <IconMapPin className="h-4 w-4" />
+                        Trouver un voyageur
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </Card>
             </div>
