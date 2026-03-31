@@ -12,6 +12,7 @@ import {
   IconPackage,
   IconArrowRight,
   IconArrowNarrowRight,
+  IconLuggage,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -24,7 +25,7 @@ import {
 } from '@/lib/core/profile/utils'
 
 interface AnnouncementCardProps {
-  announcement: AnnouncementResult
+  announcement: AnnouncementResult & { is_sendbox?: boolean }
   showMatchScore?: boolean
   disabled?: boolean
 }
@@ -176,39 +177,56 @@ export function AnnouncementCard({
     )
   }
 
+  const isSendbox = announcement.is_sendbox === true
+
   return (
     <Link
       href={`/annonces/${announcement.id}`}
       className="block h-full cursor-pointer"
     >
-      <Card className="h-full flex flex-col justify-between rounded-xl border border-border/60 shadow-none hover:border-primary/40 hover:bg-muted/30 transition-all duration-300 group relative overflow-hidden">
+      <Card className={`h-full flex flex-col justify-between rounded-xl border shadow-none hover:bg-muted/30 transition-all duration-300 group relative overflow-hidden ${isSendbox ? 'border-primary/40 hover:border-primary/70' : 'border-border/60 hover:border-primary/40'}`}>
         {/* Hover Highlight Line */}
-        <div className="absolute top-0 left-0 w-1 h-full bg-primary/0 group-hover:bg-primary transition-all duration-300" />
+        <div className={`absolute top-0 left-0 w-1 h-full transition-all duration-300 ${isSendbox ? 'bg-primary/60 group-hover:bg-primary' : 'bg-primary/0 group-hover:bg-primary'}`} />
 
         <CardContent className="p-4 sm:p-5 flex-1">
-          {/* Top Row: Country Route & Price */}
-
-          {/* Main Row: Cities & Badges */}
           {/* Main Row: Cities & Badges */}
           <div className="space-y-4">
             <div className="flex justify-between items-start gap-4">
-              <h3 className="font-bold text-lg sm:text-2xl text-foreground leading-tight group-hover:text-primary transition-colors flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span className="flex items-center gap-2">
-                  {announcement.origin_city}
-                  <IconArrowNarrowRight
-                    className="h-6 w-6 text-muted-foreground/50"
-                    stroke={1}
-                  />
-                  {announcement.destination_city}
-                </span>
-              </h3>
+              <div className="flex-1 min-w-0">
+                {isSendbox && (
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <IconLuggage className="h-3.5 w-3.5 text-primary" stroke={1.5} />
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
+                      Valise Sendbox
+                    </span>
+                  </div>
+                )}
+                <h3 className="font-bold text-lg sm:text-2xl text-foreground leading-tight group-hover:text-primary transition-colors flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className="flex items-center gap-2">
+                    {announcement.origin_city}
+                    <IconArrowNarrowRight
+                      className="h-6 w-6 text-muted-foreground/50"
+                      stroke={1}
+                    />
+                    {announcement.destination_city}
+                  </span>
+                </h3>
+              </div>
               <div className="text-right leading-none shrink-0">
-                <span className="font-bold text-xl text-primary">
-                  {announcement.price_per_kg} €
-                </span>
-                <span className="text-[10px] text-muted-foreground font-medium uppercase ml-1">
-                  /kg
-                </span>
+                {isSendbox ? (
+                  <span className="text-[10px] text-primary/70 font-semibold uppercase tracking-wide">
+                    Tarif fixe
+                  </span>
+                ) : (
+                  <>
+                    <span className="font-bold text-xl text-primary">
+                      {announcement.price_per_kg} €
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase ml-1">
+                      /kg
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -276,31 +294,47 @@ export function AnnouncementCard({
           </div>
         </CardContent>
 
-        <CardFooter className="p-4 sm:p-5 pt-2 mt-auto border-t border-border/30 bg-muted/20">
-          {/* Traveler Info */}
-          <div className="flex items-center gap-3 w-full">
-            <Avatar className="h-8 w-8 ring-1 ring-border/50">
-              <AvatarImage src={travelerAvatar} alt={travelerName} />
-              <AvatarFallback className="bg-background text-[10px]">
-                {travelerInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate leading-none mb-1">
-                {travelerName}
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
-                  <IconStar className="h-3 w-3 fill-amber-500" />
-                  {announcement.traveler_rating.toFixed(1)}
-                </div>
-                <span className="text-[10px] text-muted-foreground truncate">
-                  • {announcement.traveler_services_count} voyages
-                </span>
+        <CardFooter className={`p-4 sm:p-5 pt-2 mt-auto border-t border-border/30 ${isSendbox ? 'bg-primary/5' : 'bg-muted/20'}`}>
+          {isSendbox ? (
+            <div className="flex items-center gap-3 w-full">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <IconLuggage className="h-4 w-4 text-primary" stroke={1.5} />
               </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-primary truncate leading-none mb-1">
+                  Service Sendbox
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  Contenu vérifié · Dépôt en agence
+                </p>
+              </div>
+              <IconArrowRight className="h-4 w-4 text-primary/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </div>
-            <IconArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-          </div>
+          ) : (
+            <div className="flex items-center gap-3 w-full">
+              <Avatar className="h-8 w-8 ring-1 ring-border/50">
+                <AvatarImage src={travelerAvatar} alt={travelerName} />
+                <AvatarFallback className="bg-background text-[10px]">
+                  {travelerInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate leading-none mb-1">
+                  {travelerName}
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
+                    <IconStar className="h-3 w-3 fill-amber-500" />
+                    {announcement.traveler_rating.toFixed(1)}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground truncate">
+                    • {announcement.traveler_services_count} voyages
+                  </span>
+                </div>
+              </div>
+              <IconArrowRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+            </div>
+          )}
         </CardFooter>
       </Card>
     </Link>

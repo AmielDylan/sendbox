@@ -42,6 +42,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import {
   IconLoader2,
@@ -51,6 +52,7 @@ import {
   IconPackage,
   IconCheck,
   IconCalendar,
+  IconLuggage,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -662,6 +664,32 @@ export default function NewAnnouncementPage() {
                     <p className="text-xs text-primary mt-2">
                       Sendbox vous communiquera votre commission avant assignation de la valise.
                     </p>
+                  </div>
+
+                  {/* Sendbox availability toggle */}
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="sendbox_available"
+                        checked={watch('sendbox_available') ?? false}
+                        onCheckedChange={checked =>
+                          setValue('sendbox_available', checked === true)
+                        }
+                        className="mt-0.5"
+                      />
+                      <div className="space-y-1">
+                        <label
+                          htmlFor="sendbox_available"
+                          className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
+                        >
+                          <IconLuggage className="h-4 w-4 text-primary" stroke={1.5} />
+                          Je suis disponible pour transporter une valise Sendbox
+                        </label>
+                        <p className="text-xs text-muted-foreground">
+                          Sendbox vous contactera pour vous proposer de transporter l'une de ses valises vérifiées sur ce trajet. La commission sera définie lors de l'assignation.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {watch('description') && (

@@ -136,6 +136,7 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
         price_per_kg: validation.data.price_per_kg,
         description: validation.data.description || null,
         status, // draft ou active selon l'intention
+        sendbox_available: validation.data.sendbox_available ?? false,
       })
       .select('id')
       .single()
