@@ -1,6 +1,5 @@
 /**
- * Landing Page Sendbox - "Transit Magazine" Design
- * Editorial, dynamic, memorable
+ * Landing Page Sendbox — SaaS Voyageurs Pro
  */
 
 'use client'
@@ -24,75 +23,76 @@ import {
 } from '@tabler/icons-react'
 import { LandingCta } from '@/components/landing/LandingCta'
 import { TrustStatsBlock } from '@/components/landing/TrustStatsBlock'
+import { PricingSection } from '@/components/landing/PricingSection'
 import { PublicHeader } from '@/components/layouts/PublicHeader'
 import { PublicFooter } from '@/components/layouts/PublicFooter'
 
 const features = [
   {
-    title: 'Tarifs fixes Sendbox',
+    title: 'Profil vérifié',
     description:
-      "Des prix clairs, fixés par Sendbox. Pas de négociation, pas de surprise — vous savez ce que vous payez dès le départ.",
-    icon: IconCurrencyEuro,
+      "Vérification d'identité + billet de voyage joint à chaque annonce. Votre badge de confiance est visible de tous les expéditeurs.",
+    icon: IconShieldCheck,
     accent: 'teal',
   },
   {
-    title: 'Valises vérifiées Sendbox',
+    title: 'Paiements sécurisés',
     description:
-      'Chaque valise est préparée, scellée et vérifiée par Sendbox avant le départ. Aucun colis suspect ne passe.',
-    icon: IconShieldCheck,
+      "L'argent est retenu jusqu'à la livraison. Vous touchez votre commission automatiquement dès confirmation — aucun risque d'impayé.",
+    icon: IconCurrencyEuro,
     accent: 'emerald',
   },
   {
-    title: 'Dépôt en agence',
+    title: 'Tableau de bord pro',
     description:
-      'Le voyageur dépose la valise Sendbox à une agence partenaire à destination. Les destinataires la récupèrent à leur convenance.',
-    icon: IconClock,
+      "Gérez vos trajets, suivez vos revenus et acceptez les demandes depuis un espace pensé pour les voyageurs qui font ça vraiment.",
+    icon: IconSparkles,
     accent: 'amber',
   },
 ]
 
 const benefits = {
   travelers: [
-    'Commission fixe, sans négociation',
-    'Valise préparée par Sendbox',
-    'Paiement garanti après livraison',
-    'Zéro organisation côté voyageur',
+    'Profil professionnel avec badge de confiance',
+    'Commission garantie, versée automatiquement',
+    'Gestion intuitive de vos trajets et revenus',
+    'Communauté de confiance où chacun trouve son compte',
   ],
   senders: [
-    'Colis vérifié par Sendbox',
-    'Retrait en agence partenaire',
-    'Suivi QR code en temps réel',
-    'Support réactif 24/7',
+    'Voyageurs tous vérifiés (identité + billet)',
+    "Paiement sécurisé (retenu jusqu'à livraison)",
+    'Suivi QR code de votre envoi',
+    'Litige possible avant libération des fonds',
   ],
 }
 
 const steps = [
   {
     number: '01',
-    title: 'Signalez votre disponibilité',
+    title: 'Créez votre profil pro',
     description:
-      'Indiquez votre prochain trajet et cochez "disponible pour une valise Sendbox". Sendbox vous contacte.',
+      "Vérifiez votre identité et ajoutez votre compte bancaire pour recevoir vos paiements. Une seule fois, c'est bon.",
     visual: 'search',
   },
   {
     number: '02',
-    title: 'Sendbox vous remet la valise',
+    title: 'Publiez un trajet',
     description:
-      'La valise est préparée, vérifiée et scellée par nos équipes. Vous la récupérez avant votre départ.',
+      "Joignez votre billet de voyage (informations anonymisées). Ça prouve que vous voyagez vraiment — et ça rassure les expéditeurs.",
     visual: 'book',
   },
   {
     number: '03',
-    title: 'Voyagez normalement',
+    title: 'Acceptez une demande',
     description:
-      'Aucune gestion, aucun stress. La valise Sendbox compte comme un bagage standard.',
+      "Consultez les demandes d'envoi et donnez votre accord. Le paiement est retenu sur la plateforme jusqu'à la livraison.",
     visual: 'handoff',
   },
   {
     number: '04',
-    title: 'Déposez & touchez votre commission',
+    title: 'Livrez & touchez votre commission',
     description:
-      'À destination, déposez en agence partenaire. La commission est versée automatiquement dès confirmation.',
+      'Livraison confirmée → paiement automatique sur votre compte. Aucune démarche supplémentaire.',
     visual: 'track',
   },
 ]
@@ -100,34 +100,33 @@ const steps = [
 const senderSteps = [
   {
     number: '01',
-    title: 'Choisissez un départ',
+    title: 'Trouvez un voyageur vérifié',
     description:
-      'Consultez les prochains départs Sendbox et réservez votre espace en quelques clics.',
+      "Tous les voyageurs Sendbox ont une identité vérifiée et ont uploadé leur billet de voyage.",
     visual: 'search',
   },
   {
     number: '02',
-    title: 'Sendbox s\'occupe de tout',
+    title: 'Réservez et payez',
     description:
-      'Vos colis sont collectés, vérifiés, emballés et scellés avec un QR code unique.',
+      "Paiement sécurisé. L'argent est retenu sur la plateforme jusqu'à la livraison.",
     visual: 'book',
   },
   {
     number: '03',
-    title: 'Suivi en temps réel',
+    title: 'Suivez votre envoi',
     description:
-      'Suivez votre envoi étape par étape depuis votre téléphone.',
+      "Un QR code unique est attribué à votre envoi. Retrouvez son statut en quelques secondes depuis l'application.",
     visual: 'handoff',
   },
   {
     number: '04',
-    title: 'Récupération en agence',
+    title: 'Confirmez la livraison',
     description:
-      'Votre destinataire récupère les colis à l\'agence partenaire. Vous êtes notifié à chaque étape.',
+      "Livraison ok → libération du paiement. Un problème ? Ouvrez un litige avant la libération.",
     visual: 'track',
   },
 ]
-
 
 export default function HomePage() {
   const [stepMode, setStepMode] = useState<'traveler' | 'sender'>('traveler')
@@ -136,27 +135,28 @@ export default function HomePage() {
     <>
       <PublicHeader />
       <div className="landing-v2 bg-background relative overflow-x-hidden">
-        {/* Hero Section - Clean & Focused */}
+        {/* Hero Section */}
         <section className="relative min-h-[calc(100dvh-4rem)] flex items-center bg-gradient-to-br from-primary/5 via-background to-background">
           <div className="container-wide relative z-10 py-16 sm:py-20 lg:py-24">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
               {/* Left: Content */}
               <div className="space-y-6 animate-fade-in-up">
                 <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight">
-                  Gagnez de l'argent en{' '}
+                  La plateforme des{' '}
                   <span className="relative inline-block">
-                    <span className="relative z-10 text-primary">voyageant</span>
+                    <span className="relative z-10 text-primary">
+                      voyageurs professionnels
+                    </span>
                     <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1"></span>
-                  </span>{' '}
-                  avec une valise Sendbox
+                  </span>
                 </h1>
 
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  Transportez une valise Sendbox et{' '}
+                  Publiez vos trajets, acceptez des envois vérifiés, touchez
+                  votre commission.{' '}
                   <span className="text-foreground font-semibold">
-                    touchez votre commission
-                  </span>{' '}
-                  dès la livraison.
+                    En toute sécurité.
+                  </span>
                 </p>
 
                 {/* CTA */}
@@ -170,7 +170,7 @@ export default function HomePage() {
               <div className="relative mt-10 flex justify-center lg:mt-0 lg:block animate-fade-in-up animation-delay-200">
                 <Image
                   src="/images/hero.png"
-                  alt="Sendbox - Covalisage international"
+                  alt="Sendbox — Covalisage professionnel"
                   width={600}
                   height={600}
                   priority
@@ -181,7 +181,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Features Section - Grid with accent colors */}
+        {/* Features Section */}
         <section className="py-20 sm:py-28 bg-muted/30 relative">
           <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]"></div>
 
@@ -197,8 +197,8 @@ export default function HomePage() {
                 Pourquoi <span className="text-primary">Sendbox</span> ?
               </h2>
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Une solution pensée pour rendre vos envois simples, sûrs et
-                abordables.
+                Une plateforme pensée pour les voyageurs qui font du covalisage
+                sérieusement.
               </p>
             </div>
 
@@ -211,7 +211,6 @@ export default function HomePage() {
                     className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 bg-background animate-fade-in-up"
                     style={{ animationDelay: `${i * 100}ms` }}
                   >
-                    {/* Gradient overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-transparent transition-all duration-500"></div>
 
                     <div className="relative p-8 space-y-6">
@@ -284,9 +283,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* How it Works - Editorial layout */}
+        {/* How it Works */}
         <section className="py-20 sm:py-28 relative overflow-hidden">
-          {/* Background decoration */}
           <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-primary/5 to-transparent"></div>
 
           <div className="container-wide relative">
@@ -371,6 +369,7 @@ export default function HomePage() {
         </section>
 
         <TrustStatsBlock />
+        <PricingSection />
 
         {/* Benefits - Dual audience */}
         <section className="py-20 sm:py-28 bg-muted/30 relative">
@@ -380,13 +379,13 @@ export default function HomePage() {
                 variant="outline"
                 className="text-xs uppercase tracking-widest font-semibold px-4 py-2"
               >
-                Pour tous
+                Voyageurs & Expéditeurs
               </Badge>
               <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
-                Voyageurs & Expéditeurs
+                Voyageurs Pro & Expéditeurs
               </h2>
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-                Une communauté gagnant-gagnant où chacun trouve son compte.
+                Une communauté de confiance où chacun trouve son compte.
               </p>
             </div>
 
@@ -401,9 +400,9 @@ export default function HomePage() {
                       <IconPlane className="h-7 w-7 text-primary" />
                     </div>
                     <div>
-                      <h3 className="text-3xl font-bold mb-2">Voyageurs</h3>
+                      <h3 className="text-3xl font-bold mb-2">Voyageurs Pro</h3>
                       <p className="text-muted-foreground">
-                        Rentabilisez vos trajets
+                        Transformez vos voyages en revenus.
                       </p>
                     </div>
                   </div>
@@ -427,7 +426,7 @@ export default function HomePage() {
                     variant="outline"
                   >
                     <Link href="/register">
-                      Enregistrer un voyage
+                      Rejoindre Sendbox
                       <IconArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                     </Link>
                   </Button>
@@ -445,7 +444,7 @@ export default function HomePage() {
                     </div>
                     <div>
                       <h3 className="text-3xl font-bold mb-2">Expéditeurs</h3>
-                      <p className="text-muted-foreground">Envoyez malin</p>
+                      <p className="text-muted-foreground">Envoyez en confiance.</p>
                     </div>
                   </div>
 
@@ -477,7 +476,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Final CTA - Bold & centered */}
+        {/* Final CTA */}
         <section className="py-24 sm:py-32 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-emerald-500/10"></div>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
@@ -490,12 +489,12 @@ export default function HomePage() {
               </div>
 
               <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold">
-                Rejoignez la communauté{' '}
+                Rejoignez les voyageurs pro{' '}
                 <span className="text-primary">Sendbox</span>
               </h2>
 
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Rejoignez les premiers utilisateurs qui font confiance à Sendbox pour leurs envois.
+                Inscription gratuite. Commencez à publier dès 4,99 €/mois.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -527,15 +526,15 @@ export default function HomePage() {
               <div className="flex flex-wrap items-center justify-center gap-6 pt-8 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <IconShieldCheck className="h-5 w-5 text-primary" />
-                  <span>KYC vérifié</span>
+                  <span>Identité vérifiée</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <IconPlane className="h-5 w-5 text-primary" />
-                  <span>Livraisons vérifiées & garanties</span>
+                  <span>Billet validé par trajet</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <IconShieldCheck className="h-5 w-5 text-primary" />
-                  <span>Valises scellées & vérifiées</span>
+                  <span>Paiements sécurisés</span>
                 </div>
               </div>
             </div>
