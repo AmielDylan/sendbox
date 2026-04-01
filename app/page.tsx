@@ -7,6 +7,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -22,6 +23,8 @@ import {
   IconTrendingUp,
   IconMapPin,
   IconCheck,
+  IconLuggage,
+  IconQrcode,
 } from '@tabler/icons-react'
 import { LandingCta } from '@/components/landing/LandingCta'
 import { TrustStatsBlock } from '@/components/landing/TrustStatsBlock'
@@ -70,41 +73,74 @@ const benefits = {
 const steps = [
   {
     number: '01',
-    title: 'Enregistrez votre voyage',
+    title: 'Signalez votre disponibilité',
     description:
-      'Indiquez votre trajet, vos dates et l\'espace disponible dans vos bagages.',
+      'Indiquez votre prochain trajet France–Bénin et cochez "disponible pour une valise Sendbox". Sendbox vous contacte.',
     visual: 'search',
   },
   {
     number: '02',
-    title: 'Sendbox prépare votre valise',
+    title: 'Sendbox vous remet la valise',
     description:
-      'Sendbox vérifie et scelle une valise avec les colis des expéditeurs. QR code et cadenas inclus.',
+      'La valise est préparée, vérifiée et scellée par nos équipes. Vous la récupérez avant votre départ.',
     visual: 'book',
   },
   {
     number: '03',
-    title: 'Voyagez et déposez à l\'agence',
+    title: 'Voyagez normalement',
     description:
-      'Voyagez normalement. À destination, déposez la valise Sendbox à l\'agence partenaire.',
+      'Aucune gestion, aucun stress. La valise Sendbox compte comme un bagage standard.',
     visual: 'handoff',
   },
   {
     number: '04',
-    title: 'Recevez votre commission',
+    title: 'Déposez & touchez votre commission',
     description:
-      'Une fois la livraison confirmée, votre commission est versée automatiquement.',
+      'À destination, déposez en agence partenaire. La commission est versée automatiquement dès confirmation.',
+    visual: 'track',
+  },
+]
+
+const senderSteps = [
+  {
+    number: '01',
+    title: 'Choisissez un départ',
+    description:
+      'Consultez les prochains départs Sendbox France–Bénin et réservez votre espace en quelques clics.',
+    visual: 'search',
+  },
+  {
+    number: '02',
+    title: 'Sendbox s\'occupe de tout',
+    description:
+      'Vos colis sont collectés, vérifiés, emballés et scellés avec un QR code unique.',
+    visual: 'book',
+  },
+  {
+    number: '03',
+    title: 'Suivi en temps réel',
+    description:
+      'Suivez votre envoi étape par étape depuis votre téléphone.',
+    visual: 'handoff',
+  },
+  {
+    number: '04',
+    title: 'Récupération en agence',
+    description:
+      'Votre destinataire récupère les colis à l\'agence partenaire. Vous êtes notifié à chaque étape.',
     visual: 'track',
   },
 ]
 
 const stats = [
-  { value: '2,500+', label: 'Colis livrés' },
-  { value: '1,200+', label: 'Utilisateurs actifs' },
-  { value: '4.8/5', label: 'Note moyenne' },
+  { icon: IconLuggage, value: 'France – Bénin', label: 'Route active' },
+  { icon: IconShieldCheck, value: '100%', label: 'Colis vérifiés' },
+  { icon: IconClock, value: 'Sous 48h', label: 'Délai moyen' },
 ]
 
 export default function HomePage() {
+  const [stepMode, setStepMode] = useState<'traveler' | 'sender'>('traveler')
+  const displayedSteps = stepMode === 'traveler' ? steps : senderSteps
   return (
     <>
       <PublicHeader />
@@ -130,28 +166,27 @@ export default function HomePage() {
                   <span className="text-foreground font-semibold">
                     touchez votre commission
                   </span>
-                  .{' '}
-                  <span className="text-foreground font-semibold">Simple</span>,{' '}
-                  <span className="text-foreground font-semibold">sécurisé</span>{' '}
-                  et{' '}
-                  <span className="text-foreground font-semibold">
-                    sans risque
-                  </span>
-                  .
+                  . Simple, sécurisé et sans risque.
                 </p>
 
                 {/* Stats row */}
                 <div className="flex flex-wrap gap-6 lg:gap-8 pt-2">
-                  {stats.map(stat => (
-                    <div key={stat.label} className="space-y-1">
-                      <div className="text-xl sm:text-2xl font-bold text-primary">
-                        {stat.value}
+                  {stats.map(stat => {
+                    const Icon = stat.icon
+                    return (
+                      <div key={stat.label} className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-5 w-5 text-primary" />
+                          <div className="text-lg sm:text-xl font-bold text-primary">
+                            {stat.value}
+                          </div>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {stat.label}
+                        </div>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {stat.label}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {/* CTAs */}
@@ -224,7 +259,7 @@ export default function HomePage() {
                       </div>
 
                       <div className="space-y-3">
-                        <h3 className="text-2xl font-bold">{feature.title}</h3>
+                        <h3 className="text-xl font-bold">{feature.title}</h3>
                         <p className="text-muted-foreground leading-relaxed">
                           {feature.description}
                         </p>
@@ -269,13 +304,13 @@ export default function HomePage() {
 
                 {/* Empty state placeholders */}
                 <div className="flex items-center gap-3">
-                  <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                  <div className="w-[44px] h-[36px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
                     <span className="text-sm text-muted-foreground/40">+</span>
                   </div>
-                  <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                  <div className="w-[44px] h-[36px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
                     <span className="text-sm text-muted-foreground/40">+</span>
                   </div>
-                  <div className="w-[60px] h-[46px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                  <div className="w-[44px] h-[36px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
                     <span className="text-sm text-muted-foreground/40">+</span>
                   </div>
                 </div>
@@ -301,18 +336,38 @@ export default function HomePage() {
               >
                 Simple & Efficace
               </Badge>
-              <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold max-w-3xl">
-                Comment ça marche en 4 étapes
-              </h2>
+              <div className="flex flex-col gap-6">
+                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold max-w-3xl">
+                  Comment ça marche en 4 étapes
+                </h2>
+                <div className="flex gap-3">
+                  <Button
+                    variant={stepMode === 'traveler' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStepMode('traveler')}
+                    className="rounded-full"
+                  >
+                    Je voyage
+                  </Button>
+                  <Button
+                    variant={stepMode === 'sender' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStepMode('sender')}
+                    className="rounded-full"
+                  >
+                    J'envoie
+                  </Button>
+                </div>
+              </div>
             </div>
 
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
               {/* Left: Steps */}
               <div className="space-y-6">
-                {steps.map((step, i) => (
+                {displayedSteps.map((step, i) => (
                   <div
                     key={step.number}
-                    className="group flex gap-6 p-6 rounded-2xl border-2 border-border hover:border-primary/50 bg-background hover:shadow-xl transition-all duration-500 animate-fade-in-up"
+                    className="group flex gap-6 p-5 rounded-2xl border-2 border-border hover:border-primary/50 bg-background hover:shadow-xl transition-all duration-500 animate-fade-in-up"
                     style={{ animationDelay: `${i * 100}ms` }}
                   >
                     <div className="flex-shrink-0">
@@ -487,8 +542,7 @@ export default function HomePage() {
               </h2>
 
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Des milliers d'utilisateurs font déjà confiance à notre
-                plateforme pour leurs envois entre l'Europe et l'Afrique.
+                Rejoignez les premiers utilisateurs qui font confiance à Sendbox pour leurs envois entre la France et le Bénin.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -523,12 +577,12 @@ export default function HomePage() {
                   <span>KYC vérifié</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <IconUsers className="h-5 w-5 text-primary" />
-                  <span>1,200+ membres</span>
+                  <IconPlane className="h-5 w-5 text-primary" />
+                  <span>Service France–Bénin actif</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <IconTrendingUp className="h-5 w-5 text-primary" />
-                  <span>4.8/5 étoiles</span>
+                  <IconLuggage className="h-5 w-5 text-primary" />
+                  <span>Valises scellées & vérifiées</span>
                 </div>
               </div>
             </div>

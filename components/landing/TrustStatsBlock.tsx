@@ -1,31 +1,31 @@
 import { Badge } from '@/components/ui/badge'
 import {
-  IconPackage,
-  IconStar,
   IconShieldCheck,
-  IconLuggage,
+  IconQrcode,
+  IconPlane,
+  IconCurrencyEuro,
 } from '@tabler/icons-react'
 
 const stats = [
   {
-    icon: IconPackage,
-    value: '275+',
-    label: 'Colis livrés',
+    icon: IconShieldCheck,
+    value: '100%',
+    label: 'Colis vérifiés avant départ',
   },
   {
-    icon: IconStar,
-    value: '4.8/5',
-    label: 'Satisfaction clients',
+    icon: IconQrcode,
+    value: 'QR Code',
+    label: 'Suivi en temps réel',
   },
   {
-    icon: IconLuggage,
-    value: 'France ⇄ Bénin',
+    icon: IconPlane,
+    value: 'France – Bénin',
     label: 'Service actif',
   },
   {
-    icon: IconShieldCheck,
-    value: '100%',
-    label: 'Valises vérifiées',
+    icon: IconCurrencyEuro,
+    value: '0 surprise',
+    label: 'Tarif fixe, aucune négociation',
   },
 ]
 
@@ -42,7 +42,7 @@ export function TrustStatsBlock() {
               Sendbox en chiffres
             </Badge>
             <h3 className="font-display text-3xl sm:text-4xl font-bold">
-              La confiance, c'est notre fondation
+              Chaque envoi, garanti.
             </h3>
             <p className="text-sm text-muted-foreground max-w-2xl">
               Chaque envoi Sendbox est vérifié, suivi et garanti. Nos voyageurs
