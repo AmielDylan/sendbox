@@ -178,7 +178,6 @@ export default function HomePage() {
               <LandingCta
                 className="flex-wrap sm:flex-nowrap"
                 registerClassName="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
-                searchClassName="w-full sm:w-auto border-2 hover:bg-accent hover:scale-[1.02] transition-all duration-300"
               />
 
               {/* Trust indicator */}

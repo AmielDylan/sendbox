@@ -19,12 +19,8 @@ import {
   IconSparkles,
   IconPlane,
   IconPackage,
-  IconUsers,
-  IconTrendingUp,
   IconMapPin,
   IconCheck,
-  IconLuggage,
-  IconQrcode,
 } from '@tabler/icons-react'
 import { LandingCta } from '@/components/landing/LandingCta'
 import { TrustStatsBlock } from '@/components/landing/TrustStatsBlock'
@@ -75,7 +71,7 @@ const steps = [
     number: '01',
     title: 'Signalez votre disponibilité',
     description:
-      'Indiquez votre prochain trajet France–Bénin et cochez "disponible pour une valise Sendbox". Sendbox vous contacte.',
+      'Indiquez votre prochain trajet et cochez "disponible pour une valise Sendbox". Sendbox vous contacte.',
     visual: 'search',
   },
   {
@@ -106,7 +102,7 @@ const senderSteps = [
     number: '01',
     title: 'Choisissez un départ',
     description:
-      'Consultez les prochains départs Sendbox France–Bénin et réservez votre espace en quelques clics.',
+      'Consultez les prochains départs Sendbox et réservez votre espace en quelques clics.',
     visual: 'search',
   },
   {
@@ -132,11 +128,6 @@ const senderSteps = [
   },
 ]
 
-const stats = [
-  { icon: IconLuggage, value: 'France – Bénin', label: 'Route active' },
-  { icon: IconShieldCheck, value: '100%', label: 'Colis vérifiés' },
-  { icon: IconClock, value: 'Sous 48h', label: 'Délai moyen' },
-]
 
 export default function HomePage() {
   const [stepMode, setStepMode] = useState<'traveler' | 'sender'>('traveler')
@@ -161,48 +152,18 @@ export default function HomePage() {
                 </h1>
 
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  Sendbox vérifie les colis, prépare la valise et garantit la livraison.
-                  Vous transportez, vous{' '}
+                  Transportez une valise Sendbox et{' '}
                   <span className="text-foreground font-semibold">
                     touchez votre commission
-                  </span>
-                  . Simple, sécurisé et sans risque.
+                  </span>{' '}
+                  dès la livraison.
                 </p>
 
-                {/* Stats row */}
-                <div className="flex flex-wrap gap-6 lg:gap-8 pt-2">
-                  {stats.map(stat => {
-                    const Icon = stat.icon
-                    return (
-                      <div key={stat.label} className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-5 w-5 text-primary" />
-                          <div className="text-lg sm:text-xl font-bold text-primary">
-                            {stat.value}
-                          </div>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {stat.label}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* CTAs */}
+                {/* CTA */}
                 <LandingCta
                   className="flex-wrap sm:flex-nowrap pt-2"
                   registerClassName="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
-                  searchClassName="w-full sm:w-auto border-2 hover:bg-accent transition-all duration-300"
                 />
-
-                {/* Trust indicator */}
-                <div className="flex items-center gap-3 pt-2">
-                  <IconShieldCheck className="h-5 w-5 text-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    Identités vérifiées • Paiements sécurisés • Support 24/7
-                  </p>
-                </div>
               </div>
 
               {/* Right: Hero Image */}
@@ -284,8 +245,8 @@ export default function HomePage() {
                 {/* Active countries */}
                 <div className="flex items-center gap-3">
                   <div className="group relative">
-                    <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                      <span className="text-3xl">🇫🇷</span>
+                    <div className="px-2.5 py-1.5 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-md">
+                      <span className="text-xl">🇫🇷</span>
                     </div>
                     <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                       France
@@ -293,8 +254,8 @@ export default function HomePage() {
                   </div>
 
                   <div className="group relative">
-                    <div className="px-4 py-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                      <span className="text-3xl">🇧🇯</span>
+                    <div className="px-2.5 py-1.5 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-md">
+                      <span className="text-xl">🇧🇯</span>
                     </div>
                     <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-xs font-medium text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                       Bénin
@@ -304,14 +265,14 @@ export default function HomePage() {
 
                 {/* Empty state placeholders */}
                 <div className="flex items-center gap-3">
-                  <div className="w-[44px] h-[36px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
-                    <span className="text-sm text-muted-foreground/40">+</span>
+                  <div className="w-[32px] h-[26px] rounded-lg border border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground/30">+</span>
                   </div>
-                  <div className="w-[44px] h-[36px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
-                    <span className="text-sm text-muted-foreground/40">+</span>
+                  <div className="w-[32px] h-[26px] rounded-lg border border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground/30">+</span>
                   </div>
-                  <div className="w-[44px] h-[36px] rounded-xl border-2 border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
-                    <span className="text-sm text-muted-foreground/40">+</span>
+                  <div className="w-[32px] h-[26px] rounded-lg border border-dashed border-muted-foreground/20 bg-muted/5 flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground/30">+</span>
                   </div>
                 </div>
 
@@ -501,23 +462,15 @@ export default function HomePage() {
                     ))}
                   </ul>
 
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      asChild
-                      className="w-full sm:w-auto group/btn bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      <Link href="/sendbox">
-                        <IconPackage className="h-4 w-4" />
-                        Envoyer avec Sendbox
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" size="sm" className="w-full sm:w-auto text-muted-foreground">
-                      <Link href="/recherche">
-                        <IconMapPin className="h-4 w-4" />
-                        Trouver un voyageur
-                      </Link>
-                    </Button>
-                  </div>
+                  <Button
+                    asChild
+                    className="w-full sm:w-auto group/btn bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    <Link href="/sendbox">
+                      <IconPackage className="h-4 w-4" />
+                      Envoyer avec Sendbox
+                    </Link>
+                  </Button>
                 </div>
               </Card>
             </div>
@@ -542,7 +495,7 @@ export default function HomePage() {
               </h2>
 
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Rejoignez les premiers utilisateurs qui font confiance à Sendbox pour leurs envois entre la France et le Bénin.
+                Rejoignez les premiers utilisateurs qui font confiance à Sendbox pour leurs envois.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -578,10 +531,10 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <IconPlane className="h-5 w-5 text-primary" />
-                  <span>Service France–Bénin actif</span>
+                  <span>Livraisons vérifiées & garanties</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <IconLuggage className="h-5 w-5 text-primary" />
+                  <IconShieldCheck className="h-5 w-5 text-primary" />
                   <span>Valises scellées & vérifiées</span>
                 </div>
               </div>

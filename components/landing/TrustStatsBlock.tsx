@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   IconShieldCheck,
   IconQrcode,
-  IconPlane,
+  IconClock,
   IconCurrencyEuro,
 } from '@tabler/icons-react'
 
@@ -18,9 +18,9 @@ const stats = [
     label: 'Suivi en temps réel',
   },
   {
-    icon: IconPlane,
-    value: 'France – Bénin',
-    label: 'Service actif',
+    icon: IconClock,
+    value: 'Sous 48h',
+    label: 'Délai moyen garanti',
   },
   {
     icon: IconCurrencyEuro,
