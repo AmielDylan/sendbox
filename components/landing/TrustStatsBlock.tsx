@@ -10,7 +10,7 @@ const stats = [
   {
     icon: IconShieldCheck,
     value: '100%',
-    label: 'Colis vérifiés avant départ',
+    label: 'Voyageurs vérifiés',
   },
   {
     icon: IconQrcode,
