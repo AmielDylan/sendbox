@@ -942,8 +942,9 @@ export async function POST(req: NextRequest) {
             ? subscription.customer
             : subscription.customer.id
 
-        const expiresAt = subscription.current_period_end
-          ? new Date(subscription.current_period_end * 1000).toISOString()
+        const periodEnd = (subscription as any).current_period_end as number | undefined
+        const expiresAt = periodEnd
+          ? new Date(periodEnd * 1000).toISOString()
           : new Date().toISOString()
 
         const { data: profile, error: profileError } = await supabase
@@ -1010,7 +1011,7 @@ export async function POST(req: NextRequest) {
         const invoice = event.data.object as Stripe.Invoice
 
         // Ignorer les factures sans abonnement (paiement unique)
-        if (!invoice.subscription) break
+        if (!(invoice as any).subscription) break
 
         const customerId =
           typeof invoice.customer === 'string'
