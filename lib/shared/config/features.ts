@@ -38,6 +38,20 @@ export const FEATURES = {
   MAX_BOOKING_AMOUNT: 200,
 
   /**
+   * Abonnement voyageur pro
+   * Si false : publication de trajets autorisée sans abonnement
+   * Si true : abonnement requis pour publier (trial de 14j inclus)
+   */
+  SUBSCRIPTION_ENABLED: false,
+
+  /**
+   * Preuve de voyage (billet) requise pour publier
+   * Si false : publication sans billet acceptée
+   * Si true : travel_proof_url requis avant passage draft → active
+   */
+  TRAVEL_PROOF_REQUIRED: false,
+
+  /**
    * Monitoring
    */
   SENTRY_ENABLED: false,
