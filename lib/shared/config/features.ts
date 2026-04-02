@@ -8,7 +8,7 @@ export const FEATURES = {
    * Si false : création d'annonces autorisée avec seulement email + téléphone
    * Si true : KYC requis avant création d'annonces
    */
-  KYC_ENABLED: false,
+  KYC_ENABLED: true,
 
   /**
    * Messagerie temps réel
@@ -36,6 +36,20 @@ export const FEATURES = {
   BETA_MODE: true,
   MAX_BETA_USERS: 100,
   MAX_BOOKING_AMOUNT: 200,
+
+  /**
+   * Abonnement voyageur pro
+   * Si false : publication de trajets autorisée sans abonnement
+   * Si true : abonnement requis pour publier (trial de 14j inclus)
+   */
+  SUBSCRIPTION_ENABLED: false,
+
+  /**
+   * Preuve de voyage (billet) requise pour publier
+   * Si false : publication sans billet acceptée
+   * Si true : travel_proof_url requis avant passage draft → active
+   */
+  TRAVEL_PROOF_REQUIRED: false,
 
   /**
    * Monitoring

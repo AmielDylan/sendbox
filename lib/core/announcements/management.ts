@@ -11,6 +11,7 @@ import {
   type CreateAnnouncementInput,
 } from '@/lib/core/announcements/validations'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { checkCanPublish } from '@/lib/core/subscriptions/actions'
 
 /**
  * Met à jour une annonce existante
@@ -395,20 +396,57 @@ export async function toggleAnnouncementStatus(announcementId: string) {
   // Déterminer le nouveau statut
   const newStatus = announcement.status === 'draft' ? 'active' : 'draft'
 
-  if (newStatus === 'active' && isFeatureEnabled('KYC_ENABLED')) {
+  if (newStatus === 'active') {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('kyc_status, kyc_rejection_reason')
+      .select('kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at')
       .eq('id', user.id)
       .single()
 
     if (profileError || !profile) {
-      return {
-        error: 'Profil introuvable',
+      return { error: 'Profil introuvable' }
+    }
+
+    // Gate abonnement
+    if (isFeatureEnabled('SUBSCRIPTION_ENABLED')) {
+      const subscriptionStatus = (profile.subscription_status ?? 'trialing') as
+        | 'trialing'
+        | 'active'
+        | 'past_due'
+        | 'canceled'
+        | 'inactive'
+      const trialEndsAt = profile.trial_ends_at as string | null
+      if (!checkCanPublish(subscriptionStatus, trialEndsAt)) {
+        return {
+          error: 'Abonnement requis pour publier',
+          errorDetails:
+            subscriptionStatus === 'trialing'
+              ? "Votre période d'essai est terminée. Abonnez-vous à 4,99 €/mois pour continuer à publier."
+              : 'Un abonnement actif est requis pour publier un trajet.',
+          field: 'subscription',
+        }
       }
     }
 
-    if (profile.kyc_status !== 'approved') {
+    // Gate preuve de voyage
+    if (isFeatureEnabled('TRAVEL_PROOF_REQUIRED')) {
+      const { data: ann } = await supabase
+        .from('announcements')
+        .select('travel_proof_url')
+        .eq('id', announcementId)
+        .single()
+
+      if (!ann?.travel_proof_url) {
+        return {
+          error: 'Preuve de voyage requise',
+          errorDetails:
+            'Veuillez joindre votre billet de voyage avant de publier cette annonce.',
+          field: 'travel_proof',
+        }
+      }
+    }
+
+    if (isFeatureEnabled('KYC_ENABLED') && profile.kyc_status !== 'approved') {
       let errorMessage = "Vérification d'identité requise pour continuer"
       let errorDetails =
         "Veuillez compléter votre vérification d'identité pour publier une annonce."
@@ -437,6 +475,7 @@ export async function toggleAnnouncementStatus(announcementId: string) {
   }
 
   // Mettre à jour le statut
+
   const { error: updateError } = await supabase
     .from('announcements')
     .update({ status: newStatus })
@@ -454,4 +493,52 @@ export async function toggleAnnouncementStatus(announcementId: string) {
     success: true,
     message: `Annonce ${newStatus === 'active' ? 'publiée' : 'mise en brouillon'}`,
   }
+}
+
+/**
+ * Attache une preuve de voyage (billet anonymisé) à une annonce.
+ * Le fichier doit être uploadé dans Supabase Storage en amont —
+ * cette action ne fait que persister l'URL sur l'annonce.
+ */
+export async function uploadTravelProof(
+  announcementId: string,
+  fileUrl: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: 'Vous devez être connecté' }
+  }
+
+  // Vérifier que l'annonce appartient à l'utilisateur
+  const { data: announcement, error: fetchError } = await supabase
+    .from('announcements')
+    .select('id, traveler_id')
+    .eq('id', announcementId)
+    .single()
+
+  if (fetchError || !announcement) {
+    return { success: false, error: 'Annonce introuvable' }
+  }
+
+  if (announcement.traveler_id !== user.id) {
+    return { success: false, error: "Vous n'êtes pas autorisé à modifier cette annonce" }
+  }
+
+  const { error: updateError } = await supabase
+    .from('announcements')
+    .update({ travel_proof_url: fileUrl })
+    .eq('id', announcementId)
+
+  if (updateError) {
+    console.error('uploadTravelProof error:', updateError)
+    return { success: false, error: 'Erreur lors de la mise à jour de la preuve de voyage' }
+  }
+
+  revalidatePath(`/dashboard/annonces/${announcementId}`)
+  return { success: true }
 }
