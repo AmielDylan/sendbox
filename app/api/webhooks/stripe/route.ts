@@ -865,6 +865,214 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      // ─── Subscription events ──────────────────────────────────────────────
+
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription
+
+        const stripeStatus = subscription.status
+        const statusMap: Record<string, string> = {
+          trialing: 'trialing',
+          active: 'active',
+          past_due: 'past_due',
+          canceled: 'canceled',
+          unpaid: 'inactive',
+          incomplete: 'inactive',
+          incomplete_expired: 'inactive',
+          paused: 'inactive',
+        }
+        const dbStatus = statusMap[stripeStatus] ?? 'inactive'
+
+        const customerId =
+          typeof subscription.customer === 'string'
+            ? subscription.customer
+            : subscription.customer.id
+
+        const updatePayload: Record<string, unknown> = {
+          subscription_status: dbStatus,
+          stripe_subscription_id: subscription.id,
+          stripe_customer_id: customerId,
+        }
+
+        if (event.type === 'customer.subscription.created') {
+          updatePayload.subscription_started_at = new Date(
+            subscription.start_date * 1000
+          ).toISOString()
+        }
+
+        if (dbStatus === 'active') {
+          updatePayload.subscription_expires_at = null
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .update(updatePayload as any)
+          .eq('stripe_customer_id', customerId)
+          .select('id, subscription_status')
+          .maybeSingle()
+
+        if (profileError) {
+          console.error('❌ Failed to update subscription status:', profileError)
+        }
+
+        // Notification d'activation
+        if (
+          profile?.id &&
+          dbStatus === 'active' &&
+          event.type === 'customer.subscription.created'
+        ) {
+          await createSystemNotification({
+            userId: profile.id,
+            type: 'system_alert',
+            title: 'Abonnement activé',
+            content:
+              'Votre abonnement Sendbox Pro est actif. Publiez autant de trajets que vous voulez.',
+          })
+        }
+
+        break
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription
+
+        const customerId =
+          typeof subscription.customer === 'string'
+            ? subscription.customer
+            : subscription.customer.id
+
+        const expiresAt = subscription.current_period_end
+          ? new Date(subscription.current_period_end * 1000).toISOString()
+          : new Date().toISOString()
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            subscription_status: 'canceled',
+            subscription_expires_at: expiresAt,
+          } as any)
+          .eq('stripe_customer_id', customerId)
+          .select('id')
+          .maybeSingle()
+
+        if (profileError) {
+          console.error('❌ Failed to update subscription to canceled:', profileError)
+        }
+
+        if (profile?.id) {
+          await createSystemNotification({
+            userId: profile.id,
+            type: 'system_alert',
+            title: 'Abonnement annulé',
+            content: `Votre abonnement est annulé. Vous conservez l'accès jusqu'au ${new Date(expiresAt).toLocaleDateString('fr-FR')}.`,
+          })
+        }
+
+        break
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice
+
+        const customerId =
+          typeof invoice.customer === 'string'
+            ? invoice.customer
+            : (invoice.customer as Stripe.Customer | null)?.id
+
+        if (!customerId) break
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .update({ subscription_status: 'past_due' } as any)
+          .eq('stripe_customer_id', customerId)
+          .select('id')
+          .maybeSingle()
+
+        if (profileError) {
+          console.error('❌ Failed to set past_due:', profileError)
+        }
+
+        if (profile?.id) {
+          await createSystemNotification({
+            userId: profile.id,
+            type: 'system_alert',
+            title: 'Échec de paiement',
+            content:
+              'Le renouvellement de votre abonnement a échoué. Mettez à jour votre moyen de paiement pour continuer à publier.',
+          })
+        }
+
+        break
+      }
+
+      case 'invoice.payment_succeeded': {
+        const invoice = event.data.object as Stripe.Invoice
+
+        // Ignorer les factures sans abonnement (paiement unique)
+        if (!invoice.subscription) break
+
+        const customerId =
+          typeof invoice.customer === 'string'
+            ? invoice.customer
+            : (invoice.customer as Stripe.Customer | null)?.id
+
+        if (!customerId) break
+
+        // Remettre en active si était past_due
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, subscription_status')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle()
+
+        if (profile?.id && (profile as any).subscription_status === 'past_due') {
+          await supabase
+            .from('profiles')
+            .update({ subscription_status: 'active' } as any)
+            .eq('id', profile.id)
+
+          await createSystemNotification({
+            userId: profile.id,
+            type: 'system_alert',
+            title: 'Paiement reçu',
+            content: 'Votre abonnement est de nouveau actif.',
+          })
+        }
+
+        break
+      }
+
+      case 'customer.subscription.trial_will_end': {
+        const subscription = event.data.object as Stripe.Subscription
+
+        const customerId =
+          typeof subscription.customer === 'string'
+            ? subscription.customer
+            : subscription.customer.id
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle()
+
+        if (profile?.id) {
+          const trialEnd = subscription.trial_end
+            ? new Date(subscription.trial_end * 1000).toLocaleDateString('fr-FR')
+            : ''
+
+          await createSystemNotification({
+            userId: profile.id,
+            type: 'system_alert',
+            title: 'Votre essai se termine bientôt',
+            content: `Votre période d'essai se termine le ${trialEnd}. Abonnez-vous à 4,99 €/mois pour continuer à publier.`,
+          })
+        }
+
+        break
+      }
+
       default:
         devLog(`Unhandled event type: ${event.type}`)
     }
