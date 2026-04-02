@@ -42,7 +42,7 @@ export const FEATURES = {
    * Si false : publication de trajets autorisée sans abonnement
    * Si true : abonnement requis pour publier (trial de 14j inclus)
    */
-  SUBSCRIPTION_ENABLED: false,
+  SUBSCRIPTION_ENABLED: true,
 
   /**
    * Preuve de voyage (billet) requise pour publier
