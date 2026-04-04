@@ -48,18 +48,18 @@ describe('Payment Calculations', () => {
     })
 
     describe('Calcul de la commission', () => {
-      it('calcule commission à 12% du prix transport', () => {
+      it('calcule commission à 3% du prix transport', () => {
         const result = calculateBookingAmounts(10, 10, 100, false)
 
         expect(result.totalPrice).toBe(100) // 10kg × 10€
-        expect(result.commissionAmount).toBe(12) // 12% de 100€
+        expect(result.commissionAmount).toBe(3) // 3% de 100€
       })
 
       it('calcule commission correcte pour montant décimal', () => {
         const result = calculateBookingAmounts(5, 7, 100, false)
 
         expect(result.totalPrice).toBe(35) // 5kg × 7€
-        expect(result.commissionAmount).toBe(4.2) // 12% de 35€
+        expect(result.commissionAmount).toBe(1.05) // 3% de 35€
       })
 
       it('commission est nulle si prix transport est nul', () => {
@@ -122,24 +122,24 @@ describe('Payment Calculations', () => {
         const result = calculateBookingAmounts(10, 10, 100, false)
 
         expect(result.totalPrice).toBe(100)
-        expect(result.commissionAmount).toBe(12)
-        expect(result.totalAmount).toBe(112) // 100 + 12
+        expect(result.commissionAmount).toBe(3) // 3% de 100€
+        expect(result.totalAmount).toBe(103) // 100 + 3
       })
 
       it('totalAmount inclut prime assurance si souscrite', () => {
         const result = calculateBookingAmounts(10, 10, 100, true)
 
         expect(result.totalPrice).toBe(100)
-        expect(result.commissionAmount).toBe(12)
-        expect(result.insurancePremium).toBe(3)
-        expect(result.totalAmount).toBe(115) // 100 + 12 + 3
+        expect(result.commissionAmount).toBe(3) // 3% de 100€
+        expect(result.insurancePremium).toBe(3) // 3% de 100€
+        expect(result.totalAmount).toBe(106) // 100 + 3 + 3
       })
 
       it('calcule total correct pour cas complexe', () => {
         const result = calculateBookingAmounts(7.5, 8.4, 250, true)
 
         const transportPrice = 7.5 * 8.4 // 63€
-        const commission = transportPrice * 0.12 // 7.56€
+        const commission = transportPrice * 0.03 // 1.89€
         const insurance = 250 * 0.03 // 7.5€
 
         expect(result.totalPrice).toBe(transportPrice)
@@ -154,14 +154,14 @@ describe('Payment Calculations', () => {
         const result = calculateBookingAmounts(-5, 10, 100, false)
 
         expect(result.totalPrice).toBe(-50) // -5kg × 10€
-        expect(result.commissionAmount).toBe(-6) // 12% de -50€
+        expect(result.commissionAmount).toBe(-1.5) // 3% de -50€
       })
 
       it('accepte prix négatif (valide mathématiquement)', () => {
         const result = calculateBookingAmounts(5, -10, 100, false)
 
         expect(result.totalPrice).toBe(-50) // 5kg × -10€
-        expect(result.commissionAmount).toBe(-6) // 12% de -50€
+        expect(result.commissionAmount).toBe(-1.5) // 3% de -50€
       })
     })
 
@@ -171,9 +171,9 @@ describe('Payment Calculations', () => {
         const result = calculateBookingAmounts(2, 8, 50, false)
 
         expect(result.totalPrice).toBe(16)
-        expect(result.commissionAmount).toBe(1.92)
+        expect(result.commissionAmount).toBe(0.48) // 3% de 16€
         expect(result.insurancePremium).toBe(0)
-        expect(result.totalAmount).toBe(17.92)
+        expect(result.totalAmount).toBe(16.48)
       })
 
       it('Scénario 2: Colis moyen avec assurance', () => {
@@ -181,9 +181,9 @@ describe('Payment Calculations', () => {
         const result = calculateBookingAmounts(5, 10, 200, true)
 
         expect(result.totalPrice).toBe(50)
-        expect(result.commissionAmount).toBe(6)
-        expect(result.insurancePremium).toBe(6)
-        expect(result.totalAmount).toBe(62)
+        expect(result.commissionAmount).toBe(1.5) // 3% de 50€
+        expect(result.insurancePremium).toBe(6) // 3% de 200€
+        expect(result.totalAmount).toBe(57.5)
       })
 
       it('Scénario 3: Gros colis avec assurance', () => {
@@ -191,9 +191,9 @@ describe('Payment Calculations', () => {
         const result = calculateBookingAmounts(15, 12, 800, true)
 
         expect(result.totalPrice).toBe(180)
-        expect(result.commissionAmount).toBeCloseTo(21.6, 2)
-        expect(result.insurancePremium).toBe(24)
-        expect(result.totalAmount).toBeCloseTo(225.6, 2)
+        expect(result.commissionAmount).toBeCloseTo(5.4, 2) // 3% de 180€
+        expect(result.insurancePremium).toBe(24) // 3% de 800€
+        expect(result.totalAmount).toBeCloseTo(209.4, 2)
       })
     })
   })
@@ -254,16 +254,16 @@ describe('Payment Calculations', () => {
     })
 
     describe('Scénarios réels de paiement', () => {
-      it('montant booking typique 1: 17.92€', () => {
-        expect(toStripeAmount(17.92)).toBe(1792)
+      it('montant booking typique 1: 16.48€', () => {
+        expect(toStripeAmount(16.48)).toBe(1648)
       })
 
-      it('montant booking typique 2: 62.00€', () => {
-        expect(toStripeAmount(62)).toBe(6200)
+      it('montant booking typique 2: 57.50€', () => {
+        expect(toStripeAmount(57.5)).toBe(5750)
       })
 
-      it('montant booking typique 3: 225.60€', () => {
-        expect(toStripeAmount(225.6)).toBe(22560)
+      it('montant booking typique 3: 209.40€', () => {
+        expect(toStripeAmount(209.4)).toBe(20940)
       })
     })
   })
@@ -312,16 +312,16 @@ describe('Payment Calculations', () => {
     })
 
     describe('Scénarios réels de paiement', () => {
-      it('montant booking typique 1: 1792 centimes → 17.92€', () => {
-        expect(fromStripeAmount(1792)).toBe(17.92)
+      it('montant booking typique 1: 1648 centimes → 16.48€', () => {
+        expect(fromStripeAmount(1648)).toBe(16.48)
       })
 
-      it('montant booking typique 2: 6200 centimes → 62€', () => {
-        expect(fromStripeAmount(6200)).toBe(62)
+      it('montant booking typique 2: 5750 centimes → 57.50€', () => {
+        expect(fromStripeAmount(5750)).toBe(57.5)
       })
 
-      it('montant booking typique 3: 22560 centimes → 225.60€', () => {
-        expect(fromStripeAmount(22560)).toBe(225.6)
+      it('montant booking typique 3: 20940 centimes → 209.40€', () => {
+        expect(fromStripeAmount(20940)).toBe(209.4)
       })
     })
   })
@@ -344,7 +344,7 @@ describe('Payment Calculations', () => {
     })
 
     it('round-trip avec montant booking réel', () => {
-      const bookingAmount = 225.6
+      const bookingAmount = 209.4
       const cents = toStripeAmount(bookingAmount)
       const backToEur = fromStripeAmount(cents)
 
@@ -354,19 +354,21 @@ describe('Payment Calculations', () => {
 
   describe('Intégration avec calculateBookingAmounts', () => {
     it('peut convertir totalAmount en centimes Stripe', () => {
+      // 5kg × 10€ = 50€, commission 3% = 1.5€, insurance 200×3% = 6€, total = 57.5€
       const result = calculateBookingAmounts(5, 10, 200, true)
       const stripeAmount = toStripeAmount(result.totalAmount)
 
-      expect(stripeAmount).toBe(6200) // 62€ en centimes
+      expect(stripeAmount).toBe(5750) // 57.5€ en centimes
     })
 
     it('peut convertir tous les montants pour Stripe', () => {
+      // 10kg × 10€ = 100€, commission 3% = 3€, insurance 3% = 3€, total = 106€
       const result = calculateBookingAmounts(10, 10, 100, true)
 
       expect(toStripeAmount(result.totalPrice)).toBe(10000) // 100€
-      expect(toStripeAmount(result.commissionAmount)).toBe(1200) // 12€
+      expect(toStripeAmount(result.commissionAmount)).toBe(300) // 3€
       expect(toStripeAmount(result.insurancePremium)).toBe(300) // 3€
-      expect(toStripeAmount(result.totalAmount)).toBe(11500) // 115€
+      expect(toStripeAmount(result.totalAmount)).toBe(10600) // 106€
     })
   })
 })
