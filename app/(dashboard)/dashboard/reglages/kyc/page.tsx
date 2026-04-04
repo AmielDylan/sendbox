@@ -1124,9 +1124,9 @@ export default function KYCPage() {
                     <IconAlertTriangle className="h-4 w-4" />
                     <AlertTitle>Pays de document non supporté</AlertTitle>
                     <AlertDescription>
-                      Stripe Identity n&apos;est pas disponible pour ce pays de
-                      document. Choisissez un pays pris en charge ou utilisez un
-                      document accepté par Stripe.
+                      La vérification d&apos;identité n&apos;est pas disponible pour ce pays
+                      de document. Choisissez un pays pris en charge ou utilisez
+                      un autre type de document.
                     </AlertDescription>
                   </Alert>
                 )}

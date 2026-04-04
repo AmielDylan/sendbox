@@ -124,7 +124,7 @@ export default function FundsPage() {
         <Alert>
           <AlertTitle>Paiements désactivés</AlertTitle>
           <AlertDescription>
-            Les paiements Stripe sont désactivés pour le moment.
+            Les paiements sont en simulation pour le moment.
           </AlertDescription>
         </Alert>
       )}
