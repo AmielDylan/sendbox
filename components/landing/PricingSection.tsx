@@ -58,6 +58,10 @@ export function PricingSection() {
               ))}
             </ul>
 
+            <p className="text-xs text-muted-foreground border-t border-border pt-4">
+              + 3 % de frais plateforme par transaction (escrow + garantie paiement)
+            </p>
+
             <Button asChild size="lg" className="w-full">
               <Link href="/register">Commencer — 4,99 €/mois</Link>
             </Button>

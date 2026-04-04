@@ -11,8 +11,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
-  --color-amber: var(--amber);
-  --color-amber-foreground: var(--amber-foreground);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -44,54 +42,52 @@
 }
 
 :root {
-  /* Sendbox — Teranga Design System */
+  /* Teal/Lyra - Modern & Professional */
 
-  /* Primary — Teal (voyageur identity) */
-  --primary: oklch(0.58 0.11 192);
+  /* Primary - Teal/Cyan */
+  --primary: oklch(0.6 0.1 185);
   --primary-foreground: oklch(0.98 0.01 181);
 
-  /* Amber — Expéditeur identity */
-  --amber: oklch(0.72 0.14 65);
-  --amber-foreground: oklch(0.22 0.04 65);
-
-  /* Secondary */
+  /* Secondary - Neutral gray */
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
 
-  /* Accent */
-  --accent: oklch(0.97 0.004 240);
+  /* Accent - Pure neutral */
+  --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
 
-  /* Neutrals — warm-tinted grays */
-  --background: oklch(0.995 0.002 240);
-  --foreground: oklch(0.12 0.008 240);
+  /* Neutrals - Cool grays */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.12 0.008 240);
+  --card-foreground: oklch(0.145 0 0);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.12 0.008 240);
+  --popover-foreground: oklch(0.145 0 0);
 
-  --muted: oklch(0.965 0.003 240);
-  --muted-foreground: oklch(0.52 0.015 240);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.6 0.015 286);
 
-  /* Semantic */
-  --success: oklch(0.54 0.15 150);
+  /* Success - Keep green for positive states */
+  --success: oklch(0.55 0.15 145);
   --success-foreground: oklch(0.99 0 0);
+
+  /* Destructive - Red for errors */
   --destructive: oklch(0.58 0.22 27);
   --destructive-foreground: oklch(0.99 0 0);
 
   /* Borders & Focus */
-  --border: oklch(0.88 0.008 240);
-  --input: oklch(0.88 0.008 240);
-  --ring: oklch(0.58 0.11 192);
+  --border: oklch(0.88 0.01 286);
+  --input: oklch(0.88 0.01 286);
+  --ring: oklch(0.6 0.1 185);
 
-  /* Charts — Teal + Amber */
-  --chart-1: oklch(0.58 0.11 192);
-  --chart-2: oklch(0.72 0.14 65);
-  --chart-3: oklch(0.54 0.15 150);
-  --chart-4: oklch(0.65 0.12 183);
-  --chart-5: oklch(0.48 0.1 195);
+  /* Chart colors - Teal palette */
+  --chart-1: oklch(0.6 0.1 185);
+  --chart-2: oklch(0.7 0.12 183);
+  --chart-3: oklch(0.55 0.08 180);
+  --chart-4: oklch(0.65 0.15 175);
+  --chart-5: oklch(0.5 0.12 190);
 
   --radius: 0.625rem;
 }

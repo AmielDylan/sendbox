@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Fraunces, Figtree } from 'next/font/google'
+import { Fraunces, Space_Grotesk } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { Analytics } from '@vercel/analytics/next'
 import { Providers } from './providers'
@@ -15,9 +15,9 @@ const fraunces = Fraunces({
   display: 'swap',
 })
 
-const figtree = Figtree({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-body',
   display: 'swap',
 })
@@ -66,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${fraunces.variable} ${figtree.variable} light`}
+      className={`${fraunces.variable} ${spaceGrotesk.variable} light`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased" suppressHydrationWarning>
