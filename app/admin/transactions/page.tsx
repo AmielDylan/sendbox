@@ -40,6 +40,7 @@ export default function AdminTransactionsPage() {
 
   const totalRevenue =
     transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0
+  const totalCommission = totalRevenue * 0.03
 
   const handleExportCSV = () => {
     // TODO: Implémenter export CSV
@@ -103,11 +104,12 @@ export default function AdminTransactionsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">
-              Taux de litige
+              Commission plateforme
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0%</div>
+            <div className="text-2xl font-bold">{totalCommission.toFixed(2)} EUR</div>
+            <p className="text-xs text-muted-foreground mt-1">3 % du volume</p>
           </CardContent>
         </Card>
       </div>

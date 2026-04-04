@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { headers } from 'next/headers'
+import { COMMISSION_RATE } from '@/lib/core/bookings/validations'
 
 /**
  * Vérifie si l'utilisateur est admin
@@ -354,10 +355,13 @@ export async function getAdminStats() {
   const monthlyRevenue =
     transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
 
+  const platformCommission = monthlyRevenue * COMMISSION_RATE
+
   return {
     totalUsers: totalUsers || 0,
     pendingKYC: pendingKYC || 0,
     activeBookings: activeBookings || 0,
     monthlyRevenue,
+    platformCommission,
   }
 }
