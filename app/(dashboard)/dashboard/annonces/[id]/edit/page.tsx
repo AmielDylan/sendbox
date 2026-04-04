@@ -496,12 +496,6 @@ export default function EditAnnouncementPage({
               )}
             </div>
 
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-              <p className="text-sm text-primary font-medium">Votre rémunération</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Vous recevez <span className="font-medium text-foreground">97 % du montant</span> payé par l&apos;expéditeur. Sendbox prélève 3 % de frais de service par transaction confirmée.
-              </p>
-            </div>
           </CardContent>
         </Card>
 

@@ -602,13 +602,6 @@ export default function NewAnnouncementPage() {
                   )}
                 </div>
 
-                {/* Info commission */}
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                  <p className="text-sm text-primary font-medium">Votre rémunération</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Vous recevrez <span className="font-medium text-foreground">97 % du montant</span> payé par l'expéditeur. Sendbox prélève 3 % de frais de service par transaction confirmée.
-                  </p>
-                </div>
 
                 {/* Description */}
                 <div className="space-y-2">
@@ -663,22 +656,6 @@ export default function NewAnnouncementPage() {
                     </p>
                   </div>
 
-                  {/* Détail commission */}
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
-                    <p className="text-sm font-medium text-primary">Détail de votre rémunération</p>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Montant payé par l'expéditeur</span>
-                      <span>100 %</span>
-                    </div>
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Frais de service Sendbox</span>
-                      <span>− 3 %</span>
-                    </div>
-                    <div className="flex justify-between text-sm font-medium border-t pt-2 mt-1">
-                      <span>Vous recevez</span>
-                      <span className="text-primary">97 %</span>
-                    </div>
-                  </div>
 
                   {watch('description') && (
                     <div className="p-4 border rounded-lg">
