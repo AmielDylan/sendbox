@@ -232,7 +232,8 @@ export default function MyAnnouncementsPage() {
                     <div className="space-y-2">
                       <p className="text-lg text-foreground">{emptyTitle}</p>
                       <p className="text-sm text-muted-foreground max-w-sm">
-                        Publiez votre prochain trajet pour recevoir des demandes de transport d&apos;expéditeurs
+                        Publiez votre prochain trajet pour recevoir des demandes
+                        de transport d&apos;expéditeurs
                       </p>
                     </div>
                     <Link href="/dashboard/annonces/new" className="mt-2">
@@ -449,8 +450,8 @@ export default function MyAnnouncementsPage() {
           <DialogHeader>
             <DialogTitle>Supprimer le voyage</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce voyage ? Cette action
-              est irréversible.
+              Êtes-vous sûr de vouloir supprimer ce voyage ? Cette action est
+              irréversible.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -121,7 +121,10 @@ export function ChatWindow({
     otherUserAvatar,
     otherUserId || otherUserName
   )
-  const otherNameTokens = (otherUserName || '').trim().split(/\s+/).filter(Boolean)
+  const otherNameTokens = (otherUserName || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
   const otherFirstName = otherNameTokens[0] || null
   const otherLastName = otherNameTokens[1] || null
 

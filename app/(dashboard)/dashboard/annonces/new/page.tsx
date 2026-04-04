@@ -41,8 +41,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import {
   IconLoader2,
@@ -52,7 +50,6 @@ import {
   IconPackage,
   IconCheck,
   IconCalendar,
-  IconLuggage,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -194,7 +191,10 @@ export default function NewAnnouncementPage() {
       }
 
       if (result.success && result.announcementId) {
-        toast.success(result.message || 'Votre trajet est publié. Vous recevrez des demandes d\'expéditeurs.')
+        toast.success(
+          result.message ||
+            "Votre trajet est publié. Vous recevrez des demandes d'expéditeurs."
+        )
 
         // Invalider les queries pour forcer le rafraîchissement
         queryClient.invalidateQueries({ queryKey: ['user-announcements'] })
@@ -212,12 +212,6 @@ export default function NewAnnouncementPage() {
   const handlePublishClick = () => {
     setSubmitMode('publish')
     submitIntentRef.current = 'publish'
-    void handleSubmit(onSubmit)()
-  }
-
-  const handleDraftClick = () => {
-    setSubmitMode('draft')
-    submitIntentRef.current = 'draft'
     void handleSubmit(onSubmit)()
   }
 
@@ -317,7 +311,8 @@ export default function NewAnnouncementPage() {
             </CardTitle>
             <CardDescription>
               {currentStep === 1 && 'Renseignez les détails de votre trajet'}
-              {currentStep === 2 && "Indiquez votre capacité disponible et votre tarif au kilo"}
+              {currentStep === 2 &&
+                'Indiquez votre capacité disponible et votre tarif au kilo'}
               {currentStep === 3 &&
                 'Vérifiez vos informations avant de soumettre votre voyage à Sendbox'}
             </CardDescription>
@@ -602,7 +597,6 @@ export default function NewAnnouncementPage() {
                   )}
                 </div>
 
-
                 {/* Description */}
                 <div className="space-y-2">
                   <Label htmlFor="description">Description (optionnel)</Label>
@@ -656,7 +650,6 @@ export default function NewAnnouncementPage() {
                     </p>
                   </div>
 
-
                   {watch('description') && (
                     <div className="p-4 border rounded-lg">
                       <h3 className="font-semibold mb-2">Description</h3>
@@ -688,22 +681,22 @@ export default function NewAnnouncementPage() {
                 </Button>
               ) : (
                 <Button
-                    type="button"
-                    onClick={handlePublishClick}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting && submitMode === 'publish' ? (
-                      <>
-                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Envoi en cours...
-                      </>
-                    ) : (
-                      <>
-                        <IconCheck className="mr-2 h-4 w-4" />
-                        Soumettre mon voyage
-                      </>
-                    )}
-                  </Button>
+                  type="button"
+                  onClick={handlePublishClick}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting && submitMode === 'publish' ? (
+                    <>
+                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Envoi en cours...
+                    </>
+                  ) : (
+                    <>
+                      <IconCheck className="mr-2 h-4 w-4" />
+                      Soumettre mon voyage
+                    </>
+                  )}
+                </Button>
               )}
             </div>
           </CardContent>

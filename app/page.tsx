@@ -45,7 +45,7 @@ const features = [
   {
     title: 'Tableau de bord pro',
     description:
-      "Gérez vos trajets, suivez vos revenus et acceptez les demandes depuis un espace pensé pour les voyageurs qui font ça vraiment.",
+      'Gérez vos trajets, suivez vos revenus et acceptez les demandes depuis un espace pensé pour les voyageurs qui font ça vraiment.',
     icon: IconSparkles,
     accent: 'amber',
   },
@@ -78,7 +78,7 @@ const steps = [
     number: '02',
     title: 'Publiez un trajet',
     description:
-      "Joignez votre billet de voyage (informations anonymisées). Ça prouve que vous voyagez vraiment — et ça rassure les expéditeurs.",
+      'Joignez votre billet de voyage (informations anonymisées). Ça prouve que vous voyagez vraiment — et ça rassure les expéditeurs.',
     visual: 'book',
   },
   {
@@ -102,7 +102,7 @@ const senderSteps = [
     number: '01',
     title: 'Trouvez un voyageur vérifié',
     description:
-      "Tous les voyageurs Sendbox ont une identité vérifiée et ont uploadé leur billet de voyage.",
+      'Tous les voyageurs Sendbox ont une identité vérifiée et ont uploadé leur billet de voyage.',
     visual: 'search',
   },
   {
@@ -123,7 +123,7 @@ const senderSteps = [
     number: '04',
     title: 'Confirmez la livraison',
     description:
-      "Livraison ok → libération du paiement. Un problème ? Ouvrez un litige avant la libération.",
+      'Livraison ok → libération du paiement. Un problème ? Ouvrez un litige avant la libération.',
     visual: 'track',
   },
 ]
@@ -444,7 +444,9 @@ export default function HomePage() {
                     </div>
                     <div>
                       <h3 className="text-3xl font-bold mb-2">Expéditeurs</h3>
-                      <p className="text-muted-foreground">Envoyez en confiance.</p>
+                      <p className="text-muted-foreground">
+                        Envoyez en confiance.
+                      </p>
                     </div>
                   </div>
 

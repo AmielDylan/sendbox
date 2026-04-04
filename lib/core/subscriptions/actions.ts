@@ -43,7 +43,8 @@ export async function getSubscriptionStatus(): Promise<
     return { error: 'Profil introuvable' }
   }
 
-  const status = (profile.subscription_status ?? 'trialing') as SubscriptionStatus
+  const status = (profile.subscription_status ??
+    'trialing') as SubscriptionStatus
   const trialEndsAt = profile.trial_ends_at as string | null
 
   let trialDaysRemaining: number | null = null
@@ -185,6 +186,6 @@ export async function createCustomerPortal(): Promise<
     return { url: session.url }
   } catch (err) {
     console.error('Failed to create portal session:', err)
-    return { error: 'Erreur lors de l\'ouverture du portail de facturation' }
+    return { error: "Erreur lors de l'ouverture du portail de facturation" }
   }
 }

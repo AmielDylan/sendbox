@@ -114,7 +114,8 @@ export default async function SendboxPage() {
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {departures.map((dep: any) => {
-                  const availableKg = (dep.available_kg ?? 0) - (dep.reserved_weight ?? 0)
+                  const availableKg =
+                    (dep.available_kg ?? 0) - (dep.reserved_weight ?? 0)
                   return (
                     <Link key={dep.id} href={`/annonces/${dep.id}`}>
                       <Card className="h-full hover:border-primary/40 hover:bg-muted/20 transition-all duration-300 group cursor-pointer relative overflow-hidden">
@@ -123,7 +124,10 @@ export default async function SendboxPage() {
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex items-center gap-1 mb-1">
-                                <IconLuggage className="h-3.5 w-3.5 text-primary" stroke={1.5} />
+                                <IconLuggage
+                                  className="h-3.5 w-3.5 text-primary"
+                                  stroke={1.5}
+                                />
                                 <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
                                   Sendbox
                                 </span>

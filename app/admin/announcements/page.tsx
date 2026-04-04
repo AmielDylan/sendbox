@@ -30,7 +30,12 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { IconLoader2, IconCircleX, IconLuggage, IconFilter } from '@tabler/icons-react'
+import {
+  IconLoader2,
+  IconCircleX,
+  IconLuggage,
+  IconFilter,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -38,7 +43,9 @@ export default function AdminAnnouncementsPage() {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [reason, setReason] = useState('')
-  const [filterSendbox, setFilterSendbox] = useState<'all' | 'sendbox' | 'sendbox_available'>('all')
+  const [filterSendbox, setFilterSendbox] = useState<
+    'all' | 'sendbox' | 'sendbox_available'
+  >('all')
 
   const supabase = createClient()
 
@@ -130,7 +137,9 @@ export default function AdminAnnouncementsPage() {
         </Button>
         <Button
           size="sm"
-          variant={filterSendbox === 'sendbox_available' ? 'default' : 'outline'}
+          variant={
+            filterSendbox === 'sendbox_available' ? 'default' : 'outline'
+          }
           onClick={() => setFilterSendbox('sendbox_available')}
         >
           <IconLuggage className="h-3.5 w-3.5 mr-1" />

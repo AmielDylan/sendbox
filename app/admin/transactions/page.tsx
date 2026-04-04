@@ -108,7 +108,9 @@ export default function AdminTransactionsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalCommission.toFixed(2)} EUR</div>
+            <div className="text-2xl font-bold">
+              {totalCommission.toFixed(2)} EUR
+            </div>
             <p className="text-xs text-muted-foreground mt-1">3 % du volume</p>
           </CardContent>
         </Card>

@@ -36,7 +36,9 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
   // Récupérer le profil pour vérifier le KYC
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at')
+    .select(
+      'kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at'
+    )
     .eq('id', user.id)
     .single()
 

@@ -399,7 +399,9 @@ export async function toggleAnnouncementStatus(announcementId: string) {
   if (newStatus === 'active') {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at')
+      .select(
+        'kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at'
+      )
       .eq('id', user.id)
       .single()
 
@@ -526,7 +528,10 @@ export async function uploadTravelProof(
   }
 
   if (announcement.traveler_id !== user.id) {
-    return { success: false, error: "Vous n'êtes pas autorisé à modifier cette annonce" }
+    return {
+      success: false,
+      error: "Vous n'êtes pas autorisé à modifier cette annonce",
+    }
   }
 
   const { error: updateError } = await supabase
@@ -536,7 +541,10 @@ export async function uploadTravelProof(
 
   if (updateError) {
     console.error('uploadTravelProof error:', updateError)
-    return { success: false, error: 'Erreur lors de la mise à jour de la preuve de voyage' }
+    return {
+      success: false,
+      error: 'Erreur lors de la mise à jour de la preuve de voyage',
+    }
   }
 
   revalidatePath(`/dashboard/annonces/${announcementId}`)

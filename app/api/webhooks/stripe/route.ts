@@ -913,7 +913,10 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
 
         if (profileError) {
-          console.error('❌ Failed to update subscription status:', profileError)
+          console.error(
+            '❌ Failed to update subscription status:',
+            profileError
+          )
         }
 
         // Notification d'activation
@@ -942,7 +945,9 @@ export async function POST(req: NextRequest) {
             ? subscription.customer
             : subscription.customer.id
 
-        const periodEnd = (subscription as any).current_period_end as number | undefined
+        const periodEnd = (subscription as any).current_period_end as
+          | number
+          | undefined
         const expiresAt = periodEnd
           ? new Date(periodEnd * 1000).toISOString()
           : new Date().toISOString()
@@ -958,7 +963,10 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
 
         if (profileError) {
-          console.error('❌ Failed to update subscription to canceled:', profileError)
+          console.error(
+            '❌ Failed to update subscription to canceled:',
+            profileError
+          )
         }
 
         if (profile?.id) {
@@ -1027,7 +1035,10 @@ export async function POST(req: NextRequest) {
           .eq('stripe_customer_id', customerId)
           .maybeSingle()
 
-        if (profile?.id && (profile as any).subscription_status === 'past_due') {
+        if (
+          profile?.id &&
+          (profile as any).subscription_status === 'past_due'
+        ) {
           await supabase
             .from('profiles')
             .update({ subscription_status: 'active' } as any)
@@ -1060,7 +1071,9 @@ export async function POST(req: NextRequest) {
 
         if (profile?.id) {
           const trialEnd = subscription.trial_end
-            ? new Date(subscription.trial_end * 1000).toLocaleDateString('fr-FR')
+            ? new Date(subscription.trial_end * 1000).toLocaleDateString(
+                'fr-FR'
+              )
             : ''
 
           await createSystemNotification({

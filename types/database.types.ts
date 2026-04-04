@@ -600,7 +600,12 @@ export type Database = {
           stripe_subscription_id: string | null
           subscription_expires_at: string | null
           subscription_started_at: string | null
-          subscription_status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'inactive'
+          subscription_status:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'inactive'
           trial_ends_at: string | null
           payout_method: string | null
           payout_status: string | null
@@ -671,7 +676,12 @@ export type Database = {
           stripe_subscription_id?: string | null
           subscription_expires_at?: string | null
           subscription_started_at?: string | null
-          subscription_status?: 'trialing' | 'active' | 'past_due' | 'canceled' | 'inactive'
+          subscription_status?:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'inactive'
           trial_ends_at?: string | null
           payout_method?: string | null
           payout_status?: string | null
@@ -742,7 +752,12 @@ export type Database = {
           stripe_subscription_id?: string | null
           subscription_expires_at?: string | null
           subscription_started_at?: string | null
-          subscription_status?: 'trialing' | 'active' | 'past_due' | 'canceled' | 'inactive'
+          subscription_status?:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'inactive'
           trial_ends_at?: string | null
           payout_method?: string | null
           payout_status?: string | null

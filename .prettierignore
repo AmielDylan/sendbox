@@ -19,3 +19,5 @@ pnpm-lock.yaml
 
 
 
+.agents/
+.claude/

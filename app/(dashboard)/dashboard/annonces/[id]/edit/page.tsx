@@ -470,7 +470,9 @@ export default function EditAnnouncementPage({
               <IconPackage className="h-5 w-5" />
               Capacité disponible
             </CardTitle>
-            <CardDescription>Ajustez votre capacité disponible pour les expéditeurs</CardDescription>
+            <CardDescription>
+              Ajustez votre capacité disponible pour les expéditeurs
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
@@ -495,7 +497,6 @@ export default function EditAnnouncementPage({
                 </p>
               )}
             </div>
-
           </CardContent>
         </Card>
 
