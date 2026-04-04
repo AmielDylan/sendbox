@@ -185,9 +185,13 @@ export function AnnouncementCard({
       href={`/annonces/${announcement.id}`}
       className="block h-full cursor-pointer"
     >
-      <Card className={`h-full flex flex-col justify-between rounded-xl border shadow-none hover:bg-muted/30 transition-all duration-300 group relative overflow-hidden ${isSendbox ? 'border-primary/40 hover:border-primary/70' : 'border-border/60 hover:border-primary/40'}`}>
+      <Card
+        className={`h-full flex flex-col justify-between rounded-xl border shadow-none hover:bg-muted/30 transition-all duration-300 group relative overflow-hidden ${isSendbox ? 'border-primary/40 hover:border-primary/70' : 'border-border/60 hover:border-primary/40'}`}
+      >
         {/* Hover Highlight Line */}
-        <div className={`absolute top-0 left-0 w-1 h-full transition-all duration-300 ${isSendbox ? 'bg-primary/60 group-hover:bg-primary' : 'bg-primary/0 group-hover:bg-primary'}`} />
+        <div
+          className={`absolute top-0 left-0 w-1 h-full transition-all duration-300 ${isSendbox ? 'bg-primary/60 group-hover:bg-primary' : 'bg-primary/0 group-hover:bg-primary'}`}
+        />
 
         <CardContent className="p-4 sm:p-5 flex-1">
           {/* Main Row: Cities & Badges */}
@@ -196,7 +200,10 @@ export function AnnouncementCard({
               <div className="flex-1 min-w-0">
                 {isSendbox && (
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <IconShieldCheck className="h-3.5 w-3.5 text-primary" stroke={1.5} />
+                    <IconShieldCheck
+                      className="h-3.5 w-3.5 text-primary"
+                      stroke={1.5}
+                    />
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
                       Sendbox
                     </span>
@@ -295,7 +302,9 @@ export function AnnouncementCard({
           </div>
         </CardContent>
 
-        <CardFooter className={`p-4 sm:p-5 pt-2 mt-auto border-t border-border/30 ${isSendbox ? 'bg-primary/5' : 'bg-muted/20'}`}>
+        <CardFooter
+          className={`p-4 sm:p-5 pt-2 mt-auto border-t border-border/30 ${isSendbox ? 'bg-primary/5' : 'bg-muted/20'}`}
+        >
           {isSendbox ? (
             <div className="flex items-center gap-3 w-full">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">

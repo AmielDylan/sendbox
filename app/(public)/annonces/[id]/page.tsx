@@ -198,24 +198,40 @@ export default async function PublicAnnouncementDetailPage({
               <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <IconLuggage className="h-5 w-5 text-primary" stroke={1.5} />
+                    <IconLuggage
+                      className="h-5 w-5 text-primary"
+                      stroke={1.5}
+                    />
                   </div>
                   <div>
-                    <p className="font-semibold text-primary">Transport vérifié</p>
-                    <p className="text-xs text-muted-foreground">Voyageur vérifié par Sendbox</p>
+                    <p className="font-semibold text-primary">
+                      Transport vérifié
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Voyageur vérifié par Sendbox
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <IconShieldCheck className="h-4 w-4 text-primary shrink-0" stroke={1.5} />
+                    <IconShieldCheck
+                      className="h-4 w-4 text-primary shrink-0"
+                      stroke={1.5}
+                    />
                     <span>Voyageur vérifié par Sendbox</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <IconMapPin className="h-4 w-4 text-primary shrink-0" stroke={1.5} />
+                    <IconMapPin
+                      className="h-4 w-4 text-primary shrink-0"
+                      stroke={1.5}
+                    />
                     <span>Livraison directe à destination</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <IconPackage className="h-4 w-4 text-primary shrink-0" stroke={1.5} />
+                    <IconPackage
+                      className="h-4 w-4 text-primary shrink-0"
+                      stroke={1.5}
+                    />
                     <span>Suivi QR code inclus</span>
                   </div>
                 </div>
@@ -274,12 +290,16 @@ export default async function PublicAnnouncementDetailPage({
               {announcement.is_sendbox ? (
                 <div className="p-6 text-center space-y-4">
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                    <IconLuggage className="h-6 w-6 text-primary" stroke={1.5} />
+                    <IconLuggage
+                      className="h-6 w-6 text-primary"
+                      stroke={1.5}
+                    />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-lg font-bold">Réserver un espace</h3>
                     <p className="text-sm text-muted-foreground">
-                      Cet envoi est géré par Sendbox. Réservez votre espace directement via notre service.
+                      Cet envoi est géré par Sendbox. Réservez votre espace
+                      directement via notre service.
                     </p>
                   </div>
                   <Link href="/sendbox" className="block w-full">
