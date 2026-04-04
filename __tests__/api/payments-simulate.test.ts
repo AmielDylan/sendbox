@@ -284,9 +284,9 @@ describe('POST /api/payments/simulate', () => {
   describe('Calculs des montants', () => {
     it('calcule montant correct avec assurance', async () => {
       // mockBooking: 5kg × 10€/kg = 50€
-      // Commission: 50€ × 12% = 6€
+      // Commission: 50€ × 3% = 1.5€
       // Assurance: 200€ × 3% = 6€
-      // Total attendu: 62€ (stocké dans transaction)
+      // Total attendu: 57.5€ (stocké dans transaction)
 
       const request = new NextRequest(
         'http://localhost/api/payments/simulate',
@@ -308,7 +308,7 @@ describe('POST /api/payments/simulate', () => {
       expect(bookingTransactions.length).toBeGreaterThan(0)
 
       const transaction = bookingTransactions[0]
-      expect(transaction.amount).toBe(62)
+      expect(transaction.amount).toBe(57.5)
       expect(transaction.currency).toBe('eur')
     })
 
@@ -337,15 +337,15 @@ describe('POST /api/payments/simulate', () => {
       await POST(request)
 
       // 10kg × 10€ = 100€
-      // Commission: 12€
-      // Total: 112€
+      // Commission: 3€ (3%)
+      // Total: 103€
 
       const transactions = getMockDatabase().transactions
       const bookingTransactions = Array.from(transactions.values()).filter(
         (t: any) => t.booking_id === bookingWithoutInsurance.id
       )
       const transaction = bookingTransactions[0]
-      expect(transaction.amount).toBe(112)
+      expect(transaction.amount).toBe(103)
     })
   })
 
@@ -392,8 +392,8 @@ describe('POST /api/payments/simulate', () => {
 
       const transaction = bookingTransactions[0]
       expect(transaction.metadata).toBeDefined()
-      expect(transaction.metadata.commission_amount).toBe(6)
-      expect(transaction.metadata.protection_amount).toBe(6)
+      expect(transaction.metadata.commission_amount).toBe(1.5) // 3% de 50€
+      expect(transaction.metadata.protection_amount).toBe(6) // 3% de 200€
     })
   })
 

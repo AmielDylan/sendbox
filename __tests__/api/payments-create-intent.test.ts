@@ -336,9 +336,9 @@ describe('POST /api/payments/create-intent', () => {
   describe('Création du Payment Intent', () => {
     it('crée un payment intent avec montant correct', async () => {
       // mockBooking: 5kg × 10€/kg = 50€
-      // Commission: 50€ × 12% = 6€
+      // Commission: 50€ × 3% = 1.5€
       // Assurance: 200€ × 3% = 6€
-      // Total: 62€
+      // Total: 57.5€
 
       const request = new NextRequest(
         'http://localhost/api/payments/create-intent',
@@ -354,7 +354,7 @@ describe('POST /api/payments/create-intent', () => {
       expect(response.status).toBe(200)
       expect(data.clientSecret).toBeDefined()
       expect(data.clientSecret).toMatch(/^pi_test_/)
-      expect(data.amount).toBe(62)
+      expect(data.amount).toBe(57.5)
     })
 
     it('sauvegarde payment_intent_id dans le booking', async () => {
@@ -422,11 +422,11 @@ describe('POST /api/payments/create-intent', () => {
       const data = await response.json()
 
       // 10kg × 10€ = 100€
-      // Commission: 12€
-      // Total: 112€
+      // Commission: 3€ (3%)
+      // Total: 103€
 
       expect(response.status).toBe(200)
-      expect(data.amount).toBe(112)
+      expect(data.amount).toBe(103)
     })
 
     it('calcule montant correct avec poids décimal', async () => {
@@ -455,12 +455,12 @@ describe('POST /api/payments/create-intent', () => {
       const data = await response.json()
 
       // 2.5kg × 10€ = 25€
-      // Commission: 3€
-      // Assurance: 3€
-      // Total: 31€
+      // Commission: 0.75€ (3%)
+      // Assurance: 3€ (3% de 100€)
+      // Total: 28.75€
 
       expect(response.status).toBe(200)
-      expect(data.amount).toBe(31)
+      expect(data.amount).toBe(28.75)
     })
   })
 
