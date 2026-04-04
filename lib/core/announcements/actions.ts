@@ -11,7 +11,7 @@ import {
   type CreateAnnouncementInput,
 } from '@/lib/core/announcements/validations'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
-import { checkCanPublish } from '@/lib/core/subscriptions/actions'
+import { checkCanPublish } from '@/lib/core/subscriptions/utils'
 
 const MAX_ACTIVE_ANNOUNCEMENTS = 10
 
