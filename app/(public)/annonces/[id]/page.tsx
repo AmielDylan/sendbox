@@ -201,18 +201,18 @@ export default async function PublicAnnouncementDetailPage({
                     <IconLuggage className="h-5 w-5 text-primary" stroke={1.5} />
                   </div>
                   <div>
-                    <p className="font-semibold text-primary">Service Sendbox</p>
-                    <p className="text-xs text-muted-foreground">Envoi géré par Sendbox</p>
+                    <p className="font-semibold text-primary">Transport vérifié</p>
+                    <p className="text-xs text-muted-foreground">Voyageur vérifié par Sendbox</p>
                   </div>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <IconShieldCheck className="h-4 w-4 text-primary shrink-0" stroke={1.5} />
-                    <span>Contenu vérifié et scellé par Sendbox</span>
+                    <span>Voyageur vérifié par Sendbox</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <IconMapPin className="h-4 w-4 text-primary shrink-0" stroke={1.5} />
-                    <span>Dépôt en agence partenaire à destination</span>
+                    <span>Livraison directe à destination</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <IconPackage className="h-4 w-4 text-primary shrink-0" stroke={1.5} />

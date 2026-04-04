@@ -470,7 +470,7 @@ export default function EditAnnouncementPage({
               <IconPackage className="h-5 w-5" />
               Capacité disponible
             </CardTitle>
-            <CardDescription>Ajustez l'espace bagage consacré à la valise Sendbox</CardDescription>
+            <CardDescription>Ajustez votre capacité disponible pour les expéditeurs</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
@@ -497,9 +497,9 @@ export default function EditAnnouncementPage({
             </div>
 
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-              <p className="text-sm text-primary font-medium">Rémunération fixée par Sendbox</p>
+              <p className="text-sm text-primary font-medium">Votre rémunération</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Sendbox fixe votre commission en fonction du trajet et du poids. Vous recevrez le détail avant assignation.
+                Vous recevez <span className="font-medium text-foreground">97 % du montant</span> payé par l&apos;expéditeur. Sendbox prélève 3 % de frais de service par transaction confirmée.
               </p>
             </div>
           </CardContent>

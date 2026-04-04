@@ -13,6 +13,7 @@ import {
   IconArrowRight,
   IconArrowNarrowRight,
   IconLuggage,
+  IconShieldCheck,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -195,9 +196,9 @@ export function AnnouncementCard({
               <div className="flex-1 min-w-0">
                 {isSendbox && (
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <IconLuggage className="h-3.5 w-3.5 text-primary" stroke={1.5} />
+                    <IconShieldCheck className="h-3.5 w-3.5 text-primary" stroke={1.5} />
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
-                      Valise Sendbox
+                      Sendbox
                     </span>
                   </div>
                 )}
@@ -302,10 +303,10 @@ export function AnnouncementCard({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-primary truncate leading-none mb-1">
-                  Service Sendbox
+                  Transport vérifié
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  Contenu vérifié · Dépôt en agence
+                  Voyageur vérifié · Suivi inclus
                 </p>
               </div>
               <IconArrowRight className="h-4 w-4 text-primary/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />

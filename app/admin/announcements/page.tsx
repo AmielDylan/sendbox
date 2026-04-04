@@ -126,7 +126,7 @@ export default function AdminAnnouncementsPage() {
           onClick={() => setFilterSendbox('sendbox')}
         >
           <IconLuggage className="h-3.5 w-3.5 mr-1" />
-          Valises Sendbox
+          Sendbox disponible
         </Button>
         <Button
           size="sm"
@@ -134,7 +134,7 @@ export default function AdminAnnouncementsPage() {
           onClick={() => setFilterSendbox('sendbox_available')}
         >
           <IconLuggage className="h-3.5 w-3.5 mr-1" />
-          Disponibles valise Sendbox
+          Disponibles Sendbox
         </Button>
       </div>
 
@@ -170,7 +170,7 @@ export default function AdminAnnouncementsPage() {
                     ) : announcement.sendbox_available ? (
                       <Badge variant="outline" className="text-[10px]">
                         <IconLuggage className="h-3 w-3 mr-1" />
-                        Dispo valise
+                        Sendbox
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="text-[10px]">

@@ -194,7 +194,7 @@ export default function NewAnnouncementPage() {
       }
 
       if (result.success && result.announcementId) {
-        toast.success(result.message || 'Voyage soumis avec succès ! Sendbox vous contactera pour vous assigner une valise.')
+        toast.success(result.message || 'Votre trajet est publié. Vous recevrez des demandes d\'expéditeurs.')
 
         // Invalider les queries pour forcer le rafraîchissement
         queryClient.invalidateQueries({ queryKey: ['user-announcements'] })
@@ -236,7 +236,7 @@ export default function NewAnnouncementPage() {
     <div className="space-y-6">
       <PageHeader
         title="Enregistrer mon voyage"
-        description="Indiquez votre trajet — Sendbox vous assignera une valise vérifiée à transporter"
+        description="Publiez votre trajet et recevez des demandes de transport"
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Voyages', href: '/dashboard/annonces' },
