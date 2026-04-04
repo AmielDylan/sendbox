@@ -317,7 +317,7 @@ export default function NewAnnouncementPage() {
             </CardTitle>
             <CardDescription>
               {currentStep === 1 && 'Renseignez les détails de votre trajet'}
-              {currentStep === 2 && "Indiquez l'espace bagage que vous pouvez consacrer à la valise Sendbox"}
+              {currentStep === 2 && "Indiquez votre capacité disponible et votre tarif au kilo"}
               {currentStep === 3 &&
                 'Vérifiez vos informations avant de soumettre votre voyage à Sendbox'}
             </CardDescription>
@@ -602,11 +602,11 @@ export default function NewAnnouncementPage() {
                   )}
                 </div>
 
-                {/* Info Sendbox */}
+                {/* Info commission */}
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                  <p className="text-sm text-primary font-medium">Rémunération fixée par Sendbox</p>
+                  <p className="text-sm text-primary font-medium">Votre rémunération</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Sendbox fixe votre commission en fonction du trajet et du poids transporté. Vous recevrez le détail avant de confirmer la prise en charge de la valise.
+                    Vous recevrez <span className="font-medium text-foreground">97 % du montant</span> payé par l'expéditeur. Sendbox prélève 3 % de frais de service par transaction confirmée.
                   </p>
                 </div>
 
@@ -661,34 +661,22 @@ export default function NewAnnouncementPage() {
                     <p className="text-sm text-muted-foreground">
                       Poids disponible : {availableKg} kg
                     </p>
-                    <p className="text-xs text-primary mt-2">
-                      Sendbox vous communiquera votre commission avant assignation de la valise.
-                    </p>
                   </div>
 
-                  {/* Sendbox availability toggle */}
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="sendbox_available"
-                        checked={watch('sendbox_available') ?? false}
-                        onCheckedChange={checked =>
-                          setValue('sendbox_available', checked === true)
-                        }
-                        className="mt-0.5"
-                      />
-                      <div className="space-y-1">
-                        <label
-                          htmlFor="sendbox_available"
-                          className="text-sm font-medium cursor-pointer flex items-center gap-1.5"
-                        >
-                          <IconLuggage className="h-4 w-4 text-primary" stroke={1.5} />
-                          Je suis disponible pour transporter une valise Sendbox
-                        </label>
-                        <p className="text-xs text-muted-foreground">
-                          Sendbox vous contactera pour vous proposer de transporter l'une de ses valises vérifiées sur ce trajet. La commission sera définie lors de l'assignation.
-                        </p>
-                      </div>
+                  {/* Détail commission */}
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+                    <p className="text-sm font-medium text-primary">Détail de votre rémunération</p>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Montant payé par l'expéditeur</span>
+                      <span>100 %</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Frais de service Sendbox</span>
+                      <span>− 3 %</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-medium border-t pt-2 mt-1">
+                      <span>Vous recevez</span>
+                      <span className="text-primary">97 %</span>
                     </div>
                   </div>
 
