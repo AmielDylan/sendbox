@@ -184,7 +184,7 @@ export default function MyAnnouncementsPage() {
       <div>
         <PageHeader
           title="Mes voyages"
-          description="Enregistrez vos trajets — Sendbox vous assigne une valise vérifiée"
+          description="Publiez vos trajets et recevez des demandes d'expéditeurs"
           breadcrumbs={[
             { label: 'Dashboard', href: '/dashboard' },
             { label: 'Voyages' },
@@ -232,7 +232,7 @@ export default function MyAnnouncementsPage() {
                     <div className="space-y-2">
                       <p className="text-lg text-foreground">{emptyTitle}</p>
                       <p className="text-sm text-muted-foreground max-w-sm">
-                        Enregistrez votre prochain trajet et Sendbox vous assignera une valise vérifiée à transporter
+                        Publiez votre prochain trajet pour recevoir des demandes de transport d&apos;expéditeurs
                       </p>
                     </div>
                     <Link href="/dashboard/annonces/new" className="mt-2">

@@ -46,7 +46,7 @@ export function TrustStatsBlock() {
             </h3>
             <p className="text-sm text-muted-foreground max-w-2xl">
               Chaque envoi Sendbox est vérifié, suivi et garanti. Nos voyageurs
-              sont sélectionnés et nos valises scellées avant le départ.
+              sont vérifiés et chaque colis est suivi de bout en bout.
             </p>
           </div>
         </div>

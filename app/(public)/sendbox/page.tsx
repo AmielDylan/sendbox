@@ -66,8 +66,8 @@ export default async function SendboxPage() {
             Envoi Sendbox — Prochains départs
           </h1>
           <p className="text-base text-muted-foreground max-w-2xl">
-            Sendbox vérifie et scelle vos colis dans des valises dédiées. Un
-            voyageur les dépose en agence partenaire à destination.
+            Un voyageur vérifié transporte vos effets directement jusqu&apos;à
+            destination. Chaque trajet est suivi et sécurisé.
           </p>
           <div className="flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
@@ -76,7 +76,7 @@ export default async function SendboxPage() {
             </span>
             <span className="flex items-center gap-1.5">
               <IconMapPin className="h-4 w-4 text-primary" stroke={1.5} />
-              Dépôt en agence partenaire
+              Livraison à domicile
             </span>
             <span className="flex items-center gap-1.5">
               <IconPackage className="h-4 w-4 text-primary" stroke={1.5} />
@@ -125,7 +125,7 @@ export default async function SendboxPage() {
                               <div className="flex items-center gap-1 mb-1">
                                 <IconLuggage className="h-3.5 w-3.5 text-primary" stroke={1.5} />
                                 <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">
-                                  Valise Sendbox
+                                  Sendbox
                                 </span>
                               </div>
                               <h3 className="font-bold text-xl group-hover:text-primary transition-colors flex items-center gap-2">
