@@ -4,7 +4,6 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   IconShieldCheck,
@@ -18,34 +17,10 @@ import { FEATURES } from '@/lib/shared/config/features'
 export function AuthSidebar() {
   const pathname = usePathname()
   const isRegister = pathname?.includes('register')
-  const [betaCount, setBetaCount] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (!FEATURES.BETA_MODE) return
-
-    let isMounted = true
-    const loadCount = async () => {
-      try {
-        const res = await fetch('/api/beta-stats')
-        if (!res.ok) return
-        const payload = await res.json()
-        if (isMounted && typeof payload?.count === 'number') {
-          setBetaCount(payload.count)
-        }
-      } catch {
-        // ignore
-      }
-    }
-
-    void loadCount()
-    return () => {
-      isMounted = false
-    }
-  }, [])
 
   return (
     <div className="w-full max-w-md space-y-6">
-      <BetaInfoBadge count={betaCount} />
+      <BetaInfoBadge />
       {isRegister ? (
         <>
           {/* Registration Progress */}
@@ -140,14 +115,12 @@ export function AuthSidebar() {
   )
 }
 
-function BetaInfoBadge({ count }: { count: number | null }) {
+function BetaInfoBadge() {
   if (!FEATURES.BETA_MODE) return null
-
-  const displayCount = typeof count === 'number' ? `${count}` : '…'
 
   return (
     <Badge className="h-6 items-center rounded-full border border-amber-200 bg-amber-100 px-2 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200">
-      Beta : {displayCount} utilisateurs / {FEATURES.MAX_BETA_USERS}
+      Accès bêta limité
     </Badge>
   )
 }

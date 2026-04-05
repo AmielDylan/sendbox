@@ -74,7 +74,7 @@ export function PricingSection() {
                 14 jours d’essai
               </p>
               <div className="mt-3 flex items-end gap-3">
-                <p className="text-4xl font-bold tracking-tight sm:text-[2.75rem]">
+                <p className="text-3xl font-bold tracking-tight sm:text-4xl">
                   4,99 €
                 </p>
                 <p className="pb-1.5 text-sm text-muted-foreground sm:pb-2 sm:text-base">

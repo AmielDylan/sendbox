@@ -201,15 +201,20 @@ export function SubscriptionStatusPanel({
     return null
   }
 
-  const wrapperClassName =
-    variant === 'compact'
-      ? 'p-4 sm:p-5'
-      : variant === 'page'
-        ? 'p-6 sm:p-8'
-        : 'p-5 sm:p-6'
+  const isCompact = variant === 'compact'
+
+  const wrapperClassName = isCompact
+    ? 'p-4 sm:p-5'
+    : variant === 'page'
+      ? 'p-6 sm:p-8'
+      : 'p-5 sm:p-6'
 
   const titleSize =
-    variant === 'page' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
+    variant === 'page'
+      ? 'text-2xl sm:text-3xl'
+      : isCompact
+        ? 'text-base sm:text-lg'
+        : 'text-xl sm:text-2xl'
 
   const icon =
     view.canPublish && view.badgeLabel !== 'Paiement à régulariser' ? (
@@ -232,23 +237,31 @@ export function SubscriptionStatusPanel({
       <div
         className={cn(
           'flex flex-col gap-6',
-          variant !== 'page' && 'lg:flex-row lg:items-end lg:justify-between'
+          !isCompact &&
+            variant !== 'page' &&
+            'lg:flex-row lg:items-end lg:justify-between'
         )}
       >
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Badge
               variant="outline"
-              className={cn('px-3 py-1', view.badgeClass)}
+              className={cn(
+                'px-3 py-1',
+                isCompact && 'text-[10px] font-medium tracking-wide',
+                view.badgeClass
+              )}
             >
               {icon}
               {view.badgeLabel}
             </Badge>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
-              <IconLock className="h-3.5 w-3.5" />
-              {view.metaLabel} : {view.metaValue}
-            </span>
-            {view.dateLabel && view.dateValue && (
+            {!isCompact && (
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
+                <IconLock className="h-3.5 w-3.5" />
+                {view.metaLabel} : {view.metaValue}
+              </span>
+            )}
+            {!isCompact && view.dateLabel && view.dateValue && (
               <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
                 <IconCalendarEvent className="h-3.5 w-3.5" />
                 {view.dateLabel} : {view.dateValue}
@@ -265,22 +278,41 @@ export function SubscriptionStatusPanel({
             >
               {view.title}
             </h2>
-            <p className="max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
+            <p
+              className={cn(
+                'max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base',
+                isCompact && 'text-xs leading-5 sm:text-sm'
+              )}
+            >
               {view.description}
             </p>
+            {isCompact && (
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-2.5 py-1">
+                  <IconLock className="h-3.5 w-3.5" />
+                  {view.metaValue}
+                </span>
+                {view.dateLabel && view.dateValue && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-2.5 py-1">
+                    <IconCalendarEvent className="h-3.5 w-3.5" />
+                    {view.dateValue}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className={cn('flex flex-col gap-3', !isCompact && 'sm:flex-row')}>
           <SubscriptionActionButton
-            className={cn(variant === 'compact' && 'w-full sm:w-auto')}
-            size={variant === 'page' ? 'lg' : 'default'}
+            className={cn(isCompact ? 'w-full' : 'w-full sm:w-auto')}
+            size={variant === 'page' ? 'lg' : isCompact ? 'sm' : 'default'}
           />
           <Button
             asChild
             variant="outline"
-            size={variant === 'page' ? 'lg' : 'default'}
-            className={cn(variant === 'compact' && 'w-full sm:w-auto')}
+            size={variant === 'page' ? 'lg' : isCompact ? 'sm' : 'default'}
+            className={cn(isCompact ? 'w-full' : 'w-full sm:w-auto')}
           >
             <Link
               href={
