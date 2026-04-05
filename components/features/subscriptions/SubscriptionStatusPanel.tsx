@@ -215,23 +215,12 @@ export function SubscriptionStatusPanel({
     return (
       <Card
         className={cn(
-          'rounded-2xl border px-3 py-3 shadow-sm',
-          view.accent,
+          'rounded-xl border border-border/70 bg-muted/40 px-3 py-3 shadow-none',
           className
         )}
       >
         <div className="space-y-3">
-          <Badge
-            variant="outline"
-            className={cn(
-              'h-5 rounded-full px-2 text-[10px] font-medium tracking-[0.14em]',
-              view.badgeClass
-            )}
-          >
-            {view.badgeLabel}
-          </Badge>
-
-          <p className="text-[11px] leading-4 text-muted-foreground">
+          <p className="text-[11px] leading-4 text-foreground/75">
             {compactCopy}
           </p>
 
