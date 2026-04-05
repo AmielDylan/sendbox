@@ -202,19 +202,54 @@ export function SubscriptionStatusPanel({
   }
 
   const isCompact = variant === 'compact'
+  const compactCopy =
+    view.badgeLabel === 'Paiement à régulariser'
+      ? 'Paiement à régulariser pour réactiver la publication.'
+      : view.badgeLabel === 'Essai en cours'
+        ? `Essai bientôt terminé${view.dateValue ? `, jusqu’au ${view.dateValue}` : ''}.`
+        : view.badgeLabel === 'Abonnement annulé'
+          ? 'Abonnement inactif. Réactivez-le avant votre prochaine publication.'
+          : 'Publication bloquée tant que l’abonnement voyageur n’est pas actif.'
 
-  const wrapperClassName = isCompact
-    ? 'p-4 sm:p-5'
-    : variant === 'page'
-      ? 'p-6 sm:p-8'
-      : 'p-5 sm:p-6'
+  if (isCompact) {
+    return (
+      <Card
+        className={cn(
+          'rounded-2xl border px-3 py-3 shadow-sm',
+          view.accent,
+          className
+        )}
+      >
+        <div className="space-y-3">
+          <Badge
+            variant="outline"
+            className={cn(
+              'h-5 rounded-full px-2 text-[10px] font-medium tracking-[0.14em]',
+              view.badgeClass
+            )}
+          >
+            {view.badgeLabel}
+          </Badge>
+
+          <p className="text-[11px] leading-4 text-muted-foreground">
+            {compactCopy}
+          </p>
+
+          <SubscriptionActionButton
+            className="w-full text-xs"
+            size="sm"
+            subscribeLabel="Activer"
+            manageLabel="Gérer"
+          />
+        </div>
+      </Card>
+    )
+  }
+
+  const wrapperClassName = variant === 'page' ? 'p-6 sm:p-8' : 'p-5 sm:p-6'
 
   const titleSize =
-    variant === 'page'
-      ? 'text-2xl sm:text-3xl'
-      : isCompact
-        ? 'text-base sm:text-lg'
-        : 'text-xl sm:text-2xl'
+    variant === 'page' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
 
   const icon =
     view.canPublish && view.badgeLabel !== 'Paiement à régulariser' ? (
@@ -237,31 +272,23 @@ export function SubscriptionStatusPanel({
       <div
         className={cn(
           'flex flex-col gap-6',
-          !isCompact &&
-            variant !== 'page' &&
-            'lg:flex-row lg:items-end lg:justify-between'
+          variant !== 'page' && 'lg:flex-row lg:items-end lg:justify-between'
         )}
       >
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2.5">
             <Badge
               variant="outline"
-              className={cn(
-                'px-3 py-1',
-                isCompact && 'text-[10px] font-medium tracking-wide',
-                view.badgeClass
-              )}
+              className={cn('px-3 py-1', view.badgeClass)}
             >
               {icon}
               {view.badgeLabel}
             </Badge>
-            {!isCompact && (
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
-                <IconLock className="h-3.5 w-3.5" />
-                {view.metaLabel} : {view.metaValue}
-              </span>
-            )}
-            {!isCompact && view.dateLabel && view.dateValue && (
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <IconLock className="h-3.5 w-3.5" />
+              {view.metaLabel} : {view.metaValue}
+            </span>
+            {view.dateLabel && view.dateValue && (
               <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
                 <IconCalendarEvent className="h-3.5 w-3.5" />
                 {view.dateLabel} : {view.dateValue}
@@ -278,41 +305,22 @@ export function SubscriptionStatusPanel({
             >
               {view.title}
             </h2>
-            <p
-              className={cn(
-                'max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base',
-                isCompact && 'text-xs leading-5 sm:text-sm'
-              )}
-            >
+            <p className="max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
               {view.description}
             </p>
-            {isCompact && (
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-2.5 py-1">
-                  <IconLock className="h-3.5 w-3.5" />
-                  {view.metaValue}
-                </span>
-                {view.dateLabel && view.dateValue && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-2.5 py-1">
-                    <IconCalendarEvent className="h-3.5 w-3.5" />
-                    {view.dateValue}
-                  </span>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
-        <div className={cn('flex flex-col gap-3', !isCompact && 'sm:flex-row')}>
+        <div className="flex flex-col gap-3 sm:flex-row">
           <SubscriptionActionButton
-            className={cn(isCompact ? 'w-full' : 'w-full sm:w-auto')}
-            size={variant === 'page' ? 'lg' : isCompact ? 'sm' : 'default'}
+            className="w-full sm:w-auto"
+            size={variant === 'page' ? 'lg' : 'default'}
           />
           <Button
             asChild
             variant="outline"
-            size={variant === 'page' ? 'lg' : isCompact ? 'sm' : 'default'}
-            className={cn(isCompact ? 'w-full' : 'w-full sm:w-auto')}
+            size={variant === 'page' ? 'lg' : 'default'}
+            className="w-full sm:w-auto"
           >
             <Link
               href={
