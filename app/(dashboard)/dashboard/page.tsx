@@ -565,11 +565,11 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {isLoadingStats ? (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               Chargement des activités...
             </div>
           ) : recentNotifications.length === 0 ? (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               Aucune activité récente pour le moment.
             </div>
           ) : (
@@ -580,7 +580,9 @@ export default function DashboardPage() {
                   className="flex items-center justify-between gap-4"
                 >
                   <div className="space-y-1">
-                    <p className="text-sm font-medium">{notification.title}</p>
+                    <p className="text-[13px] font-medium">
+                      {notification.title}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {notification.created_at
                         ? formatDistanceToNow(
