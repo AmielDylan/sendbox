@@ -31,41 +31,45 @@ const stats = [
 
 export function TrustStatsBlock() {
   return (
-    <section className="py-12 sm:py-16 relative">
-      <div className="container-wide space-y-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="space-y-2">
+    <section className="border-y border-border/60 bg-background/80 py-12 sm:py-14">
+      <div className="container-wide">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+          <div className="space-y-3">
             <Badge
               variant="outline"
-              className="text-xs uppercase tracking-widest font-semibold px-4 py-2"
+              className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
             >
-              Sendbox en chiffres
+              Confiance visible
             </Badge>
-            <h3 className="font-display text-3xl sm:text-4xl font-bold">
-              Chaque envoi, garanti.
+            <h3 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              Les signaux qui rassurent avant même de réserver.
             </h3>
-            <p className="text-sm text-muted-foreground max-w-2xl">
-              Chaque envoi Sendbox est vérifié, suivi et garanti. Nos voyageurs
-              sont vérifiés et chaque colis est suivi de bout en bout.
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Chaque publication est lue à travers des preuves simples:
+              vérification, suivi, cadre tarifaire et vitesse de traitement.
             </p>
           </div>
-        </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {stats.map(({ icon: Icon, value, label }) => (
-            <div
-              key={label}
-              className="rounded-xl border border-border/60 bg-card/40 p-5 flex flex-col gap-3 hover:border-primary/30 hover:bg-primary/5 transition-colors"
-            >
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                <Icon className="h-4 w-4 text-primary" stroke={1.5} />
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+            {stats.map(({ icon: Icon, value, label }) => (
+              <div
+                key={label}
+                className="space-y-3 border-t border-border/70 pt-4"
+              >
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10">
+                  <Icon className="h-4 w-4 text-primary" stroke={1.5} />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold tracking-tight text-foreground">
+                    {value}
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                    {label}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

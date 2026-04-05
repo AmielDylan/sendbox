@@ -55,6 +55,8 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { useDebounce } from '@/hooks/use-debounce'
+import { SubscriptionStatusPanel } from '@/components/features/subscriptions/SubscriptionStatusPanel'
+import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 const STEPS = [
   { id: 1, title: 'Trajet', icon: IconMapPin },
@@ -237,6 +239,10 @@ export default function NewAnnouncementPage() {
           { label: 'Nouveau voyage' },
         ]}
       />
+
+      {isFeatureEnabled('SUBSCRIPTION_ENABLED') && (
+        <SubscriptionStatusPanel variant="compact" showOnlyWhenAttention />
+      )}
 
       {/* Indicateur d'étapes */}
       <Card>
