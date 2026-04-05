@@ -58,10 +58,10 @@ export function PricingSection() {
           >
             Abonnement voyageur
           </Badge>
-          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
             Publiez sans friction après l’essai.
           </h2>
-          <p className="text-base leading-7 text-muted-foreground sm:text-lg">
+          <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
             Une offre simple pour continuer à publier vos trajets et garder
             votre activité visible.
           </p>
@@ -70,16 +70,20 @@ export function PricingSection() {
         <div className="grid gap-6 rounded-[2rem] border border-border/70 bg-background p-8 shadow-sm lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div className="space-y-5">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-sm">
                 14 jours d’essai
               </p>
               <div className="mt-3 flex items-end gap-3">
-                <p className="text-5xl font-bold tracking-tight">4,99 €</p>
-                <p className="pb-2 text-base text-muted-foreground">/ mois</p>
+                <p className="text-4xl font-bold tracking-tight sm:text-[2.75rem]">
+                  4,99 €
+                </p>
+                <p className="pb-1.5 text-sm text-muted-foreground sm:pb-2 sm:text-base">
+                  / mois
+                </p>
               </div>
             </div>
 
-            <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+            <p className="text-sm leading-6 text-muted-foreground">
               {contextualLine}
             </p>
 
@@ -112,7 +116,7 @@ export function PricingSection() {
                   <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/12 text-primary">
                     <IconCheck className="h-3.5 w-3.5" />
                   </span>
-                  <span className="text-sm leading-6 text-foreground sm:text-base">
+                  <span className="text-sm leading-6 text-foreground">
                     {perk}
                   </span>
                 </li>
