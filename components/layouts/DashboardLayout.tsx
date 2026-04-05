@@ -19,9 +19,11 @@ import {
   IconAlertCircle,
   IconLogout,
   IconUser,
+  IconIdBadge2,
   IconSearch,
   IconPlaneDeparture,
   IconCreditCard,
+  IconSparkles,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from '@/lib/utils'
@@ -66,7 +68,8 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>
   badge?: number
   userOnly?: boolean
-  section: 'workspace' | 'account'
+  feature?: 'KYC_ENABLED' | 'SUBSCRIPTION_ENABLED'
+  section: 'workspace' | 'finance' | 'settings'
 }
 
 const navItems: NavItem[] = [
@@ -100,13 +103,42 @@ const navItems: NavItem[] = [
     href: '/dashboard/fonds',
     icon: IconCreditCard,
     userOnly: true,
-    section: 'account',
+    section: 'finance',
   },
   {
-    title: 'Réglages',
-    href: '/dashboard/reglages',
-    icon: IconSettings,
-    section: 'account',
+    title: 'Profil',
+    href: '/dashboard/reglages/profil',
+    icon: IconIdBadge2,
+    section: 'settings',
+  },
+  {
+    title: 'Compte',
+    href: '/dashboard/reglages/compte',
+    icon: IconUser,
+    section: 'settings',
+  },
+  {
+    title: 'Abonnement',
+    href: '/dashboard/reglages/abonnement',
+    icon: IconSparkles,
+    userOnly: true,
+    feature: 'SUBSCRIPTION_ENABLED',
+    section: 'settings',
+  },
+  {
+    title: 'Paiements',
+    href: '/dashboard/reglages/paiements',
+    icon: IconCreditCard,
+    userOnly: true,
+    section: 'settings',
+  },
+  {
+    title: 'Identité',
+    href: '/dashboard/reglages/kyc',
+    icon: IconShield,
+    userOnly: true,
+    feature: 'KYC_ENABLED',
+    section: 'settings',
   },
 ]
 
@@ -115,7 +147,8 @@ const navSections: Array<{
   label: string
 }> = [
   { id: 'workspace', label: 'Navigation' },
-  { id: 'account', label: 'Compte' },
+  { id: 'finance', label: 'Finances' },
+  { id: 'settings', label: 'Réglages' },
 ]
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -126,7 +159,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, loading, profile } = useAuth()
   const isAdmin = profile?.role === 'admin'
 
-  const visibleNavItems = navItems.filter(item => !item.userOnly || !isAdmin)
+  const visibleNavItems = navItems.filter(item => {
+    if (item.userOnly && isAdmin) {
+      return false
+    }
+
+    if (item.feature && !isFeatureEnabled(item.feature)) {
+      return false
+    }
+
+    return true
+  })
 
   // Redirection vers /login si non authentifié (après le chargement initial complet)
   useEffect(() => {
@@ -239,7 +282,10 @@ function SidebarContent({
               {section.items.map(item => {
                 const Icon = item.icon
                 const isActive =
-                  pathname === item.href || pathname.startsWith(item.href + '/')
+                  item.href === '/dashboard'
+                    ? pathname === item.href
+                    : pathname === item.href ||
+                      pathname.startsWith(item.href + '/')
 
                 return (
                   <Link
@@ -526,7 +572,7 @@ function UserMenu() {
             </>
           )}
         <DropdownMenuItem asChild>
-          <Link href="/dashboard/reglages" className="cursor-pointer">
+          <Link href="/dashboard/reglages/compte" className="cursor-pointer">
             <IconSettings className="mr-2 h-4 w-4" />
             <span>Paramètres</span>
           </Link>

@@ -26,7 +26,6 @@ import {
   IconCreditCard,
   IconDeviceMobile,
   IconLoader2,
-  IconShieldCheck,
 } from '@tabler/icons-react'
 import { fetchConnectStatus } from '@/lib/shared/stripe/connect-status-client'
 
@@ -332,7 +331,7 @@ export default function FundsPage() {
         </Alert>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
           <CardHeader className="p-5 pb-3">
             <CardTitle className={dashboardCardTitleClassName}>
@@ -364,7 +363,7 @@ export default function FundsPage() {
         <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
           <CardHeader className="p-5 pb-3">
             <CardTitle className={dashboardCardTitleClassName}>
-              Statut des versements
+              Activation
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0 space-y-2">
@@ -372,132 +371,61 @@ export default function FundsPage() {
               {payoutStatusMeta.label}
             </Badge>
             <p className="text-xs text-muted-foreground">
-              {payoutStatusMeta.description}
+              {payoutStatusMeta.description} Identité:{' '}
+              {kycMeta.label.toLowerCase()}
             </p>
           </CardContent>
         </Card>
+      </div>
 
-        <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
-          <CardHeader className="p-5 pb-3">
-            <CardTitle className={dashboardCardTitleClassName}>
-              Vérification d’identité
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-5 pt-0 space-y-2">
+      <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
+        <CardHeader className="p-5 pb-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <CardTitle className={dashboardCardTitleClassName}>
+                Réception des fonds
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Définissez comment vos gains vous sont reversés.
+              </CardDescription>
+            </div>
             <Badge variant={kycMeta.variant}>{kycMeta.label}</Badge>
-            <p className="text-xs text-muted-foreground">
-              {kycMeta.description}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
-          <CardHeader className="p-5 pb-3">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="space-y-1">
-                <CardTitle className={dashboardCardTitleClassName}>
-                  Réception des fonds
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Définissez comment Sendbox vous reverse vos gains.
-                </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="p-5 pt-0 space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-border/60 bg-background p-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Méthode active
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <payoutMethodMeta.icon className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm font-medium">{payoutMethodMeta.label}</p>
               </div>
-              <Badge variant={payoutStatusMeta.variant}>
-                {payoutStatusMeta.label}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-5 pt-0 space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border/60 bg-background p-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Méthode active
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <payoutMethodMeta.icon className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm font-medium">
-                    {payoutMethodMeta.label}
-                  </p>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {payoutMethodMeta.description}
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-border/60 bg-background p-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Prochaine étape
-                </p>
-                <p className="mt-2 text-sm font-medium">{nextStep.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {nextStep.description}
-                </p>
-              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {payoutMethodMeta.description}
+              </p>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild>
-                <Link href={primaryAction.href}>
-                  {primaryAction.label}
-                  <IconArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/dashboard/reglages/paiements">
-                  Voir les paramètres
-                </Link>
-              </Button>
+            <div className="rounded-lg border border-border/60 bg-background p-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Prochaine étape
+              </p>
+              <p className="mt-2 text-sm font-medium">{nextStep.title}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {nextStep.description}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="rounded-xl border border-border/60 bg-card/40 shadow-none">
-          <CardHeader className="p-5 pb-3">
-            <CardTitle className={dashboardCardTitleClassName}>
-              Repères
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Les conditions pour recevoir vos gains sans friction.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-5 pt-0 space-y-3">
-            <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-background p-3">
-              <IconShieldCheck className="mt-0.5 h-4 w-4 text-primary" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Identité validée</p>
-                <p className="text-xs text-muted-foreground">
-                  Les versements restent bloqués tant que le KYC n’est pas
-                  approuvé.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-background p-3">
-              <payoutMethodMeta.icon className="mt-0.5 h-4 w-4 text-primary" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Mode de réception</p>
-                <p className="text-xs text-muted-foreground">
-                  Un compte bancaire ou un mobile wallet actif est requis pour
-                  recevoir vos fonds.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-background p-3">
-              <IconCreditCard className="mt-0.5 h-4 w-4 text-primary" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Déblocage après livraison</p>
-                <p className="text-xs text-muted-foreground">
-                  Les montants passent en disponible une fois la livraison
-                  confirmée.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <Button asChild>
+            <Link href={primaryAction.href}>
+              {primaryAction.label}
+              <IconArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4">
         <FinancialSummaryCard userId={user.id} role="traveler" />
