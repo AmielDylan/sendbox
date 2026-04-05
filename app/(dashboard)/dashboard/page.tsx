@@ -110,6 +110,8 @@ const countByStatus = (bookings: BookingRow[]) => {
 const sumCounts = (counts: StatusCounts) =>
   Object.values(counts).reduce((sum, value) => sum + value, 0)
 
+const dashboardCardTitleClassName = 'text-[13px] font-medium tracking-tight'
+
 export default function DashboardPage() {
   const { user, profile } = useAuth()
   const [kycStatus, setKycStatus] = useState<KYCStatus | null>(null)
@@ -325,6 +327,8 @@ export default function DashboardPage() {
       <PageHeader
         title="Tableau de bord"
         description="Vue d'ensemble de votre activité Sendbox"
+        titleClassName="text-xl font-semibold sm:text-2xl"
+        descriptionClassName="text-sm"
         breadcrumbs={[
           { label: 'Accueil', href: '/' },
           { label: 'Tableau de bord' },
@@ -353,7 +357,7 @@ export default function DashboardPage() {
         {isFeatureEnabled('KYC_ENABLED') && (
           <Card className="flex-1 min-w-[200px]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className={dashboardCardTitleClassName}>
                 Vérification d'identité
               </CardTitle>
               <IconShield className="h-4 w-4 text-muted-foreground" />
@@ -395,7 +399,7 @@ export default function DashboardPage() {
 
         <Card className="flex-1 min-w-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className={dashboardCardTitleClassName}>
               Annonces actives
             </CardTitle>
             <IconSpeakerphone className="h-4 w-4 text-muted-foreground" />
@@ -414,7 +418,9 @@ export default function DashboardPage() {
 
         <Card className="flex-1 min-w-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Messages</CardTitle>
+            <CardTitle className={dashboardCardTitleClassName}>
+              Messages
+            </CardTitle>
             <IconMessage className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -429,7 +435,7 @@ export default function DashboardPage() {
 
         <Card className="flex-1 min-w-[200px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className={dashboardCardTitleClassName}>
               {showTravelerSummary ? 'Revenus' : 'Fonds bloqués'}
             </CardTitle>
             <IconTrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -464,7 +470,7 @@ export default function DashboardPage() {
       <div className="flex flex-wrap gap-4">
         <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
           <CardHeader className="p-5 pb-3 space-y-1">
-            <CardTitle className="text-sm font-semibold">
+            <CardTitle className={dashboardCardTitleClassName}>
               Demandes reçues
             </CardTitle>
             <CardDescription className="text-xs">
@@ -501,7 +507,7 @@ export default function DashboardPage() {
 
         <Card className="flex-1 min-w-[300px] rounded-xl border border-border/60 bg-card/40 shadow-none">
           <CardHeader className="p-5 pb-3 space-y-1">
-            <CardTitle className="text-sm font-semibold">Colis</CardTitle>
+            <CardTitle className={dashboardCardTitleClassName}>Colis</CardTitle>
             <CardDescription className="text-xs">
               Suivi après acceptation et paiement
             </CardDescription>
@@ -550,7 +556,9 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Activité récente</CardTitle>
+          <CardTitle className={dashboardCardTitleClassName}>
+            Activité récente
+          </CardTitle>
           <CardDescription>
             Vos dernières interactions sur la plateforme
           </CardDescription>

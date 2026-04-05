@@ -15,6 +15,8 @@ interface PageHeaderProps {
   breadcrumbs?: BreadcrumbItem[]
   actions?: React.ReactNode
   className?: string
+  titleClassName?: string
+  descriptionClassName?: string
 }
 
 export function PageHeader({
@@ -23,6 +25,8 @@ export function PageHeader({
   breadcrumbs,
   actions,
   className,
+  titleClassName,
+  descriptionClassName,
 }: PageHeaderProps) {
   return (
     <div className={cn('space-y-4', className)}>
@@ -60,11 +64,23 @@ export function PageHeader({
       {/* Title and Description */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="flex-1 min-w-0 space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground truncate">
+          <h1
+            className={cn(
+              'truncate text-2xl font-bold tracking-tight text-foreground sm:text-3xl',
+              titleClassName
+            )}
+          >
             {title}
           </h1>
           {description && (
-            <p className="text-muted-foreground break-words">{description}</p>
+            <p
+              className={cn(
+                'break-words text-muted-foreground',
+                descriptionClassName
+              )}
+            >
+              {description}
+            </p>
           )}
         </div>
         {actions && (

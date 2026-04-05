@@ -29,6 +29,8 @@ interface Props {
   role: 'traveler' | 'requester'
 }
 
+const dashboardCardTitleClassName = 'text-[13px] font-medium tracking-tight'
+
 export function FinancialSummaryCard({ userId, role }: Props) {
   const [financials, setFinancials] = useState<
     TravelerFinancials | RequesterFinancials | null
@@ -129,7 +131,7 @@ export function FinancialSummaryCard({ userId, role }: Props) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
+          <CardTitle className={dashboardCardTitleClassName}>
             {role === 'traveler' ? 'Fonds disponibles' : 'Montants bloqués'}
           </CardTitle>
         </CardHeader>
@@ -148,7 +150,9 @@ export function FinancialSummaryCard({ userId, role }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle
+          className={`${dashboardCardTitleClassName} flex items-center gap-2`}
+        >
           <IconTrendingUp className="h-5 w-5" />
           {role === 'traveler' ? 'Fonds voyageur' : 'Fonds client'}
         </CardTitle>
