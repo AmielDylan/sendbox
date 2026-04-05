@@ -21,7 +21,6 @@ import {
   IconUser,
   IconSearch,
   IconPlaneDeparture,
-  IconAlertTriangle,
   IconCreditCard,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
@@ -55,6 +54,7 @@ import {
   getShortNameParts,
 } from '@/lib/core/profile/utils'
 import { FeedbackDialog } from '@/components/feedback-dialog'
+import { SubscriptionStatusPanel } from '@/components/features/subscriptions/SubscriptionStatusPanel'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -220,17 +220,17 @@ function SidebarContent({
               prefetch={true}
               onClick={onNavigate}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-normal transition-colors',
                 'hover:bg-accent hover:text-accent-foreground',
                 'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
                 isActive
-                  ? 'bg-accent text-accent-foreground'
+                  ? 'bg-accent text-accent-foreground font-medium'
                   : 'text-muted-foreground'
               )}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="h-5 w-5" aria-hidden="true" />
-              <span className="flex-1">{item.title}</span>
+              <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+              <span className="flex-1 truncate">{item.title}</span>
               {item.badge && (
                 <Badge variant="secondary" className="ml-auto">
                   {item.badge}
@@ -240,14 +240,24 @@ function SidebarContent({
           )
         })}
       </nav>
-      {FEATURES.BETA_MODE && (
-        <div className="border-t p-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
-            <IconAlertTriangle className="h-4 w-4" />
-            <span>Version bêta</span>
-          </div>
-        </div>
-      )}
+      <div className="space-y-3 border-t p-4">
+        {isFeatureEnabled('SUBSCRIPTION_ENABLED') && (
+          <SubscriptionStatusPanel
+            variant="compact"
+            showOnlyWhenAttention
+            className="rounded-2xl"
+          />
+        )}
+
+        {FEATURES.BETA_MODE && (
+          <Badge
+            variant="outline"
+            className="h-6 rounded-full border-amber-200 bg-amber-100 px-2.5 text-[10px] font-medium uppercase tracking-[0.16em] text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+          >
+            Bêta
+          </Badge>
+        )}
+      </div>
     </div>
   )
 }
@@ -263,16 +273,6 @@ function HeaderActions() {
       <ClientOnly>
         <ThemeToggle />
       </ClientOnly>
-
-      {FEATURES.BETA_MODE && (
-        <Badge
-          variant="secondary"
-          className="hidden h-8 items-center rounded-full border border-amber-200 bg-amber-100 px-3 text-[11px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 sm:inline-flex"
-        >
-          Version bêta
-        </Badge>
-      )}
-
       <ClientOnly>
         <FeedbackDialog />
       </ClientOnly>
