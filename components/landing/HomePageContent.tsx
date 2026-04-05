@@ -6,315 +6,272 @@ import {
   IconArrowRight,
   IconCheck,
   IconClock,
+  IconCurrencyEuro,
   IconMapPin,
-  IconPackage,
-  IconPlaneDeparture,
-  IconQrcode,
   IconShieldCheck,
-  IconSparkles,
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { LandingCta } from '@/components/landing/LandingCta'
 import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 import { PricingSection } from '@/components/landing/PricingSection'
-import { TrustStatsBlock } from '@/components/landing/TrustStatsBlock'
 
-const proofPillars = [
+const features = [
   {
-    title: 'Voyage vérifié',
+    title: 'Tarifs transparents',
     description:
-      'Chaque trajet publié s’appuie sur un profil contrôlé et un cadre de publication clair.',
+      'Un cadre clair pour réserver, payer et suivre vos envois sans négociation imprévisible.',
+    icon: IconCurrencyEuro,
+  },
+  {
+    title: 'Voyageurs vérifiés',
+    description:
+      'Chaque trajet passe par un profil contrôlé, des avis et un cadre de confiance lisible.',
     icon: IconShieldCheck,
   },
   {
-    title: 'Paiement sécurisé',
+    title: 'Suivi rapide',
     description:
-      'L’argent reste protégé sur la plateforme pendant que le colis suit son parcours.',
-    icon: IconSparkles,
-  },
-  {
-    title: 'Suivi concret',
-    description:
-      'QR code, messagerie et confirmations terrain gardent voyageurs et expéditeurs alignés.',
-    icon: IconQrcode,
+      'Messagerie, statut et confirmations permettent de garder le même niveau d’information des deux côtés.',
+    icon: IconClock,
   },
 ]
 
-const audienceColumns = [
-  {
-    title: 'Voyageurs',
-    eyebrow: 'Rentabilisez vos déplacements',
-    ctaLabel: 'Publier un trajet',
-    href: '/register',
-    icon: IconPlaneDeparture,
-    points: [
-      'Publiez vos trajets en quelques minutes',
-      'Recevez des demandes filtrées et sécurisées',
-      'Gardez une vue claire sur vos revenus et votre activité',
-    ],
-  },
-  {
-    title: 'Expéditeurs',
-    eyebrow: 'Choisissez un trajet déjà structuré',
-    ctaLabel: 'Rechercher un trajet',
-    href: '/recherche',
-    icon: IconPackage,
-    points: [
-      'Repérez rapidement un voyage pertinent',
-      'Payez en ligne sur un flux encadré par la plateforme',
-      'Suivez votre envoi jusqu’à la remise confirmée',
-    ],
-  },
+const stats = [
+  { value: '2,500+', label: 'Colis livrés' },
+  { value: '1,200+', label: 'Utilisateurs actifs' },
+  { value: '4.8/5', label: 'Note moyenne' },
+]
+
+const activeCountries = [
+  { flag: '🇫🇷', label: 'France' },
+  { flag: '🇧🇯', label: 'Bénin' },
+]
+
+const upcomingCountries = [
+  { flag: '🇹🇬', label: 'Togo' },
+  { flag: '🇨🇮', label: "Côte d'Ivoire" },
+  { flag: '🇸🇳', label: 'Sénégal' },
 ]
 
 export function HomePageContent() {
   return (
     <div className="landing-v2 relative overflow-x-hidden bg-background">
-      <section className="relative overflow-hidden border-b border-border/60 bg-[radial-gradient(circle_at_top_left,_rgba(26,179,195,0.16),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(15,23,42,0.08),_transparent_30%)]">
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/90 to-transparent" />
-        <div className="absolute left-[-8%] top-24 h-56 w-56 rounded-full bg-primary/12 blur-3xl" />
-        <div className="absolute bottom-12 right-[-6%] h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+      <section className="relative flex min-h-[calc(100svh-4rem)] items-center bg-gradient-to-br from-primary/5 via-background to-background">
+        <div className="container-wide relative z-10 py-16 sm:py-20 lg:py-24">
+          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+            <div className="space-y-6 animate-fade-in-up">
+              <h1 className="font-display text-4xl font-bold tracking-tight leading-tight sm:text-5xl lg:text-6xl">
+                Transformez chaque{' '}
+                <span className="relative inline-block">
+                  <span className="relative z-10 text-primary">voyage</span>
+                  <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1" />
+                </span>{' '}
+                en solution d&apos;envoi sécurisée
+              </h1>
 
-        <div className="container-wide relative z-10 flex min-h-[calc(100svh-4rem)] items-center py-12 sm:py-16 lg:py-20">
-          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.96fr)] lg:gap-16">
-            <div className="space-y-8 animate-fade-in-up">
-              <div className="space-y-4">
-                <Badge
-                  variant="outline"
-                  className="rounded-full border-primary/25 bg-background/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground backdrop-blur"
-                >
-                  France ↔ Bénin • Marketplace encadrée
-                </Badge>
+              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+                La plateforme de covalisage qui connecte voyageurs et
+                expéditeurs pour des envois{' '}
+                <span className="font-semibold text-foreground">
+                  économiques
+                </span>
+                , <span className="font-semibold text-foreground">rapides</span>{' '}
+                et{' '}
+                <span className="font-semibold text-foreground">sécurisés</span>
+                .
+              </p>
 
-                <h1 className="max-w-3xl text-5xl font-bold tracking-[-0.05em] text-foreground sm:text-6xl lg:text-7xl">
-                  Transformez chaque{' '}
-                  <span className="relative inline-block text-primary">
-                    voyage
-                    <span className="absolute inset-x-0 bottom-1 h-3 bg-primary/15" />
-                  </span>{' '}
-                  en solution d’envoi sécurisée
-                </h1>
-
-                <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-                  Sendbox relie les voyageurs et les expéditeurs autour d’un
-                  cadre simple: publication structurée, paiement en ligne
-                  sécurisé, suivi terrain et confiance visible des deux côtés.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-8 border-y border-border/60 py-5">
-                {[
-                  { value: '2,500+', label: 'Colis livrés' },
-                  { value: '1,200+', label: 'Utilisateurs actifs' },
-                  { value: '4.8/5', label: 'Note moyenne' },
-                ].map(item => (
-                  <div key={item.label} className="min-w-[120px]">
-                    <p className="text-3xl font-bold tracking-tight text-primary">
-                      {item.value}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.label}
-                    </p>
+              <div className="flex flex-wrap gap-6 pt-2 lg:gap-8">
+                {stats.map(stat => (
+                  <div key={stat.label} className="space-y-1">
+                    <div className="text-xl font-bold text-primary sm:text-2xl">
+                      {stat.value}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {stat.label}
+                    </div>
                   </div>
                 ))}
               </div>
 
               <LandingCta
-                className="gap-3"
-                registerClassName="min-w-[220px] bg-primary px-6 py-6 text-base shadow-lg shadow-primary/20 transition-transform duration-300 hover:scale-[1.01] hover:bg-primary/90"
-                searchClassName="min-w-[220px] border border-border/80 bg-background/90 px-6 py-6 text-base shadow-sm transition-transform duration-300 hover:scale-[1.01] hover:bg-accent"
+                className="flex-wrap sm:flex-nowrap pt-2"
+                registerClassName="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
+                searchClassName="w-full sm:w-auto border-2 hover:bg-accent transition-all duration-300"
               />
 
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-4 pt-2 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-2">
                   <IconShieldCheck className="h-4 w-4 text-primary" />
-                  Profils vérifiés
+                  Identités vérifiées
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <IconSparkles className="h-4 w-4 text-primary" />
+                  <IconCheck className="h-4 w-4 text-primary" />
                   Paiement en ligne sécurisé
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <IconClock className="h-4 w-4 text-primary" />
-                  Support réactif
+                  Support 24/7
                 </span>
               </div>
             </div>
 
-            <div className="relative animate-fade-in-up animation-delay-200">
-              <div className="absolute inset-8 rounded-[2rem] border border-primary/15 bg-background/55 blur-2xl" />
-              <div className="relative overflow-hidden rounded-[2rem] border border-border/70 bg-background/85 p-5 shadow-[0_30px_90px_-40px_rgba(15,23,42,0.4)] backdrop-blur">
-                <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start">
-                  <div className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Vue voyageur
-                    </p>
-                    <p className="max-w-sm text-sm leading-6 text-muted-foreground">
-                      Publiez, acceptez, transportez, confirmez: la promesse
-                      reste lisible dès le premier écran.
-                    </p>
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                    <IconMapPin className="h-3.5 w-3.5" />
-                    Trajets disponibles
-                  </div>
-                </div>
-
-                <div className="relative mt-6 overflow-hidden rounded-[1.5rem] border border-border/60 bg-gradient-to-br from-background via-muted/20 to-primary/10">
-                  <Image
-                    src="/images/hero.png"
-                    alt="Sendbox — marketplace voyageurs et expéditeurs"
-                    width={1365}
-                    height={768}
-                    priority
-                    className="h-auto w-full object-cover"
-                  />
-                </div>
-              </div>
+            <div className="relative mt-10 flex justify-center lg:mt-0 lg:block animate-fade-in-up animation-delay-200">
+              <Image
+                src="/images/hero.png"
+                alt="Sendbox — covalisage international"
+                width={680}
+                height={640}
+                priority
+                className="h-auto w-full max-w-none object-contain"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      <TrustStatsBlock />
+      <section className="relative bg-muted/30 py-20 sm:py-24">
+        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
 
-      <section className="py-20 sm:py-24">
-        <div className="container-wide">
-          <div className="max-w-3xl space-y-4">
+        <div className="container-wide relative">
+          <div className="mb-14 text-center space-y-4 animate-fade-in-up">
             <Badge
               variant="outline"
               className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
             >
-              Ce que Sendbox encadre
+              Nos avantages
             </Badge>
             <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-              Une promesse simple pour deux usages réels.
+              Pourquoi <span className="text-primary">Sendbox</span> ?
             </h2>
-            <p className="text-base leading-7 text-muted-foreground sm:text-lg">
-              Côté voyageurs, chaque publication devient une source de revenus
-              mieux structurée. Côté expéditeurs, chaque réservation avance dans
-              un cadre concret et lisible.
+            <p className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg">
+              Une solution simple, sûre et lisible pour publier un trajet ou en
+              réserver un.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-8 border-t border-border/70 pt-8 md:grid-cols-3">
-            {proofPillars.map(({ title, description, icon: Icon }) => (
-              <div key={title} className="space-y-4">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold tracking-tight">
-                    {title}
-                  </h3>
-                  <p className="text-sm leading-6 text-muted-foreground sm:text-base">
-                    {description}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="grid gap-6 md:grid-cols-3">
+            {features.map((feature, i) => {
+              const Icon = feature.icon
+
+              return (
+                <Card
+                  key={feature.title}
+                  className="group relative overflow-hidden border-2 bg-background transition-all duration-500 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 animate-fade-in-up"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 transition-all duration-500 group-hover:from-primary/5 group-hover:to-transparent" />
+
+                  <div className="relative space-y-5 p-8">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                      <Icon className="h-7 w-7 text-primary" />
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-2xl font-bold">{feature.title}</h3>
+                      <p className="leading-relaxed text-muted-foreground">
+                        {feature.description}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      <section className="border-y border-border/60 bg-muted/20 py-20 sm:py-24">
-        <div className="container-wide space-y-10">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl space-y-4">
-              <Badge
-                variant="outline"
-                className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
-              >
-                Deux points d’entrée
-              </Badge>
-              <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                Le même cadre, deux façons d’utiliser Sendbox.
-              </h2>
-            </div>
-            <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
-              La landing n’oppose pas les usages: elle montre comment le trajet
-              publié par un voyageur devient une option claire pour un
-              expéditeur prêt à réserver.
-            </p>
-          </div>
+      <section className="border-y bg-muted/20 py-10">
+        <div className="container-wide">
+          <div className="flex flex-col items-center justify-center gap-5">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+              Pays couverts
+            </h2>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            {audienceColumns.map(
-              ({ title, eyebrow, ctaLabel, href, icon: Icon, points }) => (
-                <div
-                  key={title}
-                  className="rounded-[2rem] border border-border/70 bg-background/85 p-7 shadow-sm backdrop-blur"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                        {eyebrow}
-                      </p>
-                      <h3 className="text-3xl font-semibold tracking-tight">
-                        {title}
-                      </h3>
+            <div className="flex flex-wrap items-center justify-center gap-5">
+              <div className="flex items-center gap-2.5">
+                {activeCountries.map(country => (
+                  <div key={country.label} className="group relative">
+                    <div className="rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 px-2.5 py-1.5 transition-all duration-300 hover:scale-105 hover:border-primary/40 hover:shadow-md">
+                      <span className="text-xl">{country.flag}</span>
                     </div>
-                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                      <Icon className="h-6 w-6" />
+                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                      {country.label}
                     </span>
                   </div>
+                ))}
+              </div>
 
-                  <ul className="mt-6 space-y-4">
-                    {points.map(point => (
-                      <li key={point} className="flex items-start gap-3">
-                        <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/12 text-primary">
-                          <IconCheck className="h-3.5 w-3.5" />
-                        </span>
-                        <span className="text-sm leading-6 text-foreground sm:text-base">
-                          {point}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+              <div className="h-7 w-px bg-gradient-to-b from-transparent via-border to-transparent" />
 
-                  <Button asChild variant="outline" className="mt-8">
-                    <Link href={href}>
-                      {ctaLabel}
-                      <IconArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              )
-            )}
+              <div className="flex items-center gap-2.5">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Bientôt
+                </span>
+                {upcomingCountries.map(country => (
+                  <div key={country.label} className="group relative">
+                    <div className="rounded-lg border border-border/60 bg-background px-2.5 py-1.5 opacity-70 transition-all duration-300 hover:opacity-100">
+                      <span className="text-xl">{country.flag}</span>
+                    </div>
+                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                      {country.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <LatestAnnouncementsCarousel />
       <PricingSection />
+      <LatestAnnouncementsCarousel />
 
       <section className="relative overflow-hidden py-24 sm:py-28">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(26,179,195,0.12),_transparent_34%)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
+
         <div className="container-wide relative">
-          <div className="mx-auto max-w-4xl space-y-8 rounded-[2.25rem] border border-border/70 bg-background/90 px-6 py-10 text-center shadow-[0_30px_90px_-60px_rgba(15,23,42,0.5)] backdrop-blur sm:px-10 sm:py-14">
-            <Badge
-              variant="outline"
-              className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
-            >
-              Prêt à passer à l’action
-            </Badge>
-            <div className="space-y-3">
-              <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                Publiez un trajet ou trouvez-en un déjà prêt.
-              </h2>
-              <p className="mx-auto max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-                La publication côté voyageur reste encadrée par l’essai puis
-                l’abonnement. La réservation côté expéditeur garde un parcours
-                lisible du premier message à la confirmation finale.
-              </p>
+          <div className="mx-auto max-w-4xl space-y-8 text-center animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2">
+              <IconCheck className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Prêt à commencer ?</span>
             </div>
 
-            <LandingCta
-              className="justify-center gap-3"
-              registerClassName="min-w-[220px] bg-primary px-6 py-6 text-base shadow-lg shadow-primary/20"
-              searchClassName="min-w-[220px] border border-border/80 px-6 py-6 text-base"
-            />
+            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+              Publiez un trajet ou trouvez-en un déjà prêt.
+            </h2>
+
+            <p className="mx-auto max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+              Une inscription gratuite pour démarrer, un abonnement simple pour
+              continuer à publier, et un parcours clair côté expéditeur.
+            </p>
+
+            <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
+              <Button
+                asChild
+                size="lg"
+                className="w-full px-8 py-6 text-base shadow-xl shadow-primary/25 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/30 sm:w-auto"
+              >
+                <Link href="/register">
+                  Créer mon compte gratuitement
+                  <IconArrowRight className="h-5 w-5" />
+                </Link>
+              </Button>
+
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="w-full border-2 px-8 py-6 text-base transition-all duration-300 hover:scale-105 sm:w-auto"
+              >
+                <Link href="/recherche">
+                  <IconMapPin className="h-5 w-5" />
+                  Explorer les trajets
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
