@@ -104,7 +104,7 @@ export function KYCAlertBanner({
         variant="ghost"
         size="icon"
         onClick={handleDismiss}
-        className="absolute right-2 top-2 h-7 w-7 text-blue-700 hover:bg-blue-100 hover:text-blue-900"
+        className="absolute right-2 top-2 h-7 w-7 !pl-0 !pr-0 text-blue-700 hover:bg-blue-100 hover:text-blue-900"
         aria-label="Fermer l’alerte KYC"
       >
         <IconX className="h-4 w-4" />
