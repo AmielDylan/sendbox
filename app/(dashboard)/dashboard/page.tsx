@@ -27,6 +27,7 @@ import {
 } from '@tabler/icons-react'
 import { KYCAlertBanner } from '@/components/features/kyc/KYCAlertBanner'
 import { FinancialSummaryCard } from '@/components/features/dashboard/FinancialSummaryCard'
+import { SubscriptionStatusPanel } from '@/components/features/subscriptions/SubscriptionStatusPanel'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 import {
   calculateRequesterFinancials,
@@ -345,6 +346,10 @@ export default function DashboardPage() {
           kycStatus={kycStatus}
           rejectionReason={kycRejectionReason}
         />
+      )}
+
+      {isFeatureEnabled('SUBSCRIPTION_ENABLED') && (
+        <SubscriptionStatusPanel variant="banner" />
       )}
 
       {/* Stats Cards */}

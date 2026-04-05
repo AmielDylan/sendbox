@@ -12,6 +12,7 @@ import {
   IconIdBadge2,
   IconShield,
   IconCreditCard,
+  IconSparkles,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
@@ -30,6 +31,14 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
     'pending' | 'approved' | 'rejected' | 'incomplete' | null
   >(initialKycStatus || null)
   const isAdmin = profile?.role === 'admin'
+  const kycDescription =
+    kycStatus === 'approved'
+      ? 'Identité validée'
+      : kycStatus === 'pending'
+        ? 'Vérification en cours'
+        : kycStatus === 'rejected'
+          ? 'Action requise'
+          : 'KYC et documents'
 
   // Charger le statut initial si non fourni
   useEffect(() => {
@@ -48,7 +57,7 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
     }
 
     loadKycStatus()
-  }, [user?.id, initialKycStatus, supabase])
+  }, [user?.id, initialKycStatus, supabase, isAdmin])
 
   // Subscription Realtime pour KYC status
   useEffect(() => {
@@ -94,7 +103,7 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
       console.log('🔌 [SettingsNav] Unsubscribing from KYC updates')
       supabase.removeChannel(channel)
     }
-  }, [user?.id, supabase])
+  }, [user?.id, supabase, isAdmin])
 
   const allNavItems = [
     {
@@ -110,6 +119,14 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
       description: 'Informations personnelles',
     },
     {
+      label: 'Mon abonnement',
+      href: '/dashboard/reglages/abonnement',
+      icon: IconSparkles,
+      description: 'Essai, accès publication et gestion',
+      subscriptionOnly: true,
+      userOnly: true,
+    },
+    {
       label: 'Ajouter un compte bancaire',
       href: '/dashboard/reglages/paiements',
       icon: IconCreditCard,
@@ -121,7 +138,7 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
       label: "Vérification d'identité",
       href: '/dashboard/reglages/kyc',
       icon: IconShield,
-      description: 'KYC et documents',
+      description: kycDescription,
       kycOnly: true, // Marqueur pour filtrage conditionnel
       userOnly: true,
     },
@@ -134,6 +151,9 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
     }
     if (item.kycOnly && !isFeatureEnabled('KYC_ENABLED')) {
       return false // Masquer KYC si désactivé
+    }
+    if (item.subscriptionOnly && !isFeatureEnabled('SUBSCRIPTION_ENABLED')) {
+      return false
     }
     if (item.paymentsOnly && !isFeatureEnabled('STRIPE_PAYMENTS')) {
       return false

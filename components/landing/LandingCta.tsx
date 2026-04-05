@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { IconPlaneDeparture } from '@tabler/icons-react'
+import { IconMapPin, IconPlaneDeparture } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
@@ -9,9 +9,14 @@ import { cn } from '@/lib/utils'
 interface LandingCtaProps {
   className?: string
   registerClassName?: string
+  searchClassName?: string
 }
 
-export function LandingCta({ className, registerClassName }: LandingCtaProps) {
+export function LandingCta({
+  className,
+  registerClassName,
+  searchClassName,
+}: LandingCtaProps) {
   const { user, loading } = useAuth()
   const showRegister = !loading && !user
 
@@ -32,6 +37,13 @@ export function LandingCta({ className, registerClassName }: LandingCtaProps) {
           </Link>
         </Button>
       )}
+
+      <Button asChild className={searchClassName} variant="outline">
+        <Link href="/recherche">
+          <IconMapPin className="h-4 w-4" />
+          Rechercher un trajet
+        </Link>
+      </Button>
     </div>
   )
 }
