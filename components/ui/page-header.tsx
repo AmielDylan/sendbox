@@ -29,24 +29,24 @@ export function PageHeader({
   descriptionClassName,
 }: PageHeaderProps) {
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn('space-y-3', className)}>
       {/* Breadcrumbs */}
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav
           aria-label="Fil d'Ariane"
-          className="flex items-center space-x-2 text-sm text-muted-foreground"
+          className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"
         >
           {breadcrumbs.map((item, index) => {
             const isLast = index === breadcrumbs.length - 1
             return (
-              <div key={index} className="flex items-center space-x-2">
+              <div key={index} className="flex items-center gap-1.5">
                 {index > 0 && (
-                  <IconChevronRight className="h-4 w-4" aria-hidden="true" />
+                  <IconChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                 )}
                 {item.href && !isLast ? (
                   <Link
                     href={item.href}
-                    className="hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
+                    className="rounded transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
                     {item.label}
                   </Link>
@@ -66,7 +66,7 @@ export function PageHeader({
         <div className="flex-1 min-w-0 space-y-1">
           <h1
             className={cn(
-              'truncate text-2xl font-bold tracking-tight text-foreground sm:text-3xl',
+              'truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl',
               titleClassName
             )}
           >
@@ -75,7 +75,7 @@ export function PageHeader({
           {description && (
             <p
               className={cn(
-                'break-words text-muted-foreground',
+                'max-w-3xl break-words text-sm text-muted-foreground',
                 descriptionClassName
               )}
             >
@@ -84,7 +84,9 @@ export function PageHeader({
           )}
         </div>
         {actions && (
-          <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>
+          <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+            {actions}
+          </div>
         )}
       </div>
     </div>

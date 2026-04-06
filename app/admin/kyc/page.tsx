@@ -31,6 +31,7 @@ import {
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminKYCPage() {
   const { data: kycStats, isLoading } = useQuery({
@@ -78,12 +79,14 @@ export default function AdminKYCPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Statuts KYC</h1>
-        <p className="text-muted-foreground">
-          Vue d'ensemble des vérifications d'identité
-        </p>
-      </div>
+      <PageHeader
+        title="Statuts KYC"
+        description="Vue d'ensemble des vérifications d'identité"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'KYC' },
+        ]}
+      />
 
       {/* Message info Stripe Identity */}
       <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">

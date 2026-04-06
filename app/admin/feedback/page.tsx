@@ -8,6 +8,7 @@ import { createAdminClient } from '@/lib/shared/db/admin'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IconMessageCircle } from '@tabler/icons-react'
+import { PageHeader } from '@/components/ui/page-header'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { FEATURES } from '@/lib/shared/config/features'
@@ -44,7 +45,13 @@ export default async function AdminFeedbackPage() {
   if (error) {
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Feedback</h1>
+        <PageHeader
+          title="Feedback Beta"
+          breadcrumbs={[
+            { label: 'Dashboard Admin', href: '/admin/dashboard' },
+            { label: 'Feedback' },
+          ]}
+        />
         <p className="text-sm text-destructive">
           Erreur lors du chargement des feedbacks.
         </p>
@@ -54,12 +61,14 @@ export default async function AdminFeedbackPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Feedback Beta</h1>
-        <p className="text-muted-foreground">
-          Centralisez les retours utilisateurs.
-        </p>
-      </div>
+      <PageHeader
+        title="Feedback Beta"
+        description="Centralisez les retours utilisateurs."
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'Feedback' },
+        ]}
+      />
 
       {(!feedbacks || feedbacks.length === 0) && (
         <Card>

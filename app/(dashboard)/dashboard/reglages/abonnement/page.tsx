@@ -8,7 +8,7 @@ export default function SubscriptionSettingsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Mon abonnement"
-        description="Pilotez votre accès à la publication, votre essai et la gestion de votre offre voyageur."
+        description="Suivez votre essai, votre statut et votre accès à la publication."
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Réglages', href: '/dashboard/reglages' },
@@ -16,7 +16,7 @@ export default function SubscriptionSettingsPage() {
         ]}
       />
 
-      <SubscriptionStatusPanel variant="page" />
+      <SubscriptionStatusPanel variant="page" tone="neutral" />
     </div>
   )
 }

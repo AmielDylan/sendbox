@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import { IconLoader2, IconDownload } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminTransactionsPage() {
   const supabase = createClient()
@@ -66,18 +67,20 @@ export default function AdminTransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Transactions & Finance</h1>
-          <p className="text-muted-foreground">
-            Vue d'ensemble des transactions financières
-          </p>
-        </div>
-        <Button onClick={handleExportCSV}>
-          <IconDownload className="mr-2 h-4 w-4" />
-          Exporter CSV
-        </Button>
-      </div>
+      <PageHeader
+        title="Transactions & Finance"
+        description="Vue d'ensemble des transactions financières"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'Finance' },
+        ]}
+        actions={
+          <Button onClick={handleExportCSV}>
+            <IconDownload className="mr-2 h-4 w-4" />
+            Exporter CSV
+          </Button>
+        }
+      />
 
       {/* Métriques */}
       <div className="grid gap-4 md:grid-cols-3">

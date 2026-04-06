@@ -237,6 +237,11 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
       <PageHeader
         title="Confirmation de Livraison"
         description="Prendre les preuves de livraison (photo + signature)"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Colis', href: '/dashboard/colis' },
+          { label: 'Livraison' },
+        ]}
       />
 
       <div className="max-w-2xl mx-auto space-y-6">

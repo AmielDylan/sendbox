@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -135,12 +136,14 @@ export default function AdminBookingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Gestion des réservations</h1>
-        <p className="text-muted-foreground">
-          Liste et gestion de toutes les réservations
-        </p>
-      </div>
+      <PageHeader
+        title="Gestion des réservations"
+        description="Liste et gestion de toutes les réservations"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'Réservations' },
+        ]}
+      />
 
       <Card>
         <CardHeader>

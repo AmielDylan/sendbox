@@ -306,8 +306,6 @@ export default function FundsPage() {
       <PageHeader
         title="Fonds"
         description="Suivez vos gains, vos fonds en attente et la configuration de vos versements."
-        titleClassName="text-xl font-semibold sm:text-2xl"
-        descriptionClassName="text-sm"
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Fonds' },

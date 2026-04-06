@@ -197,6 +197,11 @@ export default function ProfilePage() {
       <PageHeader
         title="Mon profil"
         description="Gérez vos informations personnelles et votre photo de profil"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Réglages', href: '/dashboard/reglages/compte' },
+          { label: 'Mon profil' },
+        ]}
       />
 
       {/* Vue d'ensemble */}
@@ -280,7 +285,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Prénom et Nom */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="firstname">Prénom</Label>
                 <Input

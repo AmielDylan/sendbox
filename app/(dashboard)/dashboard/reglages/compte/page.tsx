@@ -153,6 +153,11 @@ export default function AccountPage() {
       <PageHeader
         title="Paramètres du compte"
         description="Gérez les paramètres de sécurité et votre compte"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Réglages', href: '/dashboard/reglages/compte' },
+          { label: 'Compte' },
+        ]}
       />
 
       {/* Changement de mot de passe */}
