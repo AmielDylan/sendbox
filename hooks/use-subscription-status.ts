@@ -5,6 +5,14 @@ import { useAuth } from '@/hooks/use-auth'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 import type { SubscriptionInfo } from '@/lib/core/subscriptions/utils'
 
+interface UseSubscriptionStatusOptions {
+  initialData?: SubscriptionInfo
+  staleTime?: number
+  gcTime?: number
+  refetchOnMount?: boolean
+  refetchOnWindowFocus?: boolean
+}
+
 async function fetchSubscriptionStatus(): Promise<SubscriptionInfo> {
   const response = await fetch('/api/subscriptions/status', {
     credentials: 'include',
@@ -19,7 +27,9 @@ async function fetchSubscriptionStatus(): Promise<SubscriptionInfo> {
   return payload as SubscriptionInfo
 }
 
-export function useSubscriptionStatus() {
+export function useSubscriptionStatus(
+  options: UseSubscriptionStatusOptions = {}
+) {
   const { user, loading } = useAuth()
   const enabled =
     isFeatureEnabled('SUBSCRIPTION_ENABLED') && Boolean(user?.id) && !loading
@@ -28,6 +38,11 @@ export function useSubscriptionStatus() {
     queryKey: ['subscription-status', user?.id],
     queryFn: fetchSubscriptionStatus,
     enabled,
-    staleTime: 60_000,
+    initialData: options.initialData,
+    placeholderData: previous => previous ?? options.initialData,
+    staleTime: options.staleTime ?? 300_000,
+    gcTime: options.gcTime ?? 1_800_000,
+    refetchOnMount: options.refetchOnMount ?? false,
+    refetchOnWindowFocus: options.refetchOnWindowFocus ?? false,
   })
 }

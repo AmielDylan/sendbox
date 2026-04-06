@@ -324,6 +324,11 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
       <PageHeader
         title="Scan QR Dépôt"
         description="Scanner le QR code et prendre les preuves de dépôt"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Colis', href: '/dashboard/colis' },
+          { label: 'Dépôt' },
+        ]}
       />
 
       <div className="max-w-2xl mx-auto space-y-6">

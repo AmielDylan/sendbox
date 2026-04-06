@@ -18,17 +18,51 @@ import { useAuth } from '@/hooks/use-auth'
 import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
 import {
   checkCanPublish,
+  type SubscriptionInfo,
   type SubscriptionStatus,
 } from '@/lib/core/subscriptions/utils'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { SubscriptionActionButton } from './SubscriptionActionButton'
 
 type SubscriptionPanelVariant = 'banner' | 'page' | 'compact'
+type SubscriptionPanelTone = 'default' | 'neutral'
 
 interface SubscriptionStatusPanelProps {
   className?: string
   variant?: SubscriptionPanelVariant
+  tone?: SubscriptionPanelTone
   showOnlyWhenAttention?: boolean
+}
+
+const getTrialDaysRemaining = (value?: string | null) => {
+  if (!value) return null
+
+  const trialEnd = new Date(value)
+  if (Number.isNaN(trialEnd.getTime())) {
+    return null
+  }
+
+  const diff = trialEnd.getTime() - Date.now()
+  if (diff <= 0) {
+    return 0
+  }
+
+  return Math.ceil(diff / 86_400_000)
+}
+
+const getFallbackSubscriptionInfo = (profile: any): SubscriptionInfo | undefined => {
+  if (!profile) return undefined
+
+  const status = (profile.subscription_status ?? 'trialing') as SubscriptionStatus
+  const trialEndsAt = profile.trial_ends_at ?? null
+
+  return {
+    status,
+    trial_ends_at: trialEndsAt,
+    trial_days_remaining:
+      status === 'trialing' ? getTrialDaysRemaining(trialEndsAt) : null,
+    can_publish: checkCanPublish(status, trialEndsAt),
+  }
 }
 
 const formatDate = (value?: string | null) => {
@@ -49,10 +83,19 @@ const formatDate = (value?: string | null) => {
 export function SubscriptionStatusPanel({
   className,
   variant = 'banner',
+  tone = 'default',
   showOnlyWhenAttention = false,
 }: SubscriptionStatusPanelProps) {
   const { user, profile, loading: authLoading } = useAuth()
-  const { data, isLoading } = useSubscriptionStatus()
+  const initialData = useMemo(
+    () => getFallbackSubscriptionInfo(profile),
+    [profile]
+  )
+  const { data, isLoading } = useSubscriptionStatus({
+    initialData,
+    staleTime: variant === 'compact' ? 600_000 : 300_000,
+    refetchOnMount: variant !== 'compact',
+  })
 
   const view = useMemo(() => {
     if (!profile) return null
@@ -82,6 +125,8 @@ export function SubscriptionStatusPanel({
 
     if (status === 'active') {
       return {
+        status,
+        trialDaysRemaining,
         accent: 'border-emerald-500/30 bg-emerald-500/8',
         badgeClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700',
         badgeLabel: 'Abonnement actif',
@@ -99,6 +144,8 @@ export function SubscriptionStatusPanel({
 
     if (status === 'trialing' && canPublish) {
       return {
+        status,
+        trialDaysRemaining,
         accent:
           trialDaysRemaining !== null && trialDaysRemaining <= 5
             ? 'border-amber-500/35 bg-amber-500/10'
@@ -125,6 +172,8 @@ export function SubscriptionStatusPanel({
 
     if (status === 'past_due') {
       return {
+        status,
+        trialDaysRemaining,
         accent: 'border-amber-500/35 bg-amber-500/10',
         badgeClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700',
         badgeLabel: 'Paiement à régulariser',
@@ -142,6 +191,8 @@ export function SubscriptionStatusPanel({
 
     if (status === 'canceled') {
       return {
+        status,
+        trialDaysRemaining,
         accent: 'border-slate-400/30 bg-slate-500/8',
         badgeClass: 'border-slate-400/30 bg-slate-500/10 text-slate-700',
         badgeLabel: 'Abonnement annulé',
@@ -158,6 +209,8 @@ export function SubscriptionStatusPanel({
     }
 
     return {
+      status,
+      trialDaysRemaining,
       accent: 'border-rose-500/30 bg-rose-500/8',
       badgeClass: 'border-rose-500/30 bg-rose-500/10 text-rose-700',
       badgeLabel: 'Abonnement requis',
@@ -181,12 +234,14 @@ export function SubscriptionStatusPanel({
     return null
   }
 
-  if (isLoading || !view) {
+  const isCompact = variant === 'compact'
+
+  if (!view || (isLoading && !initialData)) {
+    if (isCompact) return null
     return (
       <Card
         className={cn(
-          'animate-pulse rounded-3xl border border-border/70 bg-muted/30',
-          variant === 'compact' ? 'p-4' : 'p-6',
+          'animate-pulse rounded-3xl border border-border/70 bg-muted/30 p-6',
           className
         )}
       >
@@ -201,7 +256,28 @@ export function SubscriptionStatusPanel({
     return null
   }
 
-  const isCompact = variant === 'compact'
+  const neutralPageTitle =
+    view.status === 'active'
+      ? 'Abonnement actif'
+      : view.status === 'trialing'
+        ? `${view.trialDaysRemaining ?? 0} jours restants`
+        : view.status === 'past_due'
+          ? 'Renouvellement à mettre à jour'
+          : view.status === 'canceled'
+            ? 'Abonnement annulé'
+            : 'Abonnement nécessaire pour publier'
+
+  const neutralPageDescription =
+    view.status === 'active'
+      ? 'Votre accès à la publication est actif et vos trajets peuvent être gérés normalement.'
+      : view.status === 'trialing'
+        ? 'Votre période d’essai est encore active. Vous pourrez publier jusqu’à la date indiquée.'
+        : view.status === 'past_due'
+          ? 'Votre accès à la publication dépend d’une mise à jour de votre abonnement.'
+          : view.status === 'canceled'
+            ? 'L’offre voyageur n’est plus active. Réactivez-la pour publier de nouveaux trajets.'
+            : 'Activez l’offre voyageur pour débloquer la publication de nouveaux trajets.'
+
   const compactCopy =
     view.badgeLabel === 'Paiement à régulariser'
       ? 'Paiement à régulariser pour réactiver la publication.'
@@ -230,6 +306,81 @@ export function SubscriptionStatusPanel({
             subscribeLabel="Activer"
             manageLabel="Gérer"
           />
+        </div>
+      </Card>
+    )
+  }
+
+  if (variant === 'page' && tone === 'neutral') {
+    return (
+      <Card
+        className={cn(
+          'rounded-2xl border border-border/70 bg-card/40 p-5 shadow-none sm:p-6',
+          className
+        )}
+      >
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="text-xs font-medium">
+                {view.badgeLabel}
+              </Badge>
+              <Badge variant="secondary" className="text-xs font-medium">
+                Publication : {view.metaValue}
+              </Badge>
+              {view.dateLabel && view.dateValue && (
+                <Badge variant="secondary" className="text-xs font-medium">
+                  {view.dateLabel} : {view.dateValue}
+                </Badge>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <h2 className="text-lg font-semibold tracking-tight">
+                {neutralPageTitle}
+              </h2>
+              <p className="max-w-3xl text-sm text-muted-foreground">
+                {neutralPageDescription}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <SubscriptionActionButton
+              className="w-full sm:w-auto"
+              size="default"
+            />
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/dashboard/reglages/paiements">Voir les paiements</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 border-t border-border/60 pt-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="space-y-1 rounded-xl border border-border/60 bg-background/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              Statut
+            </p>
+            <p className="text-sm font-medium">{view.badgeLabel}</p>
+          </div>
+          <div className="space-y-1 rounded-xl border border-border/60 bg-background/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              Publication
+            </p>
+            <p className="text-sm font-medium">{view.metaValue}</p>
+          </div>
+          <div className="space-y-1 rounded-xl border border-border/60 bg-background/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              Offre
+            </p>
+            <p className="text-sm font-medium">14 jours puis 4,99 € / mois</p>
+          </div>
+          <div className="space-y-1 rounded-xl border border-border/60 bg-background/70 p-4">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              Frais plateforme
+            </p>
+            <p className="text-sm font-medium">3 % par transaction</p>
+          </div>
         </div>
       </Card>
     )

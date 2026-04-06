@@ -787,6 +787,11 @@ export default function KYCPage() {
         <PageHeader
           title="Vérification d'identité"
           description="Nous vérifions vos documents pour sécuriser votre compte."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Réglages', href: '/dashboard/reglages/compte' },
+            { label: 'KYC' },
+          ]}
         />
         <Alert>
           <AlertTitle>Réservé aux utilisateurs</AlertTitle>
@@ -851,6 +856,11 @@ export default function KYCPage() {
       <PageHeader
         title="Vérification d'identité (KYC)"
         description="Nous vérifions vos documents pour sécuriser votre compte."
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Réglages', href: '/dashboard/reglages/compte' },
+          { label: 'KYC' },
+        ]}
       />
 
       {displayStatus === 'approved' && (

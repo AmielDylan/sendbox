@@ -45,6 +45,7 @@ import {
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useAuth } from '@/hooks/use-auth'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null)
@@ -116,12 +117,14 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Gestion des utilisateurs</h1>
-        <p className="text-muted-foreground">
-          Liste et gestion de tous les utilisateurs
-        </p>
-      </div>
+      <PageHeader
+        title="Gestion des utilisateurs"
+        description="Liste et gestion de tous les utilisateurs"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'Utilisateurs' },
+        ]}
+      />
 
       <Card>
         <CardHeader>

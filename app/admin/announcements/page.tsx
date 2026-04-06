@@ -38,6 +38,7 @@ import {
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminAnnouncementsPage() {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null)
@@ -110,12 +111,14 @@ export default function AdminAnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Modération des annonces</h1>
-        <p className="text-muted-foreground">
-          Liste et modération de toutes les annonces
-        </p>
-      </div>
+      <PageHeader
+        title="Modération des annonces"
+        description="Liste et modération de toutes les annonces"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'Annonces' },
+        ]}
+      />
 
       {/* Filtres Sendbox */}
       <div className="flex flex-wrap gap-2">

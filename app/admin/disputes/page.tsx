@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { IconLoader2 } from '@tabler/icons-react'
+import { PageHeader } from '@/components/ui/page-header'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -47,12 +48,14 @@ export default function AdminDisputesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Gestion des litiges</h1>
-        <p className="text-muted-foreground">
-          Liste des réservations en litige nécessitant une intervention
-        </p>
-      </div>
+      <PageHeader
+        title="Gestion des litiges"
+        description="Liste des réservations en litige nécessitant une intervention"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'Litiges' },
+        ]}
+      />
 
       <Card>
         <CardHeader>

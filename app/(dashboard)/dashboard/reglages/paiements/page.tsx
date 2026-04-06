@@ -128,6 +128,11 @@ export default function PaymentsSettingsPage() {
         <PageHeader
           title="Paramètres de Paiement"
           description="Configurez vos méthodes de réception des fonds."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Réglages', href: '/dashboard/reglages/compte' },
+            { label: 'Paiements' },
+          ]}
         />
         <Alert>
           <AlertTitle>Réservé aux utilisateurs</AlertTitle>
@@ -146,6 +151,11 @@ export default function PaymentsSettingsPage() {
         <PageHeader
           title="Paramètres de Paiement"
           description="Choisissez votre méthode de réception des fonds."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Réglages', href: '/dashboard/reglages/compte' },
+            { label: 'Paiements' },
+          ]}
         />
         <Alert>
           <AlertTitle>Vérification d'identité requise</AlertTitle>
@@ -168,6 +178,11 @@ export default function PaymentsSettingsPage() {
         <PageHeader
           title="Paramètres de Paiement"
           description="Définissez votre pays de résidence pour activer votre mode de paiement."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Réglages', href: '/dashboard/reglages/compte' },
+            { label: 'Paiements' },
+          ]}
         />
         <Alert>
           <AlertTitle>Profil incomplet</AlertTitle>
@@ -188,6 +203,11 @@ export default function PaymentsSettingsPage() {
       <PageHeader
         title="Paramètres de Paiement"
         description="Sélectionnez votre mode de réception puis finalisez la vérification."
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Réglages', href: '/dashboard/reglages/compte' },
+          { label: 'Paiements' },
+        ]}
       />
 
       {payoutProvider === 'stripe' && !FEATURES.STRIPE_PAYMENTS && (
