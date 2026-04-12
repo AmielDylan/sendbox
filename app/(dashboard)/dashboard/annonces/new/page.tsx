@@ -46,9 +46,6 @@ import {
   IconLoader2,
   IconArrowLeft,
   IconArrowRight,
-  IconMapPin,
-  IconPackage,
-  IconCheck,
   IconCalendar,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
@@ -59,9 +56,9 @@ import { SubscriptionStatusPanel } from '@/components/features/subscriptions/Sub
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 const STEPS = [
-  { id: 1, title: 'Trajet', icon: IconMapPin },
-  { id: 2, title: 'Capacité', icon: IconPackage },
-  { id: 3, title: 'Confirmation', icon: IconCheck },
+  { id: 1, title: 'Trajet' },
+  { id: 2, title: 'Capacité' },
+  { id: 3, title: 'Confirmation' },
 ] as const
 
 export default function NewAnnouncementPage() {
@@ -257,7 +254,6 @@ export default function NewAnnouncementPage() {
 
             <div className="relative z-10 grid grid-cols-3 gap-4">
               {STEPS.map(step => {
-                const StepIcon = step.icon
                 const isActive = currentStep === step.id
                 const isCompleted = currentStep > step.id
 
@@ -275,13 +271,10 @@ export default function NewAnnouncementPage() {
                             : 'border-muted bg-muted text-muted-foreground'
                       }`}
                     >
-                      <StepIcon className="h-4 w-4" />
+                      <span className="text-sm font-semibold">{step.id}</span>
                     </div>
-                    <span className="mt-3 text-[11px] uppercase tracking-wider text-muted-foreground">
-                      Étape {step.id}
-                    </span>
                     <p
-                      className={`mt-1 text-sm font-medium ${
+                      className={`mt-3 text-sm font-medium ${
                         isActive ? 'text-foreground' : 'text-muted-foreground'
                       }`}
                     >
@@ -328,9 +321,8 @@ export default function NewAnnouncementPage() {
             {currentStep === 1 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Colonne DÉPART */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
-                    <IconMapPin className="h-5 w-5" />
+                <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                     Départ
                   </h3>
 
@@ -452,9 +444,8 @@ export default function NewAnnouncementPage() {
                 </div>
 
                 {/* Colonne ARRIVÉE */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg text-primary flex items-center gap-2">
-                    <IconMapPin className="h-5 w-5" />
+                <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                     Arrivée
                   </h3>
 
@@ -627,43 +618,35 @@ export default function NewAnnouncementPage() {
 
             {/* Étape 3 : Preview */}
             {currentStep === 3 && (
-              <div className="space-y-6">
-                <div className="grid gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <h3 className="font-semibold mb-2">Trajet</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {departureCity} (
-                      {departureCountry === 'FR' ? 'France' : 'Bénin'}) →{' '}
-                      {arrivalCity} (
-                      {arrivalCountry === 'FR' ? 'France' : 'Bénin'})
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
+              <div className="space-y-4">
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Trajet</span>
+                    <span className="text-sm text-muted-foreground">
+                      {departureCity} ·{' '}
+                      {departureCountry === 'FR' ? 'France' : 'Bénin'} →{' '}
+                      {arrivalCity} ·{' '}
+                      {arrivalCountry === 'FR' ? 'France' : 'Bénin'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                    <div>
                       Départ :{' '}
                       {departureDate &&
                         format(departureDate, 'PP', { locale: fr })}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
+                    </div>
+                    <div>
                       Arrivée :{' '}
                       {watch('arrival_date') &&
                         format(watch('arrival_date')!, 'PP', { locale: fr })}
-                    </p>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <h3 className="font-semibold mb-2">Capacité</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Poids disponible : {availableKg} kg
-                    </p>
-                  </div>
-
-                  {watch('description') && (
-                    <div className="p-4 border rounded-lg">
-                      <h3 className="font-semibold mb-2">Description</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {watch('description')}
-                      </p>
                     </div>
-                  )}
+                    <div>Poids dispo : {availableKg} kg</div>
+                    {watch('description') && (
+                      <div className="col-span-2">
+                        Note : {watch('description')}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -697,10 +680,7 @@ export default function NewAnnouncementPage() {
                       Envoi en cours...
                     </>
                   ) : (
-                    <>
-                      <IconCheck className="mr-2 h-4 w-4" />
-                      Soumettre mon voyage
-                    </>
+                    'Soumettre mon voyage'
                   )}
                 </Button>
               )}
