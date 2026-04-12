@@ -37,7 +37,7 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select(
-      'kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at'
+      'kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at, role'
     )
     .eq('id', user.id)
     .single()
@@ -82,8 +82,10 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
     }
   }
 
-  // Vérifier l'abonnement SEULEMENT si feature activée
-  if (isFeatureEnabled('SUBSCRIPTION_ENABLED') && intent !== 'draft') {
+  const isAdmin = (profile as any).role === 'admin'
+
+  // Vérifier l'abonnement SEULEMENT si feature activée (les admins sont exemptés)
+  if (!isAdmin && isFeatureEnabled('SUBSCRIPTION_ENABLED') && intent !== 'draft') {
     const subscriptionStatus = (profile.subscription_status ?? 'trialing') as
       | 'trialing'
       | 'active'

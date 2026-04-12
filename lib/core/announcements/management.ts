@@ -400,7 +400,7 @@ export async function toggleAnnouncementStatus(announcementId: string) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
-        'kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at'
+        'kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at, role'
       )
       .eq('id', user.id)
       .single()
@@ -409,8 +409,10 @@ export async function toggleAnnouncementStatus(announcementId: string) {
       return { error: 'Profil introuvable' }
     }
 
-    // Gate abonnement
-    if (isFeatureEnabled('SUBSCRIPTION_ENABLED')) {
+    const isAdmin = (profile as any).role === 'admin'
+
+    // Gate abonnement (les admins sont exemptés)
+    if (!isAdmin && isFeatureEnabled('SUBSCRIPTION_ENABLED')) {
       const subscriptionStatus = (profile.subscription_status ?? 'trialing') as
         | 'trialing'
         | 'active'
