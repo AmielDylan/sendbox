@@ -30,6 +30,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
@@ -82,6 +90,8 @@ export default function KYCPage() {
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
   const [confirmIdentity, setConfirmIdentity] = useState(false)
+  const [dialCode, setDialCode] = useState('+33')
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [documentCountryOpen, setDocumentCountryOpen] = useState(false)
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
@@ -337,6 +347,12 @@ export default function KYCPage() {
 
     return tokenResult.token.id
   }
+
+  // Sync dial code with account country
+  useEffect(() => {
+    if (normalizedAccountCountry === 'BJ') setDialCode('+229')
+    else if (normalizedAccountCountry === 'FR') setDialCode('+33')
+  }, [normalizedAccountCountry])
 
   // No page-level loading state needed; UI reacts to profile changes.
 
@@ -625,7 +641,7 @@ export default function KYCPage() {
           firstName,
           lastName,
           email,
-          phone,
+          phone: phone ? `${dialCode}${phone}` : '',
           birthDate,
           address,
           city,
@@ -706,8 +722,10 @@ export default function KYCPage() {
       if (sessionId) {
         await runStatusSync(sessionId, 0)
       }
-    } catch {
-      const message = 'Une erreur est survenue. Veuillez réessayer.'
+    } catch (err) {
+      const isDev = process.env.NODE_ENV !== 'production'
+      const detail = isDev && err instanceof Error ? err.message : ''
+      const message = `Une erreur est survenue. Veuillez réessayer.${detail ? ` (${detail})` : ''}`
       setFormError(message)
       toast.error(message)
     } finally {
@@ -738,7 +756,7 @@ export default function KYCPage() {
           firstName,
           lastName,
           email,
-          phone,
+          phone: phone ? `${dialCode}${phone}` : '',
           birthDate,
           address,
           city,
@@ -889,7 +907,7 @@ export default function KYCPage() {
             <CardTitle>Lancer la vérification d'identité</CardTitle>
             <CardDescription>{getKycMessage()}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
             {displayStatus !== 'pending' && step === 'document' && (
               <>
                 <div className="space-y-2">
@@ -1154,8 +1172,8 @@ export default function KYCPage() {
 
                 <Button
                   type="button"
-                  className="mt-4 w-full"
-                  onClick={handlePrepareAccount}
+                  className="mt-4 w-auto"
+                  onClick={() => setShowConfirmModal(true)}
                   disabled={isPreparingAccount || !canPrepareAccount}
                 >
                   {isPreparingAccount ? (
@@ -1216,7 +1234,7 @@ export default function KYCPage() {
                         <Label htmlFor="firstName">Prénom</Label>
                         <Input
                           id="firstName"
-                          placeholder="Amiel"
+                          placeholder="Tous vos prénoms (ex: Jean-Marie)"
                           value={firstName}
                           onChange={event => {
                             setFirstName(event.target.value)
@@ -1240,7 +1258,7 @@ export default function KYCPage() {
                         <Label htmlFor="lastName">Nom</Label>
                         <Input
                           id="lastName"
-                          placeholder="Adjovi"
+                          placeholder="Nom de famille exact (ex: Adjovi)"
                           value={lastName}
                           onChange={event => {
                             setLastName(event.target.value)
@@ -1289,22 +1307,35 @@ export default function KYCPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">Téléphone</Label>
-                        <Input
-                          id="phone"
-                          placeholder="+33612345678"
-                          value={phone}
-                          onChange={event => {
-                            setPhone(event.target.value)
-                            if (fieldErrors.phone) {
-                              clearFieldError('phone')
-                            }
-                          }}
-                          onFocus={() => clearFieldError('phone')}
-                          aria-invalid={Boolean(fieldErrors.phone)}
-                          className={cn(
-                            fieldErrors.phone && 'border-destructive'
-                          )}
-                        />
+                        <div className="flex gap-2">
+                          <Select value={dialCode} onValueChange={setDialCode}>
+                            <SelectTrigger className="w-24 shrink-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="+33">+33</SelectItem>
+                              <SelectItem value="+229">+229</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <div className="flex-1">
+                            <Input
+                              id="phone"
+                              placeholder="6 12 34 56 78"
+                              value={phone}
+                              onChange={event => {
+                                setPhone(event.target.value)
+                                if (fieldErrors.phone) {
+                                  clearFieldError('phone')
+                                }
+                              }}
+                              onFocus={() => clearFieldError('phone')}
+                              aria-invalid={Boolean(fieldErrors.phone)}
+                              className={cn(
+                                fieldErrors.phone && 'border-destructive'
+                              )}
+                            />
+                          </div>
+                        </div>
                         {fieldErrors.phone && (
                           <p className="text-xs text-destructive">
                             {fieldErrors.phone}
@@ -1412,24 +1443,14 @@ export default function KYCPage() {
                     </div>
                   </div>
 
-                  <Alert>
-                    <IconShieldLock className="h-4 w-4" />
-                    <AlertTitle>Sécurité & confidentialité</AlertTitle>
-                    <AlertDescription>
-                      <p>
-                        La vérification est opérée par un prestataire sécurisé.
-                        Nous ne stockons pas vos documents, uniquement le statut
-                        de vérification et les informations déclarées.
-                      </p>
-                      <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
-                        <li>Données chiffrées pendant le transfert.</li>
-                        <li>
-                          Utilisation strictement liée à la conformité KYC.
-                        </li>
-                        <li>Vous pouvez relancer la vérification si besoin.</li>
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
+                  <p className="text-xs text-muted-foreground">
+                    Vos données sont transmises à Stripe Identity de façon
+                    sécurisée.{' '}
+                    <Link href="/cgv" className="underline hover:text-foreground">
+                      Voir nos CGU
+                    </Link>
+                    .
+                  </p>
 
                   <div className="space-y-2">
                     <div
@@ -1452,9 +1473,15 @@ export default function KYCPage() {
                         htmlFor="confirmIdentity"
                         className="cursor-pointer text-sm font-normal leading-5"
                       >
-                        Je confirme que les informations renseignées sont
-                        conformes aux données présentes sur ma pièce
-                        d&apos;identité.
+                        J&apos;accepte les{' '}
+                        <Link
+                          href="/cgv"
+                          className="underline hover:text-foreground"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          Conditions Générales d&apos;Utilisation
+                        </Link>{' '}
+                        et confirme que les informations sont exactes.
                       </Label>
                     </div>
                     {fieldErrors.confirmIdentity && (
@@ -1504,6 +1531,62 @@ export default function KYCPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de confirmation avant lancement de la vérification */}
+      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer vos informations</DialogTitle>
+            <DialogDescription>
+              Vérifiez les informations ci-dessous avant de lancer la
+              vérification d&apos;identité.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Pays de résidence</span>
+              <span className="font-medium">
+                {effectiveAccountCountry || '—'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Pays du document</span>
+              <span className="font-medium">
+                {effectiveDocumentCountry || '—'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Type de document</span>
+              <span className="font-medium">
+                {effectiveDocumentType === 'passport'
+                  ? 'Passeport'
+                  : effectiveDocumentType
+                    ? "Carte nationale d'identité"
+                    : '—'}
+              </span>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
+              Modifier
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setShowConfirmModal(false)
+                handlePrepareAccount()
+              }}
+              disabled={isPreparingAccount}
+            >
+              Confirmer et continuer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
