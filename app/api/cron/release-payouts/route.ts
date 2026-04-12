@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
   const startTime = new Date()
-  
+
   // Log job start
   const { data: jobLog } = await (admin as any)
     .from('cron_job_logs')
@@ -80,7 +80,10 @@ export async function POST(req: NextRequest) {
         errors.push({ bookingId, error: result.error })
       }
     } catch (releaseError: any) {
-      errors.push({ bookingId, error: releaseError?.message || 'unknown_error' })
+      errors.push({
+        bookingId,
+        error: releaseError?.message || 'unknown_error',
+      })
     }
   }
 

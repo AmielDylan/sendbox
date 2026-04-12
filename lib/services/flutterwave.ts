@@ -35,7 +35,11 @@ type TokenCache = { token: string; expiresAt: number } | null
 let tokenCache: TokenCache = null
 
 const getAccessToken = async () => {
-  if (!hasOAuthCredentials || !FLUTTERWAVE_CLIENT_ID || !FLUTTERWAVE_CLIENT_SECRET) {
+  if (
+    !hasOAuthCredentials ||
+    !FLUTTERWAVE_CLIENT_ID ||
+    !FLUTTERWAVE_CLIENT_SECRET
+  ) {
     throw new Error('Flutterwave OAuth credentials are missing')
   }
 
@@ -59,9 +63,10 @@ const getAccessToken = async () => {
     }
   )
 
-  const data = (await res.json().catch(() => null)) as
-    | { access_token?: string; expires_in?: number }
-    | null
+  const data = (await res.json().catch(() => null)) as {
+    access_token?: string
+    expires_in?: number
+  } | null
 
   if (!res.ok || !data?.access_token) {
     throw new Error('Impossible de générer le token Flutterwave')

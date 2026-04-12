@@ -25,7 +25,9 @@ type BankOption = {
   name: string
 }
 
-export function FlutterwaveBankSetup({ onCompleted }: FlutterwaveBankSetupProps) {
+export function FlutterwaveBankSetup({
+  onCompleted,
+}: FlutterwaveBankSetupProps) {
   const { profile } = useAuth()
   const [accountNumber, setAccountNumber] = useState('')
   const [bankCode, setBankCode] = useState('')
@@ -77,15 +79,17 @@ export function FlutterwaveBankSetup({ onCompleted }: FlutterwaveBankSetupProps)
 
         const list = Array.isArray(data?.data) ? data.data : []
         const normalized = list
-          .map((bank: any): BankOption => ({
-            code: typeof bank?.code === 'string' ? bank.code : '',
-            name:
-              typeof bank?.name === 'string'
-                ? bank.name
-                : typeof bank?.code === 'string'
-                  ? bank.code
-                  : '',
-          }))
+          .map(
+            (bank: any): BankOption => ({
+              code: typeof bank?.code === 'string' ? bank.code : '',
+              name:
+                typeof bank?.name === 'string'
+                  ? bank.name
+                  : typeof bank?.code === 'string'
+                    ? bank.code
+                    : '',
+            })
+          )
           .filter((bank: BankOption) => bank.code && bank.name)
           .sort((a: BankOption, b: BankOption) =>
             a.name.localeCompare(b.name, 'fr')
@@ -152,7 +156,9 @@ export function FlutterwaveBankSetup({ onCompleted }: FlutterwaveBankSetupProps)
     } catch (error) {
       console.error(error)
       toast.error(
-        error instanceof Error ? error.message : 'Erreur lors de la configuration'
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors de la configuration'
       )
     } finally {
       setLoading(false)

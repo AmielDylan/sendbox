@@ -11,6 +11,7 @@ Modèle de rôles **aligné** sur votre base : `user | partner | admin` (partner
 > Les nouvelles tables peuvent être ajoutées en plus de `transactions` si vous voulez séparer paiement vs transfert.
 
 ### profiles
+
 - id (uuid, pk)
 - role (enum `user | partner | admin`)
 - kyc_status (enum existant)
@@ -21,7 +22,9 @@ Modèle de rôles **aligné** sur votre base : `user | partner | admin` (partner
 - created_at, updated_at
 
 ### bookings (déjà existant)
+
 Ajouter/normaliser :
+
 - status (enum booking_status)
 - total_amount (numeric)
 - platform_fee (numeric)
@@ -32,6 +35,7 @@ Ajouter/normaliser :
 - released_at (timestamptz)
 
 ### payments (nouvelle table recommandée)
+
 - id (uuid, pk)
 - booking_id (fk)
 - stripe_payment_intent_id (text)
@@ -43,6 +47,7 @@ Ajouter/normaliser :
 - created_at
 
 ### transfers (nouvelle table recommandée)
+
 - id (uuid, pk)
 - booking_id (fk)
 - stripe_transfer_id (text)
@@ -52,6 +57,7 @@ Ajouter/normaliser :
 - created_at
 
 ### disputes
+
 - id (uuid, pk)
 - booking_id (fk)
 - status (enum dispute_status)
@@ -60,6 +66,7 @@ Ajouter/normaliser :
 - resolved_at (timestamptz)
 
 ### Enums recommandés
+
 - booking_status: DRAFT, PENDING_PAYMENT, PAID_HELD, DEPOSIT_CONFIRMED, DISPUTE_OPEN, RELEASED_TO_TRAVELER, REFUNDED, CANCELED
 - payment_status: REQUIRES_PAYMENT_METHOD, REQUIRES_CONFIRMATION, SUCCEEDED, REFUNDED, PARTIALLY_REFUNDED
 - transfer_status: PENDING, PAID, FAILED, REVERSED
@@ -70,15 +77,20 @@ Ajouter/normaliser :
 ## 2) API Routes (REST)
 
 ### POST /connect/onboard (partner)
+
 Crée un compte Express si absent, puis génère un Account Link.
 Response:
+
 ```json
 { "url": "https://connect.stripe.com/..." }
 ```
+
 Idempotency: `profile.id` (réutiliser le même `stripe_connect_account_id`).
 
 ### GET /connect/status (partner)
+
 Response:
+
 ```json
 {
   "payouts_enabled": true,
@@ -88,23 +100,30 @@ Response:
 ```
 
 ### POST /bookings
+
 Crée la réservation (draft / pending payment).
 
 ### POST /bookings/{id}/pay
+
 Crée + confirme un PaymentIntent (capture automatique).  
 Response:
+
 ```json
 { "client_secret": "pi_..._secret_..." }
 ```
+
 Idempotency: `booking_id` (pas de double paiement).
 
 ### POST /bookings/{id}/confirm-deposit (sender)
+
 Marque la remise confirmée et déclenche le transfert si possible.
 
 ### POST /bookings/{id}/open-dispute (sender)
+
 Gèle la libération et crée une dispute.
 
 ### POST /webhooks/stripe
+
 Gère :
 `payment_intent.succeeded`, `charge.refunded`, `account.updated`, `transfer.*`, `payout.failed`.
 
@@ -113,7 +132,9 @@ Gère :
 ## 3) Stripe Objects & Flow (best practices)
 
 ### Onboarding Express (Stripe Node)
+
 Utiliser la v2 core API (recommandée) :
+
 ```ts
 const account = await stripe.v2.core.accounts.create({
   email,
@@ -131,19 +152,23 @@ const accountLink = await stripe.v2.core.accountLinks.create({
 ```
 
 ### Paiement (platform)
+
 - PaymentIntent sur le compte plateforme.
 - capture_method = `automatic`
 - metadata: booking_id, sender_id, traveler_id
 
 ### Hold (sans transfert)
+
 - À `payment_intent.succeeded`, marquer `booking.status = PAID_HELD`.
 - Aucune sortie de fonds vers le partner tant que la remise n’est pas confirmée.
 
 ### Libération
+
 **A)** `confirm-deposit` → transfert si `payouts_enabled` et pas de litige  
 **B)** Job à J+7 → transfert auto si `payouts_enabled` et pas de litige
 
 ### Transfer (separate charges & transfers)
+
 ```ts
 await stripe.transfers.create({
   amount: traveler_amount,
@@ -152,10 +177,13 @@ await stripe.transfers.create({
   metadata: { booking_id },
 })
 ```
+
 La commission plateforme reste sur le solde Sendbox.
 
 ### Refund / Dispute
+
 Si litige en faveur du sender :
+
 - **avant transfert** : refund PaymentIntent
 - **après transfert** : reversal du transfert si possible + marquage `owed`
 
@@ -169,6 +197,7 @@ Si litige en faveur du sender :
 ---
 
 ## 5) UX Copy (FR, intégré)
+
 - Activer les paiements
 - Ajouter votre compte bancaire
 - Vérification d’identité

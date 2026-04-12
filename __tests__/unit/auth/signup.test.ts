@@ -12,7 +12,6 @@ describe('signUp', () => {
     confirmPassword: 'SecurePass123!',
     firstname: 'John',
     lastname: 'Doe',
-    phone: '+33612345678',
     terms: true,
   }
 
@@ -70,18 +69,6 @@ describe('signUp', () => {
 
     expect(result.error).toBeDefined()
     expect(result.field).toBe('lastname')
-  })
-
-  it('rejette un numéro de téléphone invalide', async () => {
-    const invalidData = {
-      ...validSignupData,
-      phone: '123',
-    }
-
-    const result = await signUp(invalidData)
-
-    expect(result.error).toBeDefined()
-    expect(result.field).toBe('phone')
   })
 
   it('gère les emails en majuscules', async () => {

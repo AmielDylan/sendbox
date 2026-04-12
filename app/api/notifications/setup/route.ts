@@ -26,25 +26,26 @@ export async function POST() {
     return Response.json({ success: true })
   }
 
-  const needsKyc =
-    FEATURES.KYC_ENABLED && profile.kyc_status !== 'approved'
+  const needsKyc = FEATURES.KYC_ENABLED && profile.kyc_status !== 'approved'
   const needsPayments = (profile as any)?.payout_status !== 'active'
 
   if (!needsKyc && !needsPayments) {
     return Response.json({ success: true })
   }
 
-  const title = needsKyc && needsPayments
-    ? 'Action requise : identité et paiements'
-    : needsKyc
-      ? "Action requise : vérification d'identité"
-      : 'Action requise : activer vos paiements'
+  const title =
+    needsKyc && needsPayments
+      ? 'Action requise : identité et paiements'
+      : needsKyc
+        ? "Action requise : vérification d'identité"
+        : 'Action requise : activer vos paiements'
 
-  const content = needsKyc && needsPayments
-    ? "Vérifiez votre identité et activez vos paiements pour recevoir vos gains."
-    : needsKyc
-      ? "Veuillez vérifier votre identité pour débloquer toutes les fonctionnalités."
-      : "Activez vos paiements pour recevoir vos gains."
+  const content =
+    needsKyc && needsPayments
+      ? 'Vérifiez votre identité et activez vos paiements pour recevoir vos gains.'
+      : needsKyc
+        ? 'Veuillez vérifier votre identité pour débloquer toutes les fonctionnalités.'
+        : 'Activez vos paiements pour recevoir vos gains.'
 
   const { data: existing } = await supabase
     .from('notifications')

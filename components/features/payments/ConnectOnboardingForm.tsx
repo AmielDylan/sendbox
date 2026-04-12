@@ -109,16 +109,15 @@ export function ConnectOnboardingForm({
   }
 
   return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations bancaires</CardTitle>
-          <CardDescription>
-            Ajoutez le compte qui recevra vos virements.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-
+    <Card>
+      <CardHeader>
+        <CardTitle>Informations bancaires</CardTitle>
+        <CardDescription>
+          Ajoutez le compte qui recevra vos virements.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-md p-3 flex gap-2">
             <IconAlertCircle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-blue-900">

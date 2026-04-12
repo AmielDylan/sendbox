@@ -73,8 +73,7 @@ export async function POST(req: Request) {
     return Response.json({ received: true })
   }
 
-  const transferId =
-    data?.id || data?.transfer?.id || data?.transfer_id || null
+  const transferId = data?.id || data?.transfer?.id || data?.transfer_id || null
   const bookingReference = data?.reference || data?.tx_ref || null
   const status = data?.status
 

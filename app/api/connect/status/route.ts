@@ -55,7 +55,10 @@ export async function GET() {
     | string
     | null
     | undefined
-  const payoutErrorAt = (profile as any)?.payout_error_at as string | null | undefined
+  const payoutErrorAt = (profile as any)?.payout_error_at as
+    | string
+    | null
+    | undefined
 
   const buildUpdate = (payload: Record<string, any>) => {
     const updates: Record<string, any> = {}
@@ -130,7 +133,9 @@ export async function GET() {
     const payoutsEnabled = Boolean(status.payoutsEnabled)
     const requirements = status.requirements || null
     const requirementsJson = requirements
-      ? (JSON.parse(JSON.stringify(requirements)) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
+      ? (JSON.parse(
+          JSON.stringify(requirements)
+        ) as Database['public']['Tables']['profiles']['Row']['stripe_requirements'])
       : null
     const onboardingCompleted =
       payoutsEnabled &&

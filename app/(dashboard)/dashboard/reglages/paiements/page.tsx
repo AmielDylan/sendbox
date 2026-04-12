@@ -274,7 +274,10 @@ export default function PaymentsSettingsPage() {
                       : 'Choisissez votre opérateur et validez votre numéro par OTP.'}
                 </p>
               </div>
-              <AlertDialog open={changeModeOpen} onOpenChange={setChangeModeOpen}>
+              <AlertDialog
+                open={changeModeOpen}
+                onOpenChange={setChangeModeOpen}
+              >
                 <AlertDialogTrigger asChild>
                   <Button variant="outline">Changer de mode</Button>
                 </AlertDialogTrigger>
@@ -303,9 +306,7 @@ export default function PaymentsSettingsPage() {
                 <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
                   <div className="flex flex-wrap items-center gap-3">
                     <Badge className="bg-green-500 text-white">Activé</Badge>
-                    <p className="text-sm font-semibold">
-                      Paiements activés
-                    </p>
+                    <p className="text-sm font-semibold">Paiements activés</p>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Votre compte bancaire est vérifié. Les virements sont

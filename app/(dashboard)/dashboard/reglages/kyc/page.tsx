@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Popover,
   PopoverContent,
@@ -65,7 +66,6 @@ export default function KYCPage() {
   const [kycStatus, setKycStatus] = useState<KYCStatus>(null)
   const [displayStatus, setDisplayStatus] = useState<KYCStatus>(null)
   const [submittedAt, setSubmittedAt] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
@@ -81,6 +81,8 @@ export default function KYCPage() {
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
+  const [confirmIdentity, setConfirmIdentity] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [documentCountryOpen, setDocumentCountryOpen] = useState(false)
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
   const [accountCountryOpen, setAccountCountryOpen] = useState(false)
@@ -108,8 +110,22 @@ export default function KYCPage() {
     () => new Set<string>(residenceCountries),
     [residenceCountries]
   )
-  const normalizedAccountCountry = accountCountry.trim().toUpperCase()
-  const normalizedDocumentCountry = documentCountry.trim().toUpperCase()
+  const profileAccountCountry = (profile as any)?.country as string | undefined
+  const profileDocumentCountry = (profile as any)?.kyc_nationality as
+    | string
+    | undefined
+  const profileDocumentType = (profile as any)?.kyc_document_type as
+    | DocumentType
+    | undefined
+  const effectiveAccountCountry = accountCountry || profileAccountCountry || ''
+  const effectiveDocumentCountry =
+    documentCountry || profileDocumentCountry || ''
+  const effectiveDocumentType =
+    documentType || profileDocumentType || ('' as DocumentType | '')
+  const normalizedAccountCountry = effectiveAccountCountry.trim().toUpperCase()
+  const normalizedDocumentCountry = effectiveDocumentCountry
+    .trim()
+    .toUpperCase()
   const isStripeConnectCountry =
     Boolean(normalizedAccountCountry) &&
     stripeConnectCountrySet.has(normalizedAccountCountry as any)
@@ -125,13 +141,52 @@ export default function KYCPage() {
   )
   const canPrepareAccount =
     Boolean(
-      documentType && normalizedDocumentCountry && normalizedAccountCountry
+      effectiveDocumentType &&
+      normalizedDocumentCountry &&
+      normalizedAccountCountry
     ) &&
     isResidenceCountrySupported &&
     isIdentityCountrySupported
 
   const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
+
+  const clearFieldError = (field: string) => {
+    setFieldErrors(prev => {
+      if (!prev[field]) return prev
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
+  }
+
+  const validateDetailsForm = () => {
+    const errors: Record<string, string> = {}
+
+    if (!firstName.trim()) errors.firstName = 'Champ requis'
+    if (!lastName.trim()) errors.lastName = 'Champ requis'
+    if (!email.trim()) errors.email = 'Champ requis'
+    if (!phone.trim()) errors.phone = 'Champ requis'
+    if (!birthDate.trim()) errors.birthDate = 'Champ requis'
+    if (!address.trim()) errors.address = 'Champ requis'
+    if (!city.trim()) errors.city = 'Champ requis'
+    if (!postalCode.trim()) errors.postalCode = 'Champ requis'
+    if (!confirmIdentity) {
+      errors.confirmIdentity =
+        "Veuillez confirmer que vos informations correspondent au document."
+    }
+
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      const firstErrorField = Object.keys(errors)[0]
+      const el = document.getElementById(firstErrorField)
+      if (el instanceof HTMLElement) {
+        el.focus()
+      }
+      return false
+    }
+    return true
+  }
 
   const connectCountryOptions = useMemo(() => {
     const displayNames =
@@ -283,14 +338,7 @@ export default function KYCPage() {
     return tokenResult.token.id
   }
 
-
-  useEffect(() => {
-    if (isAdmin) {
-      setIsLoading(false)
-      return
-    }
-    setIsLoading(false)
-  }, [isAdmin])
+  // No page-level loading state needed; UI reacts to profile changes.
 
   useEffect(() => {
     if (!profile) return
@@ -318,11 +366,14 @@ export default function KYCPage() {
     if (!postalCode && (profile as any)?.postal_code) {
       setPostalCode((profile as any).postal_code as string)
     }
-    if (!accountCountry && (profile as any)?.country) {
-      setAccountCountry((profile as any).country as string)
+    if (!accountCountry && profileAccountCountry) {
+      setAccountCountry(profileAccountCountry)
     }
-    if (!documentCountry && (profile as any)?.kyc_nationality) {
-      setDocumentCountry((profile as any).kyc_nationality as string)
+    if (!documentCountry && profileDocumentCountry) {
+      setDocumentCountry(profileDocumentCountry)
+    }
+    if (!documentType && profileDocumentType) {
+      setDocumentType(profileDocumentType)
     }
   }, [
     profile,
@@ -337,6 +388,10 @@ export default function KYCPage() {
     postalCode,
     accountCountry,
     documentCountry,
+    documentType,
+    profileAccountCountry,
+    profileDocumentCountry,
+    profileDocumentType,
   ])
 
   useEffect(() => {
@@ -408,6 +463,22 @@ export default function KYCPage() {
     setSubmittedAt(nextSubmitted)
     if (nextStatus === 'approved' || nextStatus === 'rejected') {
       setForceDetails(false)
+      setVerificationSessionId(null)
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('kyc_verification_session_id')
+      }
+    }
+    if (nextStatus === 'rejected') {
+      setStep('details')
+      setForceDetails(true)
+    }
+    if (nextStatus === 'incomplete') {
+      const hasDocument = Boolean((profile as any)?.kyc_document_type)
+      const hasNationality = Boolean((profile as any)?.kyc_nationality)
+      if (hasDocument && hasNationality) {
+        setStep('details')
+        setForceDetails(true)
+      }
     }
   }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
 
@@ -423,6 +494,60 @@ export default function KYCPage() {
       }
     }
   }, [])
+
+  const runStatusSync = async (
+    sessionId: string,
+    attempt: number
+  ): Promise<void> => {
+    try {
+      const res = await fetch('/api/stripe/identity/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        return
+      }
+
+      if (data?.kycStatus) {
+        setKycStatus(data.kycStatus)
+        if (data.submittedAt) {
+          setSubmittedAt(data.submittedAt)
+        }
+        if (data.kycStatus === 'rejected') {
+          setFormError(
+            data.rejectionReason ||
+              "La vérification d'identité a échoué. Corrigez vos informations."
+          )
+          setStep('details')
+          setForceDetails(true)
+          pendingHoldUntilRef.current = null
+        }
+        if (data.kycStatus !== 'pending') {
+          return
+        }
+      }
+
+      if (data?.status === 'processing' && attempt < 5) {
+        const delay = attempt === 0 ? 5000 : attempt === 1 ? 10000 : 15000
+        statusSyncTimeoutRef.current = window.setTimeout(() => {
+          runStatusSync(sessionId, attempt + 1)
+        }, delay)
+      }
+    } catch {
+      // Silent fallback; webhook remains the primary source.
+    }
+  }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (kycStatus !== 'pending') return
+    const stored = sessionStorage.getItem('kyc_verification_session_id')
+    if (!stored) return
+    setVerificationSessionId(stored)
+    runStatusSync(stored, 0)
+  }, [kycStatus])
 
   useEffect(() => {
     if (pendingTimeoutRef.current) {
@@ -469,18 +594,16 @@ export default function KYCPage() {
       toast.error('Préparez votre compte avant de continuer')
       return
     }
-    if (!documentType || !documentCountry || !accountCountry) {
-      toast.error(
-        'Veuillez sélectionner un pays de résidence et un document'
-      )
+    if (
+      !effectiveDocumentType ||
+      !normalizedDocumentCountry ||
+      !normalizedAccountCountry
+    ) {
+      toast.error('Veuillez sélectionner un pays de résidence et un document')
       return
     }
-    if (!firstName || !lastName || !email || !phone) {
-      toast.error('Veuillez compléter vos informations personnelles')
-      return
-    }
-    if (!birthDate || !address || !city || !postalCode) {
-      toast.error('Veuillez compléter vos informations personnelles')
+    if (!validateDetailsForm()) {
+      setFormError('Veuillez corriger les champs en erreur.')
       return
     }
 
@@ -490,7 +613,9 @@ export default function KYCPage() {
     try {
       const stripe = await stripePromise
       if (!stripe) {
-        toast.error("Le service de vérification n'est pas disponible. Réessayez.")
+        toast.error(
+          "Le service de vérification n'est pas disponible. Réessayez."
+        )
         return
       }
 
@@ -505,9 +630,19 @@ export default function KYCPage() {
           address,
           city,
           postalCode,
-          country: normalizedAccountCountry || accountCountry,
+          country: normalizedAccountCountry,
         })
         accountTokenId = await createAccountToken(stripe, individualPayload)
+      }
+
+      if (profileAccountCountry && !accountCountry) {
+        setAccountCountry(profileAccountCountry)
+      }
+      if (profileDocumentCountry && !documentCountry) {
+        setDocumentCountry(profileDocumentCountry)
+      }
+      if (profileDocumentType && !documentType) {
+        setDocumentType(profileDocumentType)
       }
 
       const result = await startKYCVerification({
@@ -515,9 +650,9 @@ export default function KYCPage() {
         lastName,
         email,
         phone,
-        documentType: documentType as DocumentType,
-        documentCountry,
-        accountCountry,
+        documentType: effectiveDocumentType as DocumentType,
+        documentCountry: normalizedDocumentCountry,
+        accountCountry: normalizedAccountCountry,
         birthday: birthDate,
         address,
         city,
@@ -545,7 +680,7 @@ export default function KYCPage() {
       if (error) {
         const message =
           error.message ||
-            "La vérification d'identité n'a pas pu être complétée."
+          "La vérification d'identité n'a pas pu être complétée."
         setFormError(message)
         toast.error(message)
         return
@@ -553,6 +688,12 @@ export default function KYCPage() {
 
       if (result.verificationSessionId) {
         setVerificationSessionId(result.verificationSessionId)
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(
+            'kyc_verification_session_id',
+            result.verificationSessionId
+          )
+        }
       }
 
       toast.success('Vérification envoyée avec succès.')
@@ -561,52 +702,9 @@ export default function KYCPage() {
       setSubmittedAt(submittedAt)
       setForceDetails(false)
 
-      const syncStatus = async (
-        sessionId: string,
-        attempt: number
-      ): Promise<void> => {
-        try {
-          const res = await fetch('/api/stripe/identity/status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId }),
-          })
-          const data = await res.json().catch(() => ({}))
-          if (!res.ok) {
-            return
-          }
-
-          if (data?.kycStatus) {
-            setKycStatus(data.kycStatus)
-            if (data.submittedAt) {
-              setSubmittedAt(data.submittedAt)
-            }
-            if (data.kycStatus === 'rejected') {
-              setFormError(
-                data.rejectionReason ||
-                  "La vérification d'identité a échoué. Corrigez vos informations."
-              )
-              setStep('details')
-              pendingHoldUntilRef.current = null
-            }
-            if (data.kycStatus !== 'pending') {
-              return
-            }
-          }
-
-          if (data?.status === 'processing' && attempt < 2) {
-            statusSyncTimeoutRef.current = window.setTimeout(() => {
-              syncStatus(sessionId, attempt + 1)
-            }, attempt === 0 ? 5000 : 10000)
-          }
-        } catch {
-          // Silent fallback; webhook remains the primary source.
-        }
-      }
-
       const sessionId = result.verificationSessionId
       if (sessionId) {
-        await syncStatus(sessionId, 0)
+        await runStatusSync(sessionId, 0)
       }
     } catch {
       const message = 'Une erreur est survenue. Veuillez réessayer.'
@@ -618,10 +716,12 @@ export default function KYCPage() {
   }
 
   const handlePrepareAccount = async () => {
-    if (!documentType || !documentCountry || !accountCountry) {
-      toast.error(
-        'Veuillez sélectionner un pays de résidence et un document'
-      )
+    if (
+      !effectiveDocumentType ||
+      !normalizedDocumentCountry ||
+      !normalizedAccountCountry
+    ) {
+      toast.error('Veuillez sélectionner un pays de résidence et un document')
       return
     }
 
@@ -643,14 +743,15 @@ export default function KYCPage() {
           address,
           city,
           postalCode,
-          country: normalizedAccountCountry || accountCountry,
+          country: normalizedAccountCountry,
         })
         accountTokenId = await createAccountToken(stripe, individualPayload)
       }
 
       const result = await prepareKYCAccount({
-        accountCountry: normalizedAccountCountry || accountCountry,
-        documentCountry: normalizedDocumentCountry || documentCountry,
+        accountCountry: normalizedAccountCountry,
+        documentCountry: normalizedDocumentCountry,
+        documentType: effectiveDocumentType as DocumentType,
         accountTokenId,
       })
       if (result.error) {
@@ -667,6 +768,7 @@ export default function KYCPage() {
       setKycStatus('incomplete')
       setDisplayStatus('incomplete')
       setFormError(null)
+      setConfirmIdentity(false)
       setStep('details')
       setForceDetails(true)
       toast.success('Compte prêt pour la vérification')
@@ -677,14 +779,6 @@ export default function KYCPage() {
     } finally {
       setIsPreparingAccount(false)
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
   }
 
   if (isAdmin) {
@@ -746,7 +840,7 @@ export default function KYCPage() {
       case 'rejected':
         return 'Votre vérification a été refusée. Corrigez vos informations puis relancez la procédure.'
       case 'incomplete':
-        return "Aucune vérification en cours. Lancez la vérification pour continuer."
+        return 'Aucune vérification en cours. Lancez la vérification pour continuer.'
       default:
         return 'Sélectionnez votre document puis continuez la vérification.'
     }
@@ -756,7 +850,7 @@ export default function KYCPage() {
     <div className="space-y-6">
       <PageHeader
         title="Vérification d'identité (KYC)"
-          description="Nous vérifions vos documents pour sécuriser votre compte."
+        description="Nous vérifions vos documents pour sécuriser votre compte."
       />
 
       {displayStatus === 'approved' && (
@@ -783,9 +877,7 @@ export default function KYCPage() {
         <Card>
           <CardHeader>
             <CardTitle>Lancer la vérification d'identité</CardTitle>
-            <CardDescription>
-              {getKycMessage()}
-            </CardDescription>
+            <CardDescription>{getKycMessage()}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {displayStatus !== 'pending' && step === 'document' && (
@@ -996,7 +1088,8 @@ export default function KYCPage() {
                     <SelectTrigger id="documentType">
                       <SelectValue
                         placeholder={
-                          normalizedDocumentCountry && isIdentityCountrySupported
+                          normalizedDocumentCountry &&
+                          isIdentityCountrySupported
                             ? 'Sélectionnez un document'
                             : 'Choisissez d’abord un pays'
                         }
@@ -1032,13 +1125,13 @@ export default function KYCPage() {
                     <AlertTitle>Pays de document non supporté</AlertTitle>
                     <AlertDescription>
                       Stripe Identity n&apos;est pas disponible pour ce pays de
-                      document. Choisissez un pays pris en charge ou utilisez
-                      un document accepté par Stripe.
+                      document. Choisissez un pays pris en charge ou utilisez un
+                      document accepté par Stripe.
                     </AlertDescription>
                   </Alert>
                 )}
 
-                {isPreparingAccount && normalizedAccountCountry === 'FR' && (
+                {isPreparingAccount && (
                   <Alert>
                     <IconShieldLock className="h-4 w-4" />
                     <AlertTitle>Merci de patienter</AlertTitle>
@@ -1067,46 +1160,71 @@ export default function KYCPage() {
               </>
             )}
 
-            {step === 'details' && (displayStatus !== 'pending' || forceDetails) && (
-              <>
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
-                  <div className="text-sm">
-                    <span className="font-medium">Résidence :</span>{' '}
-                    {accountCountry || '—'} •{' '}
-                    <span className="font-medium">Document :</span>{' '}
-                    {documentType === 'passport'
-                      ? 'Passeport'
-                      : "Carte d'identité"}{' '}
-                    • <span className="font-medium">Pays :</span>{' '}
-                    {documentCountry || '—'}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
+            {step === 'details' &&
+              (displayStatus !== 'pending' || forceDetails) && (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
+                    <div className="text-sm">
+                      <span className="font-medium">Résidence :</span>{' '}
+                      {effectiveAccountCountry || '—'} •{' '}
+                      <span className="font-medium">Document :</span>{' '}
+                      {effectiveDocumentType === 'passport'
+                        ? 'Passeport'
+                        : effectiveDocumentType
+                          ? "Carte d'identité"
+                          : '—'}{' '}
+                      • <span className="font-medium">Pays :</span>{' '}
+                      {effectiveDocumentCountry || '—'}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
                     onClick={() => {
                       setStep('document')
                       setForceDetails(false)
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    Modifier
-                  </Button>
-                </div>
+                      setConfirmIdentity(false)
+                      setVerificationSessionId(null)
+                      if (typeof window !== 'undefined') {
+                        sessionStorage.removeItem(
+                          'kyc_verification_session_id'
+                          )
+                        }
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      Modifier
+                    </Button>
+                  </div>
 
-                <div className="space-y-4 rounded-lg border border-border/60 p-4">
-                  <p className="text-sm font-semibold">
-                    Informations personnelles
-                  </p>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-4 rounded-lg border border-border/60 p-4">
+                    <p className="text-sm font-semibold">
+                      Informations personnelles
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">Prénom</Label>
                       <Input
                         id="firstName"
                         placeholder="Amiel"
                         value={firstName}
-                        onChange={event => setFirstName(event.target.value)}
+                        onChange={event => {
+                          setFirstName(event.target.value)
+                          if (fieldErrors.firstName) {
+                            clearFieldError('firstName')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('firstName')}
+                        aria-invalid={Boolean(fieldErrors.firstName)}
+                        className={cn(
+                          fieldErrors.firstName && 'border-destructive'
+                        )}
                       />
+                      {fieldErrors.firstName && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.firstName}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Nom</Label>
@@ -1114,8 +1232,23 @@ export default function KYCPage() {
                         id="lastName"
                         placeholder="Adjovi"
                         value={lastName}
-                        onChange={event => setLastName(event.target.value)}
+                        onChange={event => {
+                          setLastName(event.target.value)
+                          if (fieldErrors.lastName) {
+                            clearFieldError('lastName')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('lastName')}
+                        aria-invalid={Boolean(fieldErrors.lastName)}
+                        className={cn(
+                          fieldErrors.lastName && 'border-destructive'
+                        )}
                       />
+                      {fieldErrors.lastName && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.lastName}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -1125,9 +1258,24 @@ export default function KYCPage() {
                         id="email"
                         type="email"
                         value={email}
-                        onChange={event => setEmail(event.target.value)}
+                        onChange={event => {
+                          setEmail(event.target.value)
+                          if (fieldErrors.email) {
+                            clearFieldError('email')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('email')}
+                        aria-invalid={Boolean(fieldErrors.email)}
+                        className={cn(
+                          fieldErrors.email && 'border-destructive'
+                        )}
                         disabled
                       />
+                      {fieldErrors.email && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.email}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Téléphone</Label>
@@ -1135,8 +1283,23 @@ export default function KYCPage() {
                         id="phone"
                         placeholder="+33612345678"
                         value={phone}
-                        onChange={event => setPhone(event.target.value)}
+                        onChange={event => {
+                          setPhone(event.target.value)
+                          if (fieldErrors.phone) {
+                            clearFieldError('phone')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('phone')}
+                        aria-invalid={Boolean(fieldErrors.phone)}
+                        className={cn(
+                          fieldErrors.phone && 'border-destructive'
+                        )}
                       />
+                      {fieldErrors.phone && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.phone}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -1145,77 +1308,174 @@ export default function KYCPage() {
                       id="birthDate"
                       type="date"
                       value={birthDate}
-                      onChange={event => setBirthDate(event.target.value)}
+                      onChange={event => {
+                        setBirthDate(event.target.value)
+                        if (fieldErrors.birthDate) {
+                          clearFieldError('birthDate')
+                        }
+                      }}
+                      onFocus={() => clearFieldError('birthDate')}
+                      aria-invalid={Boolean(fieldErrors.birthDate)}
+                      className={cn(
+                        fieldErrors.birthDate && 'border-destructive'
+                      )}
                     />
+                    {fieldErrors.birthDate && (
+                      <p className="text-xs text-destructive">
+                        {fieldErrors.birthDate}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="address">Adresse</Label>
                     <Input
                       id="address"
-                      placeholder="28 Route de Bonsecours"
+                      placeholder="Adresse"
                       value={address}
-                      onChange={event => setAddress(event.target.value)}
+                      onChange={event => {
+                        setAddress(event.target.value)
+                        if (fieldErrors.address) {
+                          clearFieldError('address')
+                        }
+                      }}
+                      onFocus={() => clearFieldError('address')}
+                      aria-invalid={Boolean(fieldErrors.address)}
+                      className={cn(
+                        fieldErrors.address && 'border-destructive'
+                      )}
                     />
+                    {fieldErrors.address && (
+                      <p className="text-xs text-destructive">
+                        {fieldErrors.address}
+                      </p>
+                    )}
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="city">Ville</Label>
                       <Input
                         id="city"
-                        placeholder="Paris"
+                        placeholder="Ville"
                         value={city}
-                        onChange={event => setCity(event.target.value)}
+                        onChange={event => {
+                          setCity(event.target.value)
+                          if (fieldErrors.city) {
+                            clearFieldError('city')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('city')}
+                        aria-invalid={Boolean(fieldErrors.city)}
+                        className={cn(
+                          fieldErrors.city && 'border-destructive'
+                        )}
                       />
+                      {fieldErrors.city && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.city}
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="postalCode">Code postal</Label>
                       <Input
                         id="postalCode"
-                        placeholder="75012"
+                        placeholder="Code postal"
                         value={postalCode}
-                        onChange={event => setPostalCode(event.target.value)}
+                        onChange={event => {
+                          setPostalCode(event.target.value)
+                          if (fieldErrors.postalCode) {
+                            clearFieldError('postalCode')
+                          }
+                        }}
+                        onFocus={() => clearFieldError('postalCode')}
+                        aria-invalid={Boolean(fieldErrors.postalCode)}
+                        className={cn(
+                          fieldErrors.postalCode && 'border-destructive'
+                        )}
                       />
+                      {fieldErrors.postalCode && (
+                        <p className="text-xs text-destructive">
+                          {fieldErrors.postalCode}
+                        </p>
+                      )}
                     </div>
                   </div>
-                </div>
+                  </div>
 
                 <Alert>
                   <IconShieldLock className="h-4 w-4" />
                   <AlertTitle>Sécurité & confidentialité</AlertTitle>
-                  <AlertDescription>
-                    <p>
-                      La vérification est opérée par un prestataire sécurisé.
-                      Nous ne stockons pas vos documents, uniquement le statut
-                      de vérification et les informations déclarées.
-                    </p>
-                    <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
-                      <li>Données chiffrées pendant le transfert.</li>
-                      <li>Utilisation strictement liée à la conformité KYC.</li>
-                      <li>Vous pouvez relancer la vérification si besoin.</li>
-                    </ul>
+                    <AlertDescription>
+                      <p>
+                        La vérification est opérée par un prestataire sécurisé.
+                        Nous ne stockons pas vos documents, uniquement le statut
+                        de vérification et les informations déclarées.
+                      </p>
+                      <ul className="mt-2 list-disc list-inside text-xs text-muted-foreground">
+                        <li>Données chiffrées pendant le transfert.</li>
+                        <li>
+                          Utilisation strictement liée à la conformité KYC.
+                        </li>
+                        <li>Vous pouvez relancer la vérification si besoin.</li>
+                      </ul>
                   </AlertDescription>
                 </Alert>
 
-                <Button
-                  type="button"
-                  className="w-full"
-                  disabled={isSubmitting || (kycStatus === 'pending' && !forceDetails)}
-                  onClick={handleStartVerification}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Ouverture de la vérification...
-                    </>
-                  ) : (
-                    'Vérifier mon identité'
+                <div className="space-y-2">
+                  <div
+                    className={cn(
+                      'flex items-start gap-3 rounded-lg border border-border/60 px-4 py-3 text-sm',
+                      fieldErrors.confirmIdentity && 'border-destructive'
+                    )}
+                  >
+                    <Checkbox
+                      id="confirmIdentity"
+                      checked={confirmIdentity}
+                      onCheckedChange={value => {
+                        setConfirmIdentity(Boolean(value))
+                        if (fieldErrors.confirmIdentity) {
+                          clearFieldError('confirmIdentity')
+                        }
+                      }}
+                    />
+                    <Label
+                      htmlFor="confirmIdentity"
+                      className="cursor-pointer text-sm font-normal leading-5"
+                    >
+                      Je confirme que les informations renseignées sont
+                      conformes aux données présentes sur ma pièce
+                      d&apos;identité.
+                    </Label>
+                  </div>
+                  {fieldErrors.confirmIdentity && (
+                    <p className="text-xs text-destructive">
+                      {fieldErrors.confirmIdentity}
+                    </p>
                   )}
-                </Button>
-                {formError && (
-                  <p className="text-sm text-destructive">{formError}</p>
-                )}
-              </>
-            )}
+                </div>
+
+                <Button
+                    type="button"
+                    className="w-full"
+                    disabled={
+                      isSubmitting || (kycStatus === 'pending' && !forceDetails)
+                    }
+                    onClick={handleStartVerification}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Ouverture de la vérification...
+                      </>
+                    ) : (
+                      'Vérifier mon identité'
+                    )}
+                  </Button>
+                  {formError && (
+                    <p className="text-sm text-destructive">{formError}</p>
+                  )}
+                </>
+              )}
             {displayStatus === 'pending' && !forceDetails && (
               <Alert className="border-primary/20 bg-primary/5">
                 <IconClock className="h-4 w-4" />
