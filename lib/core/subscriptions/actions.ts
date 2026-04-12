@@ -35,12 +35,21 @@ export async function getSubscriptionStatus(): Promise<
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('subscription_status, trial_ends_at')
+    .select('subscription_status, trial_ends_at, role')
     .eq('id', user.id)
     .single()
 
   if (error || !profile) {
     return { error: 'Profil introuvable' }
+  }
+
+  if ((profile as any).role === 'admin') {
+    return {
+      status: 'active' as SubscriptionStatus,
+      trial_ends_at: null,
+      trial_days_remaining: null,
+      can_publish: true,
+    }
   }
 
   const status = (profile.subscription_status ??
