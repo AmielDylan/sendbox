@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { isAdmin, getAdminStats } from '@/lib/core/admin/actions'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageHeader } from '@/components/ui/page-header'
 import {
   IconUsers,
   IconFileCheck,
@@ -30,15 +31,14 @@ async function DashboardContent() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard Admin</h1>
-        <p className="text-muted-foreground">
-          Vue d'ensemble de la plateforme Sendbox
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard Admin"
+        description="Vue d'ensemble de la plateforme Sendbox"
+        breadcrumbs={[{ label: 'Dashboard Admin' }]}
+      />
 
       {/* KPIs */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -77,13 +77,30 @@ async function DashboardContent() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">CA ce mois</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Volume ce mois
+            </CardTitle>
             <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {stats.monthlyRevenue.toFixed(2)} EUR
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Commission plateforme
+            </CardTitle>
+            <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.platformCommission.toFixed(2)} EUR
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">3 % du volume</p>
           </CardContent>
         </Card>
       </div>

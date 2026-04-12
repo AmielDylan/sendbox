@@ -30,14 +30,23 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { IconLoader2, IconCircleX } from '@tabler/icons-react'
+import {
+  IconLoader2,
+  IconCircleX,
+  IconLuggage,
+  IconFilter,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminAnnouncementsPage() {
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [reason, setReason] = useState('')
+  const [filterSendbox, setFilterSendbox] = useState<
+    'all' | 'sendbox' | 'sendbox_available'
+  >('all')
 
   const supabase = createClient()
 
@@ -46,14 +55,21 @@ export default function AdminAnnouncementsPage() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['adminAnnouncements'],
+    queryKey: ['adminAnnouncements', filterSendbox],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('announcements')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100)
 
+      if (filterSendbox === 'sendbox') {
+        query = query.eq('is_sendbox', true)
+      } else if (filterSendbox === 'sendbox_available') {
+        query = query.eq('sendbox_available', true)
+      }
+
+      const { data, error } = await query
       if (error) throw error
       return data
     },
@@ -95,11 +111,43 @@ export default function AdminAnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Modération des annonces</h1>
-        <p className="text-muted-foreground">
-          Liste et modération de toutes les annonces
-        </p>
+      <PageHeader
+        title="Modération des annonces"
+        description="Liste et modération de toutes les annonces"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'Annonces' },
+        ]}
+      />
+
+      {/* Filtres Sendbox */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant={filterSendbox === 'all' ? 'default' : 'outline'}
+          onClick={() => setFilterSendbox('all')}
+        >
+          <IconFilter className="h-3.5 w-3.5 mr-1" />
+          Toutes
+        </Button>
+        <Button
+          size="sm"
+          variant={filterSendbox === 'sendbox' ? 'default' : 'outline'}
+          onClick={() => setFilterSendbox('sendbox')}
+        >
+          <IconLuggage className="h-3.5 w-3.5 mr-1" />
+          Sendbox disponible
+        </Button>
+        <Button
+          size="sm"
+          variant={
+            filterSendbox === 'sendbox_available' ? 'default' : 'outline'
+          }
+          onClick={() => setFilterSendbox('sendbox_available')}
+        >
+          <IconLuggage className="h-3.5 w-3.5 mr-1" />
+          Disponibles Sendbox
+        </Button>
       </div>
 
       <Card>
@@ -111,6 +159,7 @@ export default function AdminAnnouncementsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Trajet</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Prix/kg</TableHead>
                 <TableHead>Poids max</TableHead>
                 <TableHead>Statut</TableHead>
@@ -123,6 +172,23 @@ export default function AdminAnnouncementsPage() {
                 <TableRow key={announcement.id}>
                   <TableCell>
                     {announcement.departure_city} → {announcement.arrival_city}
+                  </TableCell>
+                  <TableCell>
+                    {announcement.is_sendbox ? (
+                      <Badge className="bg-primary/10 text-primary border-0 text-[10px]">
+                        <IconLuggage className="h-3 w-3 mr-1" />
+                        Sendbox
+                      </Badge>
+                    ) : announcement.sendbox_available ? (
+                      <Badge variant="outline" className="text-[10px]">
+                        <IconLuggage className="h-3 w-3 mr-1" />
+                        Sendbox
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-[10px]">
+                        P2P
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>{announcement.price_per_kg} EUR/kg</TableCell>
                   <TableCell>{announcement.available_kg} kg</TableCell>

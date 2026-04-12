@@ -31,6 +31,9 @@ export interface AnnouncementDetail {
   traveler_member_since: string | null
   traveler_kyc_status: 'pending' | 'approved' | 'rejected' | 'incomplete' | null
   reserved_weight: number
+  is_sendbox: boolean
+  sendbox_available: boolean
+  arrival_date?: string | null
 }
 
 export interface Review {
@@ -128,6 +131,9 @@ export async function getAnnouncementDetail(
       traveler_kyc_status: profile?.kyc_status || null,
       reserved_weight: reservedWeight,
       views_count: announcementData.views_count || 0,
+      is_sendbox: announcementData.is_sendbox ?? false,
+      sendbox_available: announcementData.sendbox_available ?? false,
+      arrival_date: announcementData.arrival_date || null,
     },
     error: null,
   }

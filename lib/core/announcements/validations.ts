@@ -38,6 +38,7 @@ export const createAnnouncementSchema = z
       .max(100, 'Maximum 100 € par kg'),
     description: z.string().max(500, 'Description trop longue').optional(),
     intent: z.enum(['draft', 'publish']).optional(),
+    sendbox_available: z.boolean().optional(),
   })
   .refine(data => data.arrival_date > data.departure_date, {
     message: "La date d'arrivée doit être après le départ",

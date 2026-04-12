@@ -1,5 +1,5 @@
 /**
- * Page d'édition d'annonce
+ * Page d'édition de voyage
  */
 
 'use client'
@@ -46,7 +46,6 @@ import {
   IconLoader2,
   IconMapPin,
   IconPackage,
-  IconCurrencyEuro,
   IconCalendar,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
@@ -93,7 +92,6 @@ export default function EditAnnouncementPage({
   const arrivalCity = watch('arrival_city')
   const departureDate = watch('departure_date')
   const availableKg = watch('available_kg')
-  const pricePerKg = watch('price_per_kg')
 
   const debouncedDepartureCity = useDebounce(departureCity || '', 300)
   const debouncedArrivalCity = useDebounce(arrivalCity || '', 300)
@@ -219,11 +217,11 @@ export default function EditAnnouncementPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Modifier l'annonce"
+        title="Modifier mon voyage"
         description="Mettez à jour les informations de votre trajet"
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
-          { label: 'Annonces', href: '/dashboard/annonces' },
+          { label: 'Voyages', href: '/dashboard/annonces' },
           { label: 'Modifier' },
         ]}
       />
@@ -465,17 +463,18 @@ export default function EditAnnouncementPage({
           </CardContent>
         </Card>
 
-        {/* Capacité et Prix */}
+        {/* Capacité */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <IconPackage className="h-5 w-5" />
-              Capacité et Prix
+              Capacité disponible
             </CardTitle>
-            <CardDescription>Ajustez la capacité et le tarif</CardDescription>
+            <CardDescription>
+              Ajustez votre capacité disponible pour les expéditeurs
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Capacité disponible */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="available_kg">Capacité disponible</Label>
@@ -496,47 +495,6 @@ export default function EditAnnouncementPage({
                 <p className="text-sm text-destructive">
                   {errors.available_kg.message}
                 </p>
-              )}
-            </div>
-
-            {/* Prix par kg */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="price_per_kg"
-                  className="flex items-center gap-2"
-                >
-                  <IconCurrencyEuro className="h-4 w-4" />
-                  Prix par kilogramme
-                </Label>
-                <span className="text-2xl font-bold">{pricePerKg} €/kg</span>
-              </div>
-              <Slider
-                value={[pricePerKg || 10]}
-                onValueChange={value => setValue('price_per_kg', value[0])}
-                max={50}
-                min={5}
-                step={1}
-                className="w-full"
-              />
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>5 €/kg (minimum)</span>
-                <span>50 €/kg (maximum)</span>
-              </div>
-              {errors.price_per_kg && (
-                <p className="text-sm text-destructive">
-                  {errors.price_per_kg.message}
-                </p>
-              )}
-              {availableKg && pricePerKg && (
-                <div className="rounded-lg border bg-muted p-4">
-                  <p className="text-sm font-medium">
-                    Revenu potentiel : {(availableKg * pricePerKg).toFixed(2)} €
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Si vous transportez toute la capacité disponible
-                  </p>
-                </div>
               )}
             </div>
           </CardContent>

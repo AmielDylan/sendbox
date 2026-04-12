@@ -19,10 +19,11 @@ import {
   IconAlertCircle,
   IconLogout,
   IconUser,
+  IconIdBadge2,
   IconSearch,
-  IconSpeakerphone,
-  IconAlertTriangle,
+  IconPlaneDeparture,
   IconCreditCard,
+  IconSparkles,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from '@/lib/utils'
@@ -48,8 +49,14 @@ import { useAuth } from '@/hooks/use-auth'
 import { FEATURES, isFeatureEnabled } from '@/lib/shared/config/features'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
-import { getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import { FeedbackDialog } from '@/components/feedback-dialog'
+import { SubscriptionStatusPanel } from '@/components/features/subscriptions/SubscriptionStatusPanel'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -61,6 +68,8 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>
   badge?: number
   userOnly?: boolean
+  feature?: 'KYC_ENABLED' | 'SUBSCRIPTION_ENABLED'
+  section: 'workspace' | 'finance' | 'settings'
 }
 
 const navItems: NavItem[] = [
@@ -68,34 +77,78 @@ const navItems: NavItem[] = [
     title: 'Tableau de bord',
     href: '/dashboard',
     icon: IconLayoutDashboard,
+    section: 'workspace',
   },
   {
     title: 'Messages',
     href: '/dashboard/messages',
     icon: IconMessage,
     // badge dynamique géré par useUnreadCount
+    section: 'workspace',
   },
   {
-    title: 'Annonces',
+    title: 'Voyages',
     href: '/dashboard/annonces',
-    icon: IconSpeakerphone,
+    icon: IconPlaneDeparture,
+    section: 'workspace',
   },
   {
     title: 'Colis',
     href: '/dashboard/colis',
     icon: IconPackage,
+    section: 'workspace',
   },
   {
     title: 'Fonds',
     href: '/dashboard/fonds',
     icon: IconCreditCard,
     userOnly: true,
+    section: 'finance',
   },
   {
-    title: 'Réglages',
-    href: '/dashboard/reglages',
-    icon: IconSettings,
+    title: 'Profil',
+    href: '/dashboard/reglages/profil',
+    icon: IconIdBadge2,
+    section: 'settings',
   },
+  {
+    title: 'Compte',
+    href: '/dashboard/reglages/compte',
+    icon: IconUser,
+    section: 'settings',
+  },
+  {
+    title: 'Abonnement',
+    href: '/dashboard/reglages/abonnement',
+    icon: IconSparkles,
+    userOnly: true,
+    feature: 'SUBSCRIPTION_ENABLED',
+    section: 'settings',
+  },
+  {
+    title: 'Paiements',
+    href: '/dashboard/reglages/paiements',
+    icon: IconCreditCard,
+    userOnly: true,
+    section: 'settings',
+  },
+  {
+    title: 'Identité',
+    href: '/dashboard/reglages/kyc',
+    icon: IconShield,
+    userOnly: true,
+    feature: 'KYC_ENABLED',
+    section: 'settings',
+  },
+]
+
+const navSections: Array<{
+  id: NavItem['section']
+  label: string
+}> = [
+  { id: 'workspace', label: 'Navigation' },
+  { id: 'finance', label: 'Finances' },
+  { id: 'settings', label: 'Réglages' },
 ]
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -106,7 +159,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, loading, profile } = useAuth()
   const isAdmin = profile?.role === 'admin'
 
-  const visibleNavItems = navItems.filter(item => !item.userOnly || !isAdmin)
+  const visibleNavItems = navItems.filter(item => {
+    if (item.userOnly && isAdmin) {
+      return false
+    }
+
+    if (item.feature && !isFeatureEnabled(item.feature)) {
+      return false
+    }
+
+    return true
+  })
 
   // Redirection vers /login si non authentifié (après le chargement initial complet)
   useEffect(() => {
@@ -194,6 +257,13 @@ function SidebarContent({
   items: NavItem[]
   onNavigate?: () => void
 }) {
+  const groupedItems = navSections
+    .map(section => ({
+      ...section,
+      items: items.filter(item => item.section === section.id),
+    }))
+    .filter(section => section.items.length > 0)
+
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
@@ -202,47 +272,69 @@ function SidebarContent({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4" aria-label="Navigation principale">
-        {items.map(item => {
-          const Icon = item.icon
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + '/')
+      <nav className="flex-1 space-y-5 p-4" aria-label="Navigation principale">
+        {groupedItems.map(section => (
+          <div key={section.id} className="space-y-2">
+            <p className="px-3 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">
+              {section.label}
+            </p>
+            <div className="space-y-1">
+              {section.items.map(item => {
+                const Icon = item.icon
+                const isActive =
+                  item.href === '/dashboard'
+                    ? pathname === item.href
+                    : pathname === item.href ||
+                      pathname.startsWith(item.href + '/')
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              prefetch={true}
-              onClick={onNavigate}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                'hover:bg-accent hover:text-accent-foreground',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                isActive
-                  ? 'bg-accent text-accent-foreground'
-                  : 'text-muted-foreground'
-              )}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              <Icon className="h-5 w-5" aria-hidden="true" />
-              <span className="flex-1">{item.title}</span>
-              {item.badge && (
-                <Badge variant="secondary" className="ml-auto">
-                  {item.badge}
-                </Badge>
-              )}
-            </Link>
-          )
-        })}
-      </nav>
-      {FEATURES.BETA_MODE && (
-        <div className="border-t p-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
-            <IconAlertTriangle className="h-4 w-4" />
-            <span>Version bêta</span>
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    prefetch={true}
+                    onClick={onNavigate}
+                    className={cn(
+                      'flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-normal transition-colors',
+                      'hover:bg-accent hover:text-accent-foreground',
+                      'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                      isActive
+                        ? 'bg-accent text-accent-foreground font-medium'
+                        : 'text-muted-foreground'
+                    )}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+                    <span className="flex-1 truncate">{item.title}</span>
+                    {item.badge && (
+                      <Badge variant="secondary" className="ml-auto">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+      </nav>
+      <div className="space-y-3 border-t p-4">
+        {isFeatureEnabled('SUBSCRIPTION_ENABLED') && (
+          <SubscriptionStatusPanel
+            variant="compact"
+            showOnlyWhenAttention
+            className="rounded-xl"
+          />
+        )}
+
+        {FEATURES.BETA_MODE && (
+          <Badge
+            variant="outline"
+            className="h-6 rounded-full border-amber-200 bg-amber-100 px-2.5 text-[10px] font-medium uppercase tracking-[0.16em] text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+          >
+            Version beta
+          </Badge>
+        )}
+      </div>
     </div>
   )
 }
@@ -258,16 +350,6 @@ function HeaderActions() {
       <ClientOnly>
         <ThemeToggle />
       </ClientOnly>
-
-      {FEATURES.BETA_MODE && (
-        <Badge
-          variant="secondary"
-          className="hidden h-8 items-center rounded-full border border-amber-200 bg-amber-100 px-3 text-[11px] font-semibold uppercase tracking-wide text-amber-900 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-200 sm:inline-flex"
-        >
-          Version bêta
-        </Badge>
-      )}
-
       <ClientOnly>
         <FeedbackDialog />
       </ClientOnly>
@@ -364,15 +446,16 @@ function UserMenu() {
     )
   }
 
-  const displayName = profile
-    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() ||
-      'Utilisateur'
-    : 'Utilisateur'
-
-  const initials = profile
-    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() ||
-      'U'
-    : 'U'
+  const displayName = getShortDisplayName(
+    (profile as any)?.firstname || null,
+    (profile as any)?.lastname || null,
+    'Utilisateur'
+  )
+  const nameParts = getShortNameParts(
+    (profile as any)?.firstname || null,
+    (profile as any)?.lastname || null
+  )
+  const initials = generateInitials(nameParts.firstName, nameParts.lastName)
   const avatarUrl = getAvatarUrl(
     (profile as any)?.avatar_url || null,
     (profile as any)?.id || user?.id || displayName
@@ -489,7 +572,7 @@ function UserMenu() {
             </>
           )}
         <DropdownMenuItem asChild>
-          <Link href="/dashboard/reglages" className="cursor-pointer">
+          <Link href="/dashboard/reglages/compte" className="cursor-pointer">
             <IconSettings className="mr-2 h-4 w-4" />
             <span>Paramètres</span>
           </Link>

@@ -21,9 +21,14 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from '@tabler/icons-react'
-import { format } from 'date-fns'
+import { differenceInDays, format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 
 interface ProfilePageProps {
   params: Promise<{ user_id: string }>
@@ -52,8 +57,11 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
 
   // Déterminer les badges
   const badges: string[] = []
-  if (stats.completedServices === 0) {
-    badges.push('Nouveau voyageur')
+  if (
+    profile.created_at &&
+    differenceInDays(new Date(), new Date(profile.created_at)) < 7
+  ) {
+    badges.push('Nouvel inscrit')
   }
   if (stats.completedServices >= 50) {
     badges.push('Expert')
@@ -65,6 +73,12 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
     badges.push('Vérifié')
   }
 
+  const displayName = getShortDisplayName(
+    profile.firstname,
+    profile.lastname,
+    'Utilisateur'
+  )
+  const nameParts = getShortNameParts(profile.firstname, profile.lastname)
   const profileAvatar = getAvatarUrl(profile.avatar_url, profile.id || user_id)
   const memberSince = profile.created_at
     ? format(new Date(profile.created_at), 'MMMM yyyy', { locale: fr })
@@ -84,7 +98,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
-              Profil de {profile.firstname} {profile.lastname}
+              Profil de {displayName}
             </h1>
             <p className="text-sm text-muted-foreground">
               Informations et réputation
@@ -102,14 +116,12 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                 <Avatar className="h-16 w-16">
                   <AvatarImage src={profileAvatar} />
                   <AvatarFallback className="text-lg">
-                    {generateInitials(profile.firstname, profile.lastname)}
+                    {generateInitials(nameParts.firstName, nameParts.lastName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-2">
                   <div className="space-y-1">
-                    <h2 className="text-lg font-semibold">
-                      {profile.firstname} {profile.lastname}
-                    </h2>
+                    <h2 className="text-lg font-semibold">{displayName}</h2>
                     {profile.bio && (
                       <p className="text-sm text-muted-foreground">
                         {profile.bio}
@@ -121,7 +133,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                       <Badge
                         key={badge}
                         variant={
-                          badge === 'Nouveau voyageur' ? 'info' : 'secondary'
+                          badge === 'Nouvel inscrit' ? 'info' : 'secondary'
                         }
                         className="text-xs"
                       >
@@ -240,9 +252,15 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
               ) : (
                 <div className="space-y-4">
                   {ratingsData.ratings.map((rating: any) => {
-                    const raterName =
-                      `${rating.rater?.firstname || ''} ${rating.rater?.lastname || ''}`.trim() ||
+                    const raterName = getShortDisplayName(
+                      rating.rater?.firstname || null,
+                      rating.rater?.lastname || null,
                       'Utilisateur'
+                    )
+                    const raterNameParts = getShortNameParts(
+                      rating.rater?.firstname || null,
+                      rating.rater?.lastname || null
+                    )
                     const raterAvatar = getAvatarUrl(
                       rating.rater?.avatar_url || null,
                       rating.rater?.id || raterName
@@ -257,8 +275,8 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                           <AvatarImage src={raterAvatar} alt={raterName} />
                           <AvatarFallback>
                             {generateInitials(
-                              rating.rater?.firstname,
-                              rating.rater?.lastname
+                              raterNameParts.firstName,
+                              raterNameParts.lastName
                             )}
                           </AvatarFallback>
                         </Avatar>
@@ -266,8 +284,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                           <div className="flex items-center justify-between gap-2">
                             <div>
                               <p className="text-sm font-semibold">
-                                {rating.rater?.firstname}{' '}
-                                {rating.rater?.lastname}
+                                {raterName}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {format(new Date(rating.created_at), 'PP', {

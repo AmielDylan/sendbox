@@ -31,6 +31,7 @@ import {
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminKYCPage() {
   const { data: kycStats, isLoading } = useQuery({
@@ -78,12 +79,14 @@ export default function AdminKYCPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Statuts KYC</h1>
-        <p className="text-muted-foreground">
-          Vue d'ensemble des vérifications d'identité
-        </p>
-      </div>
+      <PageHeader
+        title="Statuts KYC"
+        description="Vue d'ensemble des vérifications d'identité"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'KYC' },
+        ]}
+      />
 
       {/* Message info Stripe Identity */}
       <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
@@ -92,13 +95,13 @@ export default function AdminKYCPage() {
             <IconInfoCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
             <div className="space-y-2">
               <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                Vérification automatique par Stripe Identity
+                Vérification d&apos;identité automatique
               </p>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Les vérifications d'identité sont gérées automatiquement par
-                Stripe Identity. Les utilisateurs soumettent leurs documents via
-                un flux sécurisé et les résultats sont automatiquement
-                synchronisés. Aucune action manuelle n'est requise.
+                Les vérifications d&apos;identité sont gérées automatiquement.
+                Les utilisateurs soumettent leurs documents via un flux sécurisé
+                et les résultats sont automatiquement synchronisés. Aucune
+                action manuelle n&apos;est requise.
               </p>
             </div>
           </div>

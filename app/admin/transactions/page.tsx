@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import { IconLoader2, IconDownload } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminTransactionsPage() {
   const supabase = createClient()
@@ -40,6 +41,7 @@ export default function AdminTransactionsPage() {
 
   const totalRevenue =
     transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0
+  const totalCommission = totalRevenue * 0.03
 
   const handleExportCSV = () => {
     // TODO: Implémenter export CSV
@@ -65,18 +67,20 @@ export default function AdminTransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Transactions & Finance</h1>
-          <p className="text-muted-foreground">
-            Vue d'ensemble des transactions financières
-          </p>
-        </div>
-        <Button onClick={handleExportCSV}>
-          <IconDownload className="mr-2 h-4 w-4" />
-          Exporter CSV
-        </Button>
-      </div>
+      <PageHeader
+        title="Transactions & Finance"
+        description="Vue d'ensemble des transactions financières"
+        breadcrumbs={[
+          { label: 'Dashboard Admin', href: '/admin/dashboard' },
+          { label: 'Finance' },
+        ]}
+        actions={
+          <Button onClick={handleExportCSV}>
+            <IconDownload className="mr-2 h-4 w-4" />
+            Exporter CSV
+          </Button>
+        }
+      />
 
       {/* Métriques */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -103,11 +107,14 @@ export default function AdminTransactionsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">
-              Taux de litige
+              Commission plateforme
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0%</div>
+            <div className="text-2xl font-bold">
+              {totalCommission.toFixed(2)} EUR
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">3 % du volume</p>
           </CardContent>
         </Card>
       </div>

@@ -30,6 +30,7 @@ import {
 } from '@tabler/icons-react'
 import { createClient } from '@/lib/shared/db/client'
 import { NotificationItem } from '@/components/features/notifications/NotificationItem'
+import { getShortDisplayName } from '@/lib/core/profile/utils'
 
 type ConversationSummary = {
   booking_id: string
@@ -159,10 +160,11 @@ function MessagesPageContent() {
         setSelectedConversation({
           bookingId,
           otherUserId: conversation.other_user_id,
-          otherUserName:
-            `${conversation.other_user_firstname || ''} ${
-              conversation.other_user_lastname || ''
-            }`.trim() || 'Utilisateur',
+          otherUserName: getShortDisplayName(
+            conversation.other_user_firstname,
+            conversation.other_user_lastname,
+            'Utilisateur'
+          ),
           otherUserAvatar: conversation.other_user_avatar_url,
         })
       }
@@ -212,10 +214,11 @@ function MessagesPageContent() {
           otherUserId,
         ])
         const otherUserProfile = publicProfiles?.[0] || null
-        const otherUserName = otherUserProfile
-          ? `${otherUserProfile.firstname || ''} ${otherUserProfile.lastname || ''}`.trim() ||
-            'Utilisateur'
-          : 'Utilisateur'
+        const otherUserName = getShortDisplayName(
+          otherUserProfile?.firstname || null,
+          otherUserProfile?.lastname || null,
+          'Utilisateur'
+        )
 
         setSelectedBookingId(bookingIdFromUrl)
         setSelectedConversation({

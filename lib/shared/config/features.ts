@@ -18,12 +18,12 @@ export const FEATURES = {
   /**
    * Paiements Stripe
    */
-  STRIPE_PAYMENTS: true,
+  STRIPE_PAYMENTS: false,
 
   /**
    * Paiements simulés (flow complet sans Stripe)
    */
-  PAYMENTS_SIMULATION: false,
+  PAYMENTS_SIMULATION: true,
 
   /**
    * Dashboard Admin
@@ -34,8 +34,22 @@ export const FEATURES = {
    * Mode Beta
    */
   BETA_MODE: true,
-  MAX_BETA_USERS: 50,
+  MAX_BETA_USERS: 100,
   MAX_BOOKING_AMOUNT: 200,
+
+  /**
+   * Abonnement voyageur pro
+   * Si false : publication de trajets autorisée sans abonnement
+   * Si true : abonnement requis pour publier (trial de 14j inclus)
+   */
+  SUBSCRIPTION_ENABLED: true,
+
+  /**
+   * Preuve de voyage (billet) requise pour publier
+   * Si false : publication sans billet acceptée
+   * Si true : travel_proof_url requis avant passage draft → active
+   */
+  TRAVEL_PROOF_REQUIRED: false,
 
   /**
    * Monitoring

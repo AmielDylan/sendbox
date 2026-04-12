@@ -65,3 +65,25 @@ export function generateInitials(
   const last = lastName?.[0]?.toUpperCase() || ''
   return first + last || 'U'
 }
+
+export function getShortNameParts(
+  firstName: string | null,
+  lastName: string | null
+): { firstName: string; lastName: string } {
+  const first = (firstName || '').trim().split(/\s+/)[0] || ''
+  const last = (lastName || '').trim().split(/\s+/)[0] || ''
+  return { firstName: first, lastName: last }
+}
+
+export function getShortDisplayName(
+  firstName: string | null,
+  lastName: string | null,
+  fallback = 'Utilisateur'
+): string {
+  const { firstName: first, lastName: last } = getShortNameParts(
+    firstName,
+    lastName
+  )
+  const name = `${first} ${last}`.trim()
+  return name || fallback
+}

@@ -173,7 +173,7 @@ export default function KYCPage() {
     if (!postalCode.trim()) errors.postalCode = 'Champ requis'
     if (!confirmIdentity) {
       errors.confirmIdentity =
-        "Veuillez confirmer que vos informations correspondent au document."
+        'Veuillez confirmer que vos informations correspondent au document.'
     }
 
     setFieldErrors(errors)
@@ -787,6 +787,11 @@ export default function KYCPage() {
         <PageHeader
           title="Vérification d'identité"
           description="Nous vérifions vos documents pour sécuriser votre compte."
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Réglages', href: '/dashboard/reglages/compte' },
+            { label: 'KYC' },
+          ]}
         />
         <Alert>
           <AlertTitle>Réservé aux utilisateurs</AlertTitle>
@@ -851,6 +856,11 @@ export default function KYCPage() {
       <PageHeader
         title="Vérification d'identité (KYC)"
         description="Nous vérifions vos documents pour sécuriser votre compte."
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Réglages', href: '/dashboard/reglages/compte' },
+          { label: 'KYC' },
+        ]}
       />
 
       {displayStatus === 'approved' && (
@@ -1124,9 +1134,9 @@ export default function KYCPage() {
                     <IconAlertTriangle className="h-4 w-4" />
                     <AlertTitle>Pays de document non supporté</AlertTitle>
                     <AlertDescription>
-                      Stripe Identity n&apos;est pas disponible pour ce pays de
-                      document. Choisissez un pays pris en charge ou utilisez un
-                      document accepté par Stripe.
+                      La vérification d&apos;identité n&apos;est pas disponible
+                      pour ce pays de document. Choisissez un pays pris en
+                      charge ou utilisez un autre type de document.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -1180,14 +1190,14 @@ export default function KYCPage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                    onClick={() => {
-                      setStep('document')
-                      setForceDetails(false)
-                      setConfirmIdentity(false)
-                      setVerificationSessionId(null)
-                      if (typeof window !== 'undefined') {
-                        sessionStorage.removeItem(
-                          'kyc_verification_session_id'
+                      onClick={() => {
+                        setStep('document')
+                        setForceDetails(false)
+                        setConfirmIdentity(false)
+                        setVerificationSessionId(null)
+                        if (typeof window !== 'undefined') {
+                          sessionStorage.removeItem(
+                            'kyc_verification_session_id'
                           )
                         }
                       }}
@@ -1202,209 +1212,209 @@ export default function KYCPage() {
                       Informations personnelles
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Prénom</Label>
+                        <Input
+                          id="firstName"
+                          placeholder="Amiel"
+                          value={firstName}
+                          onChange={event => {
+                            setFirstName(event.target.value)
+                            if (fieldErrors.firstName) {
+                              clearFieldError('firstName')
+                            }
+                          }}
+                          onFocus={() => clearFieldError('firstName')}
+                          aria-invalid={Boolean(fieldErrors.firstName)}
+                          className={cn(
+                            fieldErrors.firstName && 'border-destructive'
+                          )}
+                        />
+                        {fieldErrors.firstName && (
+                          <p className="text-xs text-destructive">
+                            {fieldErrors.firstName}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Nom</Label>
+                        <Input
+                          id="lastName"
+                          placeholder="Adjovi"
+                          value={lastName}
+                          onChange={event => {
+                            setLastName(event.target.value)
+                            if (fieldErrors.lastName) {
+                              clearFieldError('lastName')
+                            }
+                          }}
+                          onFocus={() => clearFieldError('lastName')}
+                          aria-invalid={Boolean(fieldErrors.lastName)}
+                          className={cn(
+                            fieldErrors.lastName && 'border-destructive'
+                          )}
+                        />
+                        {fieldErrors.lastName && (
+                          <p className="text-xs text-destructive">
+                            {fieldErrors.lastName}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={event => {
+                            setEmail(event.target.value)
+                            if (fieldErrors.email) {
+                              clearFieldError('email')
+                            }
+                          }}
+                          onFocus={() => clearFieldError('email')}
+                          aria-invalid={Boolean(fieldErrors.email)}
+                          className={cn(
+                            fieldErrors.email && 'border-destructive'
+                          )}
+                          disabled
+                        />
+                        {fieldErrors.email && (
+                          <p className="text-xs text-destructive">
+                            {fieldErrors.email}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Téléphone</Label>
+                        <Input
+                          id="phone"
+                          placeholder="+33612345678"
+                          value={phone}
+                          onChange={event => {
+                            setPhone(event.target.value)
+                            if (fieldErrors.phone) {
+                              clearFieldError('phone')
+                            }
+                          }}
+                          onFocus={() => clearFieldError('phone')}
+                          aria-invalid={Boolean(fieldErrors.phone)}
+                          className={cn(
+                            fieldErrors.phone && 'border-destructive'
+                          )}
+                        />
+                        {fieldErrors.phone && (
+                          <p className="text-xs text-destructive">
+                            {fieldErrors.phone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">Prénom</Label>
+                      <Label htmlFor="birthDate">Date de naissance</Label>
                       <Input
-                        id="firstName"
-                        placeholder="Amiel"
-                        value={firstName}
+                        id="birthDate"
+                        type="date"
+                        value={birthDate}
                         onChange={event => {
-                          setFirstName(event.target.value)
-                          if (fieldErrors.firstName) {
-                            clearFieldError('firstName')
+                          setBirthDate(event.target.value)
+                          if (fieldErrors.birthDate) {
+                            clearFieldError('birthDate')
                           }
                         }}
-                        onFocus={() => clearFieldError('firstName')}
-                        aria-invalid={Boolean(fieldErrors.firstName)}
+                        onFocus={() => clearFieldError('birthDate')}
+                        aria-invalid={Boolean(fieldErrors.birthDate)}
                         className={cn(
-                          fieldErrors.firstName && 'border-destructive'
+                          fieldErrors.birthDate && 'border-destructive'
                         )}
                       />
-                      {fieldErrors.firstName && (
+                      {fieldErrors.birthDate && (
                         <p className="text-xs text-destructive">
-                          {fieldErrors.firstName}
+                          {fieldErrors.birthDate}
                         </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Nom</Label>
+                      <Label htmlFor="address">Adresse</Label>
                       <Input
-                        id="lastName"
-                        placeholder="Adjovi"
-                        value={lastName}
+                        id="address"
+                        placeholder="Adresse"
+                        value={address}
                         onChange={event => {
-                          setLastName(event.target.value)
-                          if (fieldErrors.lastName) {
-                            clearFieldError('lastName')
+                          setAddress(event.target.value)
+                          if (fieldErrors.address) {
+                            clearFieldError('address')
                           }
                         }}
-                        onFocus={() => clearFieldError('lastName')}
-                        aria-invalid={Boolean(fieldErrors.lastName)}
+                        onFocus={() => clearFieldError('address')}
+                        aria-invalid={Boolean(fieldErrors.address)}
                         className={cn(
-                          fieldErrors.lastName && 'border-destructive'
+                          fieldErrors.address && 'border-destructive'
                         )}
                       />
-                      {fieldErrors.lastName && (
+                      {fieldErrors.address && (
                         <p className="text-xs text-destructive">
-                          {fieldErrors.lastName}
+                          {fieldErrors.address}
                         </p>
                       )}
                     </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={event => {
-                          setEmail(event.target.value)
-                          if (fieldErrors.email) {
-                            clearFieldError('email')
-                          }
-                        }}
-                        onFocus={() => clearFieldError('email')}
-                        aria-invalid={Boolean(fieldErrors.email)}
-                        className={cn(
-                          fieldErrors.email && 'border-destructive'
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="city">Ville</Label>
+                        <Input
+                          id="city"
+                          placeholder="Ville"
+                          value={city}
+                          onChange={event => {
+                            setCity(event.target.value)
+                            if (fieldErrors.city) {
+                              clearFieldError('city')
+                            }
+                          }}
+                          onFocus={() => clearFieldError('city')}
+                          aria-invalid={Boolean(fieldErrors.city)}
+                          className={cn(
+                            fieldErrors.city && 'border-destructive'
+                          )}
+                        />
+                        {fieldErrors.city && (
+                          <p className="text-xs text-destructive">
+                            {fieldErrors.city}
+                          </p>
                         )}
-                        disabled
-                      />
-                      {fieldErrors.email && (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.email}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        placeholder="+33612345678"
-                        value={phone}
-                        onChange={event => {
-                          setPhone(event.target.value)
-                          if (fieldErrors.phone) {
-                            clearFieldError('phone')
-                          }
-                        }}
-                        onFocus={() => clearFieldError('phone')}
-                        aria-invalid={Boolean(fieldErrors.phone)}
-                        className={cn(
-                          fieldErrors.phone && 'border-destructive'
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="postalCode">Code postal</Label>
+                        <Input
+                          id="postalCode"
+                          placeholder="Code postal"
+                          value={postalCode}
+                          onChange={event => {
+                            setPostalCode(event.target.value)
+                            if (fieldErrors.postalCode) {
+                              clearFieldError('postalCode')
+                            }
+                          }}
+                          onFocus={() => clearFieldError('postalCode')}
+                          aria-invalid={Boolean(fieldErrors.postalCode)}
+                          className={cn(
+                            fieldErrors.postalCode && 'border-destructive'
+                          )}
+                        />
+                        {fieldErrors.postalCode && (
+                          <p className="text-xs text-destructive">
+                            {fieldErrors.postalCode}
+                          </p>
                         )}
-                      />
-                      {fieldErrors.phone && (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.phone}
-                        </p>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="birthDate">Date de naissance</Label>
-                    <Input
-                      id="birthDate"
-                      type="date"
-                      value={birthDate}
-                      onChange={event => {
-                        setBirthDate(event.target.value)
-                        if (fieldErrors.birthDate) {
-                          clearFieldError('birthDate')
-                        }
-                      }}
-                      onFocus={() => clearFieldError('birthDate')}
-                      aria-invalid={Boolean(fieldErrors.birthDate)}
-                      className={cn(
-                        fieldErrors.birthDate && 'border-destructive'
-                      )}
-                    />
-                    {fieldErrors.birthDate && (
-                      <p className="text-xs text-destructive">
-                        {fieldErrors.birthDate}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Adresse</Label>
-                    <Input
-                      id="address"
-                      placeholder="Adresse"
-                      value={address}
-                      onChange={event => {
-                        setAddress(event.target.value)
-                        if (fieldErrors.address) {
-                          clearFieldError('address')
-                        }
-                      }}
-                      onFocus={() => clearFieldError('address')}
-                      aria-invalid={Boolean(fieldErrors.address)}
-                      className={cn(
-                        fieldErrors.address && 'border-destructive'
-                      )}
-                    />
-                    {fieldErrors.address && (
-                      <p className="text-xs text-destructive">
-                        {fieldErrors.address}
-                      </p>
-                    )}
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">Ville</Label>
-                      <Input
-                        id="city"
-                        placeholder="Ville"
-                        value={city}
-                        onChange={event => {
-                          setCity(event.target.value)
-                          if (fieldErrors.city) {
-                            clearFieldError('city')
-                          }
-                        }}
-                        onFocus={() => clearFieldError('city')}
-                        aria-invalid={Boolean(fieldErrors.city)}
-                        className={cn(
-                          fieldErrors.city && 'border-destructive'
-                        )}
-                      />
-                      {fieldErrors.city && (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.city}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="postalCode">Code postal</Label>
-                      <Input
-                        id="postalCode"
-                        placeholder="Code postal"
-                        value={postalCode}
-                        onChange={event => {
-                          setPostalCode(event.target.value)
-                          if (fieldErrors.postalCode) {
-                            clearFieldError('postalCode')
-                          }
-                        }}
-                        onFocus={() => clearFieldError('postalCode')}
-                        aria-invalid={Boolean(fieldErrors.postalCode)}
-                        className={cn(
-                          fieldErrors.postalCode && 'border-destructive'
-                        )}
-                      />
-                      {fieldErrors.postalCode && (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.postalCode}
-                        </p>
-                      )}
-                    </div>
-                  </div>
                   </div>
 
-                <Alert>
-                  <IconShieldLock className="h-4 w-4" />
-                  <AlertTitle>Sécurité & confidentialité</AlertTitle>
+                  <Alert>
+                    <IconShieldLock className="h-4 w-4" />
+                    <AlertTitle>Sécurité & confidentialité</AlertTitle>
                     <AlertDescription>
                       <p>
                         La vérification est opérée par un prestataire sécurisé.
@@ -1418,43 +1428,43 @@ export default function KYCPage() {
                         </li>
                         <li>Vous pouvez relancer la vérification si besoin.</li>
                       </ul>
-                  </AlertDescription>
-                </Alert>
+                    </AlertDescription>
+                  </Alert>
 
-                <div className="space-y-2">
-                  <div
-                    className={cn(
-                      'flex items-start gap-3 rounded-lg border border-border/60 px-4 py-3 text-sm',
-                      fieldErrors.confirmIdentity && 'border-destructive'
-                    )}
-                  >
-                    <Checkbox
-                      id="confirmIdentity"
-                      checked={confirmIdentity}
-                      onCheckedChange={value => {
-                        setConfirmIdentity(Boolean(value))
-                        if (fieldErrors.confirmIdentity) {
-                          clearFieldError('confirmIdentity')
-                        }
-                      }}
-                    />
-                    <Label
-                      htmlFor="confirmIdentity"
-                      className="cursor-pointer text-sm font-normal leading-5"
+                  <div className="space-y-2">
+                    <div
+                      className={cn(
+                        'flex items-start gap-3 rounded-lg border border-border/60 px-4 py-3 text-sm',
+                        fieldErrors.confirmIdentity && 'border-destructive'
+                      )}
                     >
-                      Je confirme que les informations renseignées sont
-                      conformes aux données présentes sur ma pièce
-                      d&apos;identité.
-                    </Label>
+                      <Checkbox
+                        id="confirmIdentity"
+                        checked={confirmIdentity}
+                        onCheckedChange={value => {
+                          setConfirmIdentity(Boolean(value))
+                          if (fieldErrors.confirmIdentity) {
+                            clearFieldError('confirmIdentity')
+                          }
+                        }}
+                      />
+                      <Label
+                        htmlFor="confirmIdentity"
+                        className="cursor-pointer text-sm font-normal leading-5"
+                      >
+                        Je confirme que les informations renseignées sont
+                        conformes aux données présentes sur ma pièce
+                        d&apos;identité.
+                      </Label>
+                    </div>
+                    {fieldErrors.confirmIdentity && (
+                      <p className="text-xs text-destructive">
+                        {fieldErrors.confirmIdentity}
+                      </p>
+                    )}
                   </div>
-                  {fieldErrors.confirmIdentity && (
-                    <p className="text-xs text-destructive">
-                      {fieldErrors.confirmIdentity}
-                    </p>
-                  )}
-                </div>
 
-                <Button
+                  <Button
                     type="button"
                     className="w-full"
                     disabled={

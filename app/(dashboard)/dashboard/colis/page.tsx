@@ -233,6 +233,10 @@ export default function MyBookingsPage() {
         <PageHeader
           title="Mes colis"
           description="Gérez vos réservations et suivez vos colis"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Colis' },
+          ]}
         />
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-3">
@@ -252,6 +256,10 @@ export default function MyBookingsPage() {
         <PageHeader
           title="Mes colis"
           description="Gérez vos réservations et suivez vos colis"
+          breadcrumbs={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Colis' },
+          ]}
         />
         <Card className="border-destructive">
           <CardContent className="pt-6">
@@ -283,6 +291,10 @@ export default function MyBookingsPage() {
       <PageHeader
         title="Mes colis"
         description="Gérez vos réservations et suivez vos colis"
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Colis' },
+        ]}
         actions={
           showCreateButton ? (
             <Button asChild>

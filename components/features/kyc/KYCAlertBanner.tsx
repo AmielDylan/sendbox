@@ -4,6 +4,7 @@
 
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,27 @@ export function KYCAlertBanner({
   rejectionReason,
   className,
 }: KYCAlertBannerProps) {
+  const storageKey = useMemo(
+    () =>
+      `sendbox:kyc-banner:${kycStatus ?? 'missing'}:${rejectionReason ?? 'none'}`,
+    [kycStatus, rejectionReason]
+  )
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    setDismissed(window.sessionStorage.getItem(storageKey) === '1')
+  }, [storageKey])
+
+  const handleDismiss = () => {
+    setDismissed(true)
+
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(storageKey, '1')
+    }
+  }
+
   // Pas d'alerte si approuvé
   if (kycStatus === 'approved') {
     return null
@@ -67,23 +89,36 @@ export function KYCAlertBanner({
   }
 
   // Pas de KYC ou incomplete
+  if (dismissed) {
+    return null
+  }
+
   return (
     <Alert
       variant="default"
-      className={`border-blue-500 bg-blue-50 ${className}`}
+      className={`border-blue-400/70 bg-blue-50 pr-11 py-3 ${className ?? ''}`}
     >
       <IconShield className="h-4 w-4 text-blue-600" />
-      <AlertTitle className="text-blue-900">
-        Vérification d'identité requise pour continuer
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={handleDismiss}
+        className="absolute right-2 top-2 h-7 w-7 !pl-0 !pr-0 text-blue-700 hover:bg-blue-100 hover:text-blue-900"
+        aria-label="Fermer l’alerte KYC"
+      >
+        <IconX className="h-4 w-4" />
+      </Button>
+      <AlertTitle className="text-sm font-semibold text-blue-900">
+        Vérifiez votre identité pour continuer
       </AlertTitle>
-      <AlertDescription className="text-blue-800">
-        Pour publier un trajet, accepter un colis, effectuer un paiement,
-        envoyer ou recevoir un colis ou activer une assurance, vous devez
-        vérifier votre identité.{` `}
+      <AlertDescription className="text-xs leading-5 text-blue-800 sm:text-sm">
+        Vérifiez votre identité pour publier, accepter un colis et utiliser les
+        paiements.{` `}
         <Button
           variant="link"
           asChild
-          className="px-0 h-auto font-normal text-blue-600 underline"
+          className="h-auto px-0 text-xs font-medium text-blue-700 underline sm:text-sm"
         >
           <Link href="/dashboard/reglages/kyc">Vérifier mon identité →</Link>
         </Button>

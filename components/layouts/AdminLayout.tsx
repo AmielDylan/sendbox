@@ -48,7 +48,12 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
-import { getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import { FEATURES } from '@/lib/shared/config/features'
 
 interface AdminLayoutProps {
@@ -324,15 +329,16 @@ function AdminUserMenu() {
     )
   }
 
-  const displayName = profile
-    ? `${(profile as any).firstname || ''} ${(profile as any).lastname || ''}`.trim() ||
-      'Admin'
-    : 'Admin'
-
-  const initials = profile
-    ? `${(profile as any).firstname?.[0] || ''}${(profile as any).lastname?.[0] || ''}`.toUpperCase() ||
-      'A'
-    : 'A'
+  const displayName = getShortDisplayName(
+    (profile as any)?.firstname || null,
+    (profile as any)?.lastname || null,
+    'Admin'
+  )
+  const nameParts = getShortNameParts(
+    (profile as any)?.firstname || null,
+    (profile as any)?.lastname || null
+  )
+  const initials = generateInitials(nameParts.firstName, nameParts.lastName)
 
   const avatarUrl = getAvatarUrl(
     (profile as any)?.avatar_url || null,

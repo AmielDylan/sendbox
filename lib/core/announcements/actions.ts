@@ -11,6 +11,7 @@ import {
   type CreateAnnouncementInput,
 } from '@/lib/core/announcements/validations'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { checkCanPublish } from '@/lib/core/subscriptions/utils'
 
 const MAX_ACTIVE_ANNOUNCEMENTS = 10
 
@@ -35,7 +36,9 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
   // Récupérer le profil pour vérifier le KYC
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('kyc_status, kyc_rejection_reason')
+    .select(
+      'kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at, role'
+    )
     .eq('id', user.id)
     .single()
 
@@ -76,6 +79,31 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
       error: errorMessage,
       errorDetails,
       field: 'kyc',
+    }
+  }
+
+  const isAdmin = (profile as any).role === 'admin'
+
+  // Vérifier l'abonnement SEULEMENT si feature activée (les admins sont exemptés)
+  if (!isAdmin && isFeatureEnabled('SUBSCRIPTION_ENABLED') && intent !== 'draft') {
+    const subscriptionStatus = (profile.subscription_status ?? 'trialing') as
+      | 'trialing'
+      | 'active'
+      | 'past_due'
+      | 'canceled'
+      | 'inactive'
+    const trialEndsAt = profile.trial_ends_at as string | null
+    const canPublish = checkCanPublish(subscriptionStatus, trialEndsAt)
+
+    if (!canPublish) {
+      const isTrialExpired = subscriptionStatus === 'trialing'
+      return {
+        error: 'Abonnement requis pour publier',
+        errorDetails: isTrialExpired
+          ? "Votre période d'essai est terminée. Abonnez-vous à 4,99 €/mois pour continuer à publier."
+          : 'Un abonnement actif est requis pour publier un trajet.',
+        field: 'subscription',
+      }
     }
   }
 
@@ -136,6 +164,7 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
         price_per_kg: validation.data.price_per_kg,
         description: validation.data.description || null,
         status, // draft ou active selon l'intention
+        sendbox_available: validation.data.sendbox_available ?? false,
       })
       .select('id')
       .single()

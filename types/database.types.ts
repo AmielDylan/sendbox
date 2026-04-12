@@ -82,6 +82,9 @@ export type Database = {
           reserved_kg: number | null
           status: Database['public']['Enums']['announcement_status']
           traveler_id: string
+          travel_proof_url: string | null
+          travel_proof_verified: boolean
+          travel_proof_verified_at: string | null
           updated_at: string | null
           views_count: number | null
         }
@@ -101,6 +104,9 @@ export type Database = {
           reserved_kg?: number | null
           status?: Database['public']['Enums']['announcement_status']
           traveler_id: string
+          travel_proof_url?: string | null
+          travel_proof_verified?: boolean
+          travel_proof_verified_at?: string | null
           updated_at?: string | null
           views_count?: number | null
         }
@@ -120,6 +126,9 @@ export type Database = {
           reserved_kg?: number | null
           status?: Database['public']['Enums']['announcement_status']
           traveler_id?: string
+          travel_proof_url?: string | null
+          travel_proof_verified?: boolean
+          travel_proof_verified_at?: string | null
           updated_at?: string | null
           views_count?: number | null
         }
@@ -584,9 +593,20 @@ export type Database = {
           rating: number | null
           role: Database['public']['Enums']['user_role']
           stripe_connect_account_id: string | null
+          stripe_customer_id: string | null
           stripe_onboarding_completed: boolean
           stripe_payouts_enabled: boolean
           stripe_requirements: Json | null
+          stripe_subscription_id: string | null
+          subscription_expires_at: string | null
+          subscription_started_at: string | null
+          subscription_status:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'inactive'
+          trial_ends_at: string | null
           payout_method: string | null
           payout_status: string | null
           payout_provider: string | null
@@ -649,9 +669,20 @@ export type Database = {
           rating?: number | null
           role?: Database['public']['Enums']['user_role']
           stripe_connect_account_id?: string | null
+          stripe_customer_id?: string | null
           stripe_onboarding_completed?: boolean
           stripe_payouts_enabled?: boolean
           stripe_requirements?: Json | null
+          stripe_subscription_id?: string | null
+          subscription_expires_at?: string | null
+          subscription_started_at?: string | null
+          subscription_status?:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'inactive'
+          trial_ends_at?: string | null
           payout_method?: string | null
           payout_status?: string | null
           payout_provider?: string | null
@@ -714,9 +745,20 @@ export type Database = {
           rating?: number | null
           role?: Database['public']['Enums']['user_role']
           stripe_connect_account_id?: string | null
+          stripe_customer_id?: string | null
           stripe_onboarding_completed?: boolean
           stripe_payouts_enabled?: boolean
           stripe_requirements?: Json | null
+          stripe_subscription_id?: string | null
+          subscription_expires_at?: string | null
+          subscription_started_at?: string | null
+          subscription_status?:
+            | 'trialing'
+            | 'active'
+            | 'past_due'
+            | 'canceled'
+            | 'inactive'
+          trial_ends_at?: string | null
           payout_method?: string | null
           payout_status?: string | null
           payout_provider?: string | null

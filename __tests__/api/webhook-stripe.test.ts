@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it } from 'vitest'
 
 /**
  * Tests pour POST /api/webhooks/stripe

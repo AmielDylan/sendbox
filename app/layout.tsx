@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Fraunces, Space_Grotesk } from 'next/font/google'
+import { Space_Grotesk } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { Analytics } from '@vercel/analytics/next'
 import { Providers } from './providers'
@@ -7,13 +7,6 @@ import './globals.css'
 
 // Force dynamic rendering for all pages (uses auth context via Providers)
 export const dynamic = 'force-dynamic'
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-display',
-  display: 'swap',
-})
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -66,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${fraunces.variable} ${spaceGrotesk.variable} light`}
+      className={`${spaceGrotesk.variable} light`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased" suppressHydrationWarning>

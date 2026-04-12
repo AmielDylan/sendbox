@@ -6,7 +6,12 @@ import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { IconStar, IconMessageCircle } from '@tabler/icons-react'
-import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortDisplayName,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 
 interface ParticipantCardProps {
   role: 'sender' | 'traveler'
@@ -31,14 +36,16 @@ export function ParticipantCard({
   showContactButton = false,
   bookingId,
 }: ParticipantCardProps) {
-  const displayName = profile
-    ? `${profile.firstname || ''} ${profile.lastname || ''}`.trim() ||
-      'Utilisateur'
-    : 'Utilisateur'
-  const initials = generateInitials(
+  const displayName = getShortDisplayName(
+    profile?.firstname ?? null,
+    profile?.lastname ?? null,
+    'Utilisateur'
+  )
+  const nameParts = getShortNameParts(
     profile?.firstname ?? null,
     profile?.lastname ?? null
   )
+  const initials = generateInitials(nameParts.firstName, nameParts.lastName)
   const profileId = profile?.id
   const profileRating = typeof profile?.rating === 'number' ? profile.rating : 0
   const completedServices = profile?.completed_services ?? null
