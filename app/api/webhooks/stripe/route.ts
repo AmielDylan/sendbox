@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const isProd = process.env.NODE_ENV === 'production'
   const devLog = (...args: unknown[]) => {
     if (!isProd) {
-      devLog(...args)
+      console.log(...args)
     }
   }
 
