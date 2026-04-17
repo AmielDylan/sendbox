@@ -12,6 +12,7 @@ import {
 } from '@/lib/shared/db/queries/public-profiles'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { sendEmail } from '@/lib/shared/services/email/client'
 
 /**
  * Accepte une demande de réservation
@@ -176,7 +177,27 @@ export async function acceptBooking(bookingId: string) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
 
-    // TODO: Envoyer email à l'expéditeur
+    // Email à l'expéditeur (non-bloquant)
+    ;(async () => {
+      const { data: sender } = await supabase
+        .from('profiles')
+        .select('email, firstname')
+        .eq('id', booking.sender_id)
+        .single()
+      if (sender?.email) {
+        await sendEmail({
+          to: sender.email,
+          subject: 'Votre demande a été acceptée',
+          template: 'booking_request',
+          data: {
+            title: 'Demande acceptée ✓',
+            content: `Bonne nouvelle${sender.firstname ? ` ${sender.firstname}` : ''} ! Votre demande de transport a été acceptée par le voyageur. Procédez au paiement pour confirmer la réservation.`,
+            ctaText: 'Payer maintenant',
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}/paiement`,
+          },
+        })
+      }
+    })().catch(console.error)
 
     revalidatePath('/dashboard/messages')
     revalidatePath('/dashboard/annonces')
@@ -285,7 +306,27 @@ export async function refuseBooking(bookingId: string, reason: string) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
 
-    // TODO: Envoyer email à l'expéditeur
+    // Email à l'expéditeur (non-bloquant)
+    ;(async () => {
+      const { data: sender } = await supabase
+        .from('profiles')
+        .select('email, firstname')
+        .eq('id', booking.sender_id)
+        .single()
+      if (sender?.email) {
+        await sendEmail({
+          to: sender.email,
+          subject: 'Votre demande de transport a été refusée',
+          template: 'notification',
+          data: {
+            title: 'Demande refusée',
+            content: `${sender.firstname ? `Bonjour ${sender.firstname},\n\n` : ''}Votre demande de transport a été refusée par le voyageur.${reason.trim() ? `\n\nRaison : ${reason.trim()}` : ''}\n\nVous pouvez rechercher un autre voyageur disponible.`,
+            ctaText: 'Rechercher un voyageur',
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/recherche`,
+          },
+        })
+      }
+    })().catch(console.error)
 
     revalidatePath('/dashboard/messages')
     revalidatePath('/dashboard/annonces')

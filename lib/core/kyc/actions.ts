@@ -33,6 +33,7 @@ import {
   isStripeIdentityCountrySupported,
 } from '@/lib/shared/stripe/identity-documents'
 import type Stripe from 'stripe'
+import { sendEmail } from '@/lib/shared/services/email/client'
 
 const parseDob = (value?: string | null) => {
   if (!value) return null
@@ -781,9 +782,41 @@ export async function reviewKYC(formData: KYCReviewInput) {
       }
     }
 
-    // TODO: Envoyer email de notification
-    // - Si approuvé: "KYC approuvé, vous pouvez créer des annonces"
-    // - Si rejeté: "KYC rejeté : [raison]"
+    // Email de notification à l'utilisateur (non-bloquant)
+    ;(async () => {
+      const { data: kycProfile } = await supabase
+        .from('profiles')
+        .select('email, firstname')
+        .eq('id', profileId)
+        .single()
+      if (!kycProfile?.email) return
+      const { rejectionReason } = validation.data
+      if (action === 'approve') {
+        await sendEmail({
+          to: kycProfile.email,
+          subject: 'Votre identité a été vérifiée',
+          template: 'notification',
+          data: {
+            title: 'Identité vérifiée ✓',
+            content: `${kycProfile.firstname ? `Bonjour ${kycProfile.firstname},\n\n` : ''}Votre vérification d'identité a été approuvée. Vous pouvez maintenant publier des trajets sur Sendbox.`,
+            ctaText: 'Publier un trajet',
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/annonces/new`,
+          },
+        })
+      } else {
+        await sendEmail({
+          to: kycProfile.email,
+          subject: "Vérification d'identité refusée",
+          template: 'notification',
+          data: {
+            title: 'Vérification refusée',
+            content: `${kycProfile.firstname ? `Bonjour ${kycProfile.firstname},\n\n` : ''}Votre vérification d'identité a été refusée.${rejectionReason ? `\n\nMotif : ${rejectionReason}` : ''}\n\nVous pouvez relancer la procédure depuis vos réglages.`,
+            ctaText: 'Relancer la vérification',
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/reglages/kyc`,
+          },
+        })
+      }
+    })().catch(console.error)
 
     revalidatePath('/admin/kyc')
     return {

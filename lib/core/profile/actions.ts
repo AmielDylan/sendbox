@@ -27,6 +27,7 @@ import {
 } from '@/lib/shared/security/rate-limit'
 import { validateImageUpload } from '@/lib/shared/security/upload-validation'
 import sharp from 'sharp'
+import { sendEmail } from '@/lib/shared/services/email/client'
 
 const AVATAR_SIZE = 200 // 200x200px
 
@@ -340,7 +341,20 @@ export async function changePassword(formData: ChangePasswordInput) {
       }
     }
 
-    // TODO: Envoyer email de notification
+    // Email de confirmation (non-bloquant)
+    if (user.email) {
+      sendEmail({
+        to: user.email,
+        subject: 'Votre mot de passe a été modifié',
+        template: 'notification',
+        data: {
+          title: 'Mot de passe modifié',
+          content: 'Votre mot de passe Sendbox a été modifié avec succès. Si vous n\'êtes pas à l\'origine de cette action, contactez-nous immédiatement.',
+          ctaText: 'Accéder à mon compte',
+          ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+        },
+      }).catch(console.error)
+    }
 
     revalidatePath('/dashboard/reglages/compte')
     return {
@@ -497,7 +511,18 @@ export async function deleteAccount(formData: DeleteAccountInput) {
     // Déconnexion
     await supabase.auth.signOut()
 
-    // TODO: Envoyer email de confirmation de suppression
+    // Email de confirmation de suppression (non-bloquant, avant déconnexion l'email est encore connu)
+    if (user.email) {
+      sendEmail({
+        to: user.email,
+        subject: 'Votre compte Sendbox a été supprimé',
+        template: 'notification',
+        data: {
+          title: 'Compte supprimé',
+          content: 'Votre compte Sendbox a bien été supprimé. Toutes vos données personnelles seront effacées sous 30 jours conformément à notre politique de confidentialité. Si vous souhaitez revenir, vous pouvez créer un nouveau compte à tout moment.',
+        },
+      }).catch(console.error)
+    }
 
     return {
       success: true,
