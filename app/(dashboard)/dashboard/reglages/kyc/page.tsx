@@ -1229,6 +1229,17 @@ export default function KYCPage() {
                     <p className="text-sm font-semibold">
                       Informations personnelles
                     </p>
+                    <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+                      <IconAlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <AlertTitle className="text-sm text-amber-800 dark:text-amber-200">
+                        Utilisez vos noms exacts tels qu&apos;ils figurent sur votre document
+                      </AlertTitle>
+                      <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
+                        Si votre document indique plusieurs prénoms, saisissez-les tous
+                        (ex&nbsp;: <strong>Jean-Marie</strong> et non <strong>Jean</strong>).
+                        Une discordance entraîne le rejet automatique de la vérification.
+                      </AlertDescription>
+                    </Alert>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">Prénom</Label>
