@@ -97,9 +97,6 @@ export default function KYCPage() {
   const [documentCountrySearch, setDocumentCountrySearch] = useState('')
   const [accountCountryOpen, setAccountCountryOpen] = useState(false)
   const [accountCountrySearch, setAccountCountrySearch] = useState('')
-  const [verificationSessionId, setVerificationSessionId] = useState<
-    string | null
-  >(null)
   const [forceDetails, setForceDetails] = useState(false)
   const pendingHoldUntilRef = useRef<number | null>(null)
   const pendingTimeoutRef = useRef<number | null>(null)
@@ -151,7 +148,6 @@ export default function KYCPage() {
   )
   const canPrepareAccount =
     Boolean(
-      effectiveDocumentType &&
       normalizedDocumentCountry &&
       normalizedAccountCountry
     ) &&
@@ -690,7 +686,7 @@ export default function KYCPage() {
         lastName,
         email,
         phone,
-        documentType: effectiveDocumentType as DocumentType,
+        documentType: (effectiveDocumentType as DocumentType) || 'passport',
         documentCountry: normalizedDocumentCountry,
         accountCountry: normalizedAccountCountry,
         birthday: birthDate,
@@ -727,7 +723,6 @@ export default function KYCPage() {
       }
 
       if (result.verificationSessionId) {
-        setVerificationSessionId(result.verificationSessionId)
         if (typeof window !== 'undefined') {
           sessionStorage.setItem(
             'kyc_verification_session_id',
@@ -796,7 +791,7 @@ export default function KYCPage() {
       const result = await prepareKYCAccount({
         accountCountry: normalizedAccountCountry,
         documentCountry: normalizedDocumentCountry,
-        documentType: effectiveDocumentType as DocumentType,
+        documentType: (effectiveDocumentType as DocumentType) || 'passport',
         accountTokenId,
       })
       if (result.error) {
@@ -1127,39 +1122,6 @@ export default function KYCPage() {
                       </div>
                     </PopoverContent>
                   </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="documentType">Type de document</Label>
-                  <Select
-                    value={documentType}
-                    onValueChange={value =>
-                      setDocumentType(value as DocumentType)
-                    }
-                    disabled={
-                      !normalizedDocumentCountry || !isIdentityCountrySupported
-                    }
-                  >
-                    <SelectTrigger id="documentType">
-                      <SelectValue
-                        placeholder={
-                          normalizedDocumentCountry &&
-                          isIdentityCountrySupported
-                            ? 'Sélectionnez un document'
-                            : 'Choisissez d’abord un pays'
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent side="bottom" align="start">
-                      {allowedDocumentTypes.map(type => (
-                        <SelectItem key={type} value={type}>
-                          {type === 'passport'
-                            ? 'Passeport'
-                            : "Carte nationale d'identité"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 {!isResidenceCountrySupported && accountCountry && (
@@ -1598,16 +1560,6 @@ export default function KYCPage() {
               <span className="text-muted-foreground">Pays du document</span>
               <span className="font-medium">
                 {effectiveDocumentCountry || '—'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Type de document</span>
-              <span className="font-medium">
-                {effectiveDocumentType === 'passport'
-                  ? 'Passeport'
-                  : effectiveDocumentType
-                    ? "Carte nationale d'identité"
-                    : '—'}
               </span>
             </div>
           </div>

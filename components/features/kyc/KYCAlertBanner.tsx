@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { IconShield, IconX } from '@tabler/icons-react'
+import { IconX } from '@tabler/icons-react'
 import type { KYCStatus } from '@/types'
 
 interface KYCAlertBannerProps {
@@ -96,7 +96,6 @@ export function KYCAlertBanner({
       variant="default"
       className={`border-blue-400/70 bg-blue-50 pr-11 py-3 ${className ?? ''}`}
     >
-      <IconShield className="h-4 w-4 text-blue-600" />
       <Button
         type="button"
         variant="ghost"
