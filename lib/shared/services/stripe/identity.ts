@@ -26,8 +26,14 @@ export async function createIdentityVerificationSession(
   })
 
   try {
+    const flowId = process.env.STRIPE_IDENTITY_FLOW_ID
     const session = await stripe.identity.verificationSessions.create({
-      type: 'document',
+      ...(flowId
+        ? { verification_flow: flowId }
+        : {
+            type: 'document',
+            options: { document: { require_matching_selfie: true } },
+          }),
       ...(input.relatedPerson
         ? {
             related_person: {
@@ -53,11 +59,6 @@ export async function createIdentityVerificationSession(
         ...(input.relatedPerson?.personId
           ? { stripe_person_id: input.relatedPerson.personId }
           : {}),
-      },
-      options: {
-        document: {
-          require_matching_selfie: true,
-        },
       },
     })
 

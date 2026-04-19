@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { IconShield, IconClock, IconX } from '@tabler/icons-react'
+import { IconShield, IconX } from '@tabler/icons-react'
 import type { KYCStatus } from '@/types'
 
 interface KYCAlertBannerProps {
@@ -55,13 +55,11 @@ export function KYCAlertBanner({
         variant="default"
         className={`border-yellow-500 bg-yellow-50 ${className}`}
       >
-        <IconClock className="h-4 w-4 text-yellow-600" />
-        <AlertTitle className="text-yellow-900">
+        <AlertTitle className="text-xs font-medium text-yellow-900">
           Vérification en cours
         </AlertTitle>
-        <AlertDescription className="text-yellow-800">
-          Nous examinons vos documents d'identité. Vous serez notifié par email
-          dans les 24-48h.
+        <AlertDescription className="text-xs text-yellow-800">
+          Vos documents sont en cours d'examen. Vous serez notifié sous 24-48h.
         </AlertDescription>
       </Alert>
     )
