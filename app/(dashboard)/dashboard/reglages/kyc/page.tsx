@@ -1196,12 +1196,6 @@ export default function KYCPage() {
                         setStep('document')
                         setForceDetails(false)
                         setConfirmIdentity(false)
-                        setVerificationSessionId(null)
-                        if (typeof window !== 'undefined') {
-                          sessionStorage.removeItem(
-                            'kyc_verification_session_id'
-                          )
-                        }
                       }}
                       disabled={isSubmitting}
                     >
