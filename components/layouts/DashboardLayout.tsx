@@ -20,7 +20,6 @@ import {
   IconLogout,
   IconUser,
   IconIdBadge2,
-  IconSearch,
   IconPlaneDeparture,
   IconCreditCard,
   IconSparkles,
@@ -55,7 +54,6 @@ import {
   getShortDisplayName,
   getShortNameParts,
 } from '@/lib/core/profile/utils'
-import { FeedbackDialog } from '@/components/feedback-dialog'
 import { SubscriptionStatusPanel } from '@/components/features/subscriptions/SubscriptionStatusPanel'
 
 interface DashboardLayoutProps {
@@ -343,22 +341,12 @@ function SidebarContent({
 function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-        <Link href="/recherche" aria-label="Recherche">
-          <IconSearch className="h-4 w-4" />
-        </Link>
-      </Button>
       <ClientOnly>
         <ThemeToggle />
       </ClientOnly>
       <ClientOnly>
-        <FeedbackDialog />
-      </ClientOnly>
-
-      <ClientOnly>
         <NotificationDropdown />
       </ClientOnly>
-
       <ClientOnly>
         <UserMenu />
       </ClientOnly>

@@ -16,12 +16,12 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   IconMessage,
   IconTrendingUp,
   IconShield,
   IconCheck,
-  IconClock,
   IconPlaneDeparture,
   IconSpeakerphone,
 } from '@tabler/icons-react'
@@ -36,8 +36,6 @@ import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { KYCStatus } from '@/types'
 import type { Database } from '@/types/database.types'
-import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import { Bar, BarChart, XAxis } from 'recharts'
 import {
   ChartConfig,
@@ -74,15 +72,6 @@ type DashboardStats = {
   sentStatus: StatusCounts
   receivedStatus: StatusCounts
   packagesStatus: StatusCounts
-}
-
-type RecentNotification = {
-  id: string
-  title: string
-  content: string
-  created_at: string | null
-  booking_id: string | null
-  link: string | null
 }
 
 const createEmptyStatusCounts = (): StatusCounts => ({
@@ -129,9 +118,6 @@ export default function DashboardPage() {
     receivedStatus: createEmptyStatusCounts(),
     packagesStatus: createEmptyStatusCounts(),
   })
-  const [recentNotifications, setRecentNotifications] = useState<
-    RecentNotification[]
-  >([])
   const [isLoadingStats, setIsLoadingStats] = useState(true)
 
   useEffect(() => {
@@ -178,7 +164,6 @@ export default function DashboardPage() {
           announcementsResult,
           unreadResult,
           bookingsResult,
-          notificationsResult,
         ] = await Promise.all([
           supabase
             .from('announcements')
@@ -196,12 +181,6 @@ export default function DashboardPage() {
               'id, status, sender_id, traveler_id, total_price, commission_amount, insurance_premium, delivery_confirmed_at, paid_at'
             )
             .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`),
-          supabase
-            .from('notifications')
-            .select('id, title, content, created_at, booking_id, link')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(3),
         ])
 
         const bookings = (bookingsResult.data as BookingRow[]) || []
@@ -232,9 +211,6 @@ export default function DashboardPage() {
           packagesStatus: sentStatus,
         })
 
-        setRecentNotifications(
-          (notificationsResult.data as RecentNotification[]) || []
-        )
       } catch (error) {
         console.error('Dashboard data load error:', error)
         toast.error('Erreur lors du chargement des statistiques')
@@ -371,11 +347,10 @@ export default function DashboardPage() {
               )}
               {kycStatus === 'pending' && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-yellow-600">
-                    <IconClock className="h-5 w-5" />
-                    <span className="font-medium text-sm">En cours</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">24-48h</p>
+                  <Badge variant="outline" className="text-xs font-normal text-yellow-700 border-yellow-400 bg-yellow-50">
+                    En cours
+                  </Badge>
+                  <p className="text-xs text-muted-foreground">Vérification sous 24-48h</p>
                 </div>
               )}
               {(!kycStatus || kycStatus === 'rejected') && (
@@ -553,73 +528,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className={dashboardCardTitleClassName}>
-            Activité récente
-          </CardTitle>
-          <CardDescription>
-            Vos dernières interactions sur la plateforme
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoadingStats ? (
-            <div className="text-xs text-muted-foreground">
-              Chargement des activités...
-            </div>
-          ) : recentNotifications.length === 0 ? (
-            <div className="text-xs text-muted-foreground">
-              Aucune activité récente pour le moment.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {recentNotifications.map(notification => (
-                <div
-                  key={notification.id}
-                  className="flex items-center justify-between gap-4"
-                >
-                  <div className="space-y-1">
-                    <p className="text-[13px] font-medium">
-                      {notification.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {notification.created_at
-                        ? formatDistanceToNow(
-                            new Date(notification.created_at),
-                            {
-                              addSuffix: true,
-                              locale: fr,
-                            }
-                          )
-                        : 'À l’instant'}
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!(notification.link || notification.booking_id)}
-                    asChild={!!(notification.link || notification.booking_id)}
-                  >
-                    {notification.link || notification.booking_id ? (
-                      <Link
-                        href={
-                          notification.link ||
-                          `/dashboard/colis/${notification.booking_id}`
-                        }
-                      >
-                        Voir
-                      </Link>
-                    ) : (
-                      <span>Voir</span>
-                    )}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }
