@@ -144,10 +144,6 @@ html {
     @apply border-border outline-ring/50;
   }
 
-  html {
-    font-size: 87.5%; /* 14px base — text-2xl: 21px, text-3xl: 26px */
-  }
-
   body {
     @apply bg-background text-foreground font-sans;
   }
