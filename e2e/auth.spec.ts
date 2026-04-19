@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { PERSONAS } from './globalSetup'
+import { createE2EAdminClient } from './helpers/supabase-admin'
 
 test.describe('Login', () => {
   test('successful login redirects to /dashboard', async ({ page }) => {
@@ -25,21 +26,41 @@ test.describe('Login', () => {
 })
 
 test.describe('Logout', () => {
+  // Uses a dedicated ephemeral user so that the global signOut (app default)
+  // does NOT invalidate the shared senderPage / travelerPage sessions used by
+  // other specs running in parallel.
   test('logout clears session and redirects', async ({ browser }) => {
-    const context = await browser.newContext()
-    const page = await context.newPage()
+    const supabase = createE2EAdminClient()
+    const email = `e2e-logout-${Date.now()}@sendbox-test.com`
+    const password = 'TestPass123!'
 
-    await page.goto('/login')
-    await page.fill('#email', PERSONAS.sender.email)
-    await page.fill('#password', 'TestPass123!')
-    await page.click('button[type="submit"]')
-    await expect(page).toHaveURL(/\/dashboard/)
+    const { data } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { firstname: 'Logout', lastname: 'Tester' },
+    })
+    const userId = data.user?.id
 
-    // Click logout button (text "Déconnexion" in DashboardLayout)
-    await page.getByText('Déconnexion').first().click()
-    await expect(page).toHaveURL(/\/(login|$)/)
+    try {
+      const context = await browser.newContext()
+      const page = await context.newPage()
 
-    await context.close()
+      await page.goto('/login')
+      await page.fill('#email', email)
+      await page.fill('#password', password)
+      await page.click('button[type="submit"]')
+      await expect(page).toHaveURL(/\/dashboard/)
+
+      // Open user dropdown (circular avatar button) then click logout
+      await page.getByRole('button', { name: /menu utilisateur/i }).click()
+      await page.getByText('Déconnexion').first().click()
+      await expect(page).toHaveURL(/\/(login|$)/)
+
+      await context.close()
+    } finally {
+      if (userId) await supabase.auth.admin.deleteUser(userId)
+    }
   })
 })
 

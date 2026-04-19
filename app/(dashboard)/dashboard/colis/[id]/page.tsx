@@ -127,11 +127,12 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
       setError(null)
       const supabase = createClient()
 
-      // Récupérer l'utilisateur actuel
+      // Récupérer l'utilisateur actuel (getSession lit depuis localStorage, pas de réseau)
       const {
-        data: { user },
+        data: { session },
         error: authError,
-      } = await supabase.auth.getUser()
+      } = await supabase.auth.getSession()
+      const user = session?.user
       if (authError || !user) {
         setError('Vous devez être connecté')
         toast.error('Vous devez être connecté')

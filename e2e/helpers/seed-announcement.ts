@@ -5,6 +5,8 @@ export async function createTestAnnouncement(travelerId: string): Promise<{ id: 
 
   const departureDate = new Date()
   departureDate.setDate(departureDate.getDate() + 14)
+  const arrivalDate = new Date(departureDate)
+  arrivalDate.setDate(arrivalDate.getDate() + 1)
 
   const { data, error } = await supabase
     .from('announcements')
@@ -15,9 +17,10 @@ export async function createTestAnnouncement(travelerId: string): Promise<{ id: 
       arrival_country: 'BJ',
       arrival_city: 'Cotonou',
       departure_date: departureDate.toISOString(),
+      arrival_date: arrivalDate.toISOString(),
       available_kg: 20,
       price_per_kg: 10,
-      status: 'published',
+      status: 'active',
       description: 'Test announcement created by E2E',
     })
     .select('id')

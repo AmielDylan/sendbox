@@ -15,7 +15,6 @@ export async function createTestBooking(
   if (!announcement) throw new Error('Announcement not found for seeding booking')
 
   const kilos = 5
-  const totalPrice = kilos * (announcement.price_per_kg || 10)
 
   const { data, error } = await supabase
     .from('bookings')
@@ -23,10 +22,11 @@ export async function createTestBooking(
       sender_id: senderId,
       traveler_id: announcement.traveler_id,
       announcement_id: announcementId,
-      kilos_booked: kilos,
-      total_price: totalPrice,
+      kilos_requested: kilos,
+      price_per_kg: announcement.price_per_kg || 10,
       status: 'pending',
       package_description: 'Test booking created by E2E',
+      qr_code: '',
     })
     .select('id')
     .single()

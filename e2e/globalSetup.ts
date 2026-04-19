@@ -44,28 +44,39 @@ async function ensureTestUser(
   supabase: ReturnType<typeof createE2EAdminClient>,
   persona: (typeof PERSONAS)[PersonaKey]
 ) {
-  // Delete existing user
+  // Check if user already exists
   const { data: users } = await supabase.auth.admin.listUsers()
   const existing = users?.users.find(u => u.email === persona.email)
+
+  let userId: string
+
   if (existing) {
-    await supabase.auth.admin.deleteUser(existing.id)
+    // Update password and keep existing user to avoid trigger issues
+    await supabase.auth.admin.updateUserById(existing.id, {
+      password: TEST_PASSWORD,
+      email_confirm: true,
+    })
+    userId = existing.id
+  } else {
+    // Create new user with metadata so trigger gets firstname/lastname
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: persona.email,
+      password: TEST_PASSWORD,
+      email_confirm: true,
+      user_metadata: {
+        firstname: persona.firstname,
+        lastname: persona.lastname,
+      },
+    })
+
+    if (error || !data.user) {
+      throw new Error(`Failed to create test user ${persona.email}: ${error?.message}`)
+    }
+
+    userId = data.user.id
+    // Wait for DB trigger to create the profile row
+    await new Promise(resolve => setTimeout(resolve, 1500))
   }
-
-  // Create fresh user with confirmed email
-  const { data, error } = await supabase.auth.admin.createUser({
-    email: persona.email,
-    password: TEST_PASSWORD,
-    email_confirm: true,
-  })
-
-  if (error || !data.user) {
-    throw new Error(`Failed to create test user ${persona.email}: ${error?.message}`)
-  }
-
-  const userId = data.user.id
-
-  // Wait for DB trigger to create the profile row
-  await new Promise(resolve => setTimeout(resolve, 1000))
 
   // Upsert profile with correct role and KYC status
   await supabase
@@ -93,7 +104,8 @@ async function generateStorageState(email: string, stateFile: string) {
   await page.fill('#email', email)
   await page.fill('#password', TEST_PASSWORD)
   await page.click('button[type="submit"]')
-  await page.waitForURL(`${BASE_URL}/dashboard`, { timeout: 15_000 })
+  // Admin redirects to /admin/dashboard, others to /dashboard
+  await page.waitForURL(/\/(admin\/)?dashboard/, { timeout: 15_000 })
 
   await context.storageState({ path: stateFile })
   await browser.close()

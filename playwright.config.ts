@@ -14,7 +14,9 @@ export default defineConfig({
   globalTeardown: './e2e/globalTeardown.ts',
   outputDir: '.playwright/results',
   reporter: [['html', { outputFolder: '.playwright/report', open: 'never' }], ['list']],
-  timeout: 30_000,
+  // 2 workers: the Next.js dev server is single-threaded; more workers cause contention.
+  workers: 2,
+  timeout: 45_000,
   expect: { timeout: 10_000 },
   use: {
     baseURL: 'http://localhost:3000',

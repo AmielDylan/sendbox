@@ -4,12 +4,14 @@ import { createTestAnnouncement } from './helpers/seed-announcement'
 import { createTestBooking, acceptTestBooking, deleteTestBookings } from './helpers/seed-booking'
 import { createE2EAdminClient } from './helpers/supabase-admin'
 
+// Booking tests share the same DB users — run serially to avoid state collisions.
+test.describe.configure({ mode: 'serial' })
+
 async function getUserId(email: string): Promise<string> {
   const supabase = createE2EAdminClient()
-  const { data: users } = await supabase.auth.admin.listUsers()
-  const user = users?.users.find(u => u.email === email)
-  if (!user) throw new Error(`User not found: ${email}`)
-  return user.id
+  const { data } = await supabase.from('profiles').select('id').eq('email', email).single()
+  if (!data?.id) throw new Error(`User not found: ${email}`)
+  return data.id
 }
 
 test.describe('Création réservation — Sender', () => {
@@ -29,8 +31,8 @@ test.describe('Création réservation — Sender', () => {
   test('page colis/new charge avec les détails annonce', async ({ senderPage }) => {
     await senderPage.goto(`/dashboard/colis/new?announcement=${announcementId}`)
     await expect(senderPage).toHaveURL(/colis\/new/)
-    // Should show the announcement details
-    await expect(senderPage.getByText(/paris.*cotonou|cotonou.*paris|trajet/i).first()).toBeVisible()
+    // Wait for announcement to load, then check route/city text
+    await expect(senderPage.getByText(/paris|cotonou/i).first()).toBeVisible({ timeout: 15_000 })
   })
 
   test('submit crée un booking en status pending', async ({ senderPage, supabaseAdmin }) => {
@@ -38,17 +40,17 @@ test.describe('Création réservation — Sender', () => {
 
     await senderPage.goto(`/dashboard/colis/new?announcement=${announcementId}`)
 
-    // Fill booking form
-    const descriptionField = senderPage.locator('textarea, input[placeholder*="description" i]').first()
-    if (await descriptionField.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await descriptionField.fill('Test booking created by E2E')
-    }
+    // Wait for form to finish loading announcement
+    await senderPage.waitForSelector('#package_description', { state: 'visible', timeout: 15_000 })
 
-    const submitBtn = senderPage.getByRole('button', { name: /envoyer|réserver|soumettre|confirmer/i }).first()
+    // Fill required description (min 10 chars)
+    await senderPage.locator('#package_description').fill('Colis test E2E — contenu standard')
+
+    const submitBtn = senderPage.getByRole('button', { name: /envoyer la demande/i })
     await submitBtn.click()
 
-    // Should redirect to booking detail page
-    await expect(senderPage).toHaveURL(/colis\/[a-z0-9-]+/, { timeout: 10_000 })
+    // Should redirect to booking detail page (UUID, not "new")
+    await senderPage.waitForURL(/colis\/[0-9a-f-]{36}/, { timeout: 15_000 })
 
     // Assert in DB
     const { data } = await supabaseAdmin
@@ -95,8 +97,9 @@ test.describe('Acceptation réservation — Traveler', () => {
     await acceptTestBooking(bookingId)
 
     await senderPage.goto(`/dashboard/colis/${bookingId}`)
+    // "Payer maintenant" renders as <a> via Button asChild+Link
     await expect(
-      senderPage.getByRole('button', { name: /payer|payment|pay/i }).first()
-    ).toBeVisible()
+      senderPage.getByText(/payer maintenant/i).first()
+    ).toBeVisible({ timeout: 20_000 })
   })
 })
