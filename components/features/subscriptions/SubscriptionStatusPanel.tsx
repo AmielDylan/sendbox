@@ -424,12 +424,12 @@ export function SubscriptionStatusPanel({
               {icon}
               {view.badgeLabel}
             </Badge>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1 text-xs font-medium text-foreground/70">
               <IconLock className="h-3.5 w-3.5" />
               {view.metaLabel} : {view.metaValue}
             </span>
             {view.dateLabel && view.dateValue && (
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1 text-xs font-medium text-foreground/70">
                 <IconCalendarEvent className="h-3.5 w-3.5" />
                 {view.dateLabel} : {view.dateValue}
               </span>
