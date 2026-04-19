@@ -499,10 +499,6 @@ export default function KYCPage() {
     setSubmittedAt(nextSubmitted)
     if (nextStatus === 'approved' || nextStatus === 'rejected') {
       setForceDetails(false)
-      setVerificationSessionId(null)
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('kyc_verification_session_id')
-      }
     }
     if (nextStatus === 'rejected') {
       setStep('details')
@@ -581,7 +577,6 @@ export default function KYCPage() {
     if (kycStatus !== 'pending') return
     const stored = sessionStorage.getItem('kyc_verification_session_id')
     if (!stored) return
-    setVerificationSessionId(stored)
     runStatusSync(stored, 0)
   }, [kycStatus])
 
