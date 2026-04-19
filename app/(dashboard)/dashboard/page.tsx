@@ -21,7 +21,6 @@ import {
   IconMessage,
   IconTrendingUp,
   IconShield,
-  IconCheck,
   IconPlaneDeparture,
   IconSpeakerphone,
 } from '@tabler/icons-react'
@@ -330,7 +329,7 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       <div className="flex flex-wrap gap-4">
         {/* Card KYC Status - SEULEMENT si feature activée */}
-        {isFeatureEnabled('KYC_ENABLED') && (
+        {isFeatureEnabled('KYC_ENABLED') && kycStatus !== 'approved' && (
           <Card className="flex-1 min-w-[200px]">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className={dashboardCardTitleClassName}>
@@ -339,12 +338,6 @@ export default function DashboardPage() {
               <IconShield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {kycStatus === 'approved' && (
-                <div className="flex items-center gap-2 text-green-600">
-                  <IconCheck className="h-5 w-5" />
-                  <span className="font-medium text-sm">Compte vérifié</span>
-                </div>
-              )}
               {kycStatus === 'pending' && (
                 <div className="space-y-2">
                   <Badge variant="outline" className="text-xs font-normal text-yellow-700 border-yellow-400 bg-yellow-50">

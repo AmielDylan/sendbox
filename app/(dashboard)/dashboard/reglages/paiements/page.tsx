@@ -294,6 +294,7 @@ export default function PaymentsSettingsPage() {
                       : 'Choisissez votre opérateur et validez votre numéro par OTP.'}
                 </p>
               </div>
+              {currentStatus !== 'pending' && (
               <AlertDialog
                 open={changeModeOpen}
                 onOpenChange={setChangeModeOpen}
@@ -319,9 +320,21 @@ export default function PaymentsSettingsPage() {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            )}
             </div>
 
-            {selectedMethod === 'stripe_bank' ? (
+            {currentStatus === 'pending' ? (
+              <div className="space-y-3 rounded-lg border border-border/60 bg-muted/30 p-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-50">
+                    En cours de vérification
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Vos informations ont été envoyées. La vérification est en cours et peut prendre 24-48h.
+                </p>
+              </div>
+            ) : selectedMethod === 'stripe_bank' ? (
               currentStatus === 'active' ? (
                 <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
                   <div className="flex flex-wrap items-center gap-3">
