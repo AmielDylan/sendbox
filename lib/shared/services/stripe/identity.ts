@@ -34,7 +34,8 @@ export async function createIdentityVerificationSession(
             type: 'document',
             options: { document: { require_matching_selfie: true } },
           }),
-      ...(input.relatedPerson
+      // related_person only supported with type:'document', not with verification_flow
+      ...(!flowId && input.relatedPerson
         ? {
             related_person: {
               account: input.relatedPerson.accountId,

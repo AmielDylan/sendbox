@@ -602,9 +602,10 @@ export function OptimizedAuthProvider({
   useEffect(() => {
     if (!profile?.id) return
 
-    const setupKey = `${profile.id}:${profile.kyc_status ?? 'none'}:${
-      profile.stripe_payouts_enabled ? 'payouts' : 'no-payouts'
-    }:${profile.role ?? 'unknown'}`
+    // Key based only on profile.id — call once per session, server-side dedup handles the rest.
+    // Avoid keying on kyc_status: it transitions null→'incomplete' on first load,
+    // causing two rapid calls that race past the server-side dedup check.
+    const setupKey = profile.id
 
     if (lastSetupNotificationKey.current === setupKey) {
       return
