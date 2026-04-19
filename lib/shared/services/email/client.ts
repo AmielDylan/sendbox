@@ -14,7 +14,7 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@sendbox.io'
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'support@gosendbox.com'
 const FROM_NAME = process.env.RESEND_FROM_NAME || 'Sendbox Support'
 const FROM_ADDRESS = FROM_EMAIL.includes('<')
   ? FROM_EMAIL
