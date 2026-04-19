@@ -178,9 +178,6 @@ export default function KYCPage() {
     if (!email.trim()) errors.email = 'Champ requis'
     if (!phone.trim()) errors.phone = 'Champ requis'
     if (!birthDate.trim()) errors.birthDate = 'Champ requis'
-    if (!address.trim()) errors.address = 'Champ requis'
-    if (!city.trim()) errors.city = 'Champ requis'
-    if (!postalCode.trim()) errors.postalCode = 'Champ requis'
     if (!confirmIdentity) {
       errors.confirmIdentity =
         'Veuillez confirmer que vos informations correspondent au document.'
@@ -355,6 +352,33 @@ export default function KYCPage() {
   }, [normalizedAccountCountry])
 
   // No page-level loading state needed; UI reacts to profile changes.
+
+  // Restaurer le brouillon du formulaire depuis sessionStorage au montage.
+  // Doit être déclaré avant l'effet de pre-fill du profil : les guards
+  // `if (!field && ...)` du profil ne peuvent pas écraser une valeur déjà restaurée.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const saved = sessionStorage.getItem('kyc_form_draft')
+      if (!saved) return
+      const draft = JSON.parse(saved)
+      if (draft.firstName) setFirstName(draft.firstName)
+      if (draft.lastName) setLastName(draft.lastName)
+      if (draft.phone) setPhone(draft.phone)
+      if (draft.birthDate) setBirthDate(draft.birthDate)
+      if (draft.address) setAddress(draft.address)
+      if (draft.city) setCity(draft.city)
+      if (draft.postalCode) setPostalCode(draft.postalCode)
+      if (draft.dialCode) setDialCode(draft.dialCode)
+    } catch {}
+  }, [])
+
+  // Sauvegarder le brouillon à chaque modification d'un champ.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const draft = { firstName, lastName, phone, birthDate, address, city, postalCode, dialCode }
+    sessionStorage.setItem('kyc_form_draft', JSON.stringify(draft))
+  }, [firstName, lastName, phone, birthDate, address, city, postalCode, dialCode])
 
   useEffect(() => {
     if (!profile) return
@@ -713,6 +737,9 @@ export default function KYCPage() {
       }
 
       toast.success('Vérification envoyée avec succès.')
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('kyc_form_draft')
+      }
       const submittedAt = new Date().toISOString()
       setKycStatus('pending')
       setSubmittedAt(submittedAt)
@@ -1229,11 +1256,23 @@ export default function KYCPage() {
                     <p className="text-sm font-semibold">
                       Informations personnelles
                     </p>
+                    <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+                      <IconAlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <AlertTitle className="text-sm text-amber-800 dark:text-amber-200">
+                        Utilisez vos noms exacts tels qu&apos;ils figurent sur votre document
+                      </AlertTitle>
+                      <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
+                        Si votre document indique plusieurs prénoms, saisissez-les tous
+                        (ex&nbsp;: <strong>Jean-Marie</strong> et non <strong>Jean</strong>).
+                        Une discordance entraîne le rejet automatique de la vérification.
+                      </AlertDescription>
+                    </Alert>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">Prénom</Label>
                         <Input
                           id="firstName"
+                          autoComplete="given-name"
                           placeholder="Tous vos prénoms (ex: Jean-Marie)"
                           value={firstName}
                           onChange={event => {
@@ -1258,6 +1297,7 @@ export default function KYCPage() {
                         <Label htmlFor="lastName">Nom</Label>
                         <Input
                           id="lastName"
+                          autoComplete="family-name"
                           placeholder="Nom de famille exact (ex: Adjovi)"
                           value={lastName}
                           onChange={event => {
@@ -1285,6 +1325,7 @@ export default function KYCPage() {
                         <Input
                           id="email"
                           type="email"
+                          autoComplete="email"
                           value={email}
                           onChange={event => {
                             setEmail(event.target.value)
@@ -1320,6 +1361,7 @@ export default function KYCPage() {
                           <div className="flex-1">
                             <Input
                               id="phone"
+                              autoComplete="tel-local"
                               placeholder="6 12 34 56 78"
                               value={phone}
                               onChange={event => {
@@ -1348,6 +1390,7 @@ export default function KYCPage() {
                       <Input
                         id="birthDate"
                         type="date"
+                        autoComplete="bday"
                         value={birthDate}
                         onChange={event => {
                           setBirthDate(event.target.value)
@@ -1368,9 +1411,10 @@ export default function KYCPage() {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="address">Adresse</Label>
+                      <Label htmlFor="address">Adresse <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
                       <Input
                         id="address"
+                        autoComplete="street-address"
                         placeholder="Adresse"
                         value={address}
                         onChange={event => {
@@ -1393,9 +1437,10 @@ export default function KYCPage() {
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="city">Ville</Label>
+                        <Label htmlFor="city">Ville <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
                         <Input
                           id="city"
+                          autoComplete="address-level2"
                           placeholder="Ville"
                           value={city}
                           onChange={event => {
@@ -1417,9 +1462,10 @@ export default function KYCPage() {
                         )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="postalCode">Code postal</Label>
+                        <Label htmlFor="postalCode">Code postal <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
                         <Input
                           id="postalCode"
+                          autoComplete="postal-code"
                           placeholder="Code postal"
                           value={postalCode}
                           onChange={event => {
@@ -1444,8 +1490,7 @@ export default function KYCPage() {
                   </div>
 
                   <p className="text-xs text-muted-foreground">
-                    Vos données sont transmises à Stripe Identity de façon
-                    sécurisée.{' '}
+                    Vos données sont traitées de façon sécurisée.{' '}
                     <Link href="/cgv" className="underline hover:text-foreground">
                       Voir nos CGU
                     </Link>

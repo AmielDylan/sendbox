@@ -182,8 +182,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }, [user, loading, router])
 
-  // Afficher un loader jusqu'à ce que la vérification initiale soit terminée
-  if (!isInitialCheckDone || loading) {
+  // Spinner only when we have no user at all (not yet loaded from localStorage).
+  // If user is persisted from localStorage, render immediately while auth validates in background.
+  if (!user && (!isInitialCheckDone || loading)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />

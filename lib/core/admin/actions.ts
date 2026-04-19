@@ -16,8 +16,8 @@ import { releaseTransferForBooking } from '@/lib/core/payments/transfers'
  * Vérifie si l'utilisateur est admin
  */
 export async function isAdmin(): Promise<boolean> {
-  const supabase = createAdminClient()
-
+  // createClient() lit les cookies SSR pour identifier l'utilisateur courant
+  const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -26,7 +26,9 @@ export async function isAdmin(): Promise<boolean> {
     return false
   }
 
-  const { data: profile } = await supabase
+  // createAdminClient() pour bypasser RLS et lire le rôle du profil
+  const adminSupabase = createAdminClient()
+  const { data: profile } = await adminSupabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
