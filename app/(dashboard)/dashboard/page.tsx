@@ -353,7 +353,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">Vérification sous 24-48h</p>
                 </div>
               )}
-              {(!kycStatus || kycStatus === 'rejected') && (
+              {(!kycStatus || kycStatus === 'incomplete' || kycStatus === 'rejected') && (
                 <div className="space-y-3">
                   <p className="text-xs text-muted-foreground">
                     Vérifiez votre identité
