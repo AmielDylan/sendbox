@@ -134,6 +134,11 @@
   --chart-5: oklch(0.5 0.12 190);
 }
 
+/* Base font size: 14px — reduces all rem-based text ~12.5% across all pages */
+html {
+  font-size: 87.5%;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
