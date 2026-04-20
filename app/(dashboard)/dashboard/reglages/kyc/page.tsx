@@ -179,6 +179,12 @@ export default function KYCPage() {
         'Veuillez confirmer que vos informations correspondent au document.'
     }
 
+    if (isStripeConnectCountry) {
+      if (!address.trim()) errors.address = 'Champ requis'
+      if (!city.trim()) errors.city = 'Champ requis'
+      if (!postalCode.trim()) errors.postalCode = 'Champ requis'
+    }
+
     setFieldErrors(errors)
     if (Object.keys(errors).length > 0) {
       const firstErrorField = Object.keys(errors)[0]
@@ -1361,8 +1367,16 @@ export default function KYCPage() {
                         </p>
                       )}
                     </div>
+                    {isStripeConnectCountry && (
+                      <p className="text-xs text-muted-foreground">
+                        Ces informations sont requises par Stripe pour valider votre compte de paiement.
+                      </p>
+                    )}
                     <div className="space-y-2">
-                      <Label htmlFor="address">Adresse <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
+                      <Label htmlFor="address">
+                        Adresse{isStripeConnectCountry && <span className="text-destructive"> *</span>}
+                        {!isStripeConnectCountry && <span className="text-muted-foreground font-normal"> (facultatif)</span>}
+                      </Label>
                       <Input
                         id="address"
                         autoComplete="street-address"
@@ -1388,7 +1402,10 @@ export default function KYCPage() {
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="city">Ville <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
+                        <Label htmlFor="city">
+                          Ville{isStripeConnectCountry && <span className="text-destructive"> *</span>}
+                          {!isStripeConnectCountry && <span className="text-muted-foreground font-normal"> (facultatif)</span>}
+                        </Label>
                         <Input
                           id="city"
                           autoComplete="address-level2"
@@ -1413,7 +1430,10 @@ export default function KYCPage() {
                         )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="postalCode">Code postal <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
+                        <Label htmlFor="postalCode">
+                          Code postal{isStripeConnectCountry && <span className="text-destructive"> *</span>}
+                          {!isStripeConnectCountry && <span className="text-muted-foreground font-normal"> (facultatif)</span>}
+                        </Label>
                         <Input
                           id="postalCode"
                           autoComplete="postal-code"
