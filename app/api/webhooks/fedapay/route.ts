@@ -126,6 +126,34 @@ export async function POST(req: Request) {
     return null
   }
 
+  // Handle FedaPay subscription activation on transaction approval
+  const isTransactionApproved =
+    eventName === 'transaction.approved' ||
+    eventName === 'transaction.success'
+
+  if (isTransactionApproved && reference?.startsWith('sub_')) {
+    const userId = reference.replace('sub_', '')
+    const endsAt = new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1000
+    ).toISOString()
+
+    const { error: subError } = await (admin as any)
+      .from('profiles')
+      .update({
+        subscription_status: 'active',
+        subscription_expires_at: endsAt,
+      })
+      .eq('id', userId)
+
+    if (subError) {
+      console.error('❌ FedaPay subscription activation failed:', subError)
+    } else {
+      console.log('✅ FedaPay subscription activated for user:', userId, 'until:', endsAt)
+    }
+
+    return Response.json({ received: true })
+  }
+
   const transfer = await findTransfer()
   if (transfer) {
     if (transfer.status !== normalizedStatus) {

@@ -373,7 +373,11 @@ export function SubscriptionStatusPanel({
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               Offre
             </p>
-            <p className="text-sm font-medium">14 jours puis 4,99 € / mois</p>
+            <p className="text-sm font-medium">
+              {(profile as any)?.country === "BJ"
+                ? '14 jours puis 3 275 XOF / mois'
+                : '14 jours puis 4,99 € / mois'}
+            </p>
           </div>
           <div className="space-y-1 rounded-xl border border-border/60 bg-background/70 p-4">
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
@@ -510,17 +514,25 @@ export function SubscriptionStatusPanel({
             </p>
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>
-                Essai gratuit de 14 jours à partir de l’inscription, puis
-                abonnement à 4,99 € / mois pour continuer à publier.
+                {(profile as any)?.country === "BJ"
+                  ? "Essai gratuit de 14 jours, puis abonnement à 3 275 XOF / mois pour continuer à publier."
+                  : "Essai gratuit de 14 jours à partir de l’inscription, puis abonnement à 4,99 € / mois pour continuer à publier."}
               </p>
               <p>
                 Les frais plateforme restent distincts: 3 % par transaction
                 validée sur la plateforme.
               </p>
-              <p>
-                Aucun flux local Bénin supplémentaire n’est demandé dans cet
-                espace: vous gérez uniquement l’accès à la publication.
-              </p>
+              {(profile as any)?.country === "BJ" ? (
+                <p>
+                  Paiement par Mobile Money (MTN, Moov, Celtiis) via FedaPay.
+                  L’accès est renouvelé manuellement chaque mois.
+                </p>
+              ) : (
+                <p>
+                  Aucun flux local Bénin supplémentaire n’est demandé dans cet
+                  espace: vous gérez uniquement l’accès à la publication.
+                </p>
+              )}
             </div>
           </div>
         </div>
