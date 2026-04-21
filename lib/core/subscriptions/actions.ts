@@ -35,7 +35,7 @@ export async function getSubscriptionStatus(): Promise<
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('subscription_status, trial_ends_at, role')
+    .select('subscription_status, trial_ends_at, subscription_expires_at, role')
     .eq('id', user.id)
     .single()
 
@@ -52,9 +52,19 @@ export async function getSubscriptionStatus(): Promise<
     }
   }
 
-  const status = (profile.subscription_status ??
+  let status = ((profile as any).subscription_status ??
     'trialing') as SubscriptionStatus
-  const trialEndsAt = profile.trial_ends_at as string | null
+  const trialEndsAt = (profile as any).trial_ends_at as string | null
+  const subscriptionExpiresAt = (profile as any).subscription_expires_at as string | null
+
+  // FedaPay subscriptions expire after 30 days — auto-downgrade without a cron job
+  if (
+    status === 'active' &&
+    subscriptionExpiresAt &&
+    new Date(subscriptionExpiresAt).getTime() < Date.now()
+  ) {
+    status = 'past_due'
+  }
 
   let trialDaysRemaining: number | null = null
   if (trialEndsAt) {

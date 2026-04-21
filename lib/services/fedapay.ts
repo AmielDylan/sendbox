@@ -500,6 +500,23 @@ export async function createFedaPayPayout(
   let payout = payoutData?.payout || payoutData?.data || payoutData
   if (!payoutRes.ok) {
     const message = extractErrorMessage(payoutData)
+
+    // Sandbox accounts need explicit payout activation from FedaPay.
+    // Simulate locally when the account is not yet authorized.
+    const isUnauthorized = /autorisée|autorisee|non autoris/i.test(message || '')
+    if (isUnauthorized && process.env.FEDAPAY_ENV === 'sandbox') {
+      console.warn('⚠️ FedaPay sandbox payout not authorized — simulating. Contact FedaPay to activate payouts on your sandbox account.')
+      return {
+        id: `sandbox_sim_${Date.now()}`,
+        status: 'pending',
+        mode: input.operator,
+        amount: input.amount,
+        currency: input.currency || DEFAULT_CURRENCY,
+        reference: input.reference,
+        data: { simulated: true, reason: 'sandbox_not_activated' },
+      }
+    }
+
     const shouldRetry = /recipient|phone_number|mode|customer/i.test(
       message || ''
     )
