@@ -10,7 +10,7 @@ import Link from 'next/link'
 import {
   IconUser,
   IconIdBadge2,
-  IconShield,
+  IconUserShield,
   IconCreditCard,
   IconSparkles,
 } from '@tabler/icons-react'
@@ -137,7 +137,7 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
     {
       label: "Vérification d'identité",
       href: '/dashboard/reglages/kyc',
-      icon: IconShield,
+      icon: IconUserShield,
       description: kycDescription,
       kycOnly: true, // Marqueur pour filtrage conditionnel
       userOnly: true,
