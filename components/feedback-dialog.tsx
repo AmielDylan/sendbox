@@ -63,15 +63,15 @@ export function FeedbackDialog() {
             <RadioGroup value={type} onValueChange={(v: any) => setType(v)}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="bug" id="bug" />
-                <Label htmlFor="bug">🐛 Bug</Label>
+                <Label htmlFor="bug">Bug</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="feature" id="feature" />
-                <Label htmlFor="feature">💡 Suggestion</Label>
+                <Label htmlFor="feature">Suggestion</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="other" id="other" />
-                <Label htmlFor="other">💬 Autre</Label>
+                <Label htmlFor="other">Autre</Label>
               </div>
             </RadioGroup>
           </div>

@@ -12,7 +12,8 @@ import {
   IconSettings,
   IconMenu2,
   IconLoader2,
-  IconShield,
+  IconUserShield,
+  IconLifebuoy,
   IconRosetteDiscountCheck,
   IconCheck,
   IconClock,
@@ -67,7 +68,7 @@ interface NavItem {
   badge?: number
   userOnly?: boolean
   feature?: 'KYC_ENABLED' | 'SUBSCRIPTION_ENABLED'
-  section: 'workspace' | 'finance' | 'settings'
+  section: 'workspace' | 'finance' | 'settings' | 'support'
 }
 
 const navItems: NavItem[] = [
@@ -133,10 +134,16 @@ const navItems: NavItem[] = [
   {
     title: 'Identité',
     href: '/dashboard/reglages/kyc',
-    icon: IconShield,
+    icon: IconUserShield,
     userOnly: true,
     feature: 'KYC_ENABLED',
     section: 'settings',
+  },
+  {
+    title: "Centre d'aide",
+    href: '/dashboard/aide',
+    icon: IconLifebuoy,
+    section: 'support',
   },
 ]
 
@@ -147,6 +154,7 @@ const navSections: Array<{
   { id: 'workspace', label: 'Navigation' },
   { id: 'finance', label: 'Finances' },
   { id: 'settings', label: 'Réglages' },
+  { id: 'support', label: 'Support' },
 ]
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -553,7 +561,7 @@ function UserMenu() {
             <>
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
-                  <IconShield className="mr-2 h-4 w-4" />
+                  <IconUserShield className="mr-2 h-4 w-4" />
                   <span>Vérifier mon identité</span>
                 </Link>
               </DropdownMenuItem>
