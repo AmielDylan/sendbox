@@ -59,7 +59,7 @@ export function HomePageContent() {
   return (
     <div className="landing-v2 relative overflow-x-hidden bg-background">
       <section className="relative flex min-h-[calc(100svh-4rem)] items-center bg-gradient-to-br from-primary/5 via-background to-background">
-        <div className="container-wide relative z-10 py-16 sm:py-20 lg:py-24">
+        <div className="container-wide relative z-10 py-20 sm:py-28 lg:py-36">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-6 animate-fade-in-up">
               <h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
@@ -132,7 +132,7 @@ export function HomePageContent() {
         </div>
       </section>
 
-      <section className="relative bg-muted/30 py-20 sm:py-24">
+      <section className="relative bg-muted/30 py-24 sm:py-32">
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
 
         <div className="container-wide relative">
@@ -231,7 +231,7 @@ export function HomePageContent() {
       <PricingSection />
       <LatestAnnouncementsCarousel />
 
-      <section className="relative overflow-hidden py-24 sm:py-28">
+      <section className="relative overflow-hidden py-28 sm:py-36">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
 
         <div className="container-wide relative">
