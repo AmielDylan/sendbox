@@ -19,8 +19,9 @@ import {
   IconMessageCircle,
   IconBell,
   IconAlertCircle,
-  IconX,
+  IconTrash,
 } from '@tabler/icons-react'
+import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import {
   deleteNotification,
@@ -109,14 +110,11 @@ export function NotificationItem({
   const content = (
     <div
       className={cn(
-        'flex gap-3 p-3 rounded-lg transition-colors cursor-pointer',
+        'group flex gap-3 p-3 rounded-lg transition-colors cursor-pointer',
         isUnread ? 'bg-muted/50 hover:bg-muted' : 'hover:bg-muted/50'
       )}
       onClick={handleClick}
     >
-      <div className={cn('flex-shrink-0 mt-0.5', iconColor)}>
-        <Icon className="h-5 w-5" />
-      </div>
       <div className="flex-1 min-w-0">
         <p className={cn('text-sm font-medium', isUnread && 'font-semibold')}>
           {notification.title}
@@ -131,17 +129,19 @@ export function NotificationItem({
           })}
         </p>
       </div>
-      <div className="flex flex-col items-end gap-2">
+      <div className="flex flex-col items-end gap-2 shrink-0">
         {isUnread && (
-          <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-1" />
+          <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-medium">
+            New
+          </Badge>
         )}
         <button
           type="button"
           onClick={handleDelete}
-          className="text-muted-foreground hover:text-destructive transition-colors"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
           aria-label="Supprimer la notification"
         >
-          <IconX className="h-3.5 w-3.5" />
+          <IconTrash className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>
