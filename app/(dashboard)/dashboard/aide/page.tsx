@@ -1,11 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  IconChevronDown,
-  IconLifebuoy,
-  IconSend,
-} from '@tabler/icons-react'
+import { IconChevronDown, IconSend } from '@tabler/icons-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -146,11 +142,11 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 function FaqTab() {
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {faqCategories.map(category => (
         <div key={category.title} className="rounded-xl border bg-card">
-          <div className="border-b px-4 py-3">
-            <h2 className="text-sm font-semibold">{category.title}</h2>
+          <div className="border-b bg-primary/8 px-4 py-3">
+            <h2 className="text-sm font-semibold text-primary">{category.title}</h2>
           </div>
           <div className="divide-y">
             {category.questions.map(item => (
@@ -270,16 +266,11 @@ function AssistanceTab() {
 export default function AidePage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <IconLifebuoy className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-xl font-semibold">Centre d'aide</h1>
-          <p className="text-sm text-muted-foreground">
-            Trouvez des réponses aux questions fréquentes ou contactez notre équipe.
-          </p>
-        </div>
+      <div>
+        <h1 className="text-xl font-semibold">Centre d'aide</h1>
+        <p className="text-sm text-muted-foreground">
+          Trouvez des réponses aux questions fréquentes ou contactez notre équipe.
+        </p>
       </div>
 
       <Tabs defaultValue="faq">
