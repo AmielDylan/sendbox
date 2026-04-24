@@ -9,19 +9,7 @@ import { Notification } from '@/lib/shared/db/queries/notifications'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
-import {
-  IconCircleCheck,
-  IconCircleX,
-  IconCreditCard,
-  IconPackage,
-  IconTruck,
-  IconStar,
-  IconMessageCircle,
-  IconBell,
-  IconAlertCircle,
-  IconTrash,
-} from '@tabler/icons-react'
-import { Badge } from '@/components/ui/badge'
+import { IconTrash } from '@tabler/icons-react'
 import Link from 'next/link'
 import {
   deleteNotification,
@@ -34,47 +22,11 @@ interface NotificationItemProps {
   onDelete?: (notificationId: string) => void
 }
 
-const NOTIFICATION_ICONS = {
-  booking_request: IconPackage,
-  booking_accepted: IconCircleCheck,
-  booking_refused: IconCircleX,
-  payment_confirmed: IconCreditCard,
-  deposit_reminder: IconPackage,
-  transit_started: IconTruck,
-  delivery_reminder: IconPackage,
-  delivery_confirmed: IconCircleCheck,
-  rating_request: IconStar,
-  admin_message: IconMessageCircle,
-  system_alert: IconAlertCircle,
-} as const
-
-const NOTIFICATION_COLORS = {
-  booking_request: 'text-blue-500',
-  booking_accepted: 'text-green-500',
-  booking_refused: 'text-red-500',
-  payment_confirmed: 'text-green-500',
-  deposit_reminder: 'text-yellow-500',
-  transit_started: 'text-blue-500',
-  delivery_reminder: 'text-yellow-500',
-  delivery_confirmed: 'text-green-500',
-  rating_request: 'text-yellow-500',
-  admin_message: 'text-purple-500',
-  system_alert: 'text-red-500',
-} as const
-
 export function NotificationItem({
   notification,
   onClick,
   onDelete,
 }: NotificationItemProps) {
-  const Icon =
-    NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] ||
-    IconBell
-  const iconColor =
-    NOTIFICATION_COLORS[
-      notification.type as keyof typeof NOTIFICATION_COLORS
-    ] || 'text-muted-foreground'
-
   const isUnread = !notification.read_at
 
   const handleClick = async () => {
@@ -129,11 +81,13 @@ export function NotificationItem({
           })}
         </p>
       </div>
-      <div className="flex flex-col items-end gap-2 shrink-0">
-        {isUnread && (
-          <Badge variant="secondary" className="h-4 px-1.5 text-[10px] font-medium">
-            New
-          </Badge>
+      <div className="flex flex-col items-end justify-between self-stretch shrink-0">
+        {isUnread ? (
+          <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold leading-none text-primary">
+            new
+          </span>
+        ) : (
+          <span />
         )}
         <button
           type="button"
