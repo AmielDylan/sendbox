@@ -32,7 +32,7 @@ export function NotificationDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="relative h-9 gap-2 rounded-full bg-muted px-3 hover:bg-muted/80">
           <IconBell className="h-4 w-4 shrink-0" />
-          <span className="hidden text-sm font-medium sm:inline">Notifications</span>
+          <span className="hidden text-sm font-medium sm:inline">Mes alertes</span>
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-background" />
           )}
