@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk } from 'next/font/google'
+import { Space_Grotesk, Figtree } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { Analytics } from '@vercel/analytics/next'
 import { Providers } from './providers'
@@ -8,10 +8,17 @@ import './globals.css'
 // Force dynamic rendering for all pages (uses auth context via Providers)
 export const dynamic = 'force-dynamic'
 
-const spaceGrotesk = Space_Grotesk({
+const figtree = Figtree({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-body',
+  display: 'swap',
+})
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-heading',
   display: 'swap',
 })
 
@@ -59,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${spaceGrotesk.variable} light`}
+      className={`${figtree.variable} ${spaceGrotesk.variable} light`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased" suppressHydrationWarning>

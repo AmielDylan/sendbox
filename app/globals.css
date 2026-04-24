@@ -10,7 +10,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-body);
-  --font-display: var(--font-body);
+  --font-display: var(--font-heading);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -156,6 +156,11 @@ html {
   label,
   .badge {
     @apply font-sans;
+  }
+
+  /* Space Grotesk for headings */
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
   }
 
   .bg-destructive {

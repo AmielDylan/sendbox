@@ -643,7 +643,7 @@ function MessagesPageContent() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-2">
+            <div className="rounded-lg border divide-y overflow-hidden">
               {notifications.map(notification => (
                 <NotificationItem
                   key={notification.id}
