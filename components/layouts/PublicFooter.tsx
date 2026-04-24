@@ -23,7 +23,7 @@ export function PublicFooter() {
       {/* Top gradient accent */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 py-16">
+      <div className="container-wide py-16">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
           {/* Brand section */}
           <div className="space-y-6 md:col-span-2">
