@@ -19,7 +19,6 @@ import { toast } from 'sonner'
 import {
   IconLoader2,
   IconLock,
-  IconShield,
   IconFileText,
   IconCircleCheck,
   IconInfoCircle,
@@ -299,7 +298,7 @@ function PaymentPageContent() {
                 <>
                   <Separator />
                   <div className="flex items-center gap-2">
-                    <IconShield className="h-4 w-4 text-primary" />
+                    <IconLock className="h-4 w-4 text-primary" />
                     <div>
                       <p className="flex items-center gap-1 text-sm text-muted-foreground">
                         Protection du colis
@@ -358,7 +357,7 @@ function PaymentPageContent() {
               {booking.insurance_opted && (
                 <div className="p-4 bg-muted rounded-lg">
                   <div className="flex items-start gap-2">
-                    <IconShield className="h-5 w-5 text-primary mt-0.5" />
+                    <IconLock className="h-5 w-5 text-primary mt-0.5" />
                     <div className="space-y-1">
                       <p className="flex items-center gap-1 font-medium text-sm">
                         Protection du colis activée
@@ -524,7 +523,7 @@ function PaymentPageContent() {
 
               <div className="rounded-lg border border-border/60 bg-muted/20 p-3 text-xs text-muted-foreground">
                 <div className="flex items-start gap-2">
-                  <IconShield className="h-4 w-4 text-primary mt-0.5" />
+                  <IconLock className="h-4 w-4 text-primary mt-0.5" />
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-foreground">
                       Paiement sécurisé

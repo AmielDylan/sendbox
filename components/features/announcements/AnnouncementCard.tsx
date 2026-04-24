@@ -13,7 +13,7 @@ import {
   IconArrowRight,
   IconArrowNarrowRight,
   IconLuggage,
-  IconShieldCheck,
+  IconRosetteDiscountCheck,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -200,7 +200,7 @@ export function AnnouncementCard({
               <div className="flex-1 min-w-0">
                 {isSendbox && (
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <IconShieldCheck
+                    <IconRosetteDiscountCheck
                       className="h-3.5 w-3.5 text-primary"
                       stroke={1.5}
                     />

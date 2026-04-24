@@ -279,7 +279,7 @@ function SidebarContent({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-5 p-4" aria-label="Navigation principale">
+      <nav className="flex-1 space-y-8 p-4" aria-label="Navigation principale">
         {groupedItems.map(section => (
           <div key={section.id} className="space-y-2">
             <p className="px-3 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">

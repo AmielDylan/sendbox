@@ -8,7 +8,7 @@ import {
   IconClock,
   IconCurrencyEuro,
   IconMapPin,
-  IconShieldCheck,
+  IconCircleCheck,
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,7 +28,7 @@ const features = [
     title: 'Voyageurs vérifiés',
     description:
       'Chaque trajet passe par un profil contrôlé, des avis et un cadre de confiance lisible.',
-    icon: IconShieldCheck,
+    icon: IconCircleCheck,
   },
   {
     title: 'Suivi rapide',
@@ -104,7 +104,7 @@ export function HomePageContent() {
 
               <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-muted-foreground sm:gap-4 sm:text-sm">
                 <span className="inline-flex items-center gap-2">
-                  <IconShieldCheck className="h-4 w-4 text-primary" />
+                  <IconCircleCheck className="h-4 w-4 text-primary" />
                   Identités vérifiées
                 </span>
                 <span className="inline-flex items-center gap-2">
