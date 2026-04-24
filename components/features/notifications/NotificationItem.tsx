@@ -62,7 +62,7 @@ export function NotificationItem({
   const content = (
     <div
       className={cn(
-        'group flex gap-3 p-3 rounded-lg transition-colors cursor-pointer',
+        'group flex gap-3 p-4 rounded-lg transition-colors cursor-pointer',
         isUnread ? 'bg-muted/50 hover:bg-muted' : 'hover:bg-muted/50'
       )}
       onClick={handleClick}
@@ -81,13 +81,11 @@ export function NotificationItem({
           })}
         </p>
       </div>
-      <div className="flex flex-col items-end justify-between self-stretch shrink-0">
-        {isUnread ? (
+      <div className="flex shrink-0 items-center gap-1.5 self-start">
+        {isUnread && (
           <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold leading-none text-primary">
             new
           </span>
-        ) : (
-          <span />
         )}
         <button
           type="button"
