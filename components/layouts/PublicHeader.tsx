@@ -134,7 +134,7 @@ export function PublicHeader() {
       )}
     >
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-      <div className="container mx-auto px-6 sm:px-8 lg:px-12 flex h-16 items-center justify-between relative">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between relative">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <Image
@@ -223,7 +223,7 @@ export function PublicHeader() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>
+                    <DropdownMenuLabel className="pb-3">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">
                           {displayName}

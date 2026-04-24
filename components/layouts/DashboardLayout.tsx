@@ -248,7 +248,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
 
           {/* Page Content */}
-          <div className="p-4 md:p-6">{children}</div>
+          <div className="p-6 md:p-8 lg:p-10">{children}</div>
         </main>
       </div>
     </div>
@@ -282,7 +282,7 @@ function SidebarContent({
       <nav className="flex-1 space-y-8 p-4" aria-label="Navigation principale">
         {groupedItems.map(section => (
           <div key={section.id} className="space-y-2">
-            <p className="px-3 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">
+            <p className="px-3 text-xs font-medium text-muted-foreground/80">
               {section.label}
             </p>
             <div className="space-y-1">
@@ -500,7 +500,7 @@ function UserMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
+        <DropdownMenuLabel className="pb-3">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
