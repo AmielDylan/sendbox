@@ -81,8 +81,8 @@ function RegisterForm() {
         <Card className="border shadow-sm rounded-2xl">
           <CardHeader className="space-y-4 py-10 text-center">
             <div className="flex justify-center">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={130} height={26} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={130} height={26} className="hidden dark:block" />
+              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
             </div>
             <CardTitle className="text-2xl">Vérification...</CardTitle>
           </CardHeader>
@@ -115,8 +115,8 @@ function RegisterForm() {
       <Card className="border shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="space-y-3 pb-4 text-center">
           <div className="flex justify-center pt-2">
-            <Image src="/images/branding/logo.svg" alt="Sendbox" width={130} height={26} className="dark:hidden" />
-            <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={130} height={26} className="hidden dark:block" />
+            <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+            <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
           </div>
           <div className="space-y-1">
             <CardTitle className="text-2xl font-bold">Créer un compte</CardTitle>
@@ -125,7 +125,7 @@ function RegisterForm() {
         </CardHeader>
         <CardContent className="px-6 sm:px-8 pb-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="firstname">Prénom</Label>
                 <Input
@@ -174,7 +174,7 @@ function RegisterForm() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="password">Mot de passe</Label>
                 <Input
