@@ -146,7 +146,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 function FaqTab() {
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {faqCategories.map(category => (
         <div key={category.title} className="rounded-xl border bg-card">
           <div className="border-b px-4 py-3">
@@ -269,7 +269,7 @@ function AssistanceTab() {
 
 export default function AidePage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="space-y-6">
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
           <IconLifebuoy className="h-5 w-5 text-primary" />
