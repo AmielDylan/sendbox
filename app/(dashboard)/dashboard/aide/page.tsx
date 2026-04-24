@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { IconChevronDown, IconSend } from '@tabler/icons-react'
+import { PageHeader } from '@/components/ui/page-header'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -144,7 +145,7 @@ function FaqTab() {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {faqCategories.map(category => (
-        <div key={category.title} className="rounded-xl border bg-card">
+        <div key={category.title} className="rounded-xl border bg-card overflow-hidden">
           <div className="border-b bg-primary/8 px-4 py-3">
             <h2 className="text-sm font-semibold text-primary">{category.title}</h2>
           </div>
@@ -265,13 +266,15 @@ function AssistanceTab() {
 
 export default function AidePage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Centre d'aide</h1>
-        <p className="text-sm text-muted-foreground">
-          Trouvez des réponses aux questions fréquentes ou contactez notre équipe.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="Centre d'aide"
+        description="Trouvez des réponses aux questions fréquentes ou contactez notre équipe."
+        breadcrumbs={[
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: "Centre d'aide" },
+        ]}
+      />
 
       <Tabs defaultValue="faq">
         <TabsList>
