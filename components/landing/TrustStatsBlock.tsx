@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import {
-  IconShieldCheck,
+  IconCircleCheck,
   IconQrcode,
   IconClock,
   IconCurrencyEuro,
@@ -8,7 +8,7 @@ import {
 
 const stats = [
   {
-    icon: IconShieldCheck,
+    icon: IconCircleCheck,
     value: '100%',
     label: 'Voyageurs vérifiés',
   },

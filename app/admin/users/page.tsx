@@ -37,7 +37,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import {
-  IconShield,
+  IconUserShield,
   IconBan,
   IconLockOpen,
   IconLoader2,
@@ -193,7 +193,7 @@ export default function AdminUsersPage() {
                               : 'Modifier le rôle'
                           }
                         >
-                          <IconShield className="h-4 w-4" />
+                          <IconUserShield className="h-4 w-4" />
                         </Button>
                         {user.is_banned ? (
                           <Button

@@ -45,7 +45,7 @@ import {
   IconLoader2,
   IconX,
   IconStar,
-  IconShield,
+  IconLock,
   IconInfoCircle,
 } from '@tabler/icons-react'
 import {
@@ -432,7 +432,7 @@ function NewBookingPageContent() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <IconShield className="h-5 w-5" />
+                  <IconLock className="h-5 w-5" />
                   Protection du colis
                 </CardTitle>
                 <CardDescription>
