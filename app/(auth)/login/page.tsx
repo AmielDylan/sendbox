@@ -91,8 +91,8 @@ function LoginForm() {
         <Card className="border shadow-sm rounded-2xl">
           <CardHeader className="space-y-4 py-12 text-center">
             <div className="flex justify-center">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={130} height={26} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={130} height={26} className="hidden dark:block" />
+              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
             </div>
             <CardTitle className="text-2xl">Vérification...</CardTitle>
           </CardHeader>
@@ -132,8 +132,8 @@ function LoginForm() {
       <Card className="border shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="space-y-4 pb-6 text-center">
           <div className="flex justify-center pt-2">
-            <Image src="/images/branding/logo.svg" alt="Sendbox" width={130} height={26} className="dark:hidden" />
-            <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={130} height={26} className="hidden dark:block" />
+            <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+            <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
           </div>
           <div className="space-y-2">
             <CardTitle className="text-3xl font-bold">Connexion</CardTitle>
@@ -295,8 +295,8 @@ export default function LoginPage() {
         <Card className="w-full border shadow-sm rounded-2xl">
           <CardHeader className="space-y-4 py-12 text-center">
             <div className="flex justify-center">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={130} height={26} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={130} height={26} className="hidden dark:block" />
+              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
             </div>
             <CardTitle className="text-2xl">Chargement...</CardTitle>
           </CardHeader>
