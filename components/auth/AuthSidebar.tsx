@@ -6,7 +6,7 @@
 
 import { usePathname } from 'next/navigation'
 import {
-  IconShieldCheck,
+  IconCircleCheck,
   IconClock,
   IconUsers,
   IconCheck,
@@ -53,7 +53,7 @@ export function AuthSidebar() {
             </h3>
             <div className="space-y-3">
               {[
-                { icon: IconShieldCheck, text: 'Profil vérifié et sécurisé' },
+                { icon: IconCircleCheck, text: 'Profil vérifié et sécurisé' },
                 { icon: IconClock, text: 'Suivi en temps réel' },
                 { icon: IconUsers, text: 'Accès à la communauté' },
               ].map(item => (

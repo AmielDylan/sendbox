@@ -18,7 +18,7 @@ import {
   IconStar,
   IconMessageCircle,
   IconBell,
-  IconShield,
+  IconAlertCircle,
   IconX,
 } from '@tabler/icons-react'
 import Link from 'next/link'
@@ -44,7 +44,7 @@ const NOTIFICATION_ICONS = {
   delivery_confirmed: IconCircleCheck,
   rating_request: IconStar,
   admin_message: IconMessageCircle,
-  system_alert: IconShield,
+  system_alert: IconAlertCircle,
 } as const
 
 const NOTIFICATION_COLORS = {

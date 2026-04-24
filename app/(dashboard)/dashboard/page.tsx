@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   IconMessage,
   IconTrendingUp,
-  IconShield,
+  IconUserShield,
   IconPlaneDeparture,
   IconSpeakerphone,
 } from '@tabler/icons-react'
@@ -335,7 +335,7 @@ export default function DashboardPage() {
               <CardTitle className={dashboardCardTitleClassName}>
                 Vérification d'identité
               </CardTitle>
-              <IconShield className="h-4 w-4 text-muted-foreground" />
+              <IconUserShield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {kycStatus === 'pending' && (

@@ -45,7 +45,7 @@ import {
   IconCircleCheck,
   IconCircleX,
   IconClock,
-  IconShieldLock,
+  IconUserShield,
   IconChevronDown,
   IconSearch,
   IconAlertTriangle,
@@ -1151,7 +1151,7 @@ export default function KYCPage() {
 
                 {isPreparingAccount && (
                   <Alert>
-                    <IconShieldLock className="h-4 w-4" />
+                    <IconUserShield className="h-4 w-4" />
                     <AlertTitle>Merci de patienter</AlertTitle>
                     <AlertDescription>
                       Nous mettons en place les configurations pour pouvoir

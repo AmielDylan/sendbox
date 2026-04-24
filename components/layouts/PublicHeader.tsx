@@ -11,7 +11,7 @@ import {
   IconLayoutDashboard,
   IconUser,
   IconSettings,
-  IconShield,
+  IconUserShield,
   IconLogout,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
@@ -261,7 +261,7 @@ export function PublicHeader() {
                                 href="/dashboard/reglages/kyc"
                                 className="cursor-pointer"
                               >
-                                <IconShield className="mr-2 h-4 w-4" />
+                                <IconUserShield className="mr-2 h-4 w-4" />
                                 <span>Vérifier mon identité</span>
                               </Link>
                             </DropdownMenuItem>

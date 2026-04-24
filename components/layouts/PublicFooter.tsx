@@ -8,7 +8,7 @@ import {
   IconBrandFacebook,
   IconBrandInstagram,
   IconBrandLinkedin,
-  IconShieldCheck,
+  IconCircleCheck,
   IconMail,
   IconMapPin,
 } from '@tabler/icons-react'
@@ -57,7 +57,7 @@ export function PublicFooter() {
             {/* Trust badges */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Badge variant="outline" className="text-xs gap-1.5 px-3 py-1.5">
-                <IconShieldCheck className="h-4 w-4" />
+                <IconCircleCheck className="h-4 w-4" />
                 100% Sécurisé
               </Badge>
               <Badge variant="outline" className="text-xs gap-1.5 px-3 py-1.5">
