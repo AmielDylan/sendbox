@@ -189,15 +189,19 @@ function RegisterForm() {
                     {errors.password.message}
                   </p>
                 )}
-                <div className="h-1.5 w-full rounded-full bg-muted">
-                  <div
-                    className={cn('h-1.5 rounded-full transition-all', passwordBarClass)}
-                    style={{ width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%` }}
-                  />
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Force : <span className="font-medium">{passwordLabel}</span>
-                </p>
+                {passwordValue.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="h-1.5 w-full rounded-full bg-muted">
+                      <div
+                        className={cn('h-1.5 rounded-full transition-all', passwordBarClass)}
+                        style={{ width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Force : <span className="font-medium">{passwordLabel}</span>
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="confirmPassword">Confirmer</Label>
@@ -213,25 +217,20 @@ function RegisterForm() {
                     {errors.confirmPassword.message}
                   </p>
                 )}
-                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[11px] mt-1">
-                  {PASSWORD_CHECKS.map(check => {
-                    const isValid = check.test(passwordValue)
-                    return (
-                      <span
-                        key={check.key}
-                        className={cn(
-                          'flex items-center gap-1',
-                          isValid ? 'text-emerald-600' : 'text-muted-foreground'
-                        )}
-                      >
-                        <span aria-hidden="true">{isValid ? '✓' : '·'}</span>
-                        {check.label}
-                      </span>
-                    )
-                  })}
-                </div>
               </div>
             </div>
+
+            {/* Critères non encore remplis uniquement */}
+            {passwordValue.length > 0 && passwordScore < PASSWORD_CHECKS.length && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {PASSWORD_CHECKS.filter(check => !check.test(passwordValue)).map(check => (
+                  <span key={check.key} className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <span aria-hidden="true">·</span>
+                    {check.label}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center space-x-2">
               <Controller
