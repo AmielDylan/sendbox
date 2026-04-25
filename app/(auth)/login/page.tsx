@@ -130,21 +130,19 @@ function LoginForm() {
   return (
     <div className="w-full">
       <Card className="border shadow-sm rounded-2xl overflow-hidden">
-        <CardHeader className="space-y-4 pb-6 text-center">
+        <CardHeader className="space-y-3 pb-4 text-center">
           <div className="flex justify-center pt-2">
             <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
             <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
           </div>
-          <div className="space-y-2">
-            <CardTitle className="text-3xl font-bold">Connexion</CardTitle>
-            <CardDescription className="text-base">
-              Accédez à votre espace Sendbox
-            </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-bold">Se connecter</CardTitle>
+            <CardDescription>Accédez à votre espace Sendbox</CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="px-6 sm:px-8 pb-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="space-y-2">
+        <CardContent className="px-6 sm:px-8 pb-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -162,7 +160,7 @@ function LoginForm() {
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Mot de passe</Label>
                 <Link
