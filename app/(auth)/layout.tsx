@@ -21,7 +21,7 @@ export default function AuthLayout({
           cr={1}
           className="fill-muted-foreground/15"
         />
-        <div className="relative z-10 w-full max-w-2xl animate-fade-in-up">
+        <div className="relative z-10 w-full max-w-lg animate-fade-in-up">
           {children}
         </div>
       </main>
