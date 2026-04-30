@@ -59,9 +59,11 @@ export default function AdminUsersPage() {
   const {
     data: users,
     isLoading,
+    isError,
     refetch,
   } = useQuery({
     queryKey: ['adminUsers'],
+    retry: 1,
     queryFn: async () => {
       const res = await fetch('/api/admin/users', {
         method: 'GET',
@@ -115,6 +117,14 @@ export default function AdminUsersPage() {
     )
   }
 
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-sm text-destructive">
+        Erreur lors du chargement des utilisateurs. Veuillez recharger la page.
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -131,6 +141,7 @@ export default function AdminUsersPage() {
           <CardTitle>Utilisateurs ({users?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -228,6 +239,7 @@ export default function AdminUsersPage() {
               })}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

@@ -53,9 +53,11 @@ export default function AdminAnnouncementsPage() {
   const {
     data: announcements,
     isLoading,
+    isError,
     refetch,
   } = useQuery({
     queryKey: ['adminAnnouncements', filterSendbox],
+    retry: 1,
     queryFn: async () => {
       let query = supabase
         .from('announcements')
@@ -95,6 +97,14 @@ export default function AdminAnnouncementsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-sm text-destructive">
+        Erreur lors du chargement des annonces. Veuillez recharger la page.
       </div>
     )
   }
@@ -155,6 +165,7 @@ export default function AdminAnnouncementsPage() {
           <CardTitle>Annonces ({announcements?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -214,6 +225,7 @@ export default function AdminAnnouncementsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
