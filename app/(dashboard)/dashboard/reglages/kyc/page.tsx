@@ -149,7 +149,8 @@ export default function KYCPage() {
   const canPrepareAccount =
     Boolean(
       normalizedDocumentCountry &&
-      normalizedAccountCountry
+      normalizedAccountCountry &&
+      effectiveDocumentType
     ) &&
     isResidenceCountrySupported &&
     isIdentityCountrySupported
@@ -262,6 +263,12 @@ export default function KYCPage() {
       !allowedDocumentTypes.includes(documentType as DocumentType)
     ) {
       setDocumentType((allowedDocumentTypes[0] as DocumentType) || '')
+      return
+    }
+
+    // Auto-select when only one type is available and nothing is selected yet
+    if (!documentType && allowedDocumentTypes.length === 1) {
+      setDocumentType(allowedDocumentTypes[0] as DocumentType)
     }
   }, [allowedDocumentTypes, documentType, normalizedDocumentCountry])
 
@@ -1125,6 +1132,28 @@ export default function KYCPage() {
                   </Popover>
                 </div>
 
+                {normalizedDocumentCountry && allowedDocumentTypes.length > 1 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="documentType">Type de document</Label>
+                    <Select
+                      value={documentType}
+                      onValueChange={value => setDocumentType(value as DocumentType)}
+                    >
+                      <SelectTrigger id="documentType" className="w-full">
+                        <SelectValue placeholder="Sélectionnez un type de document" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allowedDocumentTypes.includes('passport') && (
+                          <SelectItem value="passport">Passeport</SelectItem>
+                        )}
+                        {allowedDocumentTypes.includes('national_id') && (
+                          <SelectItem value="national_id">Carte d&apos;identité nationale</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 {!isResidenceCountrySupported && accountCountry && (
                   <Alert>
                     <IconAlertTriangle className="h-4 w-4" />
@@ -1569,6 +1598,16 @@ export default function KYCPage() {
               <span className="text-muted-foreground">Pays du document</span>
               <span className="font-medium">
                 {effectiveDocumentCountry || '—'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Type de document</span>
+              <span className="font-medium">
+                {effectiveDocumentType === 'passport'
+                  ? 'Passeport'
+                  : effectiveDocumentType === 'national_id'
+                    ? "Carte d'identité nationale"
+                    : '—'}
               </span>
             </div>
           </div>
