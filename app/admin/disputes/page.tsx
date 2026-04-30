@@ -24,8 +24,9 @@ import { fr } from 'date-fns/locale'
 export default function AdminDisputesPage() {
   const supabase = createClient()
 
-  const { data: disputes, isLoading } = useQuery({
+  const { data: disputes, isLoading, isError } = useQuery({
     queryKey: ['adminDisputes'],
+    retry: 1,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('bookings')
@@ -42,6 +43,14 @@ export default function AdminDisputesPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-sm text-destructive">
+        Erreur lors du chargement des litiges. Veuillez recharger la page.
       </div>
     )
   }
@@ -67,6 +76,7 @@ export default function AdminDisputesPage() {
               Aucun litige pour le moment
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -97,6 +107,7 @@ export default function AdminDisputesPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

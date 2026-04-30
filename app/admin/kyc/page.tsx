@@ -34,8 +34,9 @@ import { fr } from 'date-fns/locale'
 import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminKYCPage() {
-  const { data: kycStats, isLoading } = useQuery({
+  const { data: kycStats, isLoading, isError } = useQuery({
     queryKey: ['adminKYCStats'],
+    retry: 1,
     queryFn: async () => {
       const res = await fetch('/api/admin/users', {
         method: 'GET',
@@ -66,6 +67,14 @@ export default function AdminKYCPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-sm text-destructive">
+        Erreur lors du chargement des données KYC. Veuillez recharger la page.
       </div>
     )
   }
@@ -150,6 +159,7 @@ export default function AdminKYCPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -219,6 +229,7 @@ export default function AdminKYCPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
