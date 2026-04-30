@@ -156,6 +156,7 @@ export default function AdminKYCPage() {
                 <TableHead>Utilisateur</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Statut KYC</TableHead>
+                <TableHead>Document</TableHead>
                 <TableHead>Soumis le</TableHead>
                 <TableHead>Inscrit le</TableHead>
               </TableRow>
@@ -188,8 +189,21 @@ export default function AdminKYCPage() {
                       {user.kyc_status === 'rejected' && (
                         <IconAlertCircle className="mr-1 h-3 w-3" />
                       )}
-                      {user.kyc_status || 'Non soumis'}
+                      {user.kyc_status === 'approved'
+                        ? 'Approuvé'
+                        : user.kyc_status === 'pending'
+                          ? 'En attente'
+                          : user.kyc_status === 'rejected'
+                            ? 'Rejeté'
+                            : 'Non soumis'}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {user.kyc_document_type === 'passport'
+                      ? 'Passeport'
+                      : user.kyc_document_type === 'national_id'
+                        ? "Carte d'identité"
+                        : '—'}
                   </TableCell>
                   <TableCell>
                     {user.kyc_submitted_at
