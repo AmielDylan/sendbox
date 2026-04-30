@@ -280,6 +280,78 @@ export async function removeAvatar() {
 }
 
 /**
+ * Upload d'avatar sans validation des champs de profil (utilisé par l'espace admin)
+ */
+export async function uploadAvatar(file: File) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return { error: 'Vous devez être connecté' }
+  }
+
+  const rateLimitResult = await uploadRateLimit(user.id)
+  if (!rateLimitResult.success) {
+    return {
+      error: `Trop d'uploads. Réessayez après ${rateLimitResult.reset.toLocaleTimeString('fr-FR')}`,
+    }
+  }
+
+  const magicBytesValidation = await validateImageUpload(file, 2)
+  if (!magicBytesValidation.valid) {
+    return { error: magicBytesValidation.error }
+  }
+
+  const fileValidation = validateAvatarFile(file)
+  if (!fileValidation.valid) {
+    return { error: fileValidation.error || 'Fichier avatar invalide' }
+  }
+
+  try {
+    const processedAvatar = await processAvatar(file)
+    const fileName = generateAvatarFileName(user.id)
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, processedAvatar, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      })
+
+    if (uploadError) {
+      console.error('Upload avatar error:', uploadError)
+      return { error: "Erreur lors de l'upload de l'avatar" }
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName)
+
+    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+      .eq('id', user.id)
+
+    if (updateError) {
+      console.error('Update avatar_url error:', updateError)
+      return { error: "Erreur lors de la mise à jour du profil" }
+    }
+
+    revalidatePath('/admin/settings')
+    return { success: true, message: 'Photo de profil mise à jour' }
+  } catch (error) {
+    console.error('uploadAvatar error:', error)
+    return { error: 'Une erreur est survenue. Veuillez réessayer.' }
+  }
+}
+
+/**
  * Change le mot de passe de l'utilisateur
  */
 export async function changePassword(formData: ChangePasswordInput) {
