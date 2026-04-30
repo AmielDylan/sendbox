@@ -378,11 +378,67 @@ export async function getAdminStats() {
 
   const platformCommission = monthlyRevenue * COMMISSION_RATE
 
+  // Nouveaux utilisateurs ce mois
+  const { count: newUsersThisMonth } = await supabase
+    .from('profiles')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', startOfMonth.toISOString())
+
+  // Litiges actifs
+  const { count: activeDisputes } = await supabase
+    .from('bookings')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'disputed')
+
+  // Inscriptions sur les 8 dernières semaines
+  const eightWeeksAgo = new Date(Date.now() - 56 * 24 * 60 * 60 * 1000)
+  const { data: recentProfiles } = await supabase
+    .from('profiles')
+    .select('created_at')
+    .gte('created_at', eightWeeksAgo.toISOString())
+
+  // Volume transactions sur les 30 derniers jours
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  const { data: recentTransactions } = await supabase
+    .from('transactions')
+    .select('amount, created_at')
+    .eq('status', 'completed')
+    .eq('type', 'payment')
+    .gte('created_at', thirtyDaysAgo.toISOString())
+
+  // Grouper les inscriptions par semaine (lundi ISO)
+  const weekMap: Record<string, number> = {}
+  for (const p of recentProfiles || []) {
+    const d = new Date(p.created_at)
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+    const monday = new Date(d.setDate(diff))
+    const key = monday.toISOString().slice(0, 10)
+    weekMap[key] = (weekMap[key] || 0) + 1
+  }
+  const weeklyRegistrations = Object.entries(weekMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([week, count]) => ({ week, count }))
+
+  // Grouper les transactions par jour
+  const dayMap: Record<string, number> = {}
+  for (const t of recentTransactions || []) {
+    const key = new Date(t.created_at).toISOString().slice(0, 10)
+    dayMap[key] = (dayMap[key] || 0) + (t.amount || 0)
+  }
+  const dailyTransactions = Object.entries(dayMap)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([day, volume]) => ({ day, volume }))
+
   return {
     totalUsers: totalUsers || 0,
     pendingKYC: pendingKYC || 0,
     activeBookings: activeBookings || 0,
     monthlyRevenue,
     platformCommission,
+    newUsersThisMonth: newUsersThisMonth || 0,
+    activeDisputes: activeDisputes || 0,
+    weeklyRegistrations,
+    dailyTransactions,
   }
 }

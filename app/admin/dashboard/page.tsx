@@ -7,6 +7,9 @@ import { isAdmin, getAdminStats } from '@/lib/core/admin/actions'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AdminChartsSection } from '@/components/features/admin/AdminChartsSection'
+import Link from 'next/link'
 import {
   IconUsers,
   IconFileCheck,
@@ -14,6 +17,7 @@ import {
   IconCurrencyEuro,
   IconAlertTriangle,
   IconLoader2,
+  IconUserPlus,
 } from '@tabler/icons-react'
 
 async function DashboardContent() {
@@ -38,7 +42,7 @@ async function DashboardContent() {
       />
 
       {/* KPIs */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -54,8 +58,18 @@ async function DashboardContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              KYC en attente
+              Nouveaux ce mois
             </CardTitle>
+            <IconUserPlus className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.newUsersThisMonth}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">KYC en attente</CardTitle>
             <IconFileCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -78,13 +92,25 @@ async function DashboardContent() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
+              Litiges actifs
+            </CardTitle>
+            <IconAlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeDisputes}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Volume ce mois
             </CardTitle>
             <IconCurrencyEuro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats.monthlyRevenue.toFixed(2)} EUR
+              {stats.monthlyRevenue.toFixed(2)} €
             </div>
           </CardContent>
         </Card>
@@ -98,57 +124,46 @@ async function DashboardContent() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats.platformCommission.toFixed(2)} EUR
+              {stats.platformCommission.toFixed(2)} €
             </div>
             <p className="text-xs text-muted-foreground mt-1">3 % du volume</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Alertes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconAlertTriangle className="h-5 w-5" />
-            Alertes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
+      {/* Alertes dynamiques */}
+      {stats.activeDisputes > 0 ? (
+        <Alert variant="destructive">
+          <IconAlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <span className="font-medium">{stats.activeDisputes} litige{stats.activeDisputes > 1 ? 's' : ''} actif{stats.activeDisputes > 1 ? 's' : ''}</span>
+            {' '}nécessite{stats.activeDisputes > 1 ? 'nt' : ''} votre attention.{' '}
+            <Link href="/admin/disputes" className="underline underline-offset-2">
+              Voir les litiges
+            </Link>
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <IconAlertTriangle className="h-4 w-4" />
+              Alertes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <p className="text-sm text-muted-foreground">
               Aucune alerte urgente pour le moment
             </p>
-            {/* TODO: Implémenter les alertes (litiges, KYC expirés, etc.) */}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Graphiques */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Inscriptions par semaine</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Graphique à implémenter
-            </p>
-            {/* TODO: Implémenter graphique avec recharts ou similar */}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Volume transactions par jour</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Graphique à implémenter
-            </p>
-            {/* TODO: Implémenter graphique */}
-          </CardContent>
-        </Card>
-      </div>
+      <AdminChartsSection
+        weeklyRegistrations={stats.weeklyRegistrations}
+        dailyTransactions={stats.dailyTransactions}
+      />
     </div>
   )
 }
