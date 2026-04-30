@@ -25,8 +25,9 @@ import { PageHeader } from '@/components/ui/page-header'
 export default function AdminTransactionsPage() {
   const supabase = createClient()
 
-  const { data: transactions, isLoading } = useQuery({
+  const { data: transactions, isLoading, isError } = useQuery({
     queryKey: ['adminTransactions'],
+    retry: 1,
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('transactions')
@@ -52,6 +53,14 @@ export default function AdminTransactionsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-sm text-destructive">
+        Erreur lors du chargement des transactions. Veuillez recharger la page.
       </div>
     )
   }
@@ -124,6 +133,7 @@ export default function AdminTransactionsPage() {
           <CardTitle>Transactions ({transactions?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -158,6 +168,7 @@ export default function AdminTransactionsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
