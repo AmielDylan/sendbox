@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
@@ -18,12 +18,12 @@ import {
   IconPackage,
   IconAlertTriangle,
   IconCreditCard,
-  IconMessageCircle,
   IconMenu2,
   IconLoader2,
   IconLogout,
-  IconRosetteDiscountCheck,
   IconCheck,
+  IconSettings,
+  IconUserCog,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from '@/lib/utils'
@@ -43,18 +43,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ClientOnly } from '@/components/ui/client-only'
 import { NotificationDropdown } from '@/components/features/notifications/NotificationDropdown'
 import { useAuth } from '@/hooks/use-auth'
-import {
-  generateInitials,
-  getAvatarUrl,
-  getShortDisplayName,
-  getShortNameParts,
-} from '@/lib/core/profile/utils'
-import { FEATURES } from '@/lib/shared/config/features'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -103,18 +95,15 @@ const adminNavItems: AdminNavItem[] = [
     icon: IconCreditCard,
   },
   {
-    title: 'Feedback',
-    href: '/admin/feedback',
-    icon: IconMessageCircle,
+    title: 'Paramètres',
+    href: '/admin/settings',
+    icon: IconSettings,
   },
 ]
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
-  const navItems = FEATURES.BETA_MODE
-    ? adminNavItems
-    : adminNavItems.filter(item => item.href !== '/admin/feedback')
 
   return (
     <div className="min-h-screen bg-background">
@@ -135,7 +124,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <SheetContent side="left" className="w-64 p-0">
               <SheetTitle className="sr-only">Menu d'administration</SheetTitle>
               <SidebarContent
-                navItems={navItems}
+                navItems={adminNavItems}
                 pathname={pathname}
                 onNavigate={() => setSidebarOpen(false)}
               />
@@ -151,7 +140,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="flex">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 md:border-r">
-          <SidebarContent navItems={navItems} pathname={pathname} />
+          <SidebarContent navItems={adminNavItems} pathname={pathname} />
         </aside>
 
         {/* Main Content */}
@@ -225,7 +214,6 @@ function SidebarContent({
 function HeaderActions() {
   return (
     <div className="flex items-center gap-2">
-      {/* Badge ADMIN à la place de la recherche */}
       <Badge
         variant="destructive"
         className="h-8 text-[10px] font-semibold px-3"
@@ -281,110 +269,46 @@ function LogoLink({
 
 function AdminUserMenu() {
   const router = useRouter()
-  const { user, profile, loading, signOut: authSignOut } = useAuth()
-  const [avatarError, setAvatarError] = useState(false)
-
-  // Timeout après 10s si toujours en chargement
-  useEffect(() => {
-    if (!loading) {
-      setAvatarError(false)
-      return
-    }
-
-    const timer = setTimeout(() => {
-      console.warn('Avatar loading timeout after 10s')
-      setAvatarError(true)
-    }, 10000)
-
-    return () => clearTimeout(timer)
-  }, [loading])
+  const { user, loading, signOut: authSignOut } = useAuth()
 
   const handleLogout = async () => {
     try {
-      // 1. Nettoyer côté client d'abord (cache, état local)
       await authSignOut()
-
-      // 2. Appeler l'action serveur pour nettoyer les cookies serveur
       await signOutServer()
-
-      // 3. Rediriger vers la page de login
       router.push('/login')
       router.refresh()
     } catch (error) {
       console.error('Logout error:', error)
       toast.error('Erreur lors de la déconnexion')
-
-      // En cas d'erreur, rediriger quand même vers la page de login
       router.push('/login')
       router.refresh()
     }
   }
 
-  // Si timeout atteint, afficher le fallback
-  if (loading && !avatarError) {
-    return (
-      <div className="flex items-center gap-3">
-        <IconLoader2 className="h-4 w-4 animate-spin" />
-      </div>
-    )
+  if (loading) {
+    return <IconLoader2 className="h-4 w-4 animate-spin" />
   }
 
-  const displayName = getShortDisplayName(
-    (profile as any)?.firstname || null,
-    (profile as any)?.lastname || null,
-    'Admin'
-  )
-  const nameParts = getShortNameParts(
-    (profile as any)?.firstname || null,
-    (profile as any)?.lastname || null
-  )
-  const initials = generateInitials(nameParts.firstName, nameParts.lastName)
-
-  const avatarUrl = getAvatarUrl(
-    (profile as any)?.avatar_url || null,
-    (profile as any)?.id || user?.id || displayName
-  )
+  const email = user?.email || 'admin@sendbox.com'
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-9 w-9 rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          size="icon"
+          className="h-9 w-9 rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2"
           aria-label="Menu administrateur"
         >
-          <Avatar className="h-9 w-9">
-            {!avatarError && (
-              <AvatarImage
-                src={avatarUrl}
-                alt={displayName}
-                onError={() => setAvatarError(true)}
-              />
-            )}
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          {/* Badge admin sur avatar */}
-          <span
-            className="absolute -bottom-0.5 -right-0.5"
-            aria-label="Administrateur"
-          >
-            <IconRosetteDiscountCheck
-              className="h-4 w-4 text-red-500 fill-red-500"
-              strokeWidth={1.5}
-            />
-          </span>
+          <IconUserCog className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user?.email || 'admin@sendbox.com'}
+              {email}
             </p>
-            {/* Badge ADMIN */}
             <Badge variant="destructive" className="w-fit text-xs mt-2">
               <IconCheck className="mr-1 h-3 w-3" />
               Administrateur
@@ -396,6 +320,13 @@ function AdminUserMenu() {
           <Link href="/admin/dashboard" className="cursor-pointer">
             <IconLayoutDashboard className="mr-2 h-4 w-4" />
             <span>Dashboard admin</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/admin/settings" className="cursor-pointer">
+            <IconSettings className="mr-2 h-4 w-4" />
+            <span>Paramètres</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

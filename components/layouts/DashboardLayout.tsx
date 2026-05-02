@@ -229,7 +229,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </SheetContent>
           </Sheet>
         </ClientOnly>
-        <div className="flex-1" />
+        <div className="flex flex-1 justify-center">
+          <LogoLink className="h-6" />
+        </div>
         <HeaderActions />
       </header>
 

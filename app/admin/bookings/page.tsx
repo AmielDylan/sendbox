@@ -55,9 +55,11 @@ export default function AdminBookingsPage() {
   const {
     data: bookings,
     isLoading,
+    isError,
     refetch,
   } = useQuery({
     queryKey: ['adminBookings'],
+    retry: 1,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('bookings')
@@ -122,6 +124,14 @@ export default function AdminBookingsPage() {
     )
   }
 
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-sm text-destructive">
+        Erreur lors du chargement des réservations. Veuillez recharger la page.
+      </div>
+    )
+  }
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
       pending: 'secondary',
@@ -150,6 +160,7 @@ export default function AdminBookingsPage() {
           <CardTitle>Réservations ({bookings?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -209,6 +220,7 @@ export default function AdminBookingsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
