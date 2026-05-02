@@ -5,7 +5,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/shared/db/client'
+import { getAdminDisputes } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -22,21 +22,10 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default function AdminDisputesPage() {
-  const supabase = createClient()
-
   const { data: disputes, isLoading, isError } = useQuery({
     queryKey: ['adminDisputes'],
     retry: 1,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('status', 'disputed' as any)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return data
-    },
+    queryFn: getAdminDisputes,
   })
 
   if (isLoading) {
