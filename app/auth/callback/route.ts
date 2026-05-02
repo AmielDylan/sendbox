@@ -64,6 +64,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Recovery = réinitialisation mot de passe : rediriger vers le formulaire de mise à jour
+    if (type === 'recovery') {
+      return NextResponse.redirect(
+        new URL('/reset-password?update=true', requestUrl.origin)
+      )
+    }
+
     return NextResponse.redirect(new URL(next, requestUrl.origin))
   }
 
