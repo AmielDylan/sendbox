@@ -409,6 +409,7 @@ export async function getAdminStats() {
   // Grouper les inscriptions par semaine (lundi ISO)
   const weekMap: Record<string, number> = {}
   for (const p of recentProfiles || []) {
+    if (!p.created_at) continue
     const d = new Date(p.created_at)
     const day = d.getDay()
     const diff = d.getDate() - day + (day === 0 ? -6 : 1)
@@ -423,6 +424,7 @@ export async function getAdminStats() {
   // Grouper les transactions par jour
   const dayMap: Record<string, number> = {}
   for (const t of recentTransactions || []) {
+    if (!t.created_at) continue
     const key = new Date(t.created_at).toISOString().slice(0, 10)
     dayMap[key] = (dayMap[key] || 0) + (t.amount || 0)
   }
