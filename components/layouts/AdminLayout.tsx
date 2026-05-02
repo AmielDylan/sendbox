@@ -21,14 +21,19 @@ import {
   IconMenu2,
   IconLoader2,
   IconLogout,
-  IconCheck,
+  IconUser,
   IconSettings,
-  IconUserCog,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  generateInitials,
+  getAvatarUrl,
+  getShortNameParts,
+} from '@/lib/core/profile/utils'
 import {
   Sheet,
   SheetContent,
@@ -269,7 +274,8 @@ function LogoLink({
 
 function AdminUserMenu() {
   const router = useRouter()
-  const { user, loading, signOut: authSignOut } = useAuth()
+  const { user, profile, loading, signOut: authSignOut } = useAuth()
+  const [avatarError, setAvatarError] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -289,30 +295,45 @@ function AdminUserMenu() {
     return <IconLoader2 className="h-4 w-4 animate-spin" />
   }
 
-  const email = user?.email || 'admin@sendbox.com'
+  const email = user?.email || ''
+  const nameParts = getShortNameParts(
+    (profile as any)?.firstname || null,
+    (profile as any)?.lastname || null
+  )
+  const rawInitials = generateInitials(nameParts.firstName, nameParts.lastName)
+  const initials = rawInitials !== 'U' ? rawInitials : (email[0]?.toUpperCase() || 'A')
+  const avatarUrl = getAvatarUrl(
+    (profile as any)?.avatar_url || null,
+    (profile as any)?.id || user?.id || email
+  )
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="icon"
-          className="h-9 w-9 rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          className="relative h-9 w-9 rounded-full focus:ring-2 focus:ring-ring focus:ring-offset-2"
           aria-label="Menu administrateur"
         >
-          <IconUserCog className="h-5 w-5" />
+          <Avatar className="h-9 w-9">
+            {!avatarError && (
+              <AvatarImage
+                src={avatarUrl}
+                alt="Admin"
+                onError={() => setAvatarError(true)}
+              />
+            )}
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
+        <DropdownMenuLabel className="pb-3">
           <div className="flex flex-col space-y-1">
-            <p className="text-xs leading-none text-muted-foreground">
-              {email}
-            </p>
-            <Badge variant="destructive" className="w-fit text-xs mt-2">
-              <IconCheck className="mr-1 h-3 w-3" />
-              Administrateur
-            </Badge>
+            <p className="text-sm font-medium leading-none">Admin</p>
+            <p className="text-xs leading-none text-muted-foreground">{email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -322,11 +343,10 @@ function AdminUserMenu() {
             <span>Dashboard admin</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/admin/settings" className="cursor-pointer">
-            <IconSettings className="mr-2 h-4 w-4" />
-            <span>Paramètres</span>
+            <IconUser className="mr-2 h-4 w-4" />
+            <span>Mon compte</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
