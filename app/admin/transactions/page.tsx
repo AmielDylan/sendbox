@@ -5,7 +5,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/shared/db/client'
+import { getAdminTransactions } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -23,21 +23,10 @@ import { fr } from 'date-fns/locale'
 import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminTransactionsPage() {
-  const supabase = createClient()
-
   const { data: transactions, isLoading, isError } = useQuery({
     queryKey: ['adminTransactions'],
     retry: 1,
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('transactions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100)
-
-      if (error) throw error
-      return data
-    },
+    queryFn: getAdminTransactions,
   })
 
   const totalRevenue =
