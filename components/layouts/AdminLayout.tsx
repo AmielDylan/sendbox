@@ -274,7 +274,7 @@ function LogoLink({
 
 function AdminUserMenu() {
   const router = useRouter()
-  const { user, profile, loading, signOut: authSignOut } = useAuth()
+  const { user, profile, signOut: authSignOut } = useAuth()
   const [avatarError, setAvatarError] = useState(false)
 
   const handleLogout = async () => {
@@ -289,10 +289,6 @@ function AdminUserMenu() {
       router.push('/login')
       router.refresh()
     }
-  }
-
-  if (loading) {
-    return <IconLoader2 className="h-4 w-4 animate-spin" />
   }
 
   const email = user?.email || ''

@@ -444,3 +444,55 @@ export async function getAdminStats() {
     dailyTransactions,
   }
 }
+
+export async function getAdminAnnouncements(filter?: 'sendbox' | 'sendbox_available') {
+  const supabase = createAdminClient()
+  let query = supabase
+    .from('announcements')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (filter === 'sendbox') query = query.eq('is_sendbox', true)
+  else if (filter === 'sendbox_available') query = query.eq('sendbox_available', true)
+
+  const { data, error } = await query
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+export async function getAdminBookings() {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+export async function getAdminDisputes() {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('status', 'disputed')
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
+
+export async function getAdminTransactions() {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100)
+
+  if (error) throw new Error(error.message)
+  return data ?? []
+}

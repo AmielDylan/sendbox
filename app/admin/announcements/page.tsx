@@ -6,8 +6,7 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/shared/db/client'
-import { rejectAnnouncement } from '@/lib/core/admin/actions'
+import { rejectAnnouncement, getAdminAnnouncements } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -48,8 +47,6 @@ export default function AdminAnnouncementsPage() {
     'all' | 'sendbox' | 'sendbox_available'
   >('all')
 
-  const supabase = createClient()
-
   const {
     data: announcements,
     isLoading,
@@ -58,23 +55,7 @@ export default function AdminAnnouncementsPage() {
   } = useQuery({
     queryKey: ['adminAnnouncements', filterSendbox],
     retry: 1,
-    queryFn: async () => {
-      let query = supabase
-        .from('announcements')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100)
-
-      if (filterSendbox === 'sendbox') {
-        query = query.eq('is_sendbox', true)
-      } else if (filterSendbox === 'sendbox_available') {
-        query = query.eq('sendbox_available', true)
-      }
-
-      const { data, error } = await query
-      if (error) throw error
-      return data
-    },
+    queryFn: () => getAdminAnnouncements(filterSendbox === 'all' ? undefined : filterSendbox),
   })
 
   const handleReject = async () => {

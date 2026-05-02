@@ -6,11 +6,11 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/shared/db/client'
 import {
   forceRefund,
   releasePayment,
   markAsDispute,
+  getAdminBookings,
 } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -50,8 +50,6 @@ export default function AdminBookingsPage() {
   const [disputeDialogOpen, setDisputeDialogOpen] = useState(false)
   const [reason, setReason] = useState('')
 
-  const supabase = createClient()
-
   const {
     data: bookings,
     isLoading,
@@ -60,16 +58,7 @@ export default function AdminBookingsPage() {
   } = useQuery({
     queryKey: ['adminBookings'],
     retry: 1,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100)
-
-      if (error) throw error
-      return data
-    },
+    queryFn: getAdminBookings,
   })
 
   const handleRefund = async () => {
