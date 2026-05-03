@@ -7,6 +7,7 @@
 import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -27,12 +28,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { IconLoader2, IconPackage, IconMail } from '@tabler/icons-react'
+import { IconLoader2 } from '@tabler/icons-react'
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const token = searchParams.get('token')
+  const updateMode = searchParams.get('update') === 'true'
   const [isRequestSent, setIsRequestSent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -66,14 +68,14 @@ function ResetPasswordForm() {
   }
 
   const onResetSubmit = async (data: ResetPasswordInput) => {
-    if (!token) {
+    if (!token && !updateMode) {
       toast.error('Token manquant. Veuillez utiliser le lien reçu par email.')
       return
     }
 
     setIsLoading(true)
     try {
-      const result = await resetPassword({ ...data, token })
+      const result = await resetPassword({ ...data, token: token ?? '' })
       if (result?.error) {
         toast.error(result.error)
         return
@@ -86,19 +88,20 @@ function ResetPasswordForm() {
     }
   }
 
-  // Si un token est présent, afficher le formulaire de réinitialisation
-  if (token) {
+  // Token présent (ancien flux) OU mode update (depuis callback recovery)
+  if (token || updateMode) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex justify-center mb-4">
-              <IconPackage className="h-12 w-12 text-primary" />
+      <div className="w-full">
+        <Card className="border shadow-sm rounded-2xl overflow-hidden">
+          <CardHeader className="space-y-3 pb-4 text-center">
+            <div className="flex justify-center pt-2">
+              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
             </div>
-            <CardTitle className="text-2xl font-bold">
-              Nouveau mot de passe
-            </CardTitle>
-            <CardDescription>Entrez votre nouveau mot de passe</CardDescription>
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-bold">Nouveau mot de passe</CardTitle>
+              <CardDescription>Entrez votre nouveau mot de passe</CardDescription>
+            </div>
           </CardHeader>
           <CardContent>
             <form
@@ -202,19 +205,22 @@ function ResetPasswordForm() {
   // Formulaire de demande de réinitialisation
   if (isRequestSent) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex justify-center mb-4">
-              <IconMail className="h-12 w-12 text-primary" />
+      <div className="w-full">
+        <Card className="border shadow-sm rounded-2xl overflow-hidden">
+          <CardHeader className="space-y-3 pb-4 text-center">
+            <div className="flex justify-center pt-2">
+              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
             </div>
-            <CardTitle className="text-2xl font-bold">Email envoyé !</CardTitle>
-            <CardDescription>
-              Si cet email existe dans notre système, vous recevrez un lien de
-              réinitialisation dans quelques instants.
-            </CardDescription>
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-bold">Email envoyé !</CardTitle>
+              <CardDescription>
+                Si cet email existe dans notre système, vous recevrez un lien de
+                réinitialisation dans quelques instants.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-6 sm:px-8 pb-6 space-y-4">
             <Button
               onClick={() => router.push('/login')}
               variant="outline"
@@ -229,20 +235,19 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <IconPackage className="h-12 w-12 text-primary" />
+    <div className="w-full">
+      <Card className="border shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="space-y-3 pb-4 text-center">
+          <div className="flex justify-center pt-2">
+            <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+            <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
           </div>
-          <CardTitle className="text-2xl font-bold">
-            Mot de passe oublié ?
-          </CardTitle>
-          <CardDescription>
-            Entrez votre email pour recevoir un lien de réinitialisation
-          </CardDescription>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-bold">Mot de passe oublié ?</CardTitle>
+            <CardDescription>Entrez votre email pour recevoir un lien de réinitialisation</CardDescription>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6 sm:px-8 pb-6">
           <form
             onSubmit={requestForm.handleSubmit(onRequestSubmit)}
             className="space-y-4"
@@ -307,18 +312,15 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-secondary/50 p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader className="space-y-1 text-center">
-              <div className="flex justify-center mb-4">
-                <IconPackage className="h-12 w-12 text-primary animate-pulse" />
-              </div>
-              <CardTitle className="text-2xl font-bold">
-                Chargement...
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
+        <Card className="w-full border shadow-sm rounded-2xl">
+          <CardHeader className="space-y-4 py-10 text-center">
+            <div className="flex justify-center">
+              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
+              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+            </div>
+            <CardTitle className="text-2xl">Chargement...</CardTitle>
+          </CardHeader>
+        </Card>
       }
     >
       <ResetPasswordForm />
