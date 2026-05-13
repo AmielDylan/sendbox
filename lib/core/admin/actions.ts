@@ -9,8 +9,6 @@ import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { headers } from 'next/headers'
 import { COMMISSION_RATE } from '@/lib/core/bookings/validations'
-import { stripe } from '@/lib/shared/services/stripe/config'
-import { releaseTransferForBooking } from '@/lib/core/payments/transfers'
 
 /**
  * Vérifie si l'utilisateur est admin
@@ -173,29 +171,13 @@ export async function forceRefund(bookingId: string, reason: string) {
   // Récupérer le booking
   const { data: booking } = await supabase
     .from('bookings')
-    .select('id, payment_intent_id, total_price, sender_id')
+    .select('id, total_price, sender_id')
     .eq('id', bookingId)
     .single()
 
   if (!booking) {
     return {
       error: 'Réservation introuvable',
-    }
-  }
-
-  // Remboursement Stripe si un payment_intent existe
-  if (booking.payment_intent_id) {
-    try {
-      await stripe.refunds.create({
-        payment_intent: booking.payment_intent_id,
-        reason: 'requested_by_customer',
-      })
-      await (supabase.from as any)('payments')
-        .update({ status: 'refunded' })
-        .eq('booking_id', bookingId)
-    } catch (refundErr) {
-      console.error('Stripe refund error (non-blocking):', refundErr)
-      // Continue : on met quand même le booking en cancelled
     }
   }
 
@@ -243,13 +225,6 @@ export async function releasePayment(bookingId: string) {
     return {
       error: 'Erreur lors du déblocage du paiement',
     }
-  }
-
-  // Déclencher le transfert vers le voyageur
-  const releaseResult = await releaseTransferForBooking(bookingId, 'delivery_confirmed')
-  if (releaseResult.error) {
-    console.error('Admin release transfer error (non-blocking):', releaseResult.error)
-    // Non-bloquant : le cron auto-release prendra le relais dans 7 jours
   }
 
   await createAuditLog('release_payment', 'booking', bookingId)

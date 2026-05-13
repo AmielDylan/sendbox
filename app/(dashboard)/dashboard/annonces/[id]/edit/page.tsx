@@ -11,7 +11,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
-  COUNTRIES,
+  DEPARTURE_COUNTRY,
+  ARRIVAL_COUNTRY,
 } from '@/lib/core/announcements/validations'
 import { updateAnnouncement } from '@/lib/core/announcements/management'
 import { searchCities } from '@/lib/shared/utils/cities'
@@ -27,13 +28,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+
 import { Slider } from '@/components/ui/slider'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -86,8 +81,6 @@ export default function EditAnnouncementPage({
     resolver: zodResolver(createAnnouncementSchema),
   })
 
-  const departureCountry = watch('departure_country') as 'FR' | 'BJ' | undefined
-  const arrivalCountry = watch('arrival_country') as 'FR' | 'BJ' | undefined
   const departureCity = watch('departure_city')
   const arrivalCity = watch('arrival_city')
   const departureDate = watch('departure_date')
@@ -113,9 +106,9 @@ export default function EditAnnouncementPage({
       }
 
       // Pré-remplir le formulaire
-      setValue('departure_country', data.departure_country as 'FR' | 'BJ')
+      setValue('departure_country', DEPARTURE_COUNTRY)
       setValue('departure_city', data.departure_city)
-      setValue('arrival_country', data.arrival_country as 'FR' | 'BJ')
+      setValue('arrival_country', ARRIVAL_COUNTRY)
       setValue('arrival_city', data.arrival_city)
 
       // Convertir les dates ISO en dates locales
@@ -146,13 +139,8 @@ export default function EditAnnouncementPage({
 
   // Recherche autocomplete pour ville de départ
   useEffect(() => {
-    if (
-      debouncedDepartureCity &&
-      debouncedDepartureCity.length >= 2 &&
-      departureCountry &&
-      departureCityTyped
-    ) {
-      searchCities(departureCountry, debouncedDepartureCity).then(cities => {
+    if (debouncedDepartureCity && debouncedDepartureCity.length >= 2 && departureCityTyped) {
+      searchCities(DEPARTURE_COUNTRY, debouncedDepartureCity).then(cities => {
         setDepartureCitySuggestions(cities)
         setShowDepartureSuggestions(true)
       })
@@ -160,17 +148,12 @@ export default function EditAnnouncementPage({
       setDepartureCitySuggestions([])
       setShowDepartureSuggestions(false)
     }
-  }, [debouncedDepartureCity, departureCountry, departureCityTyped])
+  }, [debouncedDepartureCity, departureCityTyped])
 
   // Recherche autocomplete pour ville d'arrivée
   useEffect(() => {
-    if (
-      debouncedArrivalCity &&
-      debouncedArrivalCity.length >= 2 &&
-      arrivalCountry &&
-      arrivalCityTyped
-    ) {
-      searchCities(arrivalCountry, debouncedArrivalCity).then(cities => {
+    if (debouncedArrivalCity && debouncedArrivalCity.length >= 2 && arrivalCityTyped) {
+      searchCities(ARRIVAL_COUNTRY, debouncedArrivalCity).then(cities => {
         setArrivalCitySuggestions(cities)
         setShowArrivalSuggestions(true)
       })
@@ -178,7 +161,7 @@ export default function EditAnnouncementPage({
       setArrivalCitySuggestions([])
       setShowArrivalSuggestions(false)
     }
-  }, [debouncedArrivalCity, arrivalCountry, arrivalCityTyped])
+  }, [debouncedArrivalCity, arrivalCityTyped])
 
   const onSubmit = async (data: CreateAnnouncementInput) => {
     setIsSubmitting(true)
@@ -240,31 +223,13 @@ export default function EditAnnouncementPage({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Départ */}
+              {/* Départ — fixé à France pour V1 */}
               <div className="space-y-2">
-                <Label htmlFor="departure_country">Pays de départ</Label>
-                <Select
-                  value={departureCountry}
-                  onValueChange={(value: 'FR' | 'BJ') =>
-                    setValue('departure_country', value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez un pays" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTRIES.map(country => (
-                      <SelectItem key={country} value={country}>
-                        {country === 'FR' ? 'France' : 'Bénin'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.departure_country && (
-                  <p className="text-sm text-destructive">
-                    {errors.departure_country.message}
-                  </p>
-                )}
+                <Label>Pays de départ</Label>
+                <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+                  <span>🇫🇷</span>
+                  <span>France</span>
+                </div>
               </div>
 
               <div className="space-y-2 relative">
@@ -307,31 +272,13 @@ export default function EditAnnouncementPage({
                   )}
               </div>
 
-              {/* Arrivée */}
+              {/* Arrivée — fixée à Bénin pour V1 */}
               <div className="space-y-2">
-                <Label htmlFor="arrival_country">Pays d’arrivée</Label>
-                <Select
-                  value={arrivalCountry}
-                  onValueChange={(value: 'FR' | 'BJ') =>
-                    setValue('arrival_country', value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez un pays" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTRIES.map(country => (
-                      <SelectItem key={country} value={country}>
-                        {country === 'FR' ? 'France' : 'Bénin'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.arrival_country && (
-                  <p className="text-sm text-destructive">
-                    {errors.arrival_country.message}
-                  </p>
-                )}
+                <Label>Pays d’arrivée</Label>
+                <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+                  <span>🇧🇯</span>
+                  <span>Bénin</span>
+                </div>
               </div>
 
               <div className="space-y-2 relative">

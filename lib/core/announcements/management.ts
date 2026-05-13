@@ -11,7 +11,6 @@ import {
   type CreateAnnouncementInput,
 } from '@/lib/core/announcements/validations'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
-import { checkCanPublish } from '@/lib/core/subscriptions/utils'
 
 /**
  * Met à jour une annonce existante
@@ -400,7 +399,7 @@ export async function toggleAnnouncementStatus(announcementId: string) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select(
-        'kyc_status, kyc_rejection_reason, subscription_status, trial_ends_at, role'
+        'kyc_status, kyc_rejection_reason, role'
       )
       .eq('id', user.id)
       .single()
@@ -410,27 +409,6 @@ export async function toggleAnnouncementStatus(announcementId: string) {
     }
 
     const isAdmin = (profile as any).role === 'admin'
-
-    // Gate abonnement (les admins sont exemptés)
-    if (!isAdmin && isFeatureEnabled('SUBSCRIPTION_ENABLED')) {
-      const subscriptionStatus = (profile.subscription_status ?? 'trialing') as
-        | 'trialing'
-        | 'active'
-        | 'past_due'
-        | 'canceled'
-        | 'inactive'
-      const trialEndsAt = profile.trial_ends_at as string | null
-      if (!checkCanPublish(subscriptionStatus, trialEndsAt)) {
-        return {
-          error: 'Abonnement requis pour publier',
-          errorDetails:
-            subscriptionStatus === 'trialing'
-              ? "Votre période d'essai est terminée. Abonnez-vous à 4,99 €/mois pour continuer à publier."
-              : 'Un abonnement actif est requis pour publier un trajet.',
-          field: 'subscription',
-        }
-      }
-    }
 
     // Gate preuve de voyage
     if (isFeatureEnabled('TRAVEL_PROOF_REQUIRED')) {

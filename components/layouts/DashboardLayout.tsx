@@ -22,8 +22,6 @@ import {
   IconUser,
   IconIdBadge2,
   IconPlaneDeparture,
-  IconCreditCard,
-  IconSparkles,
 } from '@tabler/icons-react'
 import { signOutServer } from '@/lib/core/auth/actions'
 import { cn } from '@/lib/utils'
@@ -55,7 +53,6 @@ import {
   getShortDisplayName,
   getShortNameParts,
 } from '@/lib/core/profile/utils'
-import { SubscriptionStatusPanel } from '@/components/features/subscriptions/SubscriptionStatusPanel'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -67,8 +64,8 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>
   badge?: number
   userOnly?: boolean
-  feature?: 'KYC_ENABLED' | 'SUBSCRIPTION_ENABLED'
-  section: 'workspace' | 'finance' | 'settings' | 'support'
+  feature?: 'KYC_ENABLED'
+  section: 'workspace' | 'settings' | 'support'
 }
 
 const navItems: NavItem[] = [
@@ -98,13 +95,6 @@ const navItems: NavItem[] = [
     section: 'workspace',
   },
   {
-    title: 'Fonds',
-    href: '/dashboard/fonds',
-    icon: IconCreditCard,
-    userOnly: true,
-    section: 'finance',
-  },
-  {
     title: 'Profil',
     href: '/dashboard/reglages/profil',
     icon: IconIdBadge2,
@@ -114,21 +104,6 @@ const navItems: NavItem[] = [
     title: 'Compte',
     href: '/dashboard/reglages/compte',
     icon: IconUser,
-    section: 'settings',
-  },
-  {
-    title: 'Abonnement',
-    href: '/dashboard/reglages/abonnement',
-    icon: IconSparkles,
-    userOnly: true,
-    feature: 'SUBSCRIPTION_ENABLED',
-    section: 'settings',
-  },
-  {
-    title: 'Paiements',
-    href: '/dashboard/reglages/paiements',
-    icon: IconCreditCard,
-    userOnly: true,
     section: 'settings',
   },
   {
@@ -152,7 +127,6 @@ const navSections: Array<{
   label: string
 }> = [
   { id: 'workspace', label: 'Navigation' },
-  { id: 'finance', label: 'Finances' },
   { id: 'settings', label: 'Réglages' },
   { id: 'support', label: 'Support' },
 ]
@@ -327,14 +301,6 @@ function SidebarContent({
         ))}
       </nav>
       <div className="space-y-3 border-t p-4">
-        {isFeatureEnabled('SUBSCRIPTION_ENABLED') && (
-          <SubscriptionStatusPanel
-            variant="compact"
-            showOnlyWhenAttention
-            className="rounded-xl"
-          />
-        )}
-
         {FEATURES.BETA_MODE && (
           <Badge
             variant="outline"

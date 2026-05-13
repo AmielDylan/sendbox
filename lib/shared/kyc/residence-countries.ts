@@ -1,4 +1,4 @@
-export const RESIDENCE_COUNTRIES = ['FR', 'BJ'] as const
+export const RESIDENCE_COUNTRIES = ['FR', 'BE', 'CH', 'DE', 'IT', 'ES', 'NL', 'PT', 'LU', 'AT', 'IE', 'GB', 'SE', 'NO', 'DK', 'FI'] as const
 
 export type ResidenceCountry = (typeof RESIDENCE_COUNTRIES)[number]
 

@@ -1,5 +1,5 @@
 /**
- * Page KYC dans les réglages
+ * Page KYC dans les réglages — vérification manuelle
  */
 
 'use client'
@@ -30,14 +30,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import {
@@ -45,7 +37,6 @@ import {
   IconCircleCheck,
   IconCircleX,
   IconClock,
-  IconUserShield,
   IconChevronDown,
   IconSearch,
   IconAlertTriangle,
@@ -54,33 +45,22 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import type { Stripe } from '@stripe/stripe-js'
-import { getStripeClient } from '@/lib/shared/services/stripe/config'
 import { createClient } from '@/lib/shared/db/client'
 import { getCountryFlagEmoji } from '@/lib/utils/countries'
-import { prepareKYCAccount, startKYCVerification } from '@/lib/core/kyc/actions'
+import { startKYCVerification } from '@/lib/core/kyc/actions'
 import { useAuth } from '@/hooks/use-auth'
 import { getResidenceCountries } from '@/lib/shared/kyc/residence-countries'
-import { getStripeConnectAllowedCountriesClient } from '@/lib/shared/stripe/connect-allowed-client'
-import {
-  getStripeIdentityDocumentTypes,
-  STRIPE_IDENTITY_SUPPORTED_COUNTRIES,
-} from '@/lib/shared/stripe/identity-documents'
+import type { DocumentType } from '@/lib/core/kyc/validations'
 
 type KYCStatus = 'pending' | 'approved' | 'rejected' | 'incomplete' | null
-type DocumentType = 'passport' | 'national_id'
 
 export default function KYCPage() {
   const [kycStatus, setKycStatus] = useState<KYCStatus>(null)
-  const [displayStatus, setDisplayStatus] = useState<KYCStatus>(null)
   const [submittedAt, setSubmittedAt] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [documentType, setDocumentType] = useState<DocumentType | ''>('')
   const [documentCountry, setDocumentCountry] = useState('')
   const [accountCountry, setAccountCountry] = useState('')
-  const [formError, setFormError] = useState<string | null>(null)
-  const [step, setStep] = useState<'document' | 'details'>('document')
-  const [isPreparingAccount, setIsPreparingAccount] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -91,72 +71,59 @@ export default function KYCPage() {
   const [postalCode, setPostalCode] = useState('')
   const [confirmIdentity, setConfirmIdentity] = useState(false)
   const [dialCode, setDialCode] = useState('+33')
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  const [documentCountryOpen, setDocumentCountryOpen] = useState(false)
-  const [documentCountrySearch, setDocumentCountrySearch] = useState('')
   const [accountCountryOpen, setAccountCountryOpen] = useState(false)
   const [accountCountrySearch, setAccountCountrySearch] = useState('')
-  const [forceDetails, setForceDetails] = useState(false)
-  const pendingHoldUntilRef = useRef<number | null>(null)
-  const pendingTimeoutRef = useRef<number | null>(null)
-  const statusSyncTimeoutRef = useRef<number | null>(null)
+  const [documentCountryOpen, setDocumentCountryOpen] = useState(false)
+  const [documentCountrySearch, setDocumentCountrySearch] = useState('')
+  const [formError, setFormError] = useState<string | null>(null)
+
   const { profile, user } = useAuth()
   const isAdmin = profile?.role === 'admin'
-  const PENDING_MIN_MS = 30000
   const residenceCountries = useMemo(() => getResidenceCountries(), [])
-  const stripeIdentitySet = useMemo(
-    () => new Set<string>(STRIPE_IDENTITY_SUPPORTED_COUNTRIES),
-    []
-  )
-  const stripeConnectCountrySet = useMemo(
-    () => new Set(getStripeConnectAllowedCountriesClient()),
-    []
-  )
-  const residenceCountrySet = useMemo(
-    () => new Set<string>(residenceCountries),
-    [residenceCountries]
-  )
-  const profileAccountCountry = (profile as any)?.country as string | undefined
-  const profileDocumentCountry = (profile as any)?.kyc_nationality as
-    | string
-    | undefined
-  const profileDocumentType = (profile as any)?.kyc_document_type as
-    | DocumentType
-    | undefined
-  const effectiveAccountCountry = accountCountry || profileAccountCountry || ''
-  const effectiveDocumentCountry =
-    documentCountry || profileDocumentCountry || ''
-  const effectiveDocumentType =
-    documentType || profileDocumentType || ('' as DocumentType | '')
-  const normalizedAccountCountry = effectiveAccountCountry.trim().toUpperCase()
-  const normalizedDocumentCountry = effectiveDocumentCountry
-    .trim()
-    .toUpperCase()
-  const isStripeConnectCountry =
-    Boolean(normalizedAccountCountry) &&
-    stripeConnectCountrySet.has(normalizedAccountCountry as any)
-  const isResidenceCountrySupported =
-    !normalizedAccountCountry ||
-    residenceCountrySet.has(normalizedAccountCountry)
-  const isIdentityCountrySupported =
-    !normalizedDocumentCountry ||
-    stripeIdentitySet.has(normalizedDocumentCountry)
-  const allowedDocumentTypes = useMemo(
-    () => getStripeIdentityDocumentTypes(normalizedDocumentCountry),
-    [normalizedDocumentCountry]
-  )
-  const canPrepareAccount =
-    Boolean(
-      normalizedDocumentCountry &&
-      normalizedAccountCountry &&
-      effectiveDocumentType
-    ) &&
-    isResidenceCountrySupported &&
-    isIdentityCountrySupported
-
-  const stripePromise = useMemo(() => getStripeClient(), [])
   const supabase = useMemo(() => createClient(), [])
+
+  const profileAccountCountry = (profile as any)?.country as string | undefined
+  const profileDocumentCountry = (profile as any)?.kyc_nationality as string | undefined
+  const profileDocumentType = (profile as any)?.kyc_document_type as DocumentType | undefined
+
+  const countryOptions = useMemo(() => {
+    const displayNames =
+      typeof Intl !== 'undefined' && 'DisplayNames' in Intl
+        ? new Intl.DisplayNames(['fr'], { type: 'region' })
+        : null
+    return residenceCountries
+      .map(code => ({
+        code,
+        name: displayNames?.of(code) || code,
+        flag: getCountryFlagEmoji(code),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  }, [residenceCountries])
+
+  const allCountryOptions = useMemo(() => {
+    const displayNames =
+      typeof Intl !== 'undefined' && 'DisplayNames' in Intl
+        ? new Intl.DisplayNames(['fr'], { type: 'region' })
+        : null
+    const extra = ['BJ', 'CM', 'SN', 'CI', 'MA', 'TN', 'DZ', 'US', 'CA']
+      .filter(c => !residenceCountries.includes(c as any))
+      .map(code => ({ code, name: displayNames?.of(code) || code, flag: getCountryFlagEmoji(code) }))
+    const all: { code: string; name: string; flag: string }[] = [...countryOptions, ...extra]
+    return all.sort((a, b) => a.name.localeCompare(b.name, 'fr'))
+  }, [countryOptions, residenceCountries])
+
+  const filteredConnectCountries = useMemo(() => {
+    const q = accountCountrySearch.trim().toLowerCase()
+    if (!q) return countryOptions
+    return countryOptions.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
+  }, [countryOptions, accountCountrySearch])
+
+  const filteredDocumentCountries = useMemo(() => {
+    const q = documentCountrySearch.trim().toLowerCase()
+    if (!q) return allCountryOptions
+    return allCountryOptions.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q))
+  }, [allCountryOptions, documentCountrySearch])
 
   const clearFieldError = (field: string) => {
     setFieldErrors(prev => {
@@ -167,204 +134,28 @@ export default function KYCPage() {
     })
   }
 
-  const validateDetailsForm = () => {
+  const validate = () => {
     const errors: Record<string, string> = {}
-
     if (!firstName.trim()) errors.firstName = 'Champ requis'
     if (!lastName.trim()) errors.lastName = 'Champ requis'
     if (!email.trim()) errors.email = 'Champ requis'
     if (!phone.trim()) errors.phone = 'Champ requis'
     if (!birthDate.trim()) errors.birthDate = 'Champ requis'
-    if (!confirmIdentity) {
-      errors.confirmIdentity =
-        'Veuillez confirmer que vos informations correspondent au document.'
-    }
-
-    if (isStripeConnectCountry) {
-      if (!address.trim()) errors.address = 'Champ requis'
-      if (!city.trim()) errors.city = 'Champ requis'
-      if (!postalCode.trim()) errors.postalCode = 'Champ requis'
-    }
-
+    if (!accountCountry) errors.accountCountry = 'Champ requis'
+    if (!documentCountry) errors.documentCountry = 'Champ requis'
+    if (!documentType) errors.documentType = 'Champ requis'
+    if (!confirmIdentity) errors.confirmIdentity = 'Veuillez confirmer vos informations.'
     setFieldErrors(errors)
     if (Object.keys(errors).length > 0) {
-      const firstErrorField = Object.keys(errors)[0]
-      const el = document.getElementById(firstErrorField)
-      if (el instanceof HTMLElement) {
-        el.focus()
-      }
+      const firstField = Object.keys(errors)[0]
+      const el = document.getElementById(firstField)
+      if (el instanceof HTMLElement) el.focus()
       return false
     }
     return true
   }
 
-  const connectCountryOptions = useMemo(() => {
-    const displayNames =
-      typeof Intl !== 'undefined' && 'DisplayNames' in Intl
-        ? new Intl.DisplayNames(['fr'], { type: 'region' })
-        : null
-
-    return residenceCountries
-      .map(code => ({
-        code,
-        name: displayNames?.of(code) || code,
-        flag: getCountryFlagEmoji(code),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
-  }, [residenceCountries])
-
-  const identityCountryOptions = useMemo(() => {
-    const displayNames =
-      typeof Intl !== 'undefined' && 'DisplayNames' in Intl
-        ? new Intl.DisplayNames(['fr'], { type: 'region' })
-        : null
-
-    return STRIPE_IDENTITY_SUPPORTED_COUNTRIES.map(code => ({
-      code,
-      name: displayNames?.of(code) || code,
-      flag: getCountryFlagEmoji(code),
-    })).sort((a, b) => a.name.localeCompare(b.name, 'fr'))
-  }, [])
-
-  const filteredConnectCountries = useMemo(() => {
-    const query = accountCountrySearch.trim().toLowerCase()
-    if (!query) {
-      return connectCountryOptions
-    }
-    return connectCountryOptions.filter(
-      country =>
-        country.name.toLowerCase().includes(query) ||
-        country.code.toLowerCase().includes(query)
-    )
-  }, [connectCountryOptions, accountCountrySearch])
-
-  const filteredIdentityCountries = useMemo(() => {
-    const query = documentCountrySearch.trim().toLowerCase()
-    if (!query) {
-      return identityCountryOptions
-    }
-    return identityCountryOptions.filter(
-      country =>
-        country.name.toLowerCase().includes(query) ||
-        country.code.toLowerCase().includes(query)
-    )
-  }, [identityCountryOptions, documentCountrySearch])
-
-  useEffect(() => {
-    if (!normalizedDocumentCountry) {
-      if (documentType) {
-        setDocumentType('')
-      }
-      return
-    }
-
-    if (
-      documentType &&
-      !allowedDocumentTypes.includes(documentType as DocumentType)
-    ) {
-      setDocumentType((allowedDocumentTypes[0] as DocumentType) || '')
-      return
-    }
-
-    // Auto-select when only one type is available and nothing is selected yet
-    if (!documentType && allowedDocumentTypes.length === 1) {
-      setDocumentType(allowedDocumentTypes[0] as DocumentType)
-    }
-  }, [allowedDocumentTypes, documentType, normalizedDocumentCountry])
-
-  const parseDob = (value?: string) => {
-    if (!value) return null
-    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
-    if (!match) return null
-    const [, year, month, day] = match
-    return {
-      day: Number(day),
-      month: Number(month),
-      year: Number(year),
-    }
-  }
-
-  const buildIndividualPayload = (options: {
-    firstName?: string
-    lastName?: string
-    email?: string
-    phone?: string
-    birthDate?: string
-    address?: string
-    city?: string
-    postalCode?: string
-    country?: string
-  }) => {
-    const individual: Record<string, unknown> = {}
-
-    if (options.firstName?.trim()) {
-      individual.first_name = options.firstName.trim()
-    }
-    if (options.lastName?.trim()) {
-      individual.last_name = options.lastName.trim()
-    }
-    if (options.email?.trim()) {
-      individual.email = options.email.trim()
-    }
-    if (options.phone?.trim()) {
-      individual.phone = options.phone.trim()
-    }
-    const dob = parseDob(options.birthDate)
-    if (dob) {
-      individual.dob = dob
-    }
-
-    if (
-      options.address?.trim() ||
-      options.city?.trim() ||
-      options.postalCode?.trim()
-    ) {
-      individual.address = {
-        line1: options.address?.trim() || undefined,
-        city: options.city?.trim() || undefined,
-        postal_code: options.postalCode?.trim() || undefined,
-        country: options.country?.trim() || undefined,
-      }
-    }
-
-    return individual
-  }
-
-  const createAccountToken = async (
-    stripe: Stripe,
-    individual: Record<string, unknown>
-  ) => {
-    const accountPayload = {
-      business_type: 'individual',
-      tos_shown_and_accepted: true,
-    } as any
-
-    if (Object.keys(individual).length > 0) {
-      accountPayload.individual = individual
-    }
-
-    const tokenResult = await stripe.createToken('account', accountPayload)
-    if (tokenResult.error || !tokenResult.token?.id) {
-      throw new Error(
-        tokenResult.error?.message ||
-          'Impossible de préparer le compte de paiement.'
-      )
-    }
-
-    return tokenResult.token.id
-  }
-
-  // Sync dial code with account country
-  useEffect(() => {
-    if (normalizedAccountCountry === 'BJ') setDialCode('+229')
-    else if (normalizedAccountCountry === 'FR') setDialCode('+33')
-  }, [normalizedAccountCountry])
-
-  // No page-level loading state needed; UI reacts to profile changes.
-
-  // Restaurer le brouillon du formulaire depuis sessionStorage au montage.
-  // Doit être déclaré avant l'effet de pre-fill du profil : les guards
-  // `if (!field && ...)` du profil ne peuvent pas écraser une valeur déjà restaurée.
+  // Restore draft
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
@@ -382,326 +173,96 @@ export default function KYCPage() {
     } catch {}
   }, [])
 
-  // Sauvegarder le brouillon à chaque modification d'un champ.
+  // Save draft
   useEffect(() => {
     if (typeof window === 'undefined') return
     const draft = { firstName, lastName, phone, birthDate, address, city, postalCode, dialCode }
     sessionStorage.setItem('kyc_form_draft', JSON.stringify(draft))
   }, [firstName, lastName, phone, birthDate, address, city, postalCode, dialCode])
 
+  // Pre-fill from profile
   useEffect(() => {
     if (!profile) return
-    if (!firstName && (profile as any)?.firstname) {
-      setFirstName((profile as any).firstname as string)
-    }
-    if (!lastName && (profile as any)?.lastname) {
-      setLastName((profile as any).lastname as string)
-    }
-    if (!email && ((profile as any)?.email || user?.email)) {
-      setEmail(((profile as any)?.email as string) || user?.email || '')
-    }
-    if (!phone && (profile as any)?.phone) {
-      setPhone((profile as any).phone as string)
-    }
-    if (!birthDate && (profile as any)?.birthday) {
-      setBirthDate((profile as any).birthday as string)
-    }
-    if (!address && (profile as any)?.address) {
-      setAddress((profile as any).address as string)
-    }
-    if (!city && (profile as any)?.city) {
-      setCity((profile as any).city as string)
-    }
-    if (!postalCode && (profile as any)?.postal_code) {
-      setPostalCode((profile as any).postal_code as string)
-    }
-    if (!accountCountry && profileAccountCountry) {
-      setAccountCountry(profileAccountCountry)
-    }
-    if (!documentCountry && profileDocumentCountry) {
-      setDocumentCountry(profileDocumentCountry)
-    }
-    if (!documentType && profileDocumentType) {
-      setDocumentType(profileDocumentType)
-    }
+    if (!firstName && (profile as any)?.firstname) setFirstName((profile as any).firstname)
+    if (!lastName && (profile as any)?.lastname) setLastName((profile as any).lastname)
+    if (!email && ((profile as any)?.email || user?.email)) setEmail((profile as any)?.email || user?.email || '')
+    if (!phone && (profile as any)?.phone) setPhone((profile as any).phone)
+    if (!birthDate && (profile as any)?.birthday) setBirthDate((profile as any).birthday)
+    if (!address && (profile as any)?.address) setAddress((profile as any).address)
+    if (!city && (profile as any)?.city) setCity((profile as any).city)
+    if (!postalCode && (profile as any)?.postal_code) setPostalCode((profile as any).postal_code)
+    if (!accountCountry && profileAccountCountry) setAccountCountry(profileAccountCountry)
+    if (!documentCountry && profileDocumentCountry) setDocumentCountry(profileDocumentCountry)
+    if (!documentType && profileDocumentType) setDocumentType(profileDocumentType)
   }, [
-    profile,
-    user,
-    firstName,
-    lastName,
-    email,
-    phone,
-    birthDate,
-    address,
-    city,
-    postalCode,
-    accountCountry,
-    documentCountry,
-    documentType,
-    profileAccountCountry,
-    profileDocumentCountry,
-    profileDocumentType,
+    profile, user, firstName, lastName, email, phone, birthDate, address, city, postalCode,
+    accountCountry, documentCountry, documentType,
+    profileAccountCountry, profileDocumentCountry, profileDocumentType,
   ])
 
+  // Sync status from profile
+  useEffect(() => {
+    if (!profile) return
+    setKycStatus((profile as any)?.kyc_status ?? null)
+    setSubmittedAt((profile as any)?.kyc_submitted_at ?? null)
+  }, [(profile as any)?.kyc_status, (profile as any)?.kyc_submitted_at])
+
+  // Realtime KYC updates
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null
-    let isActive = true
+    let active = true
 
-    const subscribeToProfile = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      const user = session?.user
-      if (!user || !isActive || isAdmin) return
+    const subscribe = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user || !active || isAdmin) return
+      if (session.access_token) await supabase.realtime.setAuth(session.access_token)
 
-      if (session?.access_token) {
-        await supabase.realtime.setAuth(session.access_token)
-      }
-
-      console.log('🔔 Subscribing to KYC updates for user:', user.id)
-
-      const suffix =
-        typeof crypto !== 'undefined' && 'randomUUID' in crypto
-          ? crypto.randomUUID()
-          : Math.random().toString(36).slice(2)
+      const suffix = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2)
 
       channel = supabase
-        .channel(`kyc-profile:${user.id}:${suffix}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${user.id}`,
-          },
-          payload => {
-            console.log('🔔 Realtime UPDATE received:', payload)
-            const nextProfile = payload.new as {
-              kyc_status?: KYCStatus
-              kyc_submitted_at?: string | null
-            }
-            console.log('📊 New KYC status:', nextProfile.kyc_status)
-            setKycStatus(nextProfile.kyc_status ?? null)
-            setSubmittedAt(nextProfile.kyc_submitted_at ?? null)
-          }
-        )
-        .subscribe(status => {
-          console.log('📡 Realtime subscription status:', status)
-          if (status === 'CHANNEL_ERROR') {
-            console.error('❌ Realtime KYC subscription error')
-          }
+        .channel(`kyc-profile:${session.user.id}:${suffix}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${session.user.id}`,
+        }, payload => {
+          const next = payload.new as { kyc_status?: KYCStatus; kyc_submitted_at?: string | null }
+          setKycStatus(next.kyc_status ?? null)
+          setSubmittedAt(next.kyc_submitted_at ?? null)
         })
+        .subscribe()
     }
 
-    subscribeToProfile()
-
+    subscribe()
     return () => {
-      isActive = false
-      if (channel) {
-        supabase.removeChannel(channel)
-      }
+      active = false
+      if (channel) supabase.removeChannel(channel)
     }
   }, [supabase, isAdmin, user?.id])
 
-  useEffect(() => {
-    if (!profile) return
-    const nextStatus = (profile as any)?.kyc_status ?? null
-    const nextSubmitted = (profile as any)?.kyc_submitted_at ?? null
-    setKycStatus(nextStatus)
-    setSubmittedAt(nextSubmitted)
-    if (nextStatus === 'approved' || nextStatus === 'rejected') {
-      setForceDetails(false)
-    }
-    if (nextStatus === 'rejected') {
-      setStep('details')
-      setForceDetails(true)
-    }
-    if (nextStatus === 'incomplete') {
-      const hasDocument = Boolean((profile as any)?.kyc_document_type)
-      const hasNationality = Boolean((profile as any)?.kyc_nationality)
-      if (hasDocument && hasNationality) {
-        setStep('details')
-        setForceDetails(true)
-      }
-    }
-  }, [profile?.kyc_status, profile?.kyc_submitted_at, profile])
-
-  useEffect(() => {
-    return () => {
-      if (pendingTimeoutRef.current) {
-        window.clearTimeout(pendingTimeoutRef.current)
-        pendingTimeoutRef.current = null
-      }
-      if (statusSyncTimeoutRef.current) {
-        window.clearTimeout(statusSyncTimeoutRef.current)
-        statusSyncTimeoutRef.current = null
-      }
-    }
-  }, [])
-
-  const runStatusSync = async (
-    sessionId: string,
-    attempt: number
-  ): Promise<void> => {
-    try {
-      const res = await fetch('/api/stripe/identity/status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        return
-      }
-
-      if (data?.kycStatus) {
-        setKycStatus(data.kycStatus)
-        if (data.submittedAt) {
-          setSubmittedAt(data.submittedAt)
-        }
-        if (data.kycStatus === 'rejected') {
-          setFormError(
-            data.rejectionReason ||
-              "La vérification d'identité a échoué. Corrigez vos informations."
-          )
-          setStep('details')
-          setForceDetails(true)
-          pendingHoldUntilRef.current = null
-        }
-        if (data.kycStatus !== 'pending') {
-          return
-        }
-      }
-
-      if (data?.status === 'processing' && attempt < 5) {
-        const delay = attempt === 0 ? 5000 : attempt === 1 ? 10000 : 15000
-        statusSyncTimeoutRef.current = window.setTimeout(() => {
-          runStatusSync(sessionId, attempt + 1)
-        }, delay)
-      }
-    } catch {
-      // Silent fallback; webhook remains the primary source.
-    }
-  }
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (kycStatus !== 'pending') return
-    const stored = sessionStorage.getItem('kyc_verification_session_id')
-    if (!stored) return
-    runStatusSync(stored, 0)
-  }, [kycStatus])
-
-  useEffect(() => {
-    if (pendingTimeoutRef.current) {
-      window.clearTimeout(pendingTimeoutRef.current)
-      pendingTimeoutRef.current = null
-    }
-
-    if (kycStatus === 'pending') {
-      pendingHoldUntilRef.current = Date.now() + PENDING_MIN_MS
-      setDisplayStatus('pending')
-      return
-    }
-
-    if (kycStatus === 'approved') {
-      const holdUntil = pendingHoldUntilRef.current
-      if (holdUntil && Date.now() < holdUntil) {
-        setDisplayStatus('pending')
-        pendingTimeoutRef.current = window.setTimeout(() => {
-          setDisplayStatus('approved')
-          pendingHoldUntilRef.current = null
-        }, holdUntil - Date.now())
-        return () => {
-          if (pendingTimeoutRef.current) {
-            window.clearTimeout(pendingTimeoutRef.current)
-            pendingTimeoutRef.current = null
-          }
-        }
-      }
-    }
-
-    pendingHoldUntilRef.current = null
-    setDisplayStatus(kycStatus)
-
-    return () => {
-      if (pendingTimeoutRef.current) {
-        window.clearTimeout(pendingTimeoutRef.current)
-        pendingTimeoutRef.current = null
-      }
-    }
-  }, [kycStatus])
-
-  const handleStartVerification = async () => {
-    if (step !== 'details') {
-      toast.error('Préparez votre compte avant de continuer')
-      return
-    }
-    if (
-      !effectiveDocumentType ||
-      !normalizedDocumentCountry ||
-      !normalizedAccountCountry
-    ) {
-      toast.error('Veuillez sélectionner un pays de résidence et un document')
-      return
-    }
-    if (!validateDetailsForm()) {
+  const handleSubmit = async () => {
+    if (!validate()) {
       setFormError('Veuillez corriger les champs en erreur.')
       return
     }
-
     setFormError(null)
     setIsSubmitting(true)
-
     try {
-      const stripe = await stripePromise
-      if (!stripe) {
-        toast.error(
-          "Le service de vérification n'est pas disponible. Réessayez."
-        )
-        return
-      }
-
-      let accountTokenId: string | undefined
-      if (isStripeConnectCountry) {
-        const individualPayload = buildIndividualPayload({
-          firstName,
-          lastName,
-          email,
-          phone: phone ? `${dialCode}${phone}` : '',
-          birthDate,
-          address,
-          city,
-          postalCode,
-          country: normalizedAccountCountry,
-        })
-        accountTokenId = await createAccountToken(stripe, individualPayload)
-      }
-
-      if (profileAccountCountry && !accountCountry) {
-        setAccountCountry(profileAccountCountry)
-      }
-      if (profileDocumentCountry && !documentCountry) {
-        setDocumentCountry(profileDocumentCountry)
-      }
-      if (profileDocumentType && !documentType) {
-        setDocumentType(profileDocumentType)
-      }
-
       const result = await startKYCVerification({
         firstName,
         lastName,
         email,
-        phone,
-        documentType: (effectiveDocumentType as DocumentType) || 'passport',
-        documentCountry: normalizedDocumentCountry,
-        accountCountry: normalizedAccountCountry,
+        phone: `${dialCode}${phone}`,
+        documentType: documentType as DocumentType,
+        documentCountry: documentCountry.toUpperCase(),
+        accountCountry: accountCountry.toUpperCase(),
         birthday: birthDate,
-        address,
-        city,
-        postalCode,
-        accountTokenId,
+        address: address || undefined,
+        city: city || undefined,
+        postalCode: postalCode || undefined,
       })
 
       if (result.error) {
@@ -710,122 +271,16 @@ export default function KYCPage() {
         return
       }
 
-      if (!result.verificationClientSecret) {
-        const message = "Impossible d'initialiser la vérification."
-        setFormError(message)
-        toast.error(message)
-        return
-      }
-
-      const { error } = await stripe.verifyIdentity(
-        result.verificationClientSecret
-      )
-
-      if (error) {
-        const message =
-          error.message ||
-          "La vérification d'identité n'a pas pu être complétée."
-        setFormError(message)
-        toast.error(message)
-        return
-      }
-
-      if (result.verificationSessionId) {
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem(
-            'kyc_verification_session_id',
-            result.verificationSessionId
-          )
-        }
-      }
-
-      toast.success('Vérification envoyée avec succès.')
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('kyc_form_draft')
-      }
-      const submittedAt = new Date().toISOString()
+      toast.success('Vérification soumise. Notre équipe examinera votre dossier sous 24-48h.')
+      if (typeof window !== 'undefined') sessionStorage.removeItem('kyc_form_draft')
       setKycStatus('pending')
-      setSubmittedAt(submittedAt)
-      setForceDetails(false)
-
-      const sessionId = result.verificationSessionId
-      if (sessionId) {
-        await runStatusSync(sessionId, 0)
-      }
+      setSubmittedAt(new Date().toISOString())
     } catch (err) {
-      const isDev = process.env.NODE_ENV !== 'production'
-      const detail = isDev && err instanceof Error ? err.message : ''
-      const message = `Une erreur est survenue. Veuillez réessayer.${detail ? ` (${detail})` : ''}`
+      const message = err instanceof Error ? err.message : 'Une erreur est survenue.'
       setFormError(message)
       toast.error(message)
     } finally {
       setIsSubmitting(false)
-    }
-  }
-
-  const handlePrepareAccount = async () => {
-    if (
-      !effectiveDocumentType ||
-      !normalizedDocumentCountry ||
-      !normalizedAccountCountry
-    ) {
-      toast.error('Veuillez sélectionner un pays de résidence et un document')
-      return
-    }
-
-    setIsPreparingAccount(true)
-    try {
-      let accountTokenId: string | undefined
-      if (isStripeConnectCountry) {
-        const stripe = await stripePromise
-        if (!stripe) {
-          throw new Error("Le service de paiement n'est pas disponible.")
-        }
-
-        const individualPayload = buildIndividualPayload({
-          firstName,
-          lastName,
-          email,
-          phone: phone ? `${dialCode}${phone}` : '',
-          birthDate,
-          address,
-          city,
-          postalCode,
-          country: normalizedAccountCountry,
-        })
-        accountTokenId = await createAccountToken(stripe, individualPayload)
-      }
-
-      const result = await prepareKYCAccount({
-        accountCountry: normalizedAccountCountry,
-        documentCountry: normalizedDocumentCountry,
-        documentType: (effectiveDocumentType as DocumentType) || 'passport',
-        accountTokenId,
-      })
-      if (result.error) {
-        toast.error(result.error)
-        return
-      }
-
-      if (pendingTimeoutRef.current) {
-        window.clearTimeout(pendingTimeoutRef.current)
-        pendingTimeoutRef.current = null
-      }
-      pendingHoldUntilRef.current = null
-      setSubmittedAt(null)
-      setKycStatus('incomplete')
-      setDisplayStatus('incomplete')
-      setFormError(null)
-      setConfirmIdentity(false)
-      setStep('details')
-      setForceDetails(true)
-      toast.success('Compte prêt pour la vérification')
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Erreur lors de la préparation'
-      )
-    } finally {
-      setIsPreparingAccount(false)
     }
   }
 
@@ -844,8 +299,7 @@ export default function KYCPage() {
         <Alert>
           <AlertTitle>Réservé aux utilisateurs</AlertTitle>
           <AlertDescription>
-            L&apos;interface KYC est disponible uniquement pour les comptes
-            utilisateurs.
+            L&apos;interface KYC est disponible uniquement pour les comptes utilisateurs.
           </AlertDescription>
         </Alert>
       </div>
@@ -853,7 +307,7 @@ export default function KYCPage() {
   }
 
   const getStatusBadge = () => {
-    switch (displayStatus ?? kycStatus) {
+    switch (kycStatus) {
       case 'approved':
         return (
           <Badge variant="default" className="bg-green-500">
@@ -875,27 +329,8 @@ export default function KYCPage() {
             En attente
           </Badge>
         )
-      case 'incomplete':
-        return (
-          <Badge variant="warning" className="cursor-default">
-            À compléter
-          </Badge>
-        )
       default:
         return null
-    }
-  }
-
-  const getKycMessage = () => {
-    switch (displayStatus ?? kycStatus) {
-      case 'pending':
-        return "Votre vérification est en cours d'examen. Vous serez notifié par email."
-      case 'rejected':
-        return 'Votre vérification a été refusée. Corrigez vos informations puis relancez la procédure.'
-      case 'incomplete':
-        return 'Aucune vérification en cours. Lancez la vérification pour continuer.'
-      default:
-        return 'Sélectionnez votre document puis continuez la vérification.'
     }
   }
 
@@ -903,7 +338,7 @@ export default function KYCPage() {
     <div className="space-y-6">
       <PageHeader
         title="Vérification d'identité (KYC)"
-        description="Nous vérifions vos documents pour sécuriser votre compte."
+        description="Soumettez vos informations pour que notre équipe valide votre identité."
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Réglages', href: '/dashboard/reglages/compte' },
@@ -911,727 +346,390 @@ export default function KYCPage() {
         ]}
       />
 
-      {displayStatus === 'approved' && (
+      {kycStatus === 'approved' && (
         <div className="space-y-4 rounded-lg border border-border/60 bg-muted/30 p-4">
           <div className="flex flex-wrap items-center gap-3">
             {getStatusBadge()}
             <p className="text-sm font-semibold">Identité vérifiée</p>
           </div>
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              Votre identité est confirmée. Vous pouvez poursuivre vos actions
-              sur Sendbox en toute sécurité.
-            </p>
+            <p>Votre identité est confirmée. Vous pouvez publier des annonces sur Sendbox.</p>
             {submittedAt && (
-              <p>
-                Soumis le {format(new Date(submittedAt), 'PP', { locale: fr })}
-              </p>
+              <p>Soumis le {format(new Date(submittedAt), 'PP', { locale: fr })}</p>
             )}
           </div>
         </div>
       )}
 
-      {displayStatus !== 'approved' && (
+      {kycStatus === 'pending' && (
+        <Alert className="border-primary/20 bg-primary/5">
+          <IconClock className="h-4 w-4" />
+          <AlertTitle>Vérification en cours</AlertTitle>
+          <AlertDescription>
+            Votre dossier est en cours d&apos;examen par notre équipe (24-48h). Vous serez notifié par email.
+            {submittedAt && (
+              <span className="block mt-1 text-xs">
+                Soumis le {format(new Date(submittedAt), 'PP', { locale: fr })}
+              </span>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {kycStatus === 'rejected' && (
+        <Alert variant="destructive">
+          <IconCircleX className="h-4 w-4" />
+          <AlertTitle>Vérification refusée</AlertTitle>
+          <AlertDescription>
+            {(profile as any)?.kyc_rejection_reason
+              ? `Motif : ${(profile as any).kyc_rejection_reason}. Veuillez corriger vos informations et soumettre à nouveau.`
+              : 'Votre vérification a été refusée. Veuillez soumettre des informations correctes.'}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {kycStatus !== 'approved' && (
         <Card>
           <CardHeader>
-            <CardTitle>Lancer la vérification d'identité</CardTitle>
-            <CardDescription>{getKycMessage()}</CardDescription>
+            <CardTitle>
+              {kycStatus === 'rejected' ? 'Soumettre à nouveau' : 'Lancer la vérification'}
+            </CardTitle>
+            <CardDescription>
+              Vos informations seront examinées manuellement par notre équipe.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {displayStatus !== 'pending' && step === 'document' && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="accountCountry">Pays de résidence</Label>
-                  <Popover
-                    open={accountCountryOpen}
-                    onOpenChange={open => {
-                      setAccountCountryOpen(open)
-                      if (!open) {
-                        setAccountCountrySearch('')
-                      }
-                    }}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={accountCountryOpen}
-                        className="w-full justify-between"
-                        id="accountCountry"
-                      >
-                        {accountCountry ? (
-                          <span className="flex items-center gap-2">
-                            <span>
-                              {
-                                connectCountryOptions.find(
-                                  country => country.code === accountCountry
-                                )?.flag
-                              }
-                            </span>
-                            <span>
-                              {
-                                connectCountryOptions.find(
-                                  country => country.code === accountCountry
-                                )?.name
-                              }
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">
-                            Sélectionnez un pays
-                          </span>
-                        )}
-                        <IconChevronDown className="h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      side="bottom"
-                      align="start"
-                      sideOffset={4}
-                      className="w-[--radix-popover-trigger-width] p-0"
-                    >
-                      <div className="flex items-center gap-2 border-b px-3 py-2">
-                        <IconSearch className="h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Rechercher un pays..."
-                          value={accountCountrySearch}
-                          onChange={event =>
-                            setAccountCountrySearch(event.target.value)
-                          }
-                          className="h-8 border-0 px-0 focus-visible:ring-0"
-                        />
-                      </div>
-                      <div className="max-h-64 overflow-y-auto">
-                        {filteredConnectCountries.length > 0 ? (
-                          filteredConnectCountries.map(country => (
-                            <button
-                              key={country.code}
-                              type="button"
-                              className={cn(
-                                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
-                                accountCountry === country.code && 'bg-accent'
-                              )}
-                              onClick={() => {
-                                setAccountCountry(country.code)
-                                setAccountCountryOpen(false)
-                                setAccountCountrySearch('')
-                              }}
-                            >
-                              <span>{country.flag}</span>
-                              <span>{country.name}</span>
-                              <span className="ml-auto text-xs text-muted-foreground">
-                                {country.code}
-                              </span>
-                            </button>
-                          ))
-                        ) : (
-                          <p className="px-3 py-2 text-sm text-muted-foreground">
-                            Aucun pays trouvé.
-                          </p>
-                        )}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="documentCountry">
-                    Pays d&apos;émission du document à vérifier
-                  </Label>
-                  <Popover
-                    open={documentCountryOpen}
-                    onOpenChange={open => {
-                      setDocumentCountryOpen(open)
-                      if (!open) {
-                        setDocumentCountrySearch('')
-                      }
-                    }}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={documentCountryOpen}
-                        className="w-full justify-between"
-                        id="documentCountry"
-                      >
-                        {documentCountry ? (
-                          <span className="flex items-center gap-2">
-                            <span>
-                              {
-                                identityCountryOptions.find(
-                                  country => country.code === documentCountry
-                                )?.flag
-                              }
-                            </span>
-                            <span>
-                              {
-                                identityCountryOptions.find(
-                                  country => country.code === documentCountry
-                                )?.name
-                              }
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">
-                            Sélectionnez un pays
-                          </span>
-                        )}
-                        <IconChevronDown className="h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      side="bottom"
-                      align="start"
-                      sideOffset={4}
-                      className="w-[--radix-popover-trigger-width] p-0"
-                    >
-                      <div className="flex items-center gap-2 border-b px-3 py-2">
-                        <IconSearch className="h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Rechercher un pays..."
-                          value={documentCountrySearch}
-                          onChange={event =>
-                            setDocumentCountrySearch(event.target.value)
-                          }
-                          className="h-8 border-0 px-0 focus-visible:ring-0"
-                        />
-                      </div>
-                      <div className="max-h-64 overflow-y-auto">
-                        {filteredIdentityCountries.length > 0 ? (
-                          filteredIdentityCountries.map(country => (
-                            <button
-                              key={country.code}
-                              type="button"
-                              className={cn(
-                                'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent',
-                                documentCountry === country.code && 'bg-accent'
-                              )}
-                              onClick={() => {
-                                setDocumentCountry(country.code)
-                                setDocumentCountryOpen(false)
-                                setDocumentCountrySearch('')
-                              }}
-                            >
-                              <span>{country.flag}</span>
-                              <span>{country.name}</span>
-                              <span className="ml-auto text-xs text-muted-foreground">
-                                {country.code}
-                              </span>
-                            </button>
-                          ))
-                        ) : (
-                          <p className="px-3 py-2 text-sm text-muted-foreground">
-                            Aucun pays trouvé.
-                          </p>
-                        )}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {normalizedDocumentCountry && allowedDocumentTypes.length > 1 && (
-                  <div className="space-y-2">
-                    <Label htmlFor="documentType">Type de document</Label>
-                    <Select
-                      value={documentType}
-                      onValueChange={value => setDocumentType(value as DocumentType)}
-                    >
-                      <SelectTrigger id="documentType" className="w-full">
-                        <SelectValue placeholder="Sélectionnez un type de document" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allowedDocumentTypes.includes('passport') && (
-                          <SelectItem value="passport">Passeport</SelectItem>
-                        )}
-                        {allowedDocumentTypes.includes('national_id') && (
-                          <SelectItem value="national_id">Carte d&apos;identité nationale</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {!isResidenceCountrySupported && accountCountry && (
-                  <Alert>
-                    <IconAlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Pays de résidence non supporté</AlertTitle>
-                    <AlertDescription>
-                      Pour le moment, seules la France et le Bénin sont
-                      disponibles. Choisissez un pays pris en charge pour
-                      continuer.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {!isIdentityCountrySupported && documentCountry && (
-                  <Alert>
-                    <IconAlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Pays de document non supporté</AlertTitle>
-                    <AlertDescription>
-                      La vérification d&apos;identité n&apos;est pas disponible
-                      pour ce pays de document. Choisissez un pays pris en
-                      charge ou utilisez un autre type de document.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {isPreparingAccount && (
-                  <Alert>
-                    <IconUserShield className="h-4 w-4" />
-                    <AlertTitle>Merci de patienter</AlertTitle>
-                    <AlertDescription>
-                      Nous mettons en place les configurations pour pouvoir
-                      lancer la vérification de votre identité.
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                <Button
-                  type="button"
-                  className="mt-4 w-auto"
-                  onClick={() => setShowConfirmModal(true)}
-                  disabled={isPreparingAccount || !canPrepareAccount}
-                >
-                  {isPreparingAccount ? (
-                    <>
-                      <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Préparation en cours...
-                    </>
-                  ) : (
-                    'Continuer'
-                  )}
-                </Button>
-              </>
+          <CardContent className="space-y-6">
+            {kycStatus === 'pending' && (
+              <p className="text-sm text-muted-foreground">
+                Votre dossier est en cours d&apos;examen. Vous pouvez mettre à jour vos informations si nécessaire.
+              </p>
             )}
 
-            {step === 'details' &&
-              (displayStatus !== 'pending' || forceDetails) && (
-                <>
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 px-4 py-3">
-                    <div className="text-sm">
-                      <span className="font-medium">Résidence :</span>{' '}
-                      {effectiveAccountCountry || '—'} •{' '}
-                      <span className="font-medium">Document :</span>{' '}
-                      {effectiveDocumentType === 'passport'
-                        ? 'Passeport'
-                        : effectiveDocumentType
-                          ? "Carte d'identité"
-                          : '—'}{' '}
-                      • <span className="font-medium">Pays :</span>{' '}
-                      {effectiveDocumentCountry || '—'}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setStep('document')
-                        setForceDetails(false)
-                        setConfirmIdentity(false)
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      Modifier
-                    </Button>
-                  </div>
-
-                  <div className="space-y-4 rounded-lg border border-border/60 p-4">
-                    <p className="text-sm font-semibold">
-                      Informations personnelles
-                    </p>
-                    <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
-                      <IconAlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                      <AlertTitle className="text-sm text-amber-800 dark:text-amber-200">
-                        Utilisez vos noms exacts tels qu&apos;ils figurent sur votre document
-                      </AlertTitle>
-                      <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
-                        Si votre document indique plusieurs prénoms, saisissez-les tous
-                        (ex&nbsp;: <strong>Jean-Marie</strong> et non <strong>Jean</strong>).
-                        Une discordance entraîne le rejet automatique de la vérification.
-                      </AlertDescription>
-                    </Alert>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">Prénom</Label>
-                        <Input
-                          id="firstName"
-                          autoComplete="given-name"
-                          placeholder="Tous vos prénoms (ex: Jean-Marie)"
-                          value={firstName}
-                          onChange={event => {
-                            setFirstName(event.target.value)
-                            if (fieldErrors.firstName) {
-                              clearFieldError('firstName')
-                            }
-                          }}
-                          onFocus={() => clearFieldError('firstName')}
-                          aria-invalid={Boolean(fieldErrors.firstName)}
-                          className={cn(
-                            fieldErrors.firstName && 'border-destructive'
-                          )}
-                        />
-                        {fieldErrors.firstName && (
-                          <p className="text-xs text-destructive">
-                            {fieldErrors.firstName}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Nom</Label>
-                        <Input
-                          id="lastName"
-                          autoComplete="family-name"
-                          placeholder="Nom de famille exact (ex: Adjovi)"
-                          value={lastName}
-                          onChange={event => {
-                            setLastName(event.target.value)
-                            if (fieldErrors.lastName) {
-                              clearFieldError('lastName')
-                            }
-                          }}
-                          onFocus={() => clearFieldError('lastName')}
-                          aria-invalid={Boolean(fieldErrors.lastName)}
-                          className={cn(
-                            fieldErrors.lastName && 'border-destructive'
-                          )}
-                        />
-                        {fieldErrors.lastName && (
-                          <p className="text-xs text-destructive">
-                            {fieldErrors.lastName}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          autoComplete="email"
-                          value={email}
-                          onChange={event => {
-                            setEmail(event.target.value)
-                            if (fieldErrors.email) {
-                              clearFieldError('email')
-                            }
-                          }}
-                          onFocus={() => clearFieldError('email')}
-                          aria-invalid={Boolean(fieldErrors.email)}
-                          className={cn(
-                            fieldErrors.email && 'border-destructive'
-                          )}
-                          disabled
-                        />
-                        {fieldErrors.email && (
-                          <p className="text-xs text-destructive">
-                            {fieldErrors.email}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Téléphone</Label>
-                        <div className="flex gap-2">
-                          <Select value={dialCode} onValueChange={setDialCode}>
-                            <SelectTrigger className="w-24 shrink-0">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="+33">+33</SelectItem>
-                              <SelectItem value="+229">+229</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <div className="flex-1">
-                            <Input
-                              id="phone"
-                              autoComplete="tel-local"
-                              placeholder="6 12 34 56 78"
-                              value={phone}
-                              onChange={event => {
-                                setPhone(event.target.value)
-                                if (fieldErrors.phone) {
-                                  clearFieldError('phone')
-                                }
-                              }}
-                              onFocus={() => clearFieldError('phone')}
-                              aria-invalid={Boolean(fieldErrors.phone)}
-                              className={cn(
-                                fieldErrors.phone && 'border-destructive'
-                              )}
-                            />
-                          </div>
-                        </div>
-                        {fieldErrors.phone && (
-                          <p className="text-xs text-destructive">
-                            {fieldErrors.phone}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="birthDate">Date de naissance</Label>
-                      <Input
-                        id="birthDate"
-                        type="date"
-                        autoComplete="bday"
-                        value={birthDate}
-                        onChange={event => {
-                          setBirthDate(event.target.value)
-                          if (fieldErrors.birthDate) {
-                            clearFieldError('birthDate')
-                          }
-                        }}
-                        onFocus={() => clearFieldError('birthDate')}
-                        aria-invalid={Boolean(fieldErrors.birthDate)}
-                        className={cn(
-                          fieldErrors.birthDate && 'border-destructive'
-                        )}
-                      />
-                      {fieldErrors.birthDate && (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.birthDate}
-                        </p>
-                      )}
-                    </div>
-                    {isStripeConnectCountry && (
-                      <p className="text-xs text-muted-foreground">
-                        Ces informations sont requises par Stripe pour valider votre compte de paiement.
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      <Label htmlFor="address">
-                        Adresse{isStripeConnectCountry && <span className="text-destructive"> *</span>}
-                        {!isStripeConnectCountry && <span className="text-muted-foreground font-normal"> (facultatif)</span>}
-                      </Label>
-                      <Input
-                        id="address"
-                        autoComplete="street-address"
-                        placeholder="Adresse"
-                        value={address}
-                        onChange={event => {
-                          setAddress(event.target.value)
-                          if (fieldErrors.address) {
-                            clearFieldError('address')
-                          }
-                        }}
-                        onFocus={() => clearFieldError('address')}
-                        aria-invalid={Boolean(fieldErrors.address)}
-                        className={cn(
-                          fieldErrors.address && 'border-destructive'
-                        )}
-                      />
-                      {fieldErrors.address && (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.address}
-                        </p>
-                      )}
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="city">
-                          Ville{isStripeConnectCountry && <span className="text-destructive"> *</span>}
-                          {!isStripeConnectCountry && <span className="text-muted-foreground font-normal"> (facultatif)</span>}
-                        </Label>
-                        <Input
-                          id="city"
-                          autoComplete="address-level2"
-                          placeholder="Ville"
-                          value={city}
-                          onChange={event => {
-                            setCity(event.target.value)
-                            if (fieldErrors.city) {
-                              clearFieldError('city')
-                            }
-                          }}
-                          onFocus={() => clearFieldError('city')}
-                          aria-invalid={Boolean(fieldErrors.city)}
-                          className={cn(
-                            fieldErrors.city && 'border-destructive'
-                          )}
-                        />
-                        {fieldErrors.city && (
-                          <p className="text-xs text-destructive">
-                            {fieldErrors.city}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="postalCode">
-                          Code postal{isStripeConnectCountry && <span className="text-destructive"> *</span>}
-                          {!isStripeConnectCountry && <span className="text-muted-foreground font-normal"> (facultatif)</span>}
-                        </Label>
-                        <Input
-                          id="postalCode"
-                          autoComplete="postal-code"
-                          placeholder="Code postal"
-                          value={postalCode}
-                          onChange={event => {
-                            setPostalCode(event.target.value)
-                            if (fieldErrors.postalCode) {
-                              clearFieldError('postalCode')
-                            }
-                          }}
-                          onFocus={() => clearFieldError('postalCode')}
-                          aria-invalid={Boolean(fieldErrors.postalCode)}
-                          className={cn(
-                            fieldErrors.postalCode && 'border-destructive'
-                          )}
-                        />
-                        {fieldErrors.postalCode && (
-                          <p className="text-xs text-destructive">
-                            {fieldErrors.postalCode}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground">
-                    Vos données sont traitées de façon sécurisée.{' '}
-                    <Link href="/cgv" className="underline hover:text-foreground">
-                      Voir nos CGU
-                    </Link>
-                    .
-                  </p>
-
-                  <div className="space-y-2">
-                    <div
-                      className={cn(
-                        'flex items-start gap-3 rounded-lg border border-border/60 px-4 py-3 text-sm',
-                        fieldErrors.confirmIdentity && 'border-destructive'
-                      )}
-                    >
-                      <Checkbox
-                        id="confirmIdentity"
-                        checked={confirmIdentity}
-                        onCheckedChange={value => {
-                          setConfirmIdentity(Boolean(value))
-                          if (fieldErrors.confirmIdentity) {
-                            clearFieldError('confirmIdentity')
-                          }
-                        }}
-                      />
-                      <Label
-                        htmlFor="confirmIdentity"
-                        className="cursor-pointer text-sm font-normal leading-5"
-                      >
-                        J&apos;accepte les{' '}
-                        <Link
-                          href="/cgv"
-                          className="underline hover:text-foreground"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          Conditions Générales d&apos;Utilisation
-                        </Link>{' '}
-                        et confirme que les informations sont exactes.
-                      </Label>
-                    </div>
-                    {fieldErrors.confirmIdentity && (
-                      <p className="text-xs text-destructive">
-                        {fieldErrors.confirmIdentity}
-                      </p>
-                    )}
-                  </div>
-
+            {/* Pays de résidence */}
+            <div className="space-y-2">
+              <Label htmlFor="accountCountry">Pays de résidence</Label>
+              <Popover
+                open={accountCountryOpen}
+                onOpenChange={open => {
+                  setAccountCountryOpen(open)
+                  if (!open) setAccountCountrySearch('')
+                }}
+              >
+                <PopoverTrigger asChild>
                   <Button
                     type="button"
-                    className="w-full"
-                    disabled={
-                      isSubmitting || (kycStatus === 'pending' && !forceDetails)
-                    }
-                    onClick={handleStartVerification}
+                    variant="outline"
+                    role="combobox"
+                    id="accountCountry"
+                    aria-expanded={accountCountryOpen}
+                    className={cn('w-full justify-between', fieldErrors.accountCountry && 'border-destructive')}
                   >
-                    {isSubmitting ? (
-                      <>
-                        <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Ouverture de la vérification...
-                      </>
+                    {accountCountry ? (
+                      <span className="flex items-center gap-2">
+                        <span>{countryOptions.find(c => c.code === accountCountry)?.flag}</span>
+                        <span>{countryOptions.find(c => c.code === accountCountry)?.name || accountCountry}</span>
+                      </span>
                     ) : (
-                      'Vérifier mon identité'
+                      <span className="text-muted-foreground">Sélectionnez un pays</span>
                     )}
+                    <IconChevronDown className="h-4 w-4 opacity-50" />
                   </Button>
-                  {formError && (
-                    <p className="text-sm text-destructive">{formError}</p>
-                  )}
-                </>
-              )}
-            {displayStatus === 'pending' && !forceDetails && (
-              <Alert className="border-primary/20 bg-primary/5">
-                <IconClock className="h-4 w-4" />
-                <AlertTitle>Merci, votre vérification est en cours</AlertTitle>
-                <AlertDescription className="space-y-3">
-                  <p>
-                    Nous analysons vos documents. Vous pouvez revenir plus tard,
-                    l&apos;application se mettra à jour automatiquement.
-                  </p>
-                  <Button asChild size="sm">
-                    <Link href="/dashboard">Retour au tableau de bord</Link>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="start" sideOffset={4} className="w-[--radix-popover-trigger-width] p-0">
+                  <div className="flex items-center gap-2 border-b px-3 py-2">
+                    <IconSearch className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher un pays..."
+                      value={accountCountrySearch}
+                      onChange={e => setAccountCountrySearch(e.target.value)}
+                      className="h-8 border-0 px-0 focus-visible:ring-0"
+                    />
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {filteredConnectCountries.length > 0 ? (
+                      filteredConnectCountries.map(country => (
+                        <button
+                          key={country.code}
+                          type="button"
+                          className={cn('flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent', accountCountry === country.code && 'bg-accent')}
+                          onClick={() => { setAccountCountry(country.code); setAccountCountryOpen(false); setAccountCountrySearch(''); clearFieldError('accountCountry') }}
+                        >
+                          <span>{country.flag}</span>
+                          <span>{country.name}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">{country.code}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">Aucun pays trouvé.</p>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              {fieldErrors.accountCountry && <p className="text-xs text-destructive">{fieldErrors.accountCountry}</p>}
+            </div>
+
+            {/* Pays du document */}
+            <div className="space-y-2">
+              <Label htmlFor="documentCountry">Pays d&apos;émission du document</Label>
+              <Popover
+                open={documentCountryOpen}
+                onOpenChange={open => {
+                  setDocumentCountryOpen(open)
+                  if (!open) setDocumentCountrySearch('')
+                }}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    id="documentCountry"
+                    aria-expanded={documentCountryOpen}
+                    className={cn('w-full justify-between', fieldErrors.documentCountry && 'border-destructive')}
+                  >
+                    {documentCountry ? (
+                      <span className="flex items-center gap-2">
+                        <span>{allCountryOptions.find(c => c.code === documentCountry)?.flag}</span>
+                        <span>{allCountryOptions.find(c => c.code === documentCountry)?.name || documentCountry}</span>
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">Sélectionnez un pays</span>
+                    )}
+                    <IconChevronDown className="h-4 w-4 opacity-50" />
                   </Button>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="start" sideOffset={4} className="w-[--radix-popover-trigger-width] p-0">
+                  <div className="flex items-center gap-2 border-b px-3 py-2">
+                    <IconSearch className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher un pays..."
+                      value={documentCountrySearch}
+                      onChange={e => setDocumentCountrySearch(e.target.value)}
+                      className="h-8 border-0 px-0 focus-visible:ring-0"
+                    />
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {filteredDocumentCountries.length > 0 ? (
+                      filteredDocumentCountries.map(country => (
+                        <button
+                          key={country.code}
+                          type="button"
+                          className={cn('flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition hover:bg-accent', documentCountry === country.code && 'bg-accent')}
+                          onClick={() => { setDocumentCountry(country.code); setDocumentCountryOpen(false); setDocumentCountrySearch(''); clearFieldError('documentCountry') }}
+                        >
+                          <span>{country.flag}</span>
+                          <span>{country.name}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">{country.code}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-3 py-2 text-sm text-muted-foreground">Aucun pays trouvé.</p>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              {fieldErrors.documentCountry && <p className="text-xs text-destructive">{fieldErrors.documentCountry}</p>}
+            </div>
+
+            {/* Type de document */}
+            <div className="space-y-2">
+              <Label htmlFor="documentType">Type de document</Label>
+              <Select value={documentType} onValueChange={v => { setDocumentType(v as DocumentType); clearFieldError('documentType') }}>
+                <SelectTrigger id="documentType" className={cn('w-full', fieldErrors.documentType && 'border-destructive')}>
+                  <SelectValue placeholder="Sélectionnez un type de document" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="passport">Passeport</SelectItem>
+                  <SelectItem value="national_id">Carte d&apos;identité nationale</SelectItem>
+                </SelectContent>
+              </Select>
+              {fieldErrors.documentType && <p className="text-xs text-destructive">{fieldErrors.documentType}</p>}
+            </div>
+
+            {/* Informations personnelles */}
+            <div className="space-y-4 rounded-lg border border-border/60 p-4">
+              <p className="text-sm font-semibold">Informations personnelles</p>
+              <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+                <IconAlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <AlertTitle className="text-sm text-amber-800 dark:text-amber-200">
+                  Utilisez vos noms exacts tels qu&apos;ils figurent sur votre document
+                </AlertTitle>
+                <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
+                  Une discordance entraîne le rejet de la vérification.
                 </AlertDescription>
               </Alert>
-            )}
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">Prénom</Label>
+                  <Input
+                    id="firstName"
+                    autoComplete="given-name"
+                    placeholder="Tous vos prénoms"
+                    value={firstName}
+                    onChange={e => { setFirstName(e.target.value); clearFieldError('firstName') }}
+                    aria-invalid={Boolean(fieldErrors.firstName)}
+                    className={cn(fieldErrors.firstName && 'border-destructive')}
+                  />
+                  {fieldErrors.firstName && <p className="text-xs text-destructive">{fieldErrors.firstName}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Nom</Label>
+                  <Input
+                    id="lastName"
+                    autoComplete="family-name"
+                    placeholder="Nom de famille"
+                    value={lastName}
+                    onChange={e => { setLastName(e.target.value); clearFieldError('lastName') }}
+                    aria-invalid={Boolean(fieldErrors.lastName)}
+                    className={cn(fieldErrors.lastName && 'border-destructive')}
+                  />
+                  {fieldErrors.lastName && <p className="text-xs text-destructive">{fieldErrors.lastName}</p>}
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={e => { setEmail(e.target.value); clearFieldError('email') }}
+                    aria-invalid={Boolean(fieldErrors.email)}
+                    className={cn(fieldErrors.email && 'border-destructive')}
+                    disabled
+                  />
+                  {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Téléphone</Label>
+                  <div className="flex gap-2">
+                    <Select value={dialCode} onValueChange={setDialCode}>
+                      <SelectTrigger className="w-24 shrink-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="+33">+33</SelectItem>
+                        <SelectItem value="+32">+32</SelectItem>
+                        <SelectItem value="+41">+41</SelectItem>
+                        <SelectItem value="+44">+44</SelectItem>
+                        <SelectItem value="+49">+49</SelectItem>
+                        <SelectItem value="+229">+229</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex-1">
+                      <Input
+                        id="phone"
+                        autoComplete="tel-local"
+                        placeholder="6 12 34 56 78"
+                        value={phone}
+                        onChange={e => { setPhone(e.target.value); clearFieldError('phone') }}
+                        aria-invalid={Boolean(fieldErrors.phone)}
+                        className={cn(fieldErrors.phone && 'border-destructive')}
+                      />
+                    </div>
+                  </div>
+                  {fieldErrors.phone && <p className="text-xs text-destructive">{fieldErrors.phone}</p>}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="birthDate">Date de naissance</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  autoComplete="bday"
+                  value={birthDate}
+                  onChange={e => { setBirthDate(e.target.value); clearFieldError('birthDate') }}
+                  aria-invalid={Boolean(fieldErrors.birthDate)}
+                  className={cn(fieldErrors.birthDate && 'border-destructive')}
+                />
+                {fieldErrors.birthDate && <p className="text-xs text-destructive">{fieldErrors.birthDate}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Adresse <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
+                <Input
+                  id="address"
+                  autoComplete="street-address"
+                  placeholder="Adresse"
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ville <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
+                  <Input
+                    id="city"
+                    autoComplete="address-level2"
+                    placeholder="Ville"
+                    value={city}
+                    onChange={e => setCity(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Code postal <span className="text-muted-foreground font-normal">(facultatif)</span></Label>
+                  <Input
+                    id="postalCode"
+                    autoComplete="postal-code"
+                    placeholder="Code postal"
+                    value={postalCode}
+                    onChange={e => setPostalCode(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Vos données sont traitées de façon sécurisée.{' '}
+              <Link href="/cgv" className="underline hover:text-foreground">Voir nos CGU</Link>.
+            </p>
+
+            <div className="space-y-2">
+              <div className={cn(
+                'flex items-start gap-3 rounded-lg border border-border/60 px-4 py-3 text-sm',
+                fieldErrors.confirmIdentity && 'border-destructive'
+              )}>
+                <Checkbox
+                  id="confirmIdentity"
+                  checked={confirmIdentity}
+                  onCheckedChange={v => { setConfirmIdentity(Boolean(v)); clearFieldError('confirmIdentity') }}
+                />
+                <Label htmlFor="confirmIdentity" className="cursor-pointer text-sm font-normal leading-5">
+                  J&apos;accepte les{' '}
+                  <Link href="/cgv" className="underline hover:text-foreground" onClick={e => e.stopPropagation()}>
+                    Conditions Générales d&apos;Utilisation
+                  </Link>{' '}
+                  et confirme que les informations sont exactes.
+                </Label>
+              </div>
+              {fieldErrors.confirmIdentity && <p className="text-xs text-destructive">{fieldErrors.confirmIdentity}</p>}
+            </div>
+
+            <Button
+              type="button"
+              className="w-full"
+              disabled={isSubmitting}
+              onClick={handleSubmit}
+            >
+              {isSubmitting ? (
+                <>
+                  <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Envoi en cours...
+                </>
+              ) : (
+                'Soumettre pour vérification'
+              )}
+            </Button>
+
+            {formError && <p className="text-sm text-destructive">{formError}</p>}
           </CardContent>
         </Card>
       )}
-
-      {/* Modal de confirmation avant lancement de la vérification */}
-      <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmer vos informations</DialogTitle>
-            <DialogDescription>
-              Vérifiez les informations ci-dessous avant de lancer la
-              vérification d&apos;identité.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Pays de résidence</span>
-              <span className="font-medium">
-                {effectiveAccountCountry || '—'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Pays du document</span>
-              <span className="font-medium">
-                {effectiveDocumentCountry || '—'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Type de document</span>
-              <span className="font-medium">
-                {effectiveDocumentType === 'passport'
-                  ? 'Passeport'
-                  : effectiveDocumentType === 'national_id'
-                    ? "Carte d'identité nationale"
-                    : '—'}
-              </span>
-            </div>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowConfirmModal(false)}
-            >
-              Modifier
-            </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                setShowConfirmModal(false)
-                handlePrepareAccount()
-              }}
-              disabled={isPreparingAccount}
-            >
-              Confirmer et continuer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
