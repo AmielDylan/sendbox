@@ -5,48 +5,18 @@ import { IconArrowRight, IconCheck } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
-import { useSubscriptionStatus } from '@/hooks/use-subscription-status'
-import { SubscriptionActionButton } from '@/components/features/subscriptions/SubscriptionActionButton'
 
 const perks = [
-  'Publication de trajets illimitée',
-  'Profil voyageur vérifié',
-  'Tableau de bord revenus & demandes',
-  'Support prioritaire',
+  'Publication de trajets gratuite',
+  'Profil voyageur vérifié (KYC)',
+  'Système de confiance horodaté',
+  'Notes et avis mutuels',
 ]
 
-const formatDate = (value?: string | null) => {
-  if (!value) return null
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return null
-  }
-
-  return date.toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
 export function PricingSection() {
-  const { user, profile } = useAuth()
-  const { data } = useSubscriptionStatus()
-  const detailsHref = user ? '/dashboard/reglages/abonnement' : '/register'
-  const detailsLabel = user ? 'Voir mon abonnement' : 'Créer mon compte'
-
-  const status = data?.status ?? profile?.subscription_status ?? 'trialing'
-  const trialEndsAt = formatDate(data?.trial_ends_at ?? profile?.trial_ends_at)
-  const trialDaysRemaining = data?.trial_days_remaining ?? null
-
-  const contextualLine = !user
-    ? 'Inscription gratuite avec 14 jours d’essai.'
-    : status === 'active'
-      ? 'Votre abonnement est actif.'
-      : status === 'trialing' && trialDaysRemaining !== null
-        ? `Essai en cours: ${trialDaysRemaining} jour${trialDaysRemaining > 1 ? 's' : ''} restant${trialDaysRemaining > 1 ? 's' : ''}${trialEndsAt ? `, jusqu’au ${trialEndsAt}` : ''}.`
-        : 'La publication nécessite un abonnement voyageur actif.'
+  const { user } = useAuth()
+  const ctaHref = user ? '/dashboard/annonces/new' : '/register'
+  const ctaLabel = user ? 'Publier un trajet' : 'Créer mon compte'
 
   return (
     <section className="py-20 sm:py-24">
@@ -56,14 +26,15 @@ export function PricingSection() {
             variant="outline"
             className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
           >
-            Abonnement voyageur
+            Accès gratuit
           </Badge>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            Publiez sans friction après l’essai.
+            Gratuit. Basé sur la confiance.
           </h2>
           <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-            Une offre simple pour continuer à publier vos trajets et garder
-            votre activité visible.
+            Sendbox ne prend aucun frais sur les transactions. Chaque échange
+            est horodaté, documenté et noté mutuellement pour bâtir une
+            réputation fiable.
           </p>
         </div>
 
@@ -71,38 +42,28 @@ export function PricingSection() {
           <div className="space-y-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-sm">
-                14 jours d’essai
+                Sans frais de plateforme
               </p>
               <div className="mt-3 flex items-end gap-3">
                 <p className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  4,99 €
+                  0 €
                 </p>
                 <p className="pb-1.5 text-sm text-muted-foreground sm:pb-2 sm:text-base">
-                  / mois
+                  / transaction
                 </p>
               </div>
             </div>
 
             <p className="text-sm leading-6 text-muted-foreground">
-              {contextualLine}
+              {user
+                ? 'Vous pouvez publier et gérer vos trajets gratuitement.'
+                : 'Inscription gratuite. Commencez à publier dès la vérification de votre identité.'}
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <SubscriptionActionButton
-                className="w-full sm:w-auto"
-                guestLabel="Démarrer l’essai"
-                subscribeLabel="Activer l’abonnement"
-                manageLabel="Gérer mon abonnement"
-                size="lg"
-              />
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto"
-              >
-                <Link href={detailsHref}>
-                  {detailsLabel}
+              <Button asChild size="lg" className="w-full sm:w-auto">
+                <Link href={ctaHref}>
+                  {ctaLabel}
                   <IconArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -124,8 +85,8 @@ export function PricingSection() {
             </ul>
 
             <p className="border-t border-border/60 pt-4 text-sm leading-6 text-muted-foreground">
-              + 3 % de frais plateforme par transaction validée. L’abonnement
-              s’active à la première publication.
+              Les prix entre expéditeur et voyageur sont librement négociés.
+              Sendbox ne perçoit aucune commission.
             </p>
           </div>
         </div>

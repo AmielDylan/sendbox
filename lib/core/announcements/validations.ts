@@ -1,19 +1,16 @@
 /**
  * Schémas de validation Zod pour les annonces
+ * V1 : corridor fixe France → Bénin
  */
 
 import { z } from 'zod'
 
-// Pays disponibles
-export const COUNTRIES = ['FR', 'BJ'] as const
-export type Country = (typeof COUNTRIES)[number]
+export const DEPARTURE_COUNTRY = 'FR' as const
+export const ARRIVAL_COUNTRY = 'BJ' as const
 
-// Schéma de création d'annonce (avec validation de date future)
 export const createAnnouncementSchema = z
   .object({
-    departure_country: z.enum(COUNTRIES, {
-      message: 'Pays de départ invalide',
-    }),
+    departure_country: z.literal(DEPARTURE_COUNTRY),
     departure_city: z
       .string()
       .min(2, 'Ville de départ requise (minimum 2 caractères)')
@@ -21,9 +18,7 @@ export const createAnnouncementSchema = z
     departure_date: z.date({
       message: 'Date de départ requise et valide',
     }),
-    arrival_country: z.enum(COUNTRIES, {
-      message: "Pays d'arrivée invalide",
-    }),
+    arrival_country: z.literal(ARRIVAL_COUNTRY),
     arrival_city: z
       .string()
       .min(2, "Ville d'arrivée requise (minimum 2 caractères)")
@@ -44,10 +39,6 @@ export const createAnnouncementSchema = z
     message: "La date d'arrivée doit être après le départ",
     path: ['arrival_date'],
   })
-  .refine(data => data.departure_country !== data.arrival_country, {
-    message: "Pays de départ et d'arrivée doivent être différents",
-    path: ['arrival_country'],
-  })
   .refine(
     data => {
       const today = new Date()
@@ -60,12 +51,9 @@ export const createAnnouncementSchema = z
     }
   )
 
-// Schéma de mise à jour d'annonce (sans validation de date future pour permettre la modification)
 export const updateAnnouncementSchema = z
   .object({
-    departure_country: z.enum(COUNTRIES, {
-      message: 'Pays de départ invalide',
-    }),
+    departure_country: z.literal(DEPARTURE_COUNTRY),
     departure_city: z
       .string()
       .min(2, 'Ville de départ requise (minimum 2 caractères)')
@@ -73,9 +61,7 @@ export const updateAnnouncementSchema = z
     departure_date: z.date({
       message: 'Date de départ requise et valide',
     }),
-    arrival_country: z.enum(COUNTRIES, {
-      message: "Pays d'arrivée invalide",
-    }),
+    arrival_country: z.literal(ARRIVAL_COUNTRY),
     arrival_city: z
       .string()
       .min(2, "Ville d'arrivée requise (minimum 2 caractères)")
@@ -93,10 +79,6 @@ export const updateAnnouncementSchema = z
   .refine(data => data.arrival_date > data.departure_date, {
     message: "La date d'arrivée doit être après le départ",
     path: ['arrival_date'],
-  })
-  .refine(data => data.departure_country !== data.arrival_country, {
-    message: "Pays de départ et d'arrivée doivent être différents",
-    path: ['arrival_country'],
   })
 
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>

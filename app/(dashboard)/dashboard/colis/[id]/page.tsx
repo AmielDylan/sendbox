@@ -4,7 +4,7 @@
 
 'use client'
 
-import { use, useCallback, useEffect, useRef, useState } from 'react'
+import { use, useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/shared/db/client'
@@ -22,7 +22,6 @@ import {
   IconLock,
   IconFileText,
   IconQrcode,
-  IconCreditCard,
   IconCircleCheck,
   IconStar,
   IconArrowLeft,
@@ -43,7 +42,6 @@ import {
 import type { PublicProfile } from '@/lib/shared/db/queries/public-profiles'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { arePaymentsEnabled } from '@/lib/shared/config/features'
 
 type BookingStatus =
   | 'pending'
@@ -95,14 +93,11 @@ interface BookingDetailPageProps {
 export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   const { id } = use(params)
   const router = useRouter()
-  const paymentsEnabled = arePaymentsEnabled()
   const [booking, setBooking] = useState<BookingDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [isAccepting, setIsAccepting] = useState(false)
-  const [isCheckingPayment, setIsCheckingPayment] = useState(false)
-  const paymentConfirmedRef = useRef(false)
 
   async function refreshProfiles(senderId: string, travelerId: string) {
     const supabase = createClient()
@@ -216,87 +211,9 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     }
   }, [id, router])
 
-  const handlePaymentSuccess = useCallback(async () => {
-    if (!paymentsEnabled) {
-      return
-    }
-
-    setIsCheckingPayment(true)
-    toast.info('Vérification du paiement en cours...')
-
-    let attempts = 0
-    const maxAttempts = 20
-    const pollInterval = 3000 // 3 secondes
-
-    const checkPayment = async (): Promise<void> => {
-      attempts++
-
-      try {
-        const supabase = createClient()
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('status, paid_at')
-          .eq('id', id)
-          .single()
-
-        if (error) throw error
-
-        if (data.status === 'paid' || data.paid_at) {
-          // Paiement confirmé
-          if (!paymentConfirmedRef.current) {
-            paymentConfirmedRef.current = true
-            toast.success(
-              'Paiement confirmé ! Vous pouvez maintenant accéder au contrat et au QR code.'
-            )
-          }
-          setIsCheckingPayment(false)
-
-          // Nettoyer l'URL
-          window.history.replaceState({}, '', `/dashboard/colis/${id}`)
-
-          // Recharger les détails complets
-          await loadBookingDetails()
-          return
-        }
-
-        if (attempts < maxAttempts) {
-          // Continuer le polling
-          setTimeout(() => checkPayment(), pollInterval)
-        } else {
-          // Timeout atteint, on laisse la page se mettre à jour via le realtime
-          toast.info(
-            'Le paiement est en cours de confirmation. La page se mettra à jour automatiquement.',
-            { duration: 5000 }
-          )
-          setIsCheckingPayment(false)
-          window.history.replaceState({}, '', `/dashboard/colis/${id}`)
-        }
-      } catch (error) {
-        console.error('Error checking payment:', error)
-        toast.error('Erreur lors de la vérification du paiement')
-        setIsCheckingPayment(false)
-        window.history.replaceState({}, '', `/dashboard/colis/${id}`)
-      }
-    }
-
-    // Lancer le polling
-    await checkPayment()
-  }, [id, loadBookingDetails, paymentsEnabled])
-
   useEffect(() => {
     loadBookingDetails()
   }, [loadBookingDetails])
-
-  useEffect(() => {
-    if (!paymentsEnabled) {
-      return
-    }
-
-    const searchParams = new URLSearchParams(window.location.search)
-    if (searchParams.get('payment') === 'success' && !isCheckingPayment) {
-      void handlePaymentSuccess()
-    }
-  }, [handlePaymentSuccess, isCheckingPayment, paymentsEnabled])
 
   useEffect(() => {
     if (!id) {
@@ -325,19 +242,6 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
           })
 
           void loadBookingDetails()
-
-          if (
-            paymentsEnabled &&
-            (updated.status === 'paid' || updated.paid_at) &&
-            !paymentConfirmedRef.current
-          ) {
-            paymentConfirmedRef.current = true
-            setIsCheckingPayment(false)
-            toast.success(
-              'Paiement confirmé ! Vous pouvez maintenant accéder au contrat et au QR code.'
-            )
-            window.history.replaceState({}, '', `/dashboard/colis/${id}`)
-          }
         }
       )
       .subscribe()
@@ -345,7 +249,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [id, paymentsEnabled, loadBookingDetails])
+  }, [id, loadBookingDetails])
 
   useEffect(() => {
     if (!id || !currentUserId) {
@@ -515,24 +419,6 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
         }
       />
 
-      {paymentsEnabled && isCheckingPayment && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-4">
-            <div className="flex items-start gap-3">
-              <IconLoader2 className="h-5 w-5 animate-spin text-primary mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">
-                  Paiement en cours de confirmation
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  La page se mettra à jour automatiquement dès validation.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-start">
         <div className="space-y-6">
           <Card>
@@ -686,20 +572,10 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                 {/* Actions Expéditeur */}
                 {isSender && booking.status === 'accepted' && (
-                  <>
-                    {paymentsEnabled && (
-                      <Button asChild className="w-full">
-                        <Link href={`/dashboard/colis/${booking.id}/paiement`}>
-                          <IconCreditCard className="mr-2 h-4 w-4" />
-                          Payer maintenant
-                        </Link>
-                      </Button>
-                    )}
-                    <CancelBookingDialog
-                      bookingId={booking.id}
-                      description="La réservation est acceptée mais pas encore payée. Vous pouvez l'annuler en indiquant une raison."
-                    />
-                  </>
+                  <CancelBookingDialog
+                    bookingId={booking.id}
+                    description="La réservation est acceptée. Vous pouvez l'annuler en indiquant une raison."
+                  />
                 )}
 
                 {isSender &&

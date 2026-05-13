@@ -1,36 +1,30 @@
 /**
- * Utilities pour gérer les pays
+ * Pays couverts par Sendbox V1 :
+ * - Départ : pays européens couverts par Stripe Connect
+ * - Arrivée : Bénin (BJ)
  */
 
 export const COUNTRY_NAMES: Record<string, string> = {
   FR: 'France',
-  BJ: 'Bénin',
-  CI: "Côte d'Ivoire",
-  SN: 'Sénégal',
-  TG: 'Togo',
-  BF: 'Burkina Faso',
-  ML: 'Mali',
-  NE: 'Niger',
-  GN: 'Guinée',
-  CM: 'Cameroun',
-  CD: 'République Démocratique du Congo',
-  CG: 'Congo',
-  GA: 'Gabon',
-  MA: 'Maroc',
-  DZ: 'Algérie',
-  TN: 'Tunisie',
   BE: 'Belgique',
   CH: 'Suisse',
-  CA: 'Canada',
+  DE: 'Allemagne',
+  IT: 'Italie',
+  ES: 'Espagne',
+  NL: 'Pays-Bas',
+  PT: 'Portugal',
   LU: 'Luxembourg',
-  MC: 'Monaco',
+  AT: 'Autriche',
+  IE: 'Irlande',
+  GB: 'Royaume-Uni',
+  SE: 'Suède',
+  NO: 'Norvège',
+  DK: 'Danemark',
+  FI: 'Finlande',
+  // Destination
+  BJ: 'Bénin',
 }
 
-/**
- * Convertit un code pays ISO en nom complet
- * @param countryCode Code pays ISO (FR, BJ, etc.)
- * @returns Nom complet du pays en français
- */
 export function getCountryName(countryCode: string): string {
   return COUNTRY_NAMES[countryCode] || countryCode
 }

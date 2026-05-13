@@ -134,11 +134,15 @@ function getBookingStatusLabel(status: BookingBase['status']): string {
   const labels: Record<BookingBase['status'], string> = {
     pending: 'En attente',
     accepted: 'Accepté',
+    matched: 'Appariée',
+    confirmed: 'Confirmée',
     refused: 'Refusé',
     paid: 'Payé',
     deposited: 'Déposé',
+    handed: 'Remise effectuée',
     in_transit: 'En transit',
     delivered: 'Livré',
+    completed: 'Terminée',
     disputed: 'Contesté',
     cancelled: 'Annulé',
   }

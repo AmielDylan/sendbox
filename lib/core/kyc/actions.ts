@@ -1,5 +1,6 @@
 /**
  * Server Actions pour le KYC
+ * V1 : vérification manuelle par admin (sans Stripe Identity)
  */
 
 'use server'
@@ -9,356 +10,13 @@ import { createClient } from '@/lib/shared/db/server'
 import {
   kycReviewSchema,
   type KYCReviewInput,
-  stripeIdentitySchema,
   type StripeIdentityInput,
 } from '@/lib/core/kyc/validations'
-import { createIdentityVerificationSession } from '@/lib/shared/services/stripe/identity'
-import {
-  createConnectedAccount,
-  getAccountRepresentative,
-  isStripeAccountMissing,
-  isStripeCountryUnsupported,
-  isStripeLiveMode,
-  type AccountTokenData,
-} from '@/lib/services/stripe-connect'
-import { stripe } from '@/lib/shared/services/stripe/config'
-import {
-  getStripeConnectAllowedCountries,
-  resolveStripeConnectCountry,
-} from '@/lib/shared/stripe/connect-allowed'
-import { normalizeCountryCode } from '@/lib/shared/stripe/connect-countries'
 import { isResidenceCountry } from '@/lib/shared/kyc/residence-countries'
-import {
-  getStripeIdentityDocumentTypes,
-  isStripeIdentityCountrySupported,
-} from '@/lib/shared/stripe/identity-documents'
-import type Stripe from 'stripe'
 import { sendEmail } from '@/lib/shared/services/email/client'
 
-const parseDob = (value?: string | null) => {
-  if (!value) return null
-  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/)
-  if (!match) return null
-  const [, year, month, day] = match
-  return {
-    day: Number(day),
-    month: Number(month),
-    year: Number(year),
-  }
-}
-
 /**
- * Prépare le compte Stripe Connect pour le pays du document KYC
- * (création ou recréation si le pays change)
- */
-export async function prepareKYCAccount(input: {
-  accountCountry: string
-  documentCountry: string
-  documentType?: StripeIdentityInput['documentType']
-  accountTokenId?: string
-}) {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return {
-      error: 'Vous devez être connecté pour vérifier votre identité',
-    }
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select(
-      'id, role, email, stripe_connect_account_id, country, payout_method, payout_status'
-    )
-    .eq('id', user.id)
-    .single()
-
-  if (profileError || !profile) {
-    return {
-      error: 'Profil introuvable',
-    }
-  }
-
-  if (profile.role === 'admin') {
-    return {
-      error: 'Accès réservé aux utilisateurs',
-    }
-  }
-
-  const normalizedAccountCountry = normalizeCountryCode(input.accountCountry)
-  const normalizedDocumentCountry = normalizeCountryCode(input.documentCountry)
-
-  if (!normalizedAccountCountry) {
-    await supabase
-      .from('profiles')
-      .update({
-        payout_error_code: 'account_country_missing',
-        payout_error_message: 'Pays de résidence requis',
-        payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method ? { payout_status: 'disabled' } : {}),
-      } as any)
-      .eq('id', user.id)
-    return {
-      error: 'Pays de résidence requis',
-    }
-  }
-
-  if (!normalizedDocumentCountry) {
-    await supabase
-      .from('profiles')
-      .update({
-        payout_error_code: 'document_country_missing',
-        payout_error_message: 'Pays du document requis',
-        payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method ? { payout_status: 'disabled' } : {}),
-      } as any)
-      .eq('id', user.id)
-    return {
-      error: 'Pays du document requis',
-    }
-  }
-
-  if (!isResidenceCountry(normalizedAccountCountry)) {
-    await supabase
-      .from('profiles')
-      .update({
-        payout_error_code: 'residence_country_unsupported',
-        payout_error_message:
-          'Pays de résidence non pris en charge pour le moment.',
-        payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method ? { payout_status: 'disabled' } : {}),
-      } as any)
-      .eq('id', user.id)
-    return {
-      error: 'Pays de résidence non pris en charge pour le moment.',
-    }
-  }
-
-  if (!isStripeIdentityCountrySupported(normalizedDocumentCountry)) {
-    await supabase
-      .from('profiles')
-      .update({
-        payout_error_code: 'identity_country_unsupported',
-        payout_error_message:
-          "La vérification d'identité n'est pas disponible pour ce pays.",
-        payout_error_at: new Date().toISOString(),
-        ...(profile.payout_method ? { payout_status: 'disabled' } : {}),
-      } as any)
-      .eq('id', user.id)
-    return {
-      error: "La vérification d'identité n'est pas disponible pour ce pays.",
-    }
-  }
-
-  const allowedCountries = getStripeConnectAllowedCountries()
-  const targetCountry = resolveStripeConnectCountry(
-    normalizedAccountCountry,
-    allowedCountries
-  )
-
-  if (!targetCountry) {
-    const localProvider =
-      normalizedAccountCountry === 'BJ' ? 'fedapay' : 'flutterwave'
-    const updatePayload: Record<string, unknown> = {
-      payout_provider: localProvider,
-      stripe_connect_account_id: null,
-      stripe_payouts_enabled: false,
-      stripe_onboarding_completed: false,
-      stripe_requirements: null,
-      payout_method: null,
-      payout_status: 'disabled',
-      wallet_operator: null,
-      wallet_phone: null,
-      wallet_verified_at: null,
-      wallet_otp_code: null,
-      wallet_otp_expires_at: null,
-      flutterwave_subaccount_id: null,
-      flutterwave_recipient_id: null,
-      flutterwave_recipient_type: null,
-      flutterwave_recipient_currency: null,
-      fedapay_id: null,
-      country: normalizedAccountCountry,
-      kyc_status: 'incomplete',
-      kyc_submitted_at: null,
-      kyc_reviewed_at: null,
-      kyc_rejection_reason: null,
-      kyc_document_type: input.documentType ?? null,
-      kyc_nationality: normalizedDocumentCountry,
-      payout_error_code: null,
-      payout_error_message: null,
-      payout_error_at: null,
-    }
-
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update(updatePayload as any)
-      .eq('id', user.id)
-
-    if (updateError) {
-      return {
-        error: "Impossible d'enregistrer le fournisseur local",
-      }
-    }
-
-    if (profile.stripe_connect_account_id) {
-      try {
-        await stripe.accounts.del(profile.stripe_connect_account_id)
-      } catch (error) {
-        console.warn('Failed to delete previous Stripe account:', error)
-      }
-    }
-
-    return {
-      success: true,
-      status: 'local',
-      accountId: null,
-    }
-  }
-
-  const contactEmail = profile.email || user.email || undefined
-  const accountTokenData: AccountTokenData = {
-    business_type: 'individual',
-  }
-
-  const createAccount = async () => {
-    try {
-      const accountId = await createConnectedAccount(
-        profile.id,
-        contactEmail,
-        targetCountry,
-        accountTokenData,
-        'custom',
-        input.accountTokenId
-      )
-      return { accountId }
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === 'ACCOUNT_TOKEN_REQUIRED'
-      ) {
-        return {
-          accountId: null,
-          error:
-            'Impossible de préparer le compte de paiement. Réessayez la vérification.',
-        }
-      }
-      if (isStripeCountryUnsupported(error)) {
-        return {
-          accountId: null,
-          error:
-            "Stripe Connect n'est pas disponible pour ce pays pour le moment.",
-        }
-      }
-      throw error
-    }
-  }
-
-  let accountId = profile.stripe_connect_account_id || null
-  let previousAccountId: string | null = null
-  let status: 'ready' | 'created' | 'recreated' = 'ready'
-
-  if (!accountId) {
-    const created = await createAccount()
-    if (created.error) {
-      return { error: created.error }
-    }
-    accountId = created.accountId
-    status = 'created'
-  } else {
-    try {
-      const { account } = await getAccountRepresentative(accountId)
-      if (account?.country && account.country !== targetCountry) {
-        previousAccountId = accountId
-        const created = await createAccount()
-        if (created.error) {
-          return { error: created.error }
-        }
-        accountId = created.accountId
-        status = 'recreated'
-      }
-    } catch (error) {
-      if (isStripeAccountMissing(error)) {
-        const created = await createAccount()
-        if (created.error) {
-          return { error: created.error }
-        }
-        accountId = created.accountId
-        status = 'created'
-      } else {
-        throw error
-      }
-    }
-  }
-
-  if (!accountId) {
-    return {
-      error: "Impossible d'initialiser le compte de paiement",
-    }
-  }
-
-  const updatePayload: Record<string, unknown> = {
-    payout_provider: 'stripe',
-    stripe_connect_account_id: accountId,
-    stripe_payouts_enabled: false,
-    stripe_onboarding_completed: false,
-    stripe_requirements: null,
-    flutterwave_subaccount_id: null,
-    flutterwave_recipient_id: null,
-    flutterwave_recipient_type: null,
-    flutterwave_recipient_currency: null,
-    fedapay_id: null,
-    payout_method: null,
-    payout_status: 'disabled',
-    wallet_operator: null,
-    wallet_phone: null,
-    wallet_verified_at: null,
-    wallet_otp_code: null,
-    wallet_otp_expires_at: null,
-    country: targetCountry,
-    kyc_status: 'incomplete',
-    kyc_submitted_at: null,
-    kyc_reviewed_at: null,
-    kyc_rejection_reason: null,
-    kyc_document_type: input.documentType ?? null,
-    kyc_nationality: normalizedDocumentCountry,
-    payout_error_code: null,
-    payout_error_message: null,
-    payout_error_at: null,
-  }
-
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update(updatePayload as any)
-    .eq('id', user.id)
-
-  if (updateError) {
-    return {
-      error: "Impossible d'enregistrer le compte de paiement",
-    }
-  }
-
-  if (previousAccountId) {
-    try {
-      await stripe.accounts.del(previousAccountId)
-    } catch (error) {
-      console.warn('Failed to delete previous Stripe account:', error)
-    }
-  }
-
-  return {
-    success: true,
-    status,
-    accountId,
-  }
-}
-
-/**
- * Démarre une vérification Stripe Identity
+ * Soumet les informations KYC (profil + pays) pour vérification manuelle
  */
 export async function startKYCVerification(input: StripeIdentityInput) {
   const supabase = await createClient()
@@ -369,331 +27,62 @@ export async function startKYCVerification(input: StripeIdentityInput) {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return {
-      error: 'Vous devez être connecté pour vérifier votre identité',
-    }
-  }
-
-  const validation = stripeIdentitySchema.safeParse(input)
-  if (!validation.success) {
-    return {
-      error: validation.error.issues[0]?.message || 'Données invalides',
-      field: String(validation.error.issues[0]?.path[0] || 'unknown'),
-    }
+    return { error: 'Vous devez être connecté pour vérifier votre identité' }
   }
 
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select(
-      'id, email, kyc_status, role, payout_provider, stripe_connect_account_id, firstname, lastname, phone, address, city, postal_code, birthday, country'
-    )
+    .select('id, role, kyc_status')
     .eq('id', user.id)
     .single()
 
   if (profileError || !profile) {
-    return {
-      error: 'Profil introuvable',
-    }
-  }
-
-  if (profile.kyc_status === 'approved') {
-    return {
-      error: 'Votre identité est déjà vérifiée',
-    }
+    return { error: 'Profil introuvable' }
   }
 
   if (profile.role === 'admin') {
-    return {
-      error: 'Accès réservé aux utilisateurs',
-    }
+    return { error: 'Accès réservé aux utilisateurs' }
   }
 
-  const email = profile.email || user.email || null
+  if (profile.kyc_status === 'approved') {
+    return { error: 'Votre identité est déjà vérifiée' }
+  }
 
-  try {
-    const {
-      firstName,
-      lastName,
-      email: inputEmail,
-      phone: inputPhone,
-      accountCountry,
-      documentType,
-      documentCountry,
-      birthday,
-      address,
-      city,
-      postalCode,
-      accountTokenId,
-    } = validation.data
+  const normalizedCountry = (input.accountCountry || '').toUpperCase().trim()
+  if (!isResidenceCountry(normalizedCountry)) {
+    return { error: 'Pays de résidence non pris en charge pour le moment.' }
+  }
 
-    const normalizedDocumentCountry = normalizeCountryCode(documentCountry)
-    const normalizedAccountCountry = normalizeCountryCode(accountCountry)
-
-    if (!normalizedAccountCountry) {
-      return {
-        error: 'Pays de résidence requis',
-      }
-    }
-
-    if (!normalizedDocumentCountry) {
-      return {
-        error: 'Pays du document requis',
-      }
-    }
-
-    if (!isStripeIdentityCountrySupported(normalizedDocumentCountry)) {
-      return {
-        error: "La vérification d'identité n'est pas disponible pour ce pays.",
-      }
-    }
-
-    const allowedDocumentTypes = getStripeIdentityDocumentTypes(
-      normalizedDocumentCountry
-    )
-    if (!allowedDocumentTypes.includes(documentType)) {
-      return {
-        error: 'Type de document non supporté pour ce pays.',
-      }
-    }
-
-    const allowedCountries = getStripeConnectAllowedCountries()
-    const targetCountry = resolveStripeConnectCountry(
-      normalizedAccountCountry,
-      allowedCountries
-    )
-    const usesStripe = Boolean(targetCountry)
-
-    const individual: Record<string, unknown> = {}
-    if (firstName?.trim()) {
-      individual.first_name = firstName.trim()
-    } else if (profile.firstname?.trim()) {
-      individual.first_name = profile.firstname.trim()
-    }
-    if (lastName?.trim()) {
-      individual.last_name = lastName.trim()
-    } else if (profile.lastname?.trim()) {
-      individual.last_name = profile.lastname.trim()
-    }
-    if (inputEmail?.trim()) {
-      individual.email = inputEmail.trim()
-    } else if (profile.email?.trim()) {
-      individual.email = profile.email.trim()
-    }
-    if (inputPhone?.trim()) {
-      individual.phone = inputPhone.trim()
-    } else if (profile.phone?.trim()) {
-      individual.phone = profile.phone.trim()
-    }
-
-    const dob = parseDob(birthday || profile.birthday)
-    if (dob) {
-      individual.dob = dob
-    }
-
-    if (address?.trim() && targetCountry) {
-      individual.address = {
-        line1: address.trim(),
-        city: city?.trim() || undefined,
-        postal_code: postalCode?.trim() || undefined,
-        country: targetCountry,
-      }
-    }
-
-    const accountTokenData: AccountTokenData = {
-      business_type: 'individual',
-      individual: Object.keys(individual).length > 0 ? individual : undefined,
-    }
-
-    const accountId = profile.stripe_connect_account_id || null
-    const contactEmail =
-      inputEmail?.trim() || profile.email || user.email || null
-
-    if (!usesStripe) {
-      const localProvider =
-        normalizedAccountCountry === 'BJ' ? 'fedapay' : 'flutterwave'
-      const session = await createIdentityVerificationSession({
-        email: contactEmail,
-        userId: user.id,
-        documentType,
-        documentCountry: normalizedDocumentCountry,
-      })
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          payout_provider: localProvider,
-          kyc_document_type: documentType,
-          kyc_nationality: normalizedDocumentCountry,
-          kyc_rejection_reason: null,
-          firstname: firstName?.trim() || profile.firstname,
-          lastname: lastName?.trim() || profile.lastname,
-          phone: inputPhone?.trim() || profile.phone,
-          address: address?.trim() || profile.address,
-          city: city?.trim() || profile.city,
-          postal_code: postalCode?.trim() || profile.postal_code,
-          birthday: birthday || profile.birthday,
-          country: normalizedAccountCountry || profile.country,
-        })
-        .eq('id', user.id)
-
-      if (updateError) {
-        console.error('Error updating profile KYC metadata:', updateError)
-      }
-
-      return {
-        success: true,
-        verificationClientSecret: session.clientSecret,
-        verificationSessionId: session.id,
-        message: 'Vérification Stripe Identity prête.',
-      }
-    }
-
-    if (!accountId) {
-      return {
-        error:
-          'Compte de paiement manquant. Relancez la préparation avant la vérification.',
-      }
-    }
-
-    let account: Stripe.Account | null = null
-    let personId: string | null = null
-    try {
-      const accountData = await getAccountRepresentative(accountId)
-      account = accountData.account
-      personId = accountData.personId
-    } catch (error) {
-      if (isStripeAccountMissing(error)) {
-        return {
-          error:
-            'Compte de paiement supprimé. Relancez la préparation avant la vérification.',
-        }
-      }
-      throw error
-    }
-
-    if (account?.country && account.country !== targetCountry) {
-      return {
-        error:
-          'Le compte de paiement doit être préparé pour votre pays de résidence.',
-      }
-    }
-
-    if (Object.keys(individual).length > 0) {
-      if (accountTokenId) {
-        await stripe.accounts.update(accountId, {
-          account_token: accountTokenId,
-        })
-      } else if (!isStripeLiveMode()) {
-        const accountToken = await stripe.tokens.create({
-          account: {
-            business_type: 'individual',
-            individual,
-          },
-        })
-
-        await stripe.accounts.update(accountId, {
-          account_token: accountToken.id,
-        })
-      } else {
-        return {
-          error:
-            'Impossible de mettre à jour le compte. Réessayez la vérification.',
-        }
-      }
-    }
-
-    const fallbackProfileUrl = `https://www.gosendbox.com/profil/${user.id}`
-    try {
-      await stripe.accounts.update(accountId, {
-        business_profile: { url: fallbackProfileUrl },
-      })
-    } catch (error) {
-      console.warn('Business profile update failed:', error)
-    }
-
-    if (!personId) {
-      const accountData = await getAccountRepresentative(accountId)
-      personId = accountData.personId
-    }
-
-    if (!personId) {
-      return {
-        error: "Impossible d'identifier la personne à vérifier",
-      }
-    }
-
-    const session = await createIdentityVerificationSession({
-      email: contactEmail,
-      userId: user.id,
-      documentType,
-      documentCountry: normalizedDocumentCountry,
-      relatedPerson: {
-        accountId,
-        personId,
-      },
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({
+      kyc_status: 'pending',
+      kyc_submitted_at: new Date().toISOString(),
+      kyc_document_type: input.documentType,
+      kyc_nationality: (input.documentCountry || '').toUpperCase().trim(),
+      kyc_rejection_reason: null,
+      firstname: input.firstName?.trim() || undefined,
+      lastname: input.lastName?.trim() || undefined,
+      phone: input.phone?.trim() || undefined,
+      address: input.address?.trim() || undefined,
+      city: input.city?.trim() || undefined,
+      postal_code: input.postalCode?.trim() || undefined,
+      birthday: input.birthday || undefined,
+      country: normalizedCountry,
     })
+    .eq('id', user.id)
 
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({
-        payout_provider: 'stripe',
-        kyc_document_type: documentType,
-        kyc_nationality: normalizedDocumentCountry,
-        kyc_rejection_reason: null,
-        firstname: firstName?.trim() || profile.firstname,
-        lastname: lastName?.trim() || profile.lastname,
-        phone: inputPhone?.trim() || profile.phone,
-        address: address?.trim() || profile.address,
-        city: city?.trim() || profile.city,
-        postal_code: postalCode?.trim() || profile.postal_code,
-        birthday: birthday || profile.birthday,
-        country: targetCountry || profile.country,
-      })
-      .eq('id', user.id)
+  if (updateError) {
+    return { error: "Impossible d'enregistrer les informations KYC" }
+  }
 
-    if (updateError) {
-      console.error('Error updating profile KYC metadata:', updateError)
-    }
-
-    return {
-      success: true,
-      verificationClientSecret: session.clientSecret,
-      verificationSessionId: session.id,
-      message: 'Vérification Stripe Identity prête.',
-    }
-  } catch (error) {
-    const stripeMessage =
-      typeof (error as { raw?: { message?: string } })?.raw?.message ===
-      'string'
-        ? (error as { raw?: { message?: string } }).raw!.message
-        : null
-    const genericMessage =
-      error instanceof Error && error.message ? error.message : 'Unknown error'
-    const userMessage =
-      stripeMessage && stripeMessage !== 'Unknown error'
-        ? stripeMessage
-        : genericMessage && genericMessage !== 'Unknown error'
-          ? genericMessage
-          : "La vérification d'identité n'a pas pu démarrer. Réessayez plus tard."
-    console.error('❌ Identity session creation failed:', {
-      error,
-      message: error instanceof Error ? error.message : 'Unknown error',
-      userId: user.id,
-      email,
-      documentType: validation.data.documentType,
-      documentCountry: validation.data.documentCountry,
-      stripeKeyConfigured: !!process.env.STRIPE_SECRET_KEY,
-      stripeKeyPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 7),
-    })
-    return {
-      error: userMessage,
-    }
+  revalidatePath('/dashboard/reglages/kyc')
+  return {
+    success: true,
+    message: 'Vérification soumise. Notre équipe examinera votre dossier sous 24-48h.',
   }
 }
 
-/**
- * Upload et soumission du formulaire KYC
- */
 /**
  * Récupère le statut KYC de l'utilisateur actuel
  */
@@ -705,9 +94,7 @@ export async function getKYCStatus() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return {
-      error: 'Non authentifié',
-    }
+    return { error: 'Non authentifié' }
   }
 
   const { data: profile, error } = await supabase
@@ -717,9 +104,7 @@ export async function getKYCStatus() {
     .single()
 
   if (error || !profile) {
-    return {
-      error: 'Profil introuvable',
-    }
+    return { error: 'Profil introuvable' }
   }
 
   return {
@@ -735,22 +120,14 @@ export async function getKYCStatus() {
 export async function reviewKYC(formData: KYCReviewInput) {
   const supabase = await createClient()
 
-  // Vérifier l'authentification et le rôle admin
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return {
-      error: 'Non authentifié',
-    }
+    return { error: 'Non authentifié' }
   }
 
-  // TODO: Vérifier le rôle admin
-  // const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', user.id).single()
-  // if (profile?.role !== 'admin') { return { error: 'Accès refusé' } }
-
-  // Validation
   const validation = kycReviewSchema.safeParse(formData)
   if (!validation.success) {
     return {
@@ -761,7 +138,6 @@ export async function reviewKYC(formData: KYCReviewInput) {
   try {
     const { profileId, action, rejectionReason } = validation.data
 
-    // Mettre à jour le statut KYC
     const updateData: Record<string, unknown> = {
       kyc_status: action === 'approve' ? 'approved' : 'rejected',
       kyc_reviewed_at: new Date().toISOString(),
@@ -777,12 +153,9 @@ export async function reviewKYC(formData: KYCReviewInput) {
       .eq('id', profileId)
 
     if (updateError) {
-      return {
-        error: 'Erreur lors de la mise à jour du statut KYC',
-      }
+      return { error: 'Erreur lors de la mise à jour du statut KYC' }
     }
 
-    // Email de notification à l'utilisateur (non-bloquant)
     ;(async () => {
       const { data: kycProfile } = await supabase
         .from('profiles')
@@ -790,7 +163,6 @@ export async function reviewKYC(formData: KYCReviewInput) {
         .eq('id', profileId)
         .single()
       if (!kycProfile?.email) return
-      const { rejectionReason } = validation.data
       if (action === 'approve') {
         await sendEmail({
           to: kycProfile.email,
@@ -825,9 +197,7 @@ export async function reviewKYC(formData: KYCReviewInput) {
     }
   } catch (error) {
     console.error('Review KYC error:', error)
-    return {
-      error: 'Une erreur est survenue. Veuillez réessayer.',
-    }
+    return { error: 'Une erreur est survenue. Veuillez réessayer.' }
   }
 }
 
@@ -837,18 +207,13 @@ export async function reviewKYC(formData: KYCReviewInput) {
 export async function getPendingKYC() {
   const supabase = await createClient()
 
-  // Vérifier l'authentification et le rôle admin
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return {
-      error: 'Non authentifié',
-    }
+    return { error: 'Non authentifié' }
   }
-
-  // TODO: Vérifier le rôle admin
 
   const { data, error } = await supabase
     .from('profiles')
@@ -860,9 +225,7 @@ export async function getPendingKYC() {
 
   if (error) {
     console.error('Get pending KYC error:', error)
-    return {
-      error: 'Erreur lors de la récupération des KYC',
-    }
+    return { error: 'Erreur lors de la récupération des KYC' }
   }
 
   return {

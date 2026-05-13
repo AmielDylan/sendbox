@@ -25,7 +25,6 @@ import type { Session, User } from '@supabase/supabase-js'
 import { QUERY_KEYS, invalidateAuthQueries } from '@/lib/shared/query/config'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { toast } from 'sonner'
-import { fetchConnectStatus } from '@/lib/shared/stripe/connect-status-client'
 
 export interface Profile {
   id: string
@@ -98,17 +97,11 @@ export function OptimizedAuthProvider({
   const profileRetryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastKycStatus = useRef<string | null>(null)
   const lastSetupNotificationKey = useRef<string | null>(null)
-  const connectBootstrapRequested = useRef(false)
 
   const PROFILE_FETCH_TIMEOUT_MS = 12000
   const MAX_PROFILE_FETCH_RETRIES = 2
   const PROFILE_RETRY_BASE_DELAY_MS = 1500
   const PROFILE_POLL_INTERVAL_MS = 60000
-  const CONNECT_STATUS_POLL_INTERVAL_MS = 300000
-
-  const connectStatusPollingRef = useRef<ReturnType<typeof setInterval> | null>(
-    null
-  )
 
   const showKycStatusToast = useCallback(
     (status: string | null, rejectionReason?: string | null) => {
@@ -478,88 +471,6 @@ export function OptimizedAuthProvider({
   }, [user?.id, fetchProfile])
 
   /**
-   * Poll connect status when Stripe payouts are pending.
-   */
-  useEffect(() => {
-    if (!user?.id) return
-
-    const payoutMethod = (profile as any)?.payout_method as
-      | 'stripe_bank'
-      | 'bank_transfer'
-      | 'mobile_wallet'
-      | undefined
-    const payoutStatus = (profile as any)?.payout_status as
-      | 'pending'
-      | 'active'
-      | 'disabled'
-      | undefined
-    const payoutErrorCode = (profile as any)?.payout_error_code as
-      | string
-      | null
-      | undefined
-    const payoutErrorMessage = (profile as any)?.payout_error_message as
-      | string
-      | null
-      | undefined
-    const kycStatus = (profile as any)?.kyc_status as
-      | 'pending'
-      | 'approved'
-      | 'rejected'
-      | 'incomplete'
-      | null
-      | undefined
-    const stripeAccountId = (profile as any)?.stripe_connect_account_id as
-      | string
-      | undefined
-
-    if (payoutErrorCode || payoutErrorMessage) {
-      if (connectStatusPollingRef.current) {
-        clearInterval(connectStatusPollingRef.current)
-        connectStatusPollingRef.current = null
-      }
-      return
-    }
-
-    if (
-      payoutMethod !== 'stripe_bank' ||
-      payoutStatus !== 'pending' ||
-      !stripeAccountId ||
-      kycStatus !== 'approved'
-    ) {
-      if (connectStatusPollingRef.current) {
-        clearInterval(connectStatusPollingRef.current)
-        connectStatusPollingRef.current = null
-      }
-      return
-    }
-
-    if (connectStatusPollingRef.current) return
-
-    const pollConnectStatus = async () => {
-      try {
-        const res = await fetchConnectStatus('auth_poll')
-        if (!res) return
-        await res.json().catch(() => null)
-      } catch (error) {
-        console.warn('Connect status polling failed:', error)
-      }
-    }
-
-    pollConnectStatus()
-    connectStatusPollingRef.current = setInterval(
-      pollConnectStatus,
-      CONNECT_STATUS_POLL_INTERVAL_MS
-    )
-
-    return () => {
-      if (connectStatusPollingRef.current) {
-        clearInterval(connectStatusPollingRef.current)
-        connectStatusPollingRef.current = null
-      }
-    }
-  }, [user?.id, profile])
-
-  /**
    * Synchronisation multi-onglets via BroadcastChannel
    */
   useEffect(() => {
@@ -617,11 +528,6 @@ export function OptimizedAuthProvider({
       console.warn('Notification setup failed:', error)
     })
   }, [profile])
-
-  useEffect(() => {
-    if (connectBootstrapRequested.current) return
-    connectBootstrapRequested.current = true
-  }, [])
 
   useEffect(() => {
     lastKycStatus.current = (profile as any)?.kyc_status ?? null

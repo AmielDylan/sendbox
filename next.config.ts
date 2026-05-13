@@ -4,12 +4,12 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://js.stripe.com/v3;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline';
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' data: https: blob:;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.stripe.com/v1 https://api-adresse.data.gouv.fr${isDevelopment ? ' ws://localhost:* ws://127.0.0.1:*' : ''};
-  frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.supabase.co;
+  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api-adresse.data.gouv.fr${isDevelopment ? ' ws://localhost:* ws://127.0.0.1:*' : ''};
+  frame-src 'self' https://*.supabase.co;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
