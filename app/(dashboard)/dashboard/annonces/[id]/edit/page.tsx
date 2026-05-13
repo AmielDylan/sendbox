@@ -11,14 +11,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   createAnnouncementSchema,
   type CreateAnnouncementInput,
-  DEPARTURE_COUNTRY,
-  ARRIVAL_COUNTRY,
 } from '@/lib/core/announcements/validations'
 import { updateAnnouncement } from '@/lib/core/announcements/management'
-import { searchCities } from '@/lib/shared/utils/cities'
+import { LocationSelects } from '@/components/forms/LocationSelects'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -46,7 +43,6 @@ import {
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
-import { useDebounce } from '@/hooks/use-debounce'
 import { createClient } from '@/lib/shared/db/client'
 
 export default function EditAnnouncementPage({
@@ -59,17 +55,6 @@ export default function EditAnnouncementPage({
   const queryClient = useQueryClient()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [departureCitySuggestions, setDepartureCitySuggestions] = useState<
-    string[]
-  >([])
-  const [arrivalCitySuggestions, setArrivalCitySuggestions] = useState<
-    string[]
-  >([])
-  const [showDepartureSuggestions, setShowDepartureSuggestions] =
-    useState(false)
-  const [showArrivalSuggestions, setShowArrivalSuggestions] = useState(false)
-  const [departureCityTyped, setDepartureCityTyped] = useState(false)
-  const [arrivalCityTyped, setArrivalCityTyped] = useState(false)
 
   const {
     register,
@@ -77,17 +62,13 @@ export default function EditAnnouncementPage({
     formState: { errors },
     setValue,
     watch,
+    control,
   } = useForm<CreateAnnouncementInput>({
     resolver: zodResolver(createAnnouncementSchema),
   })
 
-  const departureCity = watch('departure_city')
-  const arrivalCity = watch('arrival_city')
   const departureDate = watch('departure_date')
   const availableKg = watch('available_kg')
-
-  const debouncedDepartureCity = useDebounce(departureCity || '', 300)
-  const debouncedArrivalCity = useDebounce(arrivalCity || '', 300)
 
   // Charger l'annonce existante
   useEffect(() => {
@@ -106,19 +87,15 @@ export default function EditAnnouncementPage({
       }
 
       // Pré-remplir le formulaire
-      setValue('departure_country', DEPARTURE_COUNTRY)
+      setValue('departure_country', data.departure_country)
       setValue('departure_city', data.departure_city)
-      setValue('arrival_country', ARRIVAL_COUNTRY)
+      setValue('arrival_country', data.arrival_country)
       setValue('arrival_city', data.arrival_city)
 
       // Convertir les dates ISO en dates locales
-      // Si la date est au format YYYY-MM-DD, on la parse directement
-      // Si elle contient l'heure (YYYY-MM-DDTHH:MM:SS), on extrait juste la date
       const parseDateFromDB = (dateString: string) => {
-        // Extraire juste la partie date (YYYY-MM-DD)
         const dateOnly = dateString.split('T')[0]
         const [year, month, day] = dateOnly.split('-').map(Number)
-        // Créer une date locale à minuit
         return new Date(year, month - 1, day)
       }
 
@@ -136,32 +113,6 @@ export default function EditAnnouncementPage({
 
     loadAnnouncement()
   }, [id, router, setValue])
-
-  // Recherche autocomplete pour ville de départ
-  useEffect(() => {
-    if (debouncedDepartureCity && debouncedDepartureCity.length >= 2 && departureCityTyped) {
-      searchCities(DEPARTURE_COUNTRY, debouncedDepartureCity).then(cities => {
-        setDepartureCitySuggestions(cities)
-        setShowDepartureSuggestions(true)
-      })
-    } else {
-      setDepartureCitySuggestions([])
-      setShowDepartureSuggestions(false)
-    }
-  }, [debouncedDepartureCity, departureCityTyped])
-
-  // Recherche autocomplete pour ville d'arrivée
-  useEffect(() => {
-    if (debouncedArrivalCity && debouncedArrivalCity.length >= 2 && arrivalCityTyped) {
-      searchCities(ARRIVAL_COUNTRY, debouncedArrivalCity).then(cities => {
-        setArrivalCitySuggestions(cities)
-        setShowArrivalSuggestions(true)
-      })
-    } else {
-      setArrivalCitySuggestions([])
-      setShowArrivalSuggestions(false)
-    }
-  }, [debouncedArrivalCity, arrivalCityTyped])
 
   const onSubmit = async (data: CreateAnnouncementInput) => {
     setIsSubmitting(true)
@@ -218,108 +169,30 @@ export default function EditAnnouncementPage({
               Trajet
             </CardTitle>
             <CardDescription>
-              Modifiez les villes de départ et d’arrivée
+              Modifiez les villes de départ et d'arrivée
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Départ — fixé à France pour V1 */}
-              <div className="space-y-2">
-                <Label>Pays de départ</Label>
-                <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-                  <span>🇫🇷</span>
-                  <span>France</span>
-                </div>
-              </div>
+              <LocationSelects
+                prefix="departure"
+                label="Pays et ville de départ"
+                control={control}
+                errors={{
+                  country: errors.departure_country,
+                  city: errors.departure_city,
+                }}
+              />
 
-              <div className="space-y-2 relative">
-                <Label htmlFor="departure_city">Ville de départ</Label>
-                <Input
-                  {...register('departure_city')}
-                  placeholder="Paris, Cotonou..."
-                  onFocus={() =>
-                    setShowDepartureSuggestions(
-                      departureCityTyped && departureCitySuggestions.length > 0
-                    )
-                  }
-                  onChange={e => {
-                    register('departure_city').onChange(e)
-                    setDepartureCityTyped(true)
-                  }}
-                />
-                {errors.departure_city && (
-                  <p className="text-sm text-destructive">
-                    {errors.departure_city.message}
-                  </p>
-                )}
-                {showDepartureSuggestions &&
-                  departureCitySuggestions.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
-                      {departureCitySuggestions.map((city, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="w-full px-4 py-2 text-left hover:bg-accent"
-                          onClick={() => {
-                            setValue('departure_city', city)
-                            setShowDepartureSuggestions(false)
-                          }}
-                        >
-                          {city}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-              </div>
-
-              {/* Arrivée — fixée à Bénin pour V1 */}
-              <div className="space-y-2">
-                <Label>Pays d’arrivée</Label>
-                <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-                  <span>🇧🇯</span>
-                  <span>Bénin</span>
-                </div>
-              </div>
-
-              <div className="space-y-2 relative">
-                <Label htmlFor="arrival_city">Ville d’arrivée</Label>
-                <Input
-                  {...register('arrival_city')}
-                  placeholder="Paris, Cotonou..."
-                  onFocus={() =>
-                    setShowArrivalSuggestions(
-                      arrivalCityTyped && arrivalCitySuggestions.length > 0
-                    )
-                  }
-                  onChange={e => {
-                    register('arrival_city').onChange(e)
-                    setArrivalCityTyped(true)
-                  }}
-                />
-                {errors.arrival_city && (
-                  <p className="text-sm text-destructive">
-                    {errors.arrival_city.message}
-                  </p>
-                )}
-                {showArrivalSuggestions &&
-                  arrivalCitySuggestions.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
-                      {arrivalCitySuggestions.map((city, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className="w-full px-4 py-2 text-left hover:bg-accent"
-                          onClick={() => {
-                            setValue('arrival_city', city)
-                            setShowArrivalSuggestions(false)
-                          }}
-                        >
-                          {city}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-              </div>
+              <LocationSelects
+                prefix="arrival"
+                label="Pays et ville d'arrivée"
+                control={control}
+                errors={{
+                  country: errors.arrival_country,
+                  city: errors.arrival_city,
+                }}
+              />
             </div>
 
             {/* Date de départ */}
@@ -366,9 +239,9 @@ export default function EditAnnouncementPage({
               )}
             </div>
 
-            {/* Date d’arrivée */}
+            {/* Date d'arrivée */}
             <div className="space-y-2">
-              <Label>Date d’arrivée</Label>
+              <Label>Date d'arrivée</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
