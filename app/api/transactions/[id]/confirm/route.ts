@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
 import { confirmMatchingForBooking } from '@/lib/core/matching/confirm'
 
 export async function POST(
@@ -19,8 +20,22 @@ export async function POST(
     )
   }
 
+  const admin = createAdminClient()
+  const { data: transaction } = await admin
+    .from('transactions')
+    .select('booking_id')
+    .eq('id', id)
+    .single()
+
+  if (!transaction?.booking_id) {
+    return NextResponse.json(
+      { error: 'Transaction introuvable', code: 'NOT_FOUND' },
+      { status: 404 }
+    )
+  }
+
   try {
-    const result = await confirmMatchingForBooking(id, user.id)
+    const result = await confirmMatchingForBooking(transaction.booking_id, user.id)
     return NextResponse.json(result)
   } catch (error) {
     const status = (error as { status?: number }).status ?? 500

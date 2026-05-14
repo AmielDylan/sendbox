@@ -67,12 +67,20 @@ export async function computeAndSaveTrustScore(userId: string): Promise<void> {
 
   let score = totalWeight > 0 ? weightedSum / totalWeight : 0
 
-  // Malus dispute : récupérer les litiges ouverts
-  const { count: openDisputes } = await admin
+  // Malus dispute : récupérer les litiges ouverts liés aux bookings du profil.
+  const { data: openDisputeRows } = await admin
     .from('disputes')
-    .select('id', { count: 'exact', head: true })
-    .or(`sender_id.eq.${userId},traveler_id.eq.${userId}`)
-    .in('status', ['open', 'under_review'])
+    .select('id, bookings:booking_id(sender_id, traveler_id)')
+    .in('status', ['OPEN', 'UNDER_REVIEW', 'open', 'under_review'])
+
+  const openDisputes =
+    openDisputeRows?.filter(row => {
+      const booking = Array.isArray((row as any).bookings)
+        ? (row as any).bookings[0]
+        : (row as any).bookings
+
+      return booking?.sender_id === userId || booking?.traveler_id === userId
+    }).length ?? 0
 
   if (openDisputes && openDisputes > 0) {
     score = Math.max(0, score - openDisputes * 0.5)

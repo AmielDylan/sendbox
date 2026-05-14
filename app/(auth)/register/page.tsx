@@ -248,7 +248,7 @@ function RegisterForm() {
               <div className="leading-none">
                 <Label htmlFor="terms" className="text-sm font-normal cursor-pointer">
                   J&apos;accepte les{' '}
-                  <Link href="/terms" className="text-primary underline hover:no-underline" target="_blank" rel="noopener noreferrer">
+                  <Link href="/cgu" className="text-primary underline hover:no-underline" target="_blank" rel="noopener noreferrer">
                     conditions générales
                   </Link>
                 </Label>
