@@ -1,25 +1,50 @@
 -- ─── Nouveaux enums ────────────────────────────────────────────────────────────
 
-CREATE TYPE review_status_enum AS ENUM (
-  'pending', 'submitted', 'published', 'skipped'
-);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'review_status_enum') THEN
+    CREATE TYPE review_status_enum AS ENUM (
+      'pending', 'submitted', 'published', 'skipped'
+    );
+  END IF;
+END $$;
 
-CREATE TYPE photo_type_enum AS ENUM ('handoff', 'delivery');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'photo_type_enum') THEN
+    CREATE TYPE photo_type_enum AS ENUM ('handoff', 'delivery');
+  END IF;
+END $$;
 
-CREATE TYPE flag_reason_enum AS ENUM (
-  'concentration_ratio', 'duration_too_short', 'ring_collusion', 'manual'
-);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'flag_reason_enum') THEN
+    CREATE TYPE flag_reason_enum AS ENUM (
+      'concentration_ratio', 'duration_too_short', 'ring_collusion', 'manual'
+    );
+  END IF;
+END $$;
 
-CREATE TYPE verification_status_enum AS ENUM (
-  'none', 'pending', 'verified', 'rejected'
-);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'verification_status_enum') THEN
+    CREATE TYPE verification_status_enum AS ENUM (
+      'none', 'pending', 'verified', 'rejected'
+    );
+  END IF;
+END $$;
 
 -- Étendre booking_status_enum avec les nouveaux statuts du lifecycle trust
 -- (PostgreSQL ne permet pas de supprimer des valeurs, on ajoute uniquement)
-ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'matched';
-ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'confirmed';
-ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'handed';
-ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'completed';
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'booking_status_enum') THEN
+    ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'matched';
+    ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'confirmed';
+    ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'handed';
+    ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'completed';
+  END IF;
+END $$;
 
 -- ─── Profils : champs trust ────────────────────────────────────────────────────
 
@@ -66,6 +91,7 @@ CREATE INDEX IF NOT EXISTS idx_booking_photos_booking_id ON booking_photos(booki
 
 ALTER TABLE booking_photos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Parties can view their booking photos" ON booking_photos;
 CREATE POLICY "Parties can view their booking photos"
   ON booking_photos FOR SELECT
   USING (
@@ -105,6 +131,7 @@ CREATE INDEX IF NOT EXISTS idx_user_flags_resolved ON user_flags(resolved_at);
 
 ALTER TABLE user_flags ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admins can manage user flags" ON user_flags;
 CREATE POLICY "Admins can manage user flags"
   ON user_flags FOR ALL
   USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
