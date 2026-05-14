@@ -76,11 +76,16 @@ type DashboardStats = {
 const createEmptyStatusCounts = (): StatusCounts => ({
   pending: 0,
   accepted: 0,
+  matched: 0,
+  confirmed: 0,
+  payment_pending: 0,
   refused: 0,
   paid: 0,
   deposited: 0,
+  handed: 0,
   in_transit: 0,
   delivered: 0,
+  completed: 0,
   cancelled: 0,
   disputed: 0,
 })

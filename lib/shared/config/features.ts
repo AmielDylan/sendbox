@@ -1,6 +1,5 @@
 /**
  * Feature flags globaux de l'application
- * Permet d'activer/désactiver des fonctionnalités sans modifier le code
  */
 export const FEATURES = {
   /**
@@ -16,16 +15,6 @@ export const FEATURES = {
   REALTIME_MESSAGING: true,
 
   /**
-   * Paiements Stripe
-   */
-  STRIPE_PAYMENTS: true,
-
-  /**
-   * Paiements simulés (flow complet sans Stripe)
-   */
-  PAYMENTS_SIMULATION: false,
-
-  /**
    * Dashboard Admin
    */
   ADMIN_DASHBOARD: true,
@@ -38,16 +27,7 @@ export const FEATURES = {
   MAX_BOOKING_AMOUNT: 200,
 
   /**
-   * Abonnement voyageur pro
-   * Si false : publication de trajets autorisée sans abonnement
-   * Si true : abonnement requis pour publier (trial de 14j inclus)
-   */
-  SUBSCRIPTION_ENABLED: true,
-
-  /**
    * Preuve de voyage (billet) requise pour publier
-   * Si false : publication sans billet acceptée
-   * Si true : travel_proof_url requis avant passage draft → active
    */
   TRAVEL_PROOF_REQUIRED: false,
 
@@ -64,25 +44,6 @@ export type FeatureFlag = {
     : never
 }[keyof typeof FEATURES]
 
-export type PaymentsMode = 'stripe' | 'simulation' | 'disabled'
-
-/**
- * Vérifie si une feature est activée
- */
 export function isFeatureEnabled(feature: FeatureFlag): boolean {
   return FEATURES[feature]
-}
-
-export function getPaymentsMode(): PaymentsMode {
-  if (FEATURES.STRIPE_PAYMENTS) {
-    return 'stripe'
-  }
-  if (FEATURES.PAYMENTS_SIMULATION) {
-    return 'simulation'
-  }
-  return 'disabled'
-}
-
-export function arePaymentsEnabled(): boolean {
-  return getPaymentsMode() !== 'disabled'
 }

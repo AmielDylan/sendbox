@@ -94,6 +94,7 @@ export async function signUp(formData: RegisterInput) {
         firstname: validation.data.firstname,
         lastname: validation.data.lastname,
         kyc_status: 'incomplete',
+        cgu_accepted_at: new Date().toISOString(),
       }
 
       let updatedProfiles: Array<{ id: string }> | null = null
@@ -150,6 +151,7 @@ export async function signUp(formData: RegisterInput) {
                 firstname: validation.data.firstname,
                 lastname: validation.data.lastname,
                 kyc_status: 'incomplete',
+                cgu_accepted_at: new Date().toISOString(),
               })
 
             if (insertError) {

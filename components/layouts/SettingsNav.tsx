@@ -11,8 +11,6 @@ import {
   IconUser,
   IconIdBadge2,
   IconUserShield,
-  IconCreditCard,
-  IconSparkles,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
@@ -119,43 +117,20 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
       description: 'Informations personnelles',
     },
     {
-      label: 'Mon abonnement',
-      href: '/dashboard/reglages/abonnement',
-      icon: IconSparkles,
-      description: 'Essai, accès publication et gestion',
-      subscriptionOnly: true,
-      userOnly: true,
-    },
-    {
-      label: 'Ajouter un compte bancaire',
-      href: '/dashboard/reglages/paiements',
-      icon: IconCreditCard,
-      description: 'Recevoir vos paiements',
-      paymentsOnly: true,
-      userOnly: true,
-    },
-    {
       label: "Vérification d'identité",
       href: '/dashboard/reglages/kyc',
       icon: IconUserShield,
       description: kycDescription,
-      kycOnly: true, // Marqueur pour filtrage conditionnel
+      kycOnly: true,
       userOnly: true,
     },
   ]
 
-  // Filtrer les items selon les feature flags
   const navItems = allNavItems.filter(item => {
     if (item.userOnly && isAdmin) {
       return false
     }
     if (item.kycOnly && !isFeatureEnabled('KYC_ENABLED')) {
-      return false // Masquer KYC si désactivé
-    }
-    if (item.subscriptionOnly && !isFeatureEnabled('SUBSCRIPTION_ENABLED')) {
-      return false
-    }
-    if (item.paymentsOnly && !isFeatureEnabled('STRIPE_PAYMENTS')) {
       return false
     }
     return true

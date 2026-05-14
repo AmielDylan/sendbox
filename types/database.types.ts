@@ -215,10 +215,11 @@ export type Database = {
           cancelled_reason: string | null
           commission_amount: number | null
           commission_rate: number | null
+          completed_at: string | null
           created_at: string | null
+          delivered_at: string | null
           delivery_confirmed_at: string | null
           delivery_confirmed_by: string | null
-          delivered_at: string | null
           delivery_location_lat: number | null
           delivery_location_lng: number | null
           delivery_photo_url: string | null
@@ -233,10 +234,14 @@ export type Database = {
           dispute_reason: string | null
           dispute_resolved_at: string | null
           disputed_reason: string | null
+          duration_hours: number | null
+          flag_reason: string | null
+          handed_at: string | null
           id: string
           insurance_coverage: number | null
           insurance_opted: boolean | null
           insurance_premium: number | null
+          is_flagged: boolean | null
           kilos_requested: number
           package_description: string
           package_photos: string[] | null
@@ -249,10 +254,13 @@ export type Database = {
           qr_code: string
           refused_at: string | null
           refused_reason: string | null
+          sender_confirmed_at: string | null
           sender_id: string
           status: Database['public']['Enums']['booking_status']
+          status_history: Json | null
           total_price: number
           tracking_number: string | null
+          traveler_confirmed_at: string | null
           traveler_id: string
           updated_at: string | null
           weight_kg: number | null
@@ -265,10 +273,11 @@ export type Database = {
           cancelled_reason?: string | null
           commission_amount?: number | null
           commission_rate?: number | null
+          completed_at?: string | null
           created_at?: string | null
+          delivered_at?: string | null
           delivery_confirmed_at?: string | null
           delivery_confirmed_by?: string | null
-          delivered_at?: string | null
           delivery_location_lat?: number | null
           delivery_location_lng?: number | null
           delivery_photo_url?: string | null
@@ -283,10 +292,14 @@ export type Database = {
           dispute_reason?: string | null
           dispute_resolved_at?: string | null
           disputed_reason?: string | null
+          duration_hours?: number | null
+          flag_reason?: string | null
+          handed_at?: string | null
           id?: string
           insurance_coverage?: number | null
           insurance_opted?: boolean | null
           insurance_premium?: number | null
+          is_flagged?: boolean | null
           kilos_requested: number
           package_description: string
           package_photos?: string[] | null
@@ -299,10 +312,13 @@ export type Database = {
           qr_code: string
           refused_at?: string | null
           refused_reason?: string | null
+          sender_confirmed_at?: string | null
           sender_id: string
           status?: Database['public']['Enums']['booking_status']
+          status_history?: Json | null
           total_price?: number
           tracking_number?: string | null
+          traveler_confirmed_at?: string | null
           traveler_id: string
           updated_at?: string | null
           weight_kg?: number | null
@@ -315,10 +331,11 @@ export type Database = {
           cancelled_reason?: string | null
           commission_amount?: number | null
           commission_rate?: number | null
+          completed_at?: string | null
           created_at?: string | null
+          delivered_at?: string | null
           delivery_confirmed_at?: string | null
           delivery_confirmed_by?: string | null
-          delivered_at?: string | null
           delivery_location_lat?: number | null
           delivery_location_lng?: number | null
           delivery_photo_url?: string | null
@@ -333,10 +350,14 @@ export type Database = {
           dispute_reason?: string | null
           dispute_resolved_at?: string | null
           disputed_reason?: string | null
+          duration_hours?: number | null
+          flag_reason?: string | null
+          handed_at?: string | null
           id?: string
           insurance_coverage?: number | null
           insurance_opted?: boolean | null
           insurance_premium?: number | null
+          is_flagged?: boolean | null
           kilos_requested?: number
           package_description?: string
           package_photos?: string[] | null
@@ -349,10 +370,13 @@ export type Database = {
           qr_code?: string
           refused_at?: string | null
           refused_reason?: string | null
+          sender_confirmed_at?: string | null
           sender_id?: string
           status?: Database['public']['Enums']['booking_status']
+          status_history?: Json | null
           total_price?: number
           tracking_number?: string | null
+          traveler_confirmed_at?: string | null
           traveler_id?: string
           updated_at?: string | null
           weight_kg?: number | null
@@ -475,6 +499,67 @@ export type Database = {
           {
             foreignKeyName: 'messages_sender_id_fkey'
             columns: ['sender_id']
+            isOneToOne: false
+            referencedRelation: 'user_stats'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      matching_payments: {
+        Row: {
+          amount_cents: number
+          booking_id: string
+          created_at: string
+          currency: string
+          id: string
+          paid_by: string
+          status: string
+          stripe_client_secret: string
+          stripe_payment_intent_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          booking_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_by: string
+          status?: string
+          stripe_client_secret: string
+          stripe_payment_intent_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          booking_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_by?: string
+          status?: string
+          stripe_client_secret?: string
+          stripe_payment_intent_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'matching_payments_booking_id_fkey'
+            columns: ['booking_id']
+            isOneToOne: false
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'matching_payments_paid_by_fkey'
+            columns: ['paid_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'matching_payments_paid_by_fkey'
+            columns: ['paid_by']
             isOneToOne: false
             referencedRelation: 'user_stats'
             referencedColumns: ['id']
@@ -626,8 +711,17 @@ export type Database = {
           wallet_verified_at: string | null
           wallet_otp_code: string | null
           wallet_otp_expires_at: string | null
+          completed_count: number | null
+          disputed_count: number | null
+          cgu_accepted_at: string | null
+          is_suspended: boolean | null
+          suspended_reason: string | null
           total_services: number | null
+          trust_score: number | null
+          unique_sender_count: number | null
+          unique_traveler_count: number | null
           updated_at: string | null
+          verification_status: Database['public']['Enums']['verification_status'] | null
         }
         Insert: {
           address?: string | null
@@ -637,7 +731,9 @@ export type Database = {
           banned_reason?: string | null
           bio?: string | null
           birthday?: string | null
+          completed_count?: number | null
           completed_services?: number | null
+          cgu_accepted_at?: string | null
           country?: string | null
           created_at?: string | null
           document_back_url?: string | null
@@ -702,8 +798,8 @@ export type Database = {
           wallet_verified_at?: string | null
           wallet_otp_code?: string | null
           wallet_otp_expires_at?: string | null
-          total_services?: number | null
           updated_at?: string | null
+          verification_status?: Database['public']['Enums']['verification_status'] | null
         }
         Update: {
           address?: string | null
@@ -714,6 +810,7 @@ export type Database = {
           bio?: string | null
           birthday?: string | null
           completed_services?: number | null
+          cgu_accepted_at?: string | null
           country?: string | null
           created_at?: string | null
           document_back_url?: string | null
@@ -778,8 +875,16 @@ export type Database = {
           wallet_verified_at?: string | null
           wallet_otp_code?: string | null
           wallet_otp_expires_at?: string | null
+          completed_count?: number | null
+          disputed_count?: number | null
+          is_suspended?: boolean | null
+          suspended_reason?: string | null
           total_services?: number | null
+          trust_score?: number | null
+          unique_sender_count?: number | null
+          unique_traveler_count?: number | null
           updated_at?: string | null
+          verification_status?: Database['public']['Enums']['verification_status'] | null
         }
         Relationships: []
       }
@@ -850,27 +955,36 @@ export type Database = {
           comment: string | null
           created_at: string | null
           id: string
+          published_at: string | null
           rated_id: string
           rater_id: string
           rating: number
+          status: Database['public']['Enums']['review_status'] | null
+          submitted_at: string | null
         }
         Insert: {
           booking_id: string
           comment?: string | null
           created_at?: string | null
           id?: string
+          published_at?: string | null
           rated_id: string
           rater_id: string
           rating: number
+          status?: Database['public']['Enums']['review_status'] | null
+          submitted_at?: string | null
         }
         Update: {
           booking_id?: string
           comment?: string | null
           created_at?: string | null
           id?: string
+          published_at?: string | null
           rated_id?: string
           rater_id?: string
           rating?: number
+          status?: Database['public']['Enums']['review_status'] | null
+          submitted_at?: string | null
         }
         Relationships: [
           {
@@ -976,6 +1090,165 @@ export type Database = {
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'user_stats'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      booking_photos: {
+        Row: {
+          booking_id: string
+          captured_at: string
+          confirmed_by_id: string | null
+          created_at: string
+          file_hash: string
+          id: string
+          size_bytes: number
+          type: Database['public']['Enums']['photo_type']
+          uploaded_by_id: string
+          url: string
+        }
+        Insert: {
+          booking_id: string
+          captured_at?: string
+          confirmed_by_id?: string | null
+          created_at?: string
+          file_hash: string
+          id?: string
+          size_bytes: number
+          type: Database['public']['Enums']['photo_type']
+          uploaded_by_id: string
+          url: string
+        }
+        Update: {
+          booking_id?: string
+          captured_at?: string
+          confirmed_by_id?: string | null
+          created_at?: string
+          file_hash?: string
+          id?: string
+          size_bytes?: number
+          type?: Database['public']['Enums']['photo_type']
+          uploaded_by_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'booking_photos_booking_id_fkey'
+            columns: ['booking_id']
+            isOneToOne: false
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'booking_photos_uploaded_by_id_fkey'
+            columns: ['uploaded_by_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      disputes: {
+        Row: {
+          admin_note: string | null
+          booking_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          opened_by_id: string | null
+          reason: string | null
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
+        Insert: {
+          admin_note?: string | null
+          booking_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          opened_by_id?: string | null
+          reason?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Update: {
+          admin_note?: string | null
+          booking_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          opened_by_id?: string | null
+          reason?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'disputes_booking_id_fkey'
+            columns: ['booking_id']
+            isOneToOne: false
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'disputes_opened_by_id_fkey'
+            columns: ['opened_by_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'disputes_resolved_by_fkey'
+            columns: ['resolved_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      user_flags: {
+        Row: {
+          created_at: string
+          detail: string | null
+          id: string
+          reason: Database['public']['Enums']['flag_reason']
+          resolved_at: string | null
+          resolved_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          reason: Database['public']['Enums']['flag_reason']
+          resolved_at?: string | null
+          resolved_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          reason?: Database['public']['Enums']['flag_reason']
+          resolved_at?: string | null
+          resolved_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'user_flags_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
             referencedColumns: ['id']
           },
         ]
@@ -1128,6 +1401,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      detect_review_ring: {
+        Args: { p_user_id: string; p_depth?: number }
+        Returns: boolean
+      }
       is_admin: { Args: { user_id: string }; Returns: boolean }
       search_announcements: {
         Args: {
@@ -1174,15 +1451,28 @@ export type Database = {
       booking_status:
         | 'pending'
         | 'accepted'
+        | 'matched'
+        | 'confirmed'
+        | 'payment_pending'
         | 'refused'
         | 'paid'
         | 'deposited'
+        | 'handed'
         | 'in_transit'
         | 'delivered'
+        | 'completed'
         | 'cancelled'
         | 'disputed'
       document_type: 'passport' | 'national_id' | 'driving_license'
+      flag_reason:
+        | 'concentration_ratio'
+        | 'duration_too_short'
+        | 'ring_collusion'
+        | 'manual'
       kyc_status: 'pending' | 'approved' | 'rejected' | 'incomplete'
+      photo_type: 'handoff' | 'delivery'
+      review_status: 'pending' | 'submitted' | 'published' | 'skipped'
+      verification_status: 'none' | 'pending' | 'verified' | 'rejected'
       notification_type:
         | 'booking_request'
         | 'booking_accepted'
@@ -1342,16 +1632,30 @@ export const Constants = {
       booking_status: [
         'pending',
         'accepted',
+        'matched',
+        'confirmed',
+        'payment_pending',
         'refused',
         'paid',
         'deposited',
+        'handed',
         'in_transit',
         'delivered',
+        'completed',
         'cancelled',
         'disputed',
       ],
       document_type: ['passport', 'national_id', 'driving_license'],
+      flag_reason: [
+        'concentration_ratio',
+        'duration_too_short',
+        'ring_collusion',
+        'manual',
+      ],
       kyc_status: ['pending', 'approved', 'rejected', 'incomplete'],
+      photo_type: ['handoff', 'delivery'],
+      review_status: ['pending', 'submitted', 'published', 'skipped'],
+      verification_status: ['none', 'pending', 'verified', 'rejected'],
       notification_type: [
         'booking_request',
         'booking_accepted',

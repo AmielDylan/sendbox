@@ -17,7 +17,6 @@ export * from './security/xss-protection'
 
 // Services
 export * from './services/email/client'
-export * from './services/stripe/config'
 export * from './services/pdf/generation'
 
 // Utils
