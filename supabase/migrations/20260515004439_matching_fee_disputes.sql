@@ -3,7 +3,12 @@
 
 -- ─── Statuts bookings ───────────────────────────────────────────────────────
 
-ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'payment_pending';
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'booking_status_enum') THEN
+    ALTER TYPE booking_status_enum ADD VALUE IF NOT EXISTS 'payment_pending';
+  END IF;
+END $$;
 
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS cgu_accepted_at TIMESTAMPTZ;

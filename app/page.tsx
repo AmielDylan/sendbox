@@ -109,13 +109,13 @@ export default function HomePage() {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="h-12 px-6">
-              <Link href="/register?role=sender">
+              <Link href="/recherche">
                 <IconPackage data-icon="inline-start" />
                 J&apos;envoie un colis
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 px-6">
-              <Link href="/register?role=traveler">
+              <Link href="/dashboard/annonces/new">
                 <IconPlaneDeparture data-icon="inline-start" />
                 Je voyage
               </Link>
@@ -205,14 +205,14 @@ export default function HomePage() {
             <AudienceCard
               title="Expéditeurs"
               benefits={senderBenefits}
-              cta="Créer un compte expéditeur"
-              href="/register?role=sender"
+              cta="Chercher un voyageur"
+              href="/recherche"
             />
             <AudienceCard
               title="Voyageurs"
               benefits={travelerBenefits}
-              cta="Créer un compte voyageur"
-              href="/register?role=traveler"
+              cta="Publier mon trajet"
+              href="/dashboard/annonces/new"
             />
           </div>
 

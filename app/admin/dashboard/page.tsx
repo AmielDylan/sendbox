@@ -105,7 +105,7 @@ export default async function AdminDashboardPage() {
           <TableBody>
             {data.openDisputes.map(dispute => (
               <TableRow key={dispute.id}>
-                <TableCell>{formatDate(dispute.created_at)}</TableCell>
+                <TableCell>{formatDate(dispute.opened_at)}</TableCell>
                 <TableCell className="font-mono text-xs">
                   {truncateId(dispute.booking_id)}
                 </TableCell>
@@ -295,9 +295,9 @@ async function getDashboardData() {
       .in('status', ['OPEN', 'UNDER_REVIEW', 'open', 'under_review']),
     admin
       .from('disputes')
-      .select('id, booking_id, created_at, reason, status, opened_by_id')
+      .select('id, booking_id, opened_at, reason, status, opened_by_id')
       .in('status', ['OPEN', 'UNDER_REVIEW', 'open', 'under_review'])
-      .order('created_at', { ascending: false })
+      .order('opened_at', { ascending: false })
       .limit(10),
     admin
       .from('profiles')
