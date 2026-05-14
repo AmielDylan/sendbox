@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 
 const perks = [
-  'Publication de trajets gratuite',
+  'Inscription et utilisation gratuites',
   'Profil voyageur vérifié (KYC)',
-  'Système de confiance horodaté',
-  'Notes et avis mutuels',
+  'Preuves horodatées serveur',
+  'Avis mutuels immuables',
 ]
 
 export function PricingSection() {
@@ -26,15 +26,14 @@ export function PricingSection() {
             variant="outline"
             className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
           >
-            Accès gratuit
+            Transparent
           </Badge>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            Gratuit. Basé sur la confiance.
+            Simple et sans surprise
           </h2>
           <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-            Sendbox ne prend aucun frais sur les transactions. Chaque échange
-            est horodaté, documenté et noté mutuellement pour bâtir une
-            réputation fiable.
+            Sendbox facture uniquement les frais de mise en relation entre
+            expéditeur et voyageur.
           </p>
         </div>
 
@@ -42,22 +41,22 @@ export function PricingSection() {
           <div className="space-y-5">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-sm">
-                Sans frais de plateforme
+                Frais de mise en relation
               </p>
               <div className="mt-3 flex items-end gap-3">
                 <p className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  0 €
+                  1,50 €
                 </p>
                 <p className="pb-1.5 text-sm text-muted-foreground sm:pb-2 sm:text-base">
-                  / transaction
+                  / mise en relation
                 </p>
               </div>
             </div>
 
             <p className="text-sm leading-6 text-muted-foreground">
               {user
-                ? 'Vous pouvez publier et gérer vos trajets gratuitement.'
-                : 'Inscription gratuite. Commencez à publier dès la vérification de votre identité.'}
+                ? "Payé par l'expéditeur uniquement, à la confirmation mutuelle des deux parties."
+                : "Payé par l'expéditeur à la confirmation mutuelle. Inscription et utilisation gratuites pour tous."}
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -85,8 +84,9 @@ export function PricingSection() {
             </ul>
 
             <p className="border-t border-border/60 pt-4 text-sm leading-6 text-muted-foreground">
-              Les prix entre expéditeur et voyageur sont librement négociés.
-              Sendbox ne perçoit aucune commission.
+              Le règlement du transport se fait directement entre expéditeur et
+              voyageur, hors plateforme. Sendbox n'est pas transporteur ni
+              intermédiaire de paiement.
             </p>
           </div>
         </div>

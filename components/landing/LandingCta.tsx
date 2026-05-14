@@ -26,7 +26,7 @@ export function LandingCta({
         <Button asChild className={registerClassName}>
           <Link href="/register">
             <IconPlaneDeparture className="h-4 w-4" />
-            Je transporte
+            Je voyage
           </Link>
         </Button>
       ) : (
