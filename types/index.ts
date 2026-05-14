@@ -136,6 +136,7 @@ function getBookingStatusLabel(status: BookingBase['status']): string {
     accepted: 'Accepté',
     matched: 'Appariée',
     confirmed: 'Confirmée',
+    payment_pending: 'Paiement en attente',
     refused: 'Refusé',
     paid: 'Payé',
     deposited: 'Déposé',

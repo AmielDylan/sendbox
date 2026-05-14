@@ -505,6 +505,67 @@ export type Database = {
           },
         ]
       }
+      matching_payments: {
+        Row: {
+          amount_cents: number
+          booking_id: string
+          created_at: string
+          currency: string
+          id: string
+          paid_by: string
+          status: string
+          stripe_client_secret: string
+          stripe_payment_intent_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          booking_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_by: string
+          status?: string
+          stripe_client_secret: string
+          stripe_payment_intent_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          booking_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_by?: string
+          status?: string
+          stripe_client_secret?: string
+          stripe_payment_intent_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'matching_payments_booking_id_fkey'
+            columns: ['booking_id']
+            isOneToOne: false
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'matching_payments_paid_by_fkey'
+            columns: ['paid_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'matching_payments_paid_by_fkey'
+            columns: ['paid_by']
+            isOneToOne: false
+            referencedRelation: 'user_stats'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       notifications: {
         Row: {
           announcement_id: string | null
@@ -652,6 +713,7 @@ export type Database = {
           wallet_otp_expires_at: string | null
           completed_count: number | null
           disputed_count: number | null
+          cgu_accepted_at: string | null
           is_suspended: boolean | null
           suspended_reason: string | null
           total_services: number | null
@@ -671,6 +733,7 @@ export type Database = {
           birthday?: string | null
           completed_count?: number | null
           completed_services?: number | null
+          cgu_accepted_at?: string | null
           country?: string | null
           created_at?: string | null
           document_back_url?: string | null
@@ -747,6 +810,7 @@ export type Database = {
           bio?: string | null
           birthday?: string | null
           completed_services?: number | null
+          cgu_accepted_at?: string | null
           country?: string | null
           created_at?: string | null
           document_back_url?: string | null
@@ -1086,31 +1150,43 @@ export type Database = {
       }
       disputes: {
         Row: {
+          admin_note: string | null
           booking_id: string
           created_at: string
+          description: string | null
           id: string
           is_public: boolean | null
+          opened_by_id: string | null
           reason: string | null
+          resolution: string | null
           resolved_at: string | null
           resolved_by: string | null
           status: string
         }
         Insert: {
+          admin_note?: string | null
           booking_id: string
           created_at?: string
+          description?: string | null
           id?: string
           is_public?: boolean | null
+          opened_by_id?: string | null
           reason?: string | null
+          resolution?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           status?: string
         }
         Update: {
+          admin_note?: string | null
           booking_id?: string
           created_at?: string
+          description?: string | null
           id?: string
           is_public?: boolean | null
+          opened_by_id?: string | null
           reason?: string | null
+          resolution?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
           status?: string
@@ -1121,6 +1197,20 @@ export type Database = {
             columns: ['booking_id']
             isOneToOne: false
             referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'disputes_opened_by_id_fkey'
+            columns: ['opened_by_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'disputes_resolved_by_fkey'
+            columns: ['resolved_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
             referencedColumns: ['id']
           },
         ]
@@ -1363,6 +1453,7 @@ export type Database = {
         | 'accepted'
         | 'matched'
         | 'confirmed'
+        | 'payment_pending'
         | 'refused'
         | 'paid'
         | 'deposited'
@@ -1543,6 +1634,7 @@ export const Constants = {
         'accepted',
         'matched',
         'confirmed',
+        'payment_pending',
         'refused',
         'paid',
         'deposited',

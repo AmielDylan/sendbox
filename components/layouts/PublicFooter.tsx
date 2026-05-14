@@ -119,7 +119,7 @@ export function PublicFooter() {
             <ul className="space-y-3 text-sm">
               <li>
                 <Link
-                  href="/terms"
+                  href="/cgu"
                   className="text-muted-foreground hover:text-primary transition-colors duration-200 inline-flex items-center gap-2 group"
                 >
                   <span className="w-0 group-hover:w-1.5 h-1.5 rounded-full bg-primary transition-all duration-200" />
