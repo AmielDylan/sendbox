@@ -100,7 +100,7 @@ export async function GET(
   // Disputes publiques uniquement
   const { data: disputes } = await admin
     .from('disputes')
-    .select('id, reason, status, created_at')
+    .select('id, reason, status, opened_at')
     .or(`booking_id.in.(${
       [...(bookingsAsTraveler ?? []), ...(bookingsAsSender ?? [])].map(b => `"${b.id}"`).join(',') || '""'
     })`)
