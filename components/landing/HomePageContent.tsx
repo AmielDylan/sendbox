@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -92,9 +93,9 @@ const steps = [
   },
 ]
 
-const senderBenefits = [
+const senderBenefits: React.ReactNode[] = [
   'Trouvez un voyageur sur votre corridor diaspora',
-  'Confirmez la mise en relation pour 1,50 €',
+  <>Confirmez la mise en relation pour <strong className="font-semibold text-foreground">1,50 €</strong></>,
   'Suivez la remise et la livraison avec preuves',
 ]
 
@@ -192,9 +193,7 @@ export function HomePageContent() {
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 transition-all duration-500 group-hover:from-primary/5 group-hover:to-transparent" />
 
                   <div className="relative space-y-5 p-8">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                      <Icon className="h-7 w-7 text-primary" />
-                    </div>
+                    <Icon className="h-5 w-5 text-primary/80" />
 
                     <div className="space-y-3">
                       <h3 className="text-xl font-bold sm:text-2xl">
@@ -414,7 +413,7 @@ function AudienceCard({
   href,
 }: {
   title: string
-  benefits: string[]
+  benefits: React.ReactNode[]
   cta: string
   href: string
 }) {
@@ -425,8 +424,8 @@ function AudienceCard({
       </CardHeader>
       <CardContent>
         <ul className="flex flex-col gap-3">
-          {benefits.map(benefit => (
-            <li key={benefit} className="flex gap-3 text-sm leading-6">
+          {benefits.map((benefit, i) => (
+            <li key={i} className="flex gap-3 text-sm leading-6">
               <IconCheck
                 aria-hidden="true"
                 className="mt-1 h-4 w-4 shrink-0 text-primary"

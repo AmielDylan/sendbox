@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { runWeeklyTrustScan } from '@/lib/jobs/weekly-trust-scan'
 import { runDailyReviewExpiry } from '@/lib/jobs/daily-review-expiry'
+import { runKYCDocumentsCleanup } from '@/lib/jobs/kyc-documents-cleanup'
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-cron-secret')
@@ -21,11 +22,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ job, ...result })
   }
 
+  if (job === 'kyc-documents-cleanup') {
+    const result = await runKYCDocumentsCleanup()
+    return NextResponse.json({ job, ...result })
+  }
+
   // Sans paramètre : exécuter tous les jobs selon le jour
   const day = new Date().getDay() // 0 = dimanche
   const results: Record<string, unknown> = {}
 
   results['daily-review-expiry'] = await runDailyReviewExpiry()
+  results['kyc-documents-cleanup'] = await runKYCDocumentsCleanup()
 
   if (day === 0) {
     results['weekly-trust-scan'] = await runWeeklyTrustScan()
