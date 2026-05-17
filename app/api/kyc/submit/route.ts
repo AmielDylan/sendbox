@@ -11,16 +11,7 @@ const PIPELINE_ERRORS: Record<string, { message: string; status: number }> = {
     status: 400,
   },
   INVALID_FILE_FORMAT: {
-    message: 'Format non supporté. Formats acceptés : JPG, PNG, HEIC, PDF',
-    status: 422,
-  },
-  PDF_ENCRYPTED: {
-    message: 'Le PDF est protégé par un mot de passe',
-    status: 422,
-  },
-  PDF_RENDER_ERROR: {
-    message:
-      'Impossible de traiter le PDF. Veuillez fournir une image JPG, PNG ou HEIC à la place.',
+    message: 'Format non supporté. Formats acceptés : JPG, PNG, HEIC',
     status: 422,
   },
   FILE_PROCESSING_ERROR: {
