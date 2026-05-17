@@ -3,6 +3,15 @@ import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { processKYCMRZ } from '@/lib/core/kyc/mrz'
 import { sendEmail } from '@/lib/shared/services/email/client'
+import { processKYCFile } from '@/lib/core/kyc/file-pipeline'
+
+const PIPELINE_ERRORS: Record<string, { message: string; status: number }> = {
+  FILE_TOO_LARGE:        { message: 'Fichier trop volumineux (max 10 Mo)', status: 400 },
+  INVALID_FILE_FORMAT:   { message: 'Format non supporté. Formats acceptés : JPG, PNG, HEIC, PDF', status: 422 },
+  PDF_ENCRYPTED:         { message: 'Le PDF est protégé par un mot de passe', status: 422 },
+  PDF_RENDER_ERROR:      { message: 'Impossible de lire le PDF. Vérifiez que le fichier n\'est pas corrompu', status: 422 },
+  FILE_PROCESSING_ERROR: { message: 'Erreur lors du traitement du fichier', status: 500 },
+}
 
 export async function POST(req: NextRequest) {
   // 1. Auth
@@ -34,25 +43,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Les deux fichiers sont requis' }, { status: 400 })
   }
 
-  if (docFile.size > 10 * 1024 * 1024 || selfieFile.size > 10 * 1024 * 1024) {
-    return NextResponse.json({ error: 'Fichier trop volumineux (max 10 Mo)' }, { status: 400 })
-  }
-
   const admin = createAdminClient()
   const ts = Date.now()
   const idPath = `${user.id}/id-${ts}.jpg`
   const selfiePath = `${user.id}/selfie-${ts}.jpg`
 
-  // 3. Upload via service role (bypass RLS bucket)
-  const docBuffer = Buffer.from(await docFile.arrayBuffer())
-  const selfieBuffer = Buffer.from(await selfieFile.arrayBuffer())
+  // 3. Validation + conversion via pipeline sécurisé
+  const [docResult, selfieResult] = await Promise.all([
+    processKYCFile(Buffer.from(await docFile.arrayBuffer())),
+    processKYCFile(Buffer.from(await selfieFile.arrayBuffer())),
+  ])
 
+  if (!docResult.ok) {
+    const err = PIPELINE_ERRORS[docResult.code] ?? { message: 'Erreur fichier', status: 422 }
+    return NextResponse.json({ error: err.message, code: docResult.code }, { status: err.status })
+  }
+  if (!selfieResult.ok) {
+    const err = PIPELINE_ERRORS[selfieResult.code] ?? { message: 'Erreur fichier', status: 422 }
+    return NextResponse.json({ error: err.message, code: selfieResult.code }, { status: err.status })
+  }
+
+  // 4. Upload des buffers JPEG résultants (bypass RLS bucket)
   const [{ error: docErr }, { error: selfieErr }] = await Promise.all([
-    admin.storage.from('kyc-documents').upload(idPath, docBuffer, {
+    admin.storage.from('kyc-documents').upload(idPath, docResult.buffer, {
       contentType: 'image/jpeg',
       upsert: true,
     }),
-    admin.storage.from('kyc-documents').upload(selfiePath, selfieBuffer, {
+    admin.storage.from('kyc-documents').upload(selfiePath, selfieResult.buffer, {
       contentType: 'image/jpeg',
       upsert: true,
     }),
@@ -63,7 +80,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Erreur lors de l'upload des fichiers" }, { status: 500 })
   }
 
-  // 4. Mettre à jour profiles
+  // 5. Mettre à jour profiles
   const { error: profileErr } = await admin
     .from('profiles')
     .update({
@@ -80,7 +97,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Erreur lors de la mise à jour du profil' }, { status: 500 })
   }
 
-  // 5. Insérer dans kyc_reviews
+  // 6. Insérer dans kyc_reviews
   const docType    = formData.get('docType')        as string | null
   const docCountry = formData.get('country')        as string | null
   const customCtry = formData.get('customCountry')  as string | null
@@ -98,7 +115,7 @@ export async function POST(req: NextRequest) {
     console.error('KYC review insert error:', reviewErr)
   }
 
-  // 6. Notifier l'admin par email (fire-and-forget)
+  // 7. Notifier l'admin par email (fire-and-forget)
   ;(async () => {
     const { data: userProfile } = await admin
       .from('profiles')
@@ -123,7 +140,7 @@ export async function POST(req: NextRequest) {
     }
   })().catch(console.error)
 
-  // 7. Fire-and-forget MRZ (fragile en serverless — le fallback est dans /admin/kyc/[id])
+  // 8. Fire-and-forget MRZ (fragile en serverless — le fallback est dans /admin/kyc/[id])
   processKYCMRZ(user.id, idPath).catch(err =>
     console.error('[kyc/submit] MRZ processing failed:', err),
   )

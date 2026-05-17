@@ -31,6 +31,7 @@ import {
   IconLoader2,
   IconShieldCheck,
   IconUpload,
+  IconFileTypePdf,
 } from '@tabler/icons-react'
 import { createClient } from '@/lib/shared/db/client'
 
@@ -81,6 +82,7 @@ export default function KYCPage() {
   const [selfieFile, setSelfieFile] = useState<File | null>(null)
   const [docPreview, setDocPreview] = useState<string | null>(null)
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null)
+  const [docIsPdf, setDocIsPdf] = useState(false)
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const docInputRef = useRef<HTMLInputElement>(null)
@@ -120,8 +122,13 @@ export default function KYCPage() {
   function handleDocChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null
     setDocFile(file)
-    if (file) setDocPreview(URL.createObjectURL(file))
-    else setDocPreview(null)
+    if (file) {
+      setDocIsPdf(file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))
+      setDocPreview(URL.createObjectURL(file))
+    } else {
+      setDocIsPdf(false)
+      setDocPreview(null)
+    }
   }
 
   function handleSelfieChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -289,15 +296,27 @@ export default function KYCPage() {
               <input
                 ref={docInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/heic,application/pdf"
                 capture="environment"
                 className="hidden"
                 onChange={handleDocChange}
               />
               {docPreview ? (
-                <div className="relative aspect-video overflow-hidden rounded-lg border">
-                  <Image src={docPreview} alt="Aperçu document" fill className="object-contain" />
-                </div>
+                docIsPdf ? (
+                  <div className="flex items-center gap-3 rounded-lg border p-4 bg-muted/30">
+                    <IconFileTypePdf className="h-8 w-8 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{docFile?.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {((docFile?.size ?? 0) / 1024 / 1024).toFixed(1)} Mo
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative aspect-video overflow-hidden rounded-lg border">
+                    <Image src={docPreview} alt="Aperçu document" fill className="object-contain" />
+                  </div>
+                )
               ) : (
                 <button
                   type="button"
@@ -307,11 +326,12 @@ export default function KYCPage() {
                 >
                   <IconUpload className="h-8 w-8" />
                   <span className="text-sm">Prendre une photo ou choisir un fichier</span>
+                  <span className="text-xs text-muted-foreground/70">JPG, PNG, HEIC ou PDF · max 10 Mo</span>
                 </button>
               )}
               {docPreview && (
                 <Button variant="outline" size="sm" onClick={() => docInputRef.current?.click()}>
-                  Changer la photo
+                  {docIsPdf ? 'Changer le fichier' : 'Changer la photo'}
                 </Button>
               )}
 
@@ -359,7 +379,7 @@ export default function KYCPage() {
               <input
                 ref={selfieInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/heic"
                 capture="user"
                 className="hidden"
                 onChange={handleSelfieChange}
@@ -377,6 +397,7 @@ export default function KYCPage() {
                 >
                   <IconCamera className="h-8 w-8" />
                   <span className="text-sm">Prendre un selfie ou choisir un fichier</span>
+                  <span className="text-xs text-muted-foreground/70">JPG, PNG ou HEIC · max 10 Mo</span>
                 </button>
               )}
               {selfiePreview && (
