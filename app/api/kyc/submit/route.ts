@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { processKYCMRZ } from '@/lib/core/kyc/mrz'
@@ -249,8 +249,10 @@ async function handleKYCSubmit(req: NextRequest) {
   const mrzFallbackPath =
     documentType === 'passport' && backUploaded ? backPath : undefined
 
-  processKYCMRZ(user.id, mrzPrimaryPath, mrzFallbackPath).catch(err =>
-    console.error('[kyc/submit] MRZ processing failed:', err)
+  after(() =>
+    processKYCMRZ(user.id, mrzPrimaryPath, mrzFallbackPath).catch(err =>
+      console.error('[kyc/submit] MRZ processing failed:', err)
+    )
   )
 
   return NextResponse.json({ ok: true })

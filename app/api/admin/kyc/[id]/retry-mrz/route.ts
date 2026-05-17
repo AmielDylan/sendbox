@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/shared/db/admin'
 import { isAdmin } from '@/lib/core/admin/actions'
 import { processKYCMRZ } from '@/lib/core/kyc/mrz'
 
+export const maxDuration = 60
+
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -50,9 +52,7 @@ export async function POST(
       ? (profile.kyc_document_back as string)
       : undefined
 
-  processKYCMRZ(userId, mrzPrimaryPath, mrzFallbackPath).catch(err =>
-    console.error('[retry-mrz] MRZ processing failed:', err)
-  )
+  await processKYCMRZ(userId, mrzPrimaryPath, mrzFallbackPath)
 
   return NextResponse.json({ ok: true })
 }
