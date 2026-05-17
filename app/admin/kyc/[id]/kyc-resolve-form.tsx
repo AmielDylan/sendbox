@@ -16,12 +16,30 @@ interface Props {
   mrzFailed: boolean
 }
 
+const REJECTION_PRESETS = [
+  'Photo floue ou illisible',
+  'Pièce expirée',
+  'Pièce non supportée',
+  'Visage non visible sur le selfie',
+  'Selfie et pièce ne correspondent pas',
+  'Document incomplet ou tronqué',
+]
+
 export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
   const router = useRouter()
   const [verifiedName, setVerifiedName] = useState(suggestedName ?? '')
   const [rejectionReason, setRejectionReason] = useState('')
+  const [adminNotes, setAdminNotes] = useState('')
   const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  function applyPreset(preset: string) {
+    setRejectionReason(prev => {
+      if (!prev.trim()) return preset
+      if (prev.includes(preset)) return prev
+      return `${prev.trim()} — ${preset}`
+    })
+  }
 
   async function resolve(outcome: 'VERIFIED' | 'REJECTED') {
     if (outcome === 'REJECTED' && !rejectionReason.trim()) {
@@ -38,6 +56,7 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
           outcome,
           verifiedName: verifiedName.trim() || null,
           rejectionReason: rejectionReason.trim() || null,
+          adminNotes: adminNotes.trim() || null,
         }),
       })
       if (!res.ok) {
@@ -58,7 +77,7 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
       <CardHeader>
         <CardTitle className="text-sm">Décision admin</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -78,14 +97,42 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
           />
         </div>
 
+        {/* Motif de refus */}
         <div className="space-y-2">
-          <Label htmlFor="rejection-reason">Motif de refus (si rejet)</Label>
+          <Label htmlFor="rejection-reason">Motif de refus <span className="text-muted-foreground text-xs">(transmis à l&apos;utilisateur)</span></Label>
+          <div className="flex flex-wrap gap-1.5 pb-1">
+            {REJECTION_PRESETS.map(preset => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => applyPreset(preset)}
+                className="inline-flex items-center rounded-full border border-border/70 bg-muted/50 px-2.5 py-0.5 text-xs text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-foreground"
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
           <Textarea
             id="rejection-reason"
             value={rejectionReason}
             onChange={e => setRejectionReason(e.target.value)}
-            placeholder="Photo floue, pièce expirée, visage non visible…"
+            placeholder="Sélectionnez un motif ci-dessus ou saisissez un motif personnalisé…"
             rows={3}
+          />
+        </div>
+
+        {/* Notes internes */}
+        <div className="space-y-2">
+          <Label htmlFor="admin-notes">
+            Notes internes{' '}
+            <span className="text-muted-foreground text-xs">(non transmises à l&apos;utilisateur)</span>
+          </Label>
+          <Textarea
+            id="admin-notes"
+            value={adminNotes}
+            onChange={e => setAdminNotes(e.target.value)}
+            placeholder="Observations internes, contexte, doutes…"
+            rows={2}
           />
         </div>
 

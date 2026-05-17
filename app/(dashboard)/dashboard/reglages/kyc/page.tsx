@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import {
   IconAlertCircle,
   IconCamera,
@@ -75,6 +76,7 @@ export default function KYCPage() {
   const [state, setState] = useState<PageState>({ phase: 'loading' })
   const [docType, setDocType] = useState<DocType>('')
   const [country, setCountry] = useState<CountryCode>('')
+  const [customCountry, setCustomCountry] = useState('')
   const [docFile, setDocFile] = useState<File | null>(null)
   const [selfieFile, setSelfieFile] = useState<File | null>(null)
   const [docPreview, setDocPreview] = useState<string | null>(null)
@@ -139,6 +141,7 @@ export default function KYCPage() {
       body.append('consent', 'true')
       if (docType) body.append('docType', docType)
       if (country) body.append('country', country)
+      if (country === 'other' && customCountry.trim()) body.append('customCountry', customCountry.trim())
 
       const res = await fetch('/api/kyc/submit', { method: 'POST', body })
       if (!res.ok) {
@@ -153,7 +156,8 @@ export default function KYCPage() {
     }
   }
 
-  const canProceedStep1 = !!docType && !!country && !!docFile && consent
+  const countryReady = !!country && (country !== 'other' || !!customCountry.trim())
+  const canProceedStep1 = !!docType && countryReady && !!docFile && consent
 
   return (
     <div className="space-y-6">
@@ -269,6 +273,18 @@ export default function KYCPage() {
                 </div>
               </div>
 
+              {country === 'other' && (
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="custom-country">Précisez le pays d&apos;émission</Label>
+                  <Input
+                    id="custom-country"
+                    value={customCountry}
+                    onChange={e => setCustomCountry(e.target.value)}
+                    placeholder="ex : Égypte, Cameroun, Congo-Brazzaville…"
+                  />
+                </div>
+              )}
+
               {/* Upload document */}
               <input
                 ref={docInputRef}
@@ -286,7 +302,7 @@ export default function KYCPage() {
                 <button
                   type="button"
                   onClick={() => docInputRef.current?.click()}
-                  disabled={!docType || !country}
+                  disabled={!docType || !countryReady}
                   className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-10 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                 >
                   <IconUpload className="h-8 w-8" />

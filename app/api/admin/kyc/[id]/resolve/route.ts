@@ -20,14 +20,14 @@ export async function POST(
 
   const { id: userId } = await params
 
-  let body: { outcome: string; verifiedName?: string | null; rejectionReason?: string | null }
+  let body: { outcome: string; verifiedName?: string | null; rejectionReason?: string | null; adminNotes?: string | null }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Corps invalide' }, { status: 400 })
   }
 
-  const { outcome, verifiedName, rejectionReason } = body
+  const { outcome, verifiedName, rejectionReason, adminNotes } = body
   if (outcome !== 'VERIFIED' && outcome !== 'REJECTED') {
     return NextResponse.json({ error: 'Outcome invalide' }, { status: 400 })
   }
@@ -85,7 +85,7 @@ export async function POST(
     if (review) {
       await admin
         .from('kyc_reviews')
-        .update({ status: 'VERIFIED', admin_id: adminUser.id, reviewed_at: now })
+        .update({ status: 'VERIFIED', admin_id: adminUser.id, reviewed_at: now, admin_notes: adminNotes ?? null })
         .eq('id', review.id)
     }
 
@@ -135,7 +135,7 @@ export async function POST(
     if (review) {
       await admin
         .from('kyc_reviews')
-        .update({ status: 'REJECTED', admin_id: adminUser.id, reviewed_at: now })
+        .update({ status: 'REJECTED', admin_id: adminUser.id, reviewed_at: now, admin_notes: adminNotes ?? null })
         .eq('id', review.id)
     }
 

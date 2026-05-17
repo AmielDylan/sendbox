@@ -14,6 +14,7 @@ import {
   IconX,
 } from '@tabler/icons-react'
 import { KYCResolveForm } from './kyc-resolve-form'
+import { ApproveCountryButton } from './approve-country-button'
 
 export const dynamic = 'force-dynamic'
 
@@ -207,6 +208,41 @@ export default async function AdminKYCDetailPage({
               )}
             </CardContent>
           </Card>
+
+          {/* Infos document soumis */}
+          {review && ((review as any).doc_type || (review as any).doc_country) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Document soumis</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {(review as any).doc_type && (
+                  <MRZRow
+                    label="Type de pièce"
+                    value={(review as any).doc_type === 'passport' ? 'Passeport' : "Carte nationale d'identité"}
+                  />
+                )}
+                {(review as any).doc_country && (
+                  <MRZRow
+                    label="Pays d'émission"
+                    value={
+                      (review as any).doc_country === 'other'
+                        ? `Autre — ${(review as any).custom_country ?? '?'}`
+                        : (review as any).doc_country
+                    }
+                  />
+                )}
+                {(review as any).custom_country && (
+                  <div className="pt-1 space-y-2">
+                    <p className="text-xs text-amber-600">
+                      Pays non répertorié : <strong>{(review as any).custom_country}</strong>
+                    </p>
+                    <ApproveCountryButton userId={id} label={(review as any).custom_country} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Formulaire de résolution */}
           <KYCResolveForm
