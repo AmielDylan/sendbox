@@ -31,7 +31,6 @@ export default function AdminTransactionsPage() {
 
   const totalRevenue =
     transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0
-  const totalCommission = totalRevenue * 0.03
 
   const handleExportCSV = () => {
     // TODO: Implémenter export CSV
@@ -58,7 +57,6 @@ export default function AdminTransactionsPage() {
     const variants: Record<string, any> = {
       payment: 'default',
       refund: 'destructive',
-      commission: 'secondary',
     }
     return <Badge variant={variants[type] || 'secondary'}>{type}</Badge>
   }
@@ -81,7 +79,7 @@ export default function AdminTransactionsPage() {
       />
 
       {/* Métriques */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">CA Total</CardTitle>
@@ -100,19 +98,6 @@ export default function AdminTransactionsPage() {
             <div className="text-2xl font-bold">
               {transactions?.length || 0}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Commission plateforme
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalCommission.toFixed(2)} EUR
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">3 % du volume</p>
           </CardContent>
         </Card>
       </div>

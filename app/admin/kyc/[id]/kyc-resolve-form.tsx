@@ -89,7 +89,7 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
           />
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             className="flex-1"
             disabled={!!loading || !verifiedName.trim()}
