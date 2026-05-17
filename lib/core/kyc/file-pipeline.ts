@@ -2,13 +2,11 @@ import sharp from 'sharp'
 
 const MAX_SIZE = 10 * 1024 * 1024
 
-type FileKind = 'jpeg' | 'png' | 'heic' | 'pdf'
+type FileKind = 'jpeg' | 'png' | 'heic'
 
 export type PipelineErrorCode =
   | 'FILE_TOO_LARGE'
   | 'INVALID_FILE_FORMAT'
-  | 'PDF_ENCRYPTED'
-  | 'PDF_RENDER_ERROR'
   | 'FILE_PROCESSING_ERROR'
 
 export type PipelineResult =
@@ -28,56 +26,7 @@ function detectKind(buf: Buffer): FileKind | null {
     buf[7] === 0x70
   )
     return 'heic'
-  // PDF : %PDF
-  if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46)
-    return 'pdf'
   return null
-}
-
-async function pdfToJpeg(buf: Buffer): Promise<Buffer | PipelineErrorCode> {
-  let pdfjsLib: typeof import('pdfjs-dist/legacy/build/pdf.mjs')
-  let createCanvas: (typeof import('@napi-rs/canvas'))['createCanvas']
-
-  try {
-    pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
-    const canvasMod = await import('@napi-rs/canvas')
-    createCanvas = canvasMod.createCanvas
-  } catch {
-    return 'PDF_RENDER_ERROR'
-  }
-
-  pdfjsLib.GlobalWorkerOptions.workerSrc = ''
-
-  let pdf: Awaited<ReturnType<(typeof pdfjsLib)['getDocument']>['promise']>
-  try {
-    pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise
-  } catch (err: any) {
-    if (err?.name === 'PasswordException') return 'PDF_ENCRYPTED'
-    return 'PDF_RENDER_ERROR'
-  }
-
-  let page: Awaited<ReturnType<typeof pdf.getPage>>
-  try {
-    page = await pdf.getPage(1)
-  } catch {
-    return 'PDF_RENDER_ERROR'
-  }
-
-  const viewport = page.getViewport({ scale: 2.0 })
-  const canvas = createCanvas(
-    Math.ceil(viewport.width),
-    Math.ceil(viewport.height)
-  )
-
-  try {
-    // pdfjs-dist v4 attend `canvas` (le canvas lui-même, pas le contexte 2d)
-    await page.render({ canvas: canvas as any, viewport } as any).promise
-  } catch {
-    return 'PDF_RENDER_ERROR'
-  }
-
-  const png = canvas.toBuffer('image/png')
-  return sharp(png).jpeg({ quality: 85 }).toBuffer()
 }
 
 export async function processKYCFile(buf: Buffer): Promise<PipelineResult> {
@@ -87,11 +36,6 @@ export async function processKYCFile(buf: Buffer): Promise<PipelineResult> {
   if (!kind) return { ok: false, code: 'INVALID_FILE_FORMAT' }
 
   try {
-    if (kind === 'pdf') {
-      const result = await pdfToJpeg(buf)
-      if (typeof result === 'string') return { ok: false, code: result }
-      return { ok: true, buffer: result }
-    }
     const jpeg = await sharp(buf).jpeg({ quality: 85 }).toBuffer()
     return { ok: true, buffer: jpeg }
   } catch (err: any) {
