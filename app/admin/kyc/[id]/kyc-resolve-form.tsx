@@ -37,7 +37,7 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
     setRejectionReason(prev => {
       if (!prev.trim()) return preset
       if (prev.includes(preset)) return prev
-      return `${prev.trim()} — ${preset}`
+      return `${prev.trim()}, ${preset}`
     })
   }
 

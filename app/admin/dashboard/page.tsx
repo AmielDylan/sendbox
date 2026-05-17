@@ -94,10 +94,9 @@ export default async function AdminDashboardPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Transaction ID</TableHead>
+              <TableHead className="hidden sm:table-cell">Date</TableHead>
               <TableHead>Raison</TableHead>
-              <TableHead>Plaignant</TableHead>
+              <TableHead className="hidden sm:table-cell">Plaignant</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead>Action</TableHead>
             </TableRow>
@@ -105,27 +104,22 @@ export default async function AdminDashboardPage() {
           <TableBody>
             {data.openDisputes.map(dispute => (
               <TableRow key={dispute.id}>
-                <TableCell>{formatDate(dispute.opened_at)}</TableCell>
-                <TableCell className="font-mono text-xs">
-                  {truncateId(dispute.booking_id)}
-                </TableCell>
+                <TableCell className="hidden sm:table-cell">{formatDate(dispute.opened_at)}</TableCell>
                 <TableCell>{dispute.reason || 'Non renseignée'}</TableCell>
-                <TableCell>{dispute.openedByName}</TableCell>
+                <TableCell className="hidden sm:table-cell">{dispute.openedByName}</TableCell>
                 <TableCell>
                   <Badge variant="destructive">{dispute.status}</Badge>
                 </TableCell>
                 <TableCell>
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/admin/disputes/${dispute.id}`}>
-                      Instruire
-                    </Link>
+                    <Link href={`/admin/disputes/${dispute.id}`}>Instruire</Link>
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
             {data.openDisputes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground">
+                <TableCell colSpan={5} className="text-muted-foreground">
                   Aucun litige ouvert.
                 </TableCell>
               </TableRow>
@@ -138,18 +132,18 @@ export default async function AdminDashboardPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date d&apos;inscription</TableHead>
               <TableHead>Nom</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead className="hidden sm:table-cell">Email</TableHead>
+              <TableHead className="hidden sm:table-cell">Date</TableHead>
               <TableHead>Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.pendingKyc.map(profile => (
               <TableRow key={profile.id}>
-                <TableCell>{formatDate(profile.created_at)}</TableCell>
                 <TableCell>{profile.name}</TableCell>
-                <TableCell>{profile.email}</TableCell>
+                <TableCell className="hidden sm:table-cell">{profile.email}</TableCell>
+                <TableCell className="hidden sm:table-cell">{formatDate(profile.created_at)}</TableCell>
                 <TableCell>
                   <Button asChild size="sm" variant="outline">
                     <Link href={`/admin/kyc/${profile.id}`}>Vérifier</Link>
@@ -172,10 +166,10 @@ export default async function AdminDashboardPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
+              <TableHead className="hidden sm:table-cell">Date</TableHead>
               <TableHead>Corridor</TableHead>
               <TableHead>Statut</TableHead>
-              <TableHead>Flaggé ?</TableHead>
+              <TableHead className="hidden sm:table-cell">Flaggé ?</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -184,12 +178,12 @@ export default async function AdminDashboardPage() {
                 key={transaction.id}
                 className={cn(transaction.is_flagged && 'bg-destructive/10')}
               >
-                <TableCell>{formatDate(transaction.created_at)}</TableCell>
+                <TableCell className="hidden sm:table-cell">{formatDate(transaction.created_at)}</TableCell>
                 <TableCell>{transaction.corridor}</TableCell>
                 <TableCell>
                   <Badge variant="secondary">{transaction.status}</Badge>
                 </TableCell>
-                <TableCell>{transaction.is_flagged ? 'Oui' : 'Non'}</TableCell>
+                <TableCell className="hidden sm:table-cell">{transaction.is_flagged ? 'Oui' : 'Non'}</TableCell>
               </TableRow>
             ))}
             {data.latestTransactions.length === 0 ? (
@@ -398,11 +392,11 @@ function formatRatio(ratio: number) {
 
 function getRatioInterpretation(ratio: number) {
   if (ratio > 3) {
-    return "Trop de senders en attente — renforcer l'acquisition travelers"
+    return "Trop de senders en attente : renforcer l'acquisition travelers"
   }
 
   if (ratio < 1) {
-    return 'Trop de travelers sans demande — relancer les senders'
+    return 'Trop de travelers sans demande : relancer les senders'
   }
 
   return 'Équilibre correct'
