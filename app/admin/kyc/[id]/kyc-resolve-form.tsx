@@ -1,0 +1,118 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { IconLoader2 } from '@tabler/icons-react'
+
+interface Props {
+  userId: string
+  suggestedName: string | null
+  mrzFailed: boolean
+}
+
+export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
+  const router = useRouter()
+  const [verifiedName, setVerifiedName] = useState(suggestedName ?? '')
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function resolve(outcome: 'VERIFIED' | 'REJECTED') {
+    if (outcome === 'REJECTED' && !rejectionReason.trim()) {
+      setError('Le motif de refus est obligatoire')
+      return
+    }
+    setError(null)
+    setLoading(outcome === 'VERIFIED' ? 'approve' : 'reject')
+    try {
+      const res = await fetch(`/api/admin/kyc/${userId}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outcome,
+          verifiedName: verifiedName.trim() || null,
+          rejectionReason: rejectionReason.trim() || null,
+        }),
+      })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.error || 'Erreur lors de la résolution')
+      }
+      router.push('/admin/kyc')
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inattendue')
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm">Décision admin</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="verified-name">
+            Nom vérifié
+            {mrzFailed && <span className="ml-1 text-xs text-amber-600">(saisie manuelle requise)</span>}
+          </Label>
+          <Input
+            id="verified-name"
+            value={verifiedName}
+            onChange={e => setVerifiedName(e.target.value)}
+            placeholder="NOM Prénom tel qu'il figure sur la pièce"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="rejection-reason">Motif de refus (si rejet)</Label>
+          <Textarea
+            id="rejection-reason"
+            value={rejectionReason}
+            onChange={e => setRejectionReason(e.target.value)}
+            placeholder="Photo floue, pièce expirée, visage non visible…"
+            rows={3}
+          />
+        </div>
+
+        <div className="flex gap-3">
+          <Button
+            className="flex-1"
+            disabled={!!loading || !verifiedName.trim()}
+            onClick={() => resolve('VERIFIED')}
+          >
+            {loading === 'approve' ? (
+              <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            Valider l&apos;identité
+          </Button>
+          <Button
+            variant="destructive"
+            className="flex-1"
+            disabled={!!loading}
+            onClick={() => resolve('REJECTED')}
+          >
+            {loading === 'reject' ? (
+              <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            Rejeter
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

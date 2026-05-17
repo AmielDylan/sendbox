@@ -624,6 +624,75 @@ export type Database = {
           },
         ]
       }
+      kyc_reviews: {
+        Row: {
+          admin_id: string | null
+          consent_at: string | null
+          created_at: string
+          id: string
+          mrz_birth_date: string | null
+          mrz_expired: boolean | null
+          mrz_expiry: string | null
+          mrz_name: string | null
+          mrz_nationality: string | null
+          mrz_raw: string | null
+          mrz_valid: boolean | null
+          ocr_confidence: number | null
+          reviewed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          consent_at?: string | null
+          created_at?: string
+          id?: string
+          mrz_birth_date?: string | null
+          mrz_expired?: boolean | null
+          mrz_expiry?: string | null
+          mrz_name?: string | null
+          mrz_nationality?: string | null
+          mrz_raw?: string | null
+          mrz_valid?: boolean | null
+          ocr_confidence?: number | null
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          consent_at?: string | null
+          created_at?: string
+          id?: string
+          mrz_birth_date?: string | null
+          mrz_expired?: boolean | null
+          mrz_expiry?: string | null
+          mrz_name?: string | null
+          mrz_nationality?: string | null
+          mrz_raw?: string | null
+          mrz_valid?: boolean | null
+          ocr_confidence?: number | null
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_reviews_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kyc_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matching_payments: {
         Row: {
           amount_cents: number
@@ -875,6 +944,8 @@ export type Database = {
           id: string
           is_banned: boolean | null
           is_suspended: boolean | null
+          kyc_document_back: string | null
+          kyc_document_front: string | null
           kyc_document_type: string | null
           kyc_nationality: string | null
           kyc_rejection_reason: string | null
@@ -910,6 +981,8 @@ export type Database = {
           verification_status:
             | Database["public"]["Enums"]["verification_status_enum"]
             | null
+          verified_at: string | null
+          verified_name: string | null
           wallet_operator: string | null
           wallet_otp_code: string | null
           wallet_otp_expires_at: string | null
@@ -943,6 +1016,8 @@ export type Database = {
           id: string
           is_banned?: boolean | null
           is_suspended?: boolean | null
+          kyc_document_back?: string | null
+          kyc_document_front?: string | null
           kyc_document_type?: string | null
           kyc_nationality?: string | null
           kyc_rejection_reason?: string | null
@@ -978,6 +1053,8 @@ export type Database = {
           verification_status?:
             | Database["public"]["Enums"]["verification_status_enum"]
             | null
+          verified_at?: string | null
+          verified_name?: string | null
           wallet_operator?: string | null
           wallet_otp_code?: string | null
           wallet_otp_expires_at?: string | null
@@ -1011,6 +1088,8 @@ export type Database = {
           id?: string
           is_banned?: boolean | null
           is_suspended?: boolean | null
+          kyc_document_back?: string | null
+          kyc_document_front?: string | null
           kyc_document_type?: string | null
           kyc_nationality?: string | null
           kyc_rejection_reason?: string | null
@@ -1046,6 +1125,8 @@ export type Database = {
           verification_status?:
             | Database["public"]["Enums"]["verification_status_enum"]
             | null
+          verified_at?: string | null
+          verified_name?: string | null
           wallet_operator?: string | null
           wallet_otp_code?: string | null
           wallet_otp_expires_at?: string | null
