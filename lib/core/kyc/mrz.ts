@@ -115,7 +115,7 @@ async function upsertReview(
   userId: string,
   result: MRZResult,
 ) {
-  await (admin as any)
+  await admin
     .from('kyc_reviews')
     .update({
       mrz_valid: result.mrz_valid,

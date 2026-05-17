@@ -49,12 +49,11 @@ export default async function AdminKYCPage() {
   const reviewMap = new Map<string, { mrz_valid: boolean | null; status: string }>()
 
   if (userIds.length > 0) {
-    type ReviewRow = { user_id: string; mrz_valid: boolean | null; status: string }
-    const { data: reviews } = (await (admin as any)
+    const { data: reviews } = await admin
       .from('kyc_reviews')
       .select('user_id, mrz_valid, status')
       .in('user_id', userIds)
-      .order('created_at', { ascending: false })) as { data: ReviewRow[] | null; error: unknown }
+      .order('created_at', { ascending: false })
 
     for (const r of reviews ?? []) {
       if (!reviewMap.has(r.user_id)) {

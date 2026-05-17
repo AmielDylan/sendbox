@@ -44,19 +44,20 @@ drop policy if exists "Admins can read all KYC documents"        on storage.obje
 -- createAdminClient() (service_role key) bypasse la RLS → accès total au bucket.
 
 -- 4. pg_cron — suppression automatique des fichiers KYC > 72h
--- Requiert l'extension pg_cron et net activées sur le projet Supabase.
--- Les variables app.url et app.cron_secret sont à définir dans les settings DB.
-select cron.schedule(
-  'kyc-documents-cleanup-72h',
-  '0 3 * * *',
-  $$
-    select net.http_post(
-      url     := current_setting('app.url') || '/api/cron?job=kyc-documents-cleanup',
-      headers := jsonb_build_object(
-        'Content-Type', 'application/json',
-        'x-cron-secret', current_setting('app.cron_secret')
-      ),
-      body    := '{}'::jsonb
-    )
-  $$
-);
+-- À activer manuellement via le dashboard Supabase (Extensions → pg_cron + pg_net)
+-- puis exécuter dans l'éditeur SQL :
+--
+-- select cron.schedule(
+--   'kyc-documents-cleanup-72h',
+--   '0 3 * * *',
+--   $$
+--     select net.http_post(
+--       url     := current_setting('app.url') || '/api/cron?job=kyc-documents-cleanup',
+--       headers := jsonb_build_object(
+--         'Content-Type', 'application/json',
+--         'x-cron-secret', current_setting('app.cron_secret')
+--       ),
+--       body    := '{}'::jsonb
+--     )
+--   $$
+-- );

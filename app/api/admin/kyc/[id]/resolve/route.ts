@@ -35,35 +35,25 @@ export async function POST(
   const admin = createAdminClient()
 
   // 2. Charger le profil + dernier review en attente
-  // Cast any — kyc_document_front/back et kyc_reviews pas encore dans les types générés
-  const { data: profile } = (await (admin as any)
+  const { data: profile } = await admin
     .from('profiles')
     .select('email, firstname, kyc_document_front, kyc_document_back')
     .eq('id', userId)
-    .single()) as {
-    data: {
-      email: string | null
-      firstname: string | null
-      kyc_document_front: string | null
-      kyc_document_back: string | null
-    } | null
-    error: unknown
-  }
+    .single()
 
   if (!profile) {
     return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 })
   }
 
-  type ReviewRow = { id: string; mrz_name: string | null }
-  const { data: reviews } = (await (admin as any)
+  const { data: reviews } = await admin
     .from('kyc_reviews')
     .select('id, mrz_name')
     .eq('user_id', userId)
     .eq('status', 'PENDING')
     .order('created_at', { ascending: false })
-    .limit(1)) as { data: ReviewRow[] | null; error: unknown }
+    .limit(1)
 
-  const review: ReviewRow | null = reviews?.[0] ?? null
+  const review = reviews?.[0] ?? null
   const now = new Date().toISOString()
 
   if (outcome === 'VERIFIED') {
@@ -75,7 +65,7 @@ export async function POST(
         verification_status: 'verified',
         verified_at: now,
         verified_name: resolvedName,
-      } as any)
+      })
       .eq('id', userId)
 
     if (profileErr) {
@@ -93,7 +83,7 @@ export async function POST(
 
     // Mettre à jour le kyc_review
     if (review) {
-      await (admin as any)
+      await admin
         .from('kyc_reviews')
         .update({ status: 'VERIFIED', admin_id: adminUser.id, reviewed_at: now })
         .eq('id', review.id)
@@ -126,7 +116,7 @@ export async function POST(
       .update({
         verification_status: 'rejected',
         kyc_rejection_reason: rejectionReason,
-      } as any)
+      })
       .eq('id', userId)
 
     if (profileErr) {
@@ -143,7 +133,7 @@ export async function POST(
     }
 
     if (review) {
-      await (admin as any)
+      await admin
         .from('kyc_reviews')
         .update({ status: 'REJECTED', admin_id: adminUser.id, reviewed_at: now })
         .eq('id', review.id)
