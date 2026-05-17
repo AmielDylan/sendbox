@@ -69,9 +69,10 @@ export default async function AdminKYCDetailPage({
     signedUrls.selfie = data?.signedUrl ?? null
   }
 
-  const displayName =
-    [profile.firstname, profile.lastname].filter(Boolean).join(' ') ||
-    'Utilisateur'
+  const profileName =
+    [profile.lastname, profile.firstname].filter(Boolean).join(' ') || null
+
+  const displayName = profileName ?? 'Utilisateur'
 
   return (
     <div className="space-y-6">
@@ -103,13 +104,15 @@ export default async function AdminKYCDetailPage({
               </CardHeader>
               <CardContent>
                 {signedUrls.front ? (
-                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted select-none">
                     <Image
                       src={signedUrls.front}
                       alt="Recto document"
                       fill
                       className="object-contain"
                       unoptimized
+                      draggable={false}
+                      onContextMenu={e => e.preventDefault()}
                     />
                   </div>
                 ) : (
@@ -128,13 +131,15 @@ export default async function AdminKYCDetailPage({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted select-none">
                     <Image
                       src={signedUrls.back}
                       alt="Verso document"
                       fill
                       className="object-contain"
                       unoptimized
+                      draggable={false}
+                      onContextMenu={e => e.preventDefault()}
                     />
                   </div>
                 </CardContent>
@@ -149,13 +154,15 @@ export default async function AdminKYCDetailPage({
             </CardHeader>
             <CardContent>
               {signedUrls.selfie ? (
-                <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted select-none">
                   <Image
                     src={signedUrls.selfie}
                     alt="Selfie"
                     fill
                     className="object-contain"
                     unoptimized
+                    draggable={false}
+                    onContextMenu={e => e.preventDefault()}
                   />
                 </div>
               ) : (
@@ -308,6 +315,7 @@ export default async function AdminKYCDetailPage({
           <KYCResolveForm
             userId={id}
             suggestedName={review?.mrz_name ?? null}
+            profileName={profileName}
             mrzFailed={!review?.mrz_valid}
           />
         </div>
