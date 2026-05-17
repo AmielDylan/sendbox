@@ -13,6 +13,7 @@ import { IconLoader2 } from '@tabler/icons-react'
 interface Props {
   userId: string
   suggestedName: string | null
+  profileName: string | null
   mrzFailed: boolean
 }
 
@@ -25,9 +26,9 @@ const REJECTION_PRESETS = [
   'Document incomplet ou tronqué',
 ]
 
-export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
+export function KYCResolveForm({ userId, suggestedName, profileName, mrzFailed }: Props) {
   const router = useRouter()
-  const [verifiedName, setVerifiedName] = useState(suggestedName ?? '')
+  const [verifiedName, setVerifiedName] = useState(suggestedName ?? profileName ?? '')
   const [rejectionReason, setRejectionReason] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
   const [loading, setLoading] = useState<'approve' | 'reject' | 'mrz' | null>(null)
@@ -44,8 +45,14 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
   async function retryMRZ() {
     setLoading('mrz')
     try {
-      await fetch(`/api/admin/kyc/${userId}/retry-mrz`, { method: 'POST' })
+      const res = await fetch(`/api/admin/kyc/${userId}/retry-mrz`, { method: 'POST' })
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null)
+        throw new Error(payload?.error || 'Erreur lors de l\'extraction')
+      }
       router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de l\'extraction MRZ')
     } finally {
       setLoading(null)
     }
@@ -109,6 +116,22 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
             onChange={e => setVerifiedName(e.target.value)}
             placeholder="NOM Prénom tel qu'il figure sur la pièce"
           />
+          {(profileName || suggestedName) && (
+            <div className="space-y-0.5 text-xs text-muted-foreground pt-1">
+              {profileName && (
+                <p>
+                  À l&apos;inscription :{' '}
+                  <span className="font-medium text-foreground">{profileName}</span>
+                </p>
+              )}
+              {suggestedName && (
+                <p>
+                  Extrait MRZ :{' '}
+                  <span className="font-medium text-foreground">{suggestedName}</span>
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Motif de refus */}
