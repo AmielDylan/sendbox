@@ -14,6 +14,14 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import {
   IconAlertCircle,
   IconCamera,
   IconCheck,
@@ -36,9 +44,37 @@ type PageState =
   | { phase: 'success' }
   | { phase: 'error'; message: string }
 
+type DocType = 'passport' | 'cni' | ''
+type CountryCode = 'FR' | 'BJ' | 'TG' | 'CI' | 'SN' | 'MA' | 'DZ' | 'TN' | 'CM' | 'other' | ''
+
+const DOC_TYPES: { value: DocType; label: string }[] = [
+  { value: 'passport', label: 'Passeport' },
+  { value: 'cni', label: "Carte nationale d'identité" },
+]
+
+const COUNTRIES: { value: CountryCode; label: string }[] = [
+  { value: 'FR', label: 'France' },
+  { value: 'BJ', label: 'Bénin' },
+  { value: 'TG', label: 'Togo' },
+  { value: 'CI', label: "Côte d'Ivoire" },
+  { value: 'SN', label: 'Sénégal' },
+  { value: 'MA', label: 'Maroc' },
+  { value: 'DZ', label: 'Algérie' },
+  { value: 'TN', label: 'Tunisie' },
+  { value: 'CM', label: 'Cameroun' },
+  { value: 'other', label: 'Autre' },
+]
+
+const docHint: Record<NonNullable<Exclude<DocType, ''>>, string> = {
+  passport: 'Page principale ouverte (photo + informations). Passeport entier visible, fond uni, sans reflet.',
+  cni: 'Recto de la carte. Pièce entière visible, fond uni, sans reflet.',
+}
+
 export default function KYCPage() {
   const router = useRouter()
   const [state, setState] = useState<PageState>({ phase: 'loading' })
+  const [docType, setDocType] = useState<DocType>('')
+  const [country, setCountry] = useState<CountryCode>('')
   const [docFile, setDocFile] = useState<File | null>(null)
   const [selfieFile, setSelfieFile] = useState<File | null>(null)
   const [docPreview, setDocPreview] = useState<string | null>(null)
@@ -101,6 +137,8 @@ export default function KYCPage() {
       body.append('docFile', docFile)
       body.append('selfieFile', selfieFile)
       body.append('consent', 'true')
+      if (docType) body.append('docType', docType)
+      if (country) body.append('country', country)
 
       const res = await fetch('/api/kyc/submit', { method: 'POST', body })
       if (!res.ok) {
@@ -114,6 +152,8 @@ export default function KYCPage() {
       setSubmitting(false)
     }
   }
+
+  const canProceedStep1 = !!docType && !!country && !!docFile && consent
 
   return (
     <div className="space-y-6">
@@ -174,19 +214,62 @@ export default function KYCPage() {
 
       {(state.phase === 'rejected' || state.phase === 'form') && (
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Étape 1 — Document */}
+          {/* Étape 1 : Document */}
           <Card className={state.phase === 'form' && state.step === 2 ? 'opacity-60' : ''}>
             <CardHeader>
               <div className="flex items-center gap-3">
                 <IconId className="h-5 w-5 text-primary/80" />
-                <CardTitle className="text-base">Étape 1 — Pièce d&apos;identité</CardTitle>
+                <CardTitle className="text-base">Étape 1 : Pièce d&apos;identité</CardTitle>
               </div>
               <CardDescription>
-                Passeport ou carte nationale d&apos;identité biométrique (France, Bénin 2018+).
-                Photo nette, pièce entière visible, fond uni.
+                {docType
+                  ? docHint[docType as Exclude<DocType, ''>]
+                  : 'Sélectionnez le type de pièce et le pays d\'émission, puis prenez une photo nette sur fond uni.'}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5">
+              {/* Sélecteurs */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="doc-type">Type de pièce</Label>
+                  <Select
+                    value={docType}
+                    onValueChange={(v) => setDocType(v as DocType)}
+                  >
+                    <SelectTrigger id="doc-type">
+                      <SelectValue placeholder="Choisir…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DOC_TYPES.map(d => (
+                        <SelectItem key={d.value} value={d.value}>
+                          {d.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="doc-country">Pays d&apos;émission</Label>
+                  <Select
+                    value={country}
+                    onValueChange={(v) => setCountry(v as CountryCode)}
+                  >
+                    <SelectTrigger id="doc-country">
+                      <SelectValue placeholder="Choisir…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map(c => (
+                        <SelectItem key={c.value} value={c.value}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Upload document */}
               <input
                 ref={docInputRef}
                 type="file"
@@ -203,7 +286,8 @@ export default function KYCPage() {
                 <button
                   type="button"
                   onClick={() => docInputRef.current?.click()}
-                  className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-10 text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+                  disabled={!docType || !country}
+                  className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-10 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                 >
                   <IconUpload className="h-8 w-8" />
                   <span className="text-sm">Prendre une photo ou choisir un fichier</span>
@@ -235,7 +319,7 @@ export default function KYCPage() {
               {state.phase === 'form' && state.step === 1 && (
                 <Button
                   className="w-full"
-                  disabled={!docFile || !consent}
+                  disabled={!canProceedStep1}
                   onClick={() => setState({ phase: 'form', step: 2 })}
                 >
                   Continuer
@@ -244,12 +328,12 @@ export default function KYCPage() {
             </CardContent>
           </Card>
 
-          {/* Étape 2 — Selfie */}
+          {/* Étape 2 : Selfie */}
           <Card className={state.phase === 'form' && state.step === 1 ? 'opacity-60' : ''}>
             <CardHeader>
               <div className="flex items-center gap-3">
                 <IconCamera className="h-5 w-5 text-primary/80" />
-                <CardTitle className="text-base">Étape 2 — Selfie avec la pièce</CardTitle>
+                <CardTitle className="text-base">Étape 2 : Selfie avec la pièce</CardTitle>
               </div>
               <CardDescription>
                 Prenez un selfie en tenant votre pièce d&apos;identité bien visible à côté de votre visage.
