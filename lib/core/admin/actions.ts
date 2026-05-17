@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { headers } from 'next/headers'
-import { COMMISSION_RATE } from '@/lib/core/bookings/validations'
+
 
 /**
  * Vérifie si l'utilisateur est admin
@@ -351,8 +351,6 @@ export async function getAdminStats() {
   const monthlyRevenue =
     transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
 
-  const platformCommission = monthlyRevenue * COMMISSION_RATE
-
   // Nouveaux utilisateurs ce mois
   const { count: newUsersThisMonth } = await supabase
     .from('profiles')
@@ -412,7 +410,6 @@ export async function getAdminStats() {
     pendingKYC: pendingKYC || 0,
     activeBookings: activeBookings || 0,
     monthlyRevenue,
-    platformCommission,
     newUsersThisMonth: newUsersThisMonth || 0,
     activeDisputes: activeDisputes || 0,
     weeklyRegistrations,

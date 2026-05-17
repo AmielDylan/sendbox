@@ -189,9 +189,9 @@ export default async function AdminKYCDetailPage({
                         <span className={review.mrz_expired ? 'text-destructive' : ''}>
                           {formatMRZDate(review.mrz_expiry)}{' '}
                           {review.mrz_expired ? (
-                            <Badge variant="destructive" className="text-[10px]">Expiré</Badge>
+                            <Badge variant="destructive" className="text-xs">Expiré</Badge>
                           ) : (
-                            <Badge variant="secondary" className="text-[10px]">Valide</Badge>
+                            <Badge variant="secondary" className="text-xs">Valide</Badge>
                           )}
                         </span>
                       }
