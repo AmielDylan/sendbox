@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import Image from 'next/image'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { isAdmin } from '@/lib/core/admin/actions'
@@ -10,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { IconAlertTriangle, IconCheck, IconX } from '@tabler/icons-react'
 import { KYCResolveForm } from './kyc-resolve-form'
+import { KYCProtectedImage } from './kyc-protected-image'
 import { ApproveCountryButton } from './approve-country-button'
 
 export const dynamic = 'force-dynamic'
@@ -104,17 +104,7 @@ export default async function AdminKYCDetailPage({
               </CardHeader>
               <CardContent>
                 {signedUrls.front ? (
-                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted select-none">
-                    <Image
-                      src={signedUrls.front}
-                      alt="Recto document"
-                      fill
-                      className="object-contain"
-                      unoptimized
-                      draggable={false}
-                      onContextMenu={e => e.preventDefault()}
-                    />
-                  </div>
+                  <KYCProtectedImage src={signedUrls.front} alt="Recto document" />
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     Aucun document disponible
@@ -131,17 +121,7 @@ export default async function AdminKYCDetailPage({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted select-none">
-                    <Image
-                      src={signedUrls.back}
-                      alt="Verso document"
-                      fill
-                      className="object-contain"
-                      unoptimized
-                      draggable={false}
-                      onContextMenu={e => e.preventDefault()}
-                    />
-                  </div>
+                  <KYCProtectedImage src={signedUrls.back} alt="Verso document" />
                 </CardContent>
               </Card>
             )}
@@ -154,17 +134,7 @@ export default async function AdminKYCDetailPage({
             </CardHeader>
             <CardContent>
               {signedUrls.selfie ? (
-                <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted select-none">
-                  <Image
-                    src={signedUrls.selfie}
-                    alt="Selfie"
-                    fill
-                    className="object-contain"
-                    unoptimized
-                    draggable={false}
-                    onContextMenu={e => e.preventDefault()}
-                  />
-                </div>
+                <KYCProtectedImage src={signedUrls.selfie} alt="Selfie" />
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Aucun selfie disponible
