@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -77,11 +78,32 @@ const COUNTRIES: { value: CountryCode; label: string }[] = [
   { value: 'other', label: 'Autre' },
 ]
 
-const docHint: Record<NonNullable<Exclude<DocType, ''>>, string> = {
-  passport:
-    'Page principale ouverte (photo + informations). Passeport entier visible, fond uni, sans reflet.',
-  cni: 'Recto de la carte. Pièce entière visible, fond uni, sans reflet.',
-}
+const FIELD_LABELS = {
+  cni: {
+    front: {
+      title: 'Recto',
+      description: 'Face avec votre photo',
+    },
+    back: {
+      title: 'Verso',
+      description: 'Face avec les deux lignes de caractères en bas de la carte',
+      required: true,
+    },
+  },
+  passport: {
+    front: {
+      title: 'Page principale',
+      description:
+        'Page avec votre photo et les deux lignes de caractères en bas',
+    },
+    back: {
+      title: 'Page suivante',
+      description:
+        'Page suivante si les lignes de caractères sont sur une page séparée',
+      required: false,
+    },
+  },
+} as const
 
 export default function KYCPage() {
   const router = useRouter()
@@ -89,13 +111,16 @@ export default function KYCPage() {
   const [docType, setDocType] = useState<DocType>('')
   const [country, setCountry] = useState<CountryCode>('')
   const [customCountry, setCustomCountry] = useState('')
-  const [docFile, setDocFile] = useState<File | null>(null)
+  const [frontFile, setFrontFile] = useState<File | null>(null)
+  const [backFile, setBackFile] = useState<File | null>(null)
+  const [frontPreview, setFrontPreview] = useState<string | null>(null)
+  const [backPreview, setBackPreview] = useState<string | null>(null)
   const [selfieFile, setSelfieFile] = useState<File | null>(null)
-  const [docPreview, setDocPreview] = useState<string | null>(null)
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null)
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const docInputRef = useRef<HTMLInputElement>(null)
+  const frontInputRef = useRef<HTMLInputElement>(null)
+  const backInputRef = useRef<HTMLInputElement>(null)
   const selfieInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -133,29 +158,34 @@ export default function KYCPage() {
     load()
   }, [router])
 
-  function handleDocChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFrontChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null
-    setDocFile(file)
-    if (file) setDocPreview(URL.createObjectURL(file))
-    else setDocPreview(null)
+    setFrontFile(file)
+    setFrontPreview(file ? URL.createObjectURL(file) : null)
+  }
+
+  function handleBackChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null
+    setBackFile(file)
+    setBackPreview(file ? URL.createObjectURL(file) : null)
   }
 
   function handleSelfieChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null
     setSelfieFile(file)
-    if (file) setSelfiePreview(URL.createObjectURL(file))
-    else setSelfiePreview(null)
+    setSelfiePreview(file ? URL.createObjectURL(file) : null)
   }
 
   async function handleSubmit() {
-    if (!docFile || !selfieFile || !consent) return
+    if (!frontFile || !selfieFile || !consent) return
     setSubmitting(true)
     try {
       const body = new FormData()
-      body.append('docFile', docFile)
+      body.append('frontFile', frontFile)
+      if (backFile) body.append('backFile', backFile)
       body.append('selfieFile', selfieFile)
       body.append('consent', 'true')
-      if (docType) body.append('docType', docType)
+      if (docType) body.append('documentType', docType)
       if (country) body.append('country', country)
       if (country === 'other' && customCountry.trim())
         body.append('customCountry', customCountry.trim())
@@ -176,9 +206,17 @@ export default function KYCPage() {
     }
   }
 
+  const backRequired = docType === 'cni'
   const countryReady =
     !!country && (country !== 'other' || !!customCountry.trim())
-  const canProceedStep1 = !!docType && countryReady && !!docFile && consent
+  const canProceedStep1 =
+    !!docType &&
+    countryReady &&
+    !!frontFile &&
+    (!backRequired || !!backFile) &&
+    consent
+
+  const fieldLabels = docType ? FIELD_LABELS[docType] : null
 
   return (
     <div className="space-y-6">
@@ -260,9 +298,9 @@ export default function KYCPage() {
                 </CardTitle>
               </div>
               <CardDescription>
-                {docType
-                  ? docHint[docType as Exclude<DocType, ''>]
-                  : "Sélectionnez le type de pièce et le pays d'émission, puis prenez une photo nette sur fond uni."}
+                {fieldLabels
+                  ? `Pièce entière visible sur fond uni, sans reflet.`
+                  : "Sélectionnez le type de pièce et le pays d'émission, puis chargez les photos."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -321,49 +359,122 @@ export default function KYCPage() {
                 </div>
               )}
 
-              {/* Upload document */}
+              {/* Upload recto + verso */}
               <input
-                ref={docInputRef}
+                ref={frontInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/heic"
                 capture="environment"
                 className="hidden"
-                onChange={handleDocChange}
+                onChange={handleFrontChange}
               />
-              {docPreview ? (
-                <div className="relative aspect-video overflow-hidden rounded-lg border">
-                  <Image
-                    src={docPreview}
-                    alt="Aperçu document"
-                    fill
-                    className="object-contain"
-                  />
+              <input
+                ref={backInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/heic"
+                capture="environment"
+                className="hidden"
+                onChange={handleBackChange}
+              />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Recto / Page principale */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">
+                    {fieldLabels ? fieldLabels.front.title : 'Recto'}
+                  </p>
+                  {fieldLabels && (
+                    <p className="text-xs text-muted-foreground">
+                      {fieldLabels.front.description}
+                    </p>
+                  )}
+                  {frontPreview ? (
+                    <div className="relative aspect-video overflow-hidden rounded-lg border">
+                      <Image
+                        src={frontPreview}
+                        alt="Aperçu recto"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => frontInputRef.current?.click()}
+                      disabled={!docType || !countryReady}
+                      className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-8 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                    >
+                      <IconUpload className="h-7 w-7" />
+                      <span className="text-xs">
+                        Photo ou fichier
+                        <br />
+                        JPG, PNG ou HEIC · max 10 Mo
+                      </span>
+                    </button>
+                  )}
+                  {frontPreview && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => frontInputRef.current?.click()}
+                    >
+                      Changer la photo
+                    </Button>
+                  )}
                 </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => docInputRef.current?.click()}
-                  disabled={!docType || !countryReady}
-                  className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-10 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
-                >
-                  <IconUpload className="h-8 w-8" />
-                  <span className="text-sm">
-                    Prendre une photo ou choisir un fichier
-                  </span>
-                  <span className="text-xs text-muted-foreground/70">
-                    JPG, PNG ou HEIC · max 10 Mo
-                  </span>
-                </button>
-              )}
-              {docPreview && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => docInputRef.current?.click()}
-                >
-                  Changer la photo
-                </Button>
-              )}
+
+                {/* Verso / Page suivante */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium">
+                      {fieldLabels ? fieldLabels.back.title : 'Verso'}
+                    </p>
+                    {fieldLabels && !fieldLabels.back.required && (
+                      <Badge variant="secondary" className="text-[10px] h-5">
+                        Optionnel
+                      </Badge>
+                    )}
+                  </div>
+                  {fieldLabels && (
+                    <p className="text-xs text-muted-foreground">
+                      {fieldLabels.back.description}
+                    </p>
+                  )}
+                  {backPreview ? (
+                    <div className="relative aspect-video overflow-hidden rounded-lg border">
+                      <Image
+                        src={backPreview}
+                        alt="Aperçu verso"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => backInputRef.current?.click()}
+                      disabled={!docType || !countryReady}
+                      className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-8 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+                    >
+                      <IconUpload className="h-7 w-7" />
+                      <span className="text-xs">
+                        Photo ou fichier
+                        <br />
+                        JPG, PNG ou HEIC · max 10 Mo
+                      </span>
+                    </button>
+                  )}
+                  {backPreview && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => backInputRef.current?.click()}
+                    >
+                      Changer la photo
+                    </Button>
+                  )}
+                </div>
+              </div>
 
               <label className="flex items-start gap-3 text-sm cursor-pointer">
                 <input
