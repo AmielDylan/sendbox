@@ -6,7 +6,10 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { rejectAnnouncement, getAdminAnnouncements } from '@/lib/core/admin/actions'
+import {
+  rejectAnnouncement,
+  getAdminAnnouncements,
+} from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -55,7 +58,10 @@ export default function AdminAnnouncementsPage() {
   } = useQuery({
     queryKey: ['adminAnnouncements', filterSendbox],
     retry: 1,
-    queryFn: () => getAdminAnnouncements(filterSendbox === 'all' ? undefined : filterSendbox),
+    queryFn: () =>
+      getAdminAnnouncements(
+        filterSendbox === 'all' ? undefined : filterSendbox
+      ),
   })
 
   const handleReject = async () => {
@@ -149,12 +155,20 @@ export default function AdminAnnouncementsPage() {
           {/* Mobile — cards */}
           <div className="grid gap-3 md:hidden">
             {announcements?.map((announcement: any) => (
-              <div key={announcement.id} className="rounded-lg border p-4 space-y-3 text-sm">
+              <div
+                key={announcement.id}
+                className="rounded-lg border p-4 space-y-3 text-sm"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-medium">{announcement.departure_city} → {announcement.arrival_city}</p>
+                    <p className="font-medium">
+                      {announcement.departure_city} →{' '}
+                      {announcement.arrival_city}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(announcement.created_at), 'PP', { locale: fr })}
+                      {format(new Date(announcement.created_at), 'PP', {
+                        locale: fr,
+                      })}
                     </p>
                   </div>
                   {getStatusBadge(announcement.status)}
@@ -162,14 +176,18 @@ export default function AdminAnnouncementsPage() {
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   {announcement.is_sendbox ? (
                     <Badge className="bg-primary/10 text-primary border-0 text-xs">
-                      <IconLuggage className="h-3 w-3 mr-1" />Sendbox
+                      <IconLuggage className="h-3 w-3 mr-1" />
+                      Sendbox
                     </Badge>
                   ) : announcement.sendbox_available ? (
                     <Badge variant="outline" className="text-xs">
-                      <IconLuggage className="h-3 w-3 mr-1" />Sendbox
+                      <IconLuggage className="h-3 w-3 mr-1" />
+                      Sendbox
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="text-xs">P2P</Badge>
+                    <Badge variant="secondary" className="text-xs">
+                      P2P
+                    </Badge>
                   )}
                   <span>{announcement.price_per_kg} EUR/kg</span>
                   <span>{announcement.available_kg} kg dispo</span>
@@ -189,7 +207,9 @@ export default function AdminAnnouncementsPage() {
               </div>
             ))}
             {(announcements?.length ?? 0) === 0 && (
-              <p className="text-sm text-muted-foreground py-4 text-center">Aucune annonce.</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                Aucune annonce.
+              </p>
             )}
           </div>
 
@@ -211,7 +231,8 @@ export default function AdminAnnouncementsPage() {
                 {announcements?.map((announcement: any) => (
                   <TableRow key={announcement.id}>
                     <TableCell>
-                      {announcement.departure_city} → {announcement.arrival_city}
+                      {announcement.departure_city} →{' '}
+                      {announcement.arrival_city}
                     </TableCell>
                     <TableCell>
                       {announcement.is_sendbox ? (

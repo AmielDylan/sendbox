@@ -1,6 +1,11 @@
 'use client'
 
-import { IconStar, IconStarFilled, IconShield, IconAlertTriangle } from '@tabler/icons-react'
+import {
+  IconStar,
+  IconStarFilled,
+  IconShield,
+  IconAlertTriangle,
+} from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 
@@ -22,11 +27,13 @@ interface ReputationSectionProps {
 function StarRating({ score }: { score: number }) {
   return (
     <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map(star => (
-        star <= Math.round(score)
-          ? <IconStarFilled key={star} className="h-4 w-4 text-amber-400" />
-          : <IconStar key={star} className="h-4 w-4 text-muted-foreground" />
-      ))}
+      {[1, 2, 3, 4, 5].map(star =>
+        star <= Math.round(score) ? (
+          <IconStarFilled key={star} className="h-4 w-4 text-amber-400" />
+        ) : (
+          <IconStar key={star} className="h-4 w-4 text-muted-foreground" />
+        )
+      )}
     </div>
   )
 }
@@ -56,16 +63,28 @@ export function ReputationSection({
           <Progress value={scorePercent} className="h-2" />
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
             <div>
-              <span className="font-semibold text-foreground">{completedCount}</span> transactions complétées
+              <span className="font-semibold text-foreground">
+                {completedCount}
+              </span>{' '}
+              transactions complétées
             </div>
             <div>
-              <span className="font-semibold text-foreground">{disputedCount}</span> litiges
+              <span className="font-semibold text-foreground">
+                {disputedCount}
+              </span>{' '}
+              litiges
             </div>
             <div>
-              <span className="font-semibold text-foreground">{uniqueSenderCount}</span> expéditeurs uniques
+              <span className="font-semibold text-foreground">
+                {uniqueSenderCount}
+              </span>{' '}
+              expéditeurs uniques
             </div>
             <div>
-              <span className="font-semibold text-foreground">{uniqueTravelerCount}</span> voyageurs uniques
+              <span className="font-semibold text-foreground">
+                {uniqueTravelerCount}
+              </span>{' '}
+              voyageurs uniques
             </div>
           </div>
         </div>
@@ -101,7 +120,10 @@ export function ReputationSection({
         <div className="space-y-3">
           <p className="text-sm font-medium">Avis récents</p>
           {recentReviews.map((review, i) => (
-            <div key={i} className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-1">
+            <div
+              key={i}
+              className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-1"
+            >
               <div className="flex items-center justify-between">
                 <StarRating score={review.rating} />
                 <span className="text-xs text-muted-foreground">
@@ -109,7 +131,9 @@ export function ReputationSection({
                 </span>
               </div>
               {review.comment && (
-                <p className="text-sm text-muted-foreground">{review.comment}</p>
+                <p className="text-sm text-muted-foreground">
+                  {review.comment}
+                </p>
               )}
             </div>
           ))}
@@ -117,7 +141,9 @@ export function ReputationSection({
       )}
 
       {recentReviews.length === 0 && completedCount === 0 && (
-        <p className="text-sm text-muted-foreground">Aucune transaction complétée pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground">
+          Aucune transaction complétée pour l&apos;instant.
+        </p>
       )}
     </div>
   )

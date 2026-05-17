@@ -8,7 +8,10 @@ const MAX_AGE_MS = 72 * 60 * 60 * 1000 // 72h
  * Supprime les fichiers KYC du bucket kyc-documents
  * dont le created_at (metadata Supabase Storage) dépasse 72h.
  */
-export async function runKYCDocumentsCleanup(): Promise<{ success: boolean; deleted: number }> {
+export async function runKYCDocumentsCleanup(): Promise<{
+  success: boolean
+  deleted: number
+}> {
   try {
     const admin = createAdminClient()
     const cutoff = new Date(Date.now() - MAX_AGE_MS)
@@ -33,7 +36,10 @@ export async function runKYCDocumentsCleanup(): Promise<{ success: boolean; dele
         .list(folder.name, { limit: 100 })
 
       if (filesErr) {
-        console.error(`[kyc-documents-cleanup] list files error for ${folder.name}:`, filesErr)
+        console.error(
+          `[kyc-documents-cleanup] list files error for ${folder.name}:`,
+          filesErr
+        )
         continue
       }
 

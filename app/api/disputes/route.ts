@@ -137,9 +137,12 @@ export async function POST(req: NextRequest) {
       "Ce litige est visible sur votre profil public pendant l'instruction.",
     bookingId,
   })
-
   ;(async () => {
-    const { data: otherProfile } = await admin.from('profiles').select('email, firstname').eq('id', otherPartyId).single()
+    const { data: otherProfile } = await admin
+      .from('profiles')
+      .select('email, firstname')
+      .eq('id', otherPartyId)
+      .single()
     if (otherProfile?.email) {
       await sendEmail({
         to: otherProfile.email,

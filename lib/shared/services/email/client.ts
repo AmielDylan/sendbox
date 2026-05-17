@@ -265,7 +265,11 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
   switch (template) {
     case 'notification': {
       const contentHtml = (data.content || '').replace(/\n/g, '<br>')
-      const ctaHref = data.ctaUrl || (data.booking_id ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${data.booking_id}` : null)
+      const ctaHref =
+        data.ctaUrl ||
+        (data.booking_id
+          ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${data.booking_id}`
+          : null)
       const ctaLabel = data.ctaText || 'Voir les détails'
       return `
         <!DOCTYPE html>

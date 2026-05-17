@@ -13,7 +13,10 @@ export async function POST(
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Non authentifié', code: 'UNAUTHENTICATED' }, { status: 401 })
+    return NextResponse.json(
+      { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
+      { status: 401 }
+    )
   }
 
   const admin = createAdminClient()
@@ -25,7 +28,10 @@ export async function POST(
     .single()
 
   if (profile?.is_suspended) {
-    return NextResponse.json({ error: 'Compte suspendu', code: 'SUSPENDED' }, { status: 403 })
+    return NextResponse.json(
+      { error: 'Compte suspendu', code: 'SUSPENDED' },
+      { status: 403 }
+    )
   }
 
   const { data: booking } = await admin
@@ -35,21 +41,38 @@ export async function POST(
     .single()
 
   if (!booking) {
-    return NextResponse.json({ error: 'Réservation introuvable', code: 'NOT_FOUND' }, { status: 404 })
+    return NextResponse.json(
+      { error: 'Réservation introuvable', code: 'NOT_FOUND' },
+      { status: 404 }
+    )
   }
 
   // Seul le sender confirme la remise du colis au voyageur
   if (booking.sender_id !== user.id) {
-    return NextResponse.json({ error: 'Seul l\'expéditeur peut confirmer la remise', code: 'FORBIDDEN' }, { status: 403 })
+    return NextResponse.json(
+      {
+        error: "Seul l'expéditeur peut confirmer la remise",
+        code: 'FORBIDDEN',
+      },
+      { status: 403 }
+    )
   }
 
   if (booking.status !== 'confirmed') {
-    return NextResponse.json({ error: 'Statut incompatible (attendu: confirmed)', code: 'INVALID_STATUS' }, { status: 422 })
+    return NextResponse.json(
+      {
+        error: 'Statut incompatible (attendu: confirmed)',
+        code: 'INVALID_STATUS',
+      },
+      { status: 422 }
+    )
   }
 
   const now = new Date().toISOString()
   const historyEntry = { status: 'handed', actor_id: user.id, timestamp: now }
-  const history = Array.isArray(booking.status_history) ? booking.status_history : []
+  const history = Array.isArray(booking.status_history)
+    ? booking.status_history
+    : []
 
   await admin
     .from('bookings')

@@ -9,7 +9,6 @@ import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { headers } from 'next/headers'
 
-
 /**
  * Vérifie si l'utilisateur est admin
  */
@@ -420,22 +419,35 @@ export async function getAdminStats() {
 /**
  * Approuve un pays personnalisé suggéré lors d'un KYC (pays = "Autre")
  */
-export async function approveCustomKYCCountry(suggestedByUserId: string, label: string) {
+export async function approveCustomKYCCountry(
+  suggestedByUserId: string,
+  label: string
+) {
   if (!(await isAdmin())) {
     return { error: 'Non autorisé' }
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return { error: 'Non authentifié' }
 
   const adminSupabase = createAdminClient()
   const code = label.toUpperCase().replace(/\s+/g, '_').slice(0, 20) + '_CUSTOM'
 
-  const { error } = await (adminSupabase as any).from('kyc_approved_countries').upsert(
-    { code, label, suggested_by: suggestedByUserId, approved_by: user.id, approved_at: new Date().toISOString() },
-    { onConflict: 'code' }
-  )
+  const { error } = await (adminSupabase as any)
+    .from('kyc_approved_countries')
+    .upsert(
+      {
+        code,
+        label,
+        suggested_by: suggestedByUserId,
+        approved_by: user.id,
+        approved_at: new Date().toISOString(),
+      },
+      { onConflict: 'code' }
+    )
 
   if (error) {
     console.error('[approveCustomKYCCountry]', error)
@@ -445,7 +457,9 @@ export async function approveCustomKYCCountry(suggestedByUserId: string, label: 
   return { success: true }
 }
 
-export async function getAdminAnnouncements(filter?: 'sendbox' | 'sendbox_available') {
+export async function getAdminAnnouncements(
+  filter?: 'sendbox' | 'sendbox_available'
+) {
   const supabase = createAdminClient()
   let query = supabase
     .from('announcements')
@@ -454,7 +468,8 @@ export async function getAdminAnnouncements(filter?: 'sendbox' | 'sendbox_availa
     .limit(100)
 
   if (filter === 'sendbox') query = query.eq('is_sendbox', true)
-  else if (filter === 'sendbox_available') query = query.eq('sendbox_available', true)
+  else if (filter === 'sendbox_available')
+    query = query.eq('sendbox_available', true)
 
   const { data, error } = await query
   if (error) throw new Error(error.message)

@@ -25,7 +25,11 @@ import { IconLoader2 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 
 const PASSWORD_CHECKS = [
-  { key: 'length', label: '12+ caractères', test: (v: string) => v.length >= 12 },
+  {
+    key: 'length',
+    label: '12+ caractères',
+    test: (v: string) => v.length >= 12,
+  },
   { key: 'lower', label: '1 minuscule', test: (v: string) => /[a-z]/.test(v) },
   { key: 'upper', label: '1 majuscule', test: (v: string) => /[A-Z]/.test(v) },
   { key: 'number', label: '1 chiffre', test: (v: string) => /\d/.test(v) },
@@ -81,8 +85,20 @@ function RegisterForm() {
         <Card className="border shadow-sm rounded-2xl">
           <CardHeader className="space-y-4 py-10 text-center">
             <div className="flex justify-center">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+              <Image
+                src="/images/branding/logo.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="dark:hidden"
+              />
+              <Image
+                src="/images/branding/logo-white.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="hidden dark:block"
+              />
             </div>
             <CardTitle className="text-2xl">Vérification...</CardTitle>
           </CardHeader>
@@ -115,11 +131,25 @@ function RegisterForm() {
       <Card className="border shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="space-y-3 pb-4 text-center">
           <div className="flex justify-center pt-2">
-            <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-            <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+            <Image
+              src="/images/branding/logo.svg"
+              alt="Sendbox"
+              width={100}
+              height={20}
+              className="dark:hidden"
+            />
+            <Image
+              src="/images/branding/logo-white.svg"
+              alt="Sendbox"
+              width={100}
+              height={20}
+              className="hidden dark:block"
+            />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Créer un compte</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Créer un compte
+            </CardTitle>
             <CardDescription>Rejoignez la communauté Sendbox</CardDescription>
           </div>
         </CardHeader>
@@ -193,12 +223,18 @@ function RegisterForm() {
                   <div className="space-y-1">
                     <div className="h-1.5 w-full rounded-full bg-muted">
                       <div
-                        className={cn('h-1.5 rounded-full transition-all', passwordBarClass)}
-                        style={{ width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%` }}
+                        className={cn(
+                          'h-1.5 rounded-full transition-all',
+                          passwordBarClass
+                        )}
+                        style={{
+                          width: `${(passwordScore / PASSWORD_CHECKS.length) * 100}%`,
+                        }}
                       />
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      Force : <span className="font-medium">{passwordLabel}</span>
+                      Force :{' '}
+                      <span className="font-medium">{passwordLabel}</span>
                     </p>
                   </div>
                 )}
@@ -221,16 +257,22 @@ function RegisterForm() {
             </div>
 
             {/* Critères non encore remplis uniquement */}
-            {passwordValue.length > 0 && passwordScore < PASSWORD_CHECKS.length && (
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {PASSWORD_CHECKS.filter(check => !check.test(passwordValue)).map(check => (
-                  <span key={check.key} className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <span aria-hidden="true">·</span>
-                    {check.label}
-                  </span>
-                ))}
-              </div>
-            )}
+            {passwordValue.length > 0 &&
+              passwordScore < PASSWORD_CHECKS.length && (
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  {PASSWORD_CHECKS.filter(
+                    check => !check.test(passwordValue)
+                  ).map(check => (
+                    <span
+                      key={check.key}
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground"
+                    >
+                      <span aria-hidden="true">·</span>
+                      {check.label}
+                    </span>
+                  ))}
+                </div>
+              )}
 
             <div className="flex items-center space-x-2">
               <Controller
@@ -246,9 +288,17 @@ function RegisterForm() {
                 )}
               />
               <div className="leading-none">
-                <Label htmlFor="terms" className="text-sm font-normal cursor-pointer">
+                <Label
+                  htmlFor="terms"
+                  className="text-sm font-normal cursor-pointer"
+                >
                   J&apos;accepte les{' '}
-                  <Link href="/cgu" className="text-primary underline hover:no-underline" target="_blank" rel="noopener noreferrer">
+                  <Link
+                    href="/cgu"
+                    className="text-primary underline hover:no-underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     conditions générales
                   </Link>
                 </Label>
@@ -273,7 +323,10 @@ function RegisterForm() {
 
             <p className="text-center text-sm text-muted-foreground">
               Déjà un compte ?{' '}
-              <Link href="/login" className="text-primary underline hover:no-underline">
+              <Link
+                href="/login"
+                className="text-primary underline hover:no-underline"
+              >
                 Se connecter
               </Link>
             </p>

@@ -6,7 +6,10 @@ vi.mock('@/lib/shared/db/admin', () => ({
   createAdminClient: () => ({ from: mockFrom }),
 }))
 
-import { computeAndSaveTrustScore, tryPublishBlindReviews } from '@/lib/trust/score'
+import {
+  computeAndSaveTrustScore,
+  tryPublishBlindReviews,
+} from '@/lib/trust/score'
 
 function makeCountChain(count: number) {
   return {
@@ -15,7 +18,8 @@ function makeCountChain(count: number) {
     or: () => makeCountChain(count),
     in: () => makeCountChain(count),
     lt: () => makeCountChain(count),
-    then: (resolve: (v: unknown) => void) => resolve({ count, data: null, error: null }),
+    then: (resolve: (v: unknown) => void) =>
+      resolve({ count, data: null, error: null }),
     catch: () => makeCountChain(count),
     finally: () => makeCountChain(count),
   }
@@ -52,7 +56,11 @@ describe('Trust score algorithm', () => {
           return {
             select: () => ({
               eq: () => ({
-                single: () => Promise.resolve({ data: { unique_sender_count: 0, unique_traveler_count: 0 }, error: null }),
+                single: () =>
+                  Promise.resolve({
+                    data: { unique_sender_count: 0, unique_traveler_count: 0 },
+                    error: null,
+                  }),
               }),
             }),
             update: (vals: unknown) => {
@@ -88,10 +96,11 @@ describe('Trust score algorithm', () => {
           return {
             select: () => ({
               eq: () => ({
-                single: () => Promise.resolve({
-                  data: { unique_sender_count: 1, unique_traveler_count: 1 },
-                  error: null,
-                }),
+                single: () =>
+                  Promise.resolve({
+                    data: { unique_sender_count: 1, unique_traveler_count: 1 },
+                    error: null,
+                  }),
               }),
             }),
             update: (vals: Record<string, unknown>) => {
@@ -121,19 +130,27 @@ describe('Trust score algorithm', () => {
       // First run: 2 open disputes
       mockFrom.mockImplementation((table: string) => {
         if (table === 'ratings') return makeDataChain(ratings)
-        if (table === 'disputes') return makeDataChain([
-          { id: 'd1', bookings: { sender_id: 'user-1', traveler_id: 'other-a' } },
-          { id: 'd2', bookings: { sender_id: 'user-1', traveler_id: 'other-b' } },
-        ])
+        if (table === 'disputes')
+          return makeDataChain([
+            {
+              id: 'd1',
+              bookings: { sender_id: 'user-1', traveler_id: 'other-a' },
+            },
+            {
+              id: 'd2',
+              bookings: { sender_id: 'user-1', traveler_id: 'other-b' },
+            },
+          ])
         if (table === 'bookings') return makeCountChain(1)
         if (table === 'profiles') {
           return {
             select: () => ({
               eq: () => ({
-                single: () => Promise.resolve({
-                  data: { unique_sender_count: 0, unique_traveler_count: 0 },
-                  error: null,
-                }),
+                single: () =>
+                  Promise.resolve({
+                    data: { unique_sender_count: 0, unique_traveler_count: 0 },
+                    error: null,
+                  }),
               }),
             }),
             update: (vals: Record<string, unknown>) => {
@@ -156,10 +173,11 @@ describe('Trust score algorithm', () => {
           return {
             select: () => ({
               eq: () => ({
-                single: () => Promise.resolve({
-                  data: { unique_sender_count: 0, unique_traveler_count: 0 },
-                  error: null,
-                }),
+                single: () =>
+                  Promise.resolve({
+                    data: { unique_sender_count: 0, unique_traveler_count: 0 },
+                    error: null,
+                  }),
               }),
             }),
             update: (vals: Record<string, unknown>) => {
@@ -195,10 +213,11 @@ describe('Trust score algorithm', () => {
           return {
             select: () => ({
               eq: () => ({
-                single: () => Promise.resolve({
-                  data: { unique_sender_count: 3, unique_traveler_count: 1 },
-                  error: null,
-                }),
+                single: () =>
+                  Promise.resolve({
+                    data: { unique_sender_count: 3, unique_traveler_count: 1 },
+                    error: null,
+                  }),
               }),
             }),
             update: (vals: Record<string, unknown>) => {
@@ -219,10 +238,11 @@ describe('Trust score algorithm', () => {
           return {
             select: () => ({
               eq: () => ({
-                single: () => Promise.resolve({
-                  data: { unique_sender_count: 1, unique_traveler_count: 1 },
-                  error: null,
-                }),
+                single: () =>
+                  Promise.resolve({
+                    data: { unique_sender_count: 1, unique_traveler_count: 1 },
+                    error: null,
+                  }),
               }),
             }),
             update: (vals: Record<string, unknown>) => {
@@ -256,10 +276,11 @@ describe('Trust score algorithm', () => {
           return {
             select: () => ({
               eq: () => ({
-                single: () => Promise.resolve({
-                  data: { unique_sender_count: 5, unique_traveler_count: 5 },
-                  error: null,
-                }),
+                single: () =>
+                  Promise.resolve({
+                    data: { unique_sender_count: 5, unique_traveler_count: 5 },
+                    error: null,
+                  }),
               }),
             }),
             update: (vals: Record<string, unknown>) => {
@@ -288,10 +309,18 @@ describe('tryPublishBlindReviews', () => {
         return {
           select: () => ({
             eq: () => ({
-              in: () => Promise.resolve({
-                data: [{ id: 'r1', rater_id: 'A', rated_id: 'B', status: 'submitted' }],
-                error: null,
-              }),
+              in: () =>
+                Promise.resolve({
+                  data: [
+                    {
+                      id: 'r1',
+                      rater_id: 'A',
+                      rated_id: 'B',
+                      status: 'submitted',
+                    },
+                  ],
+                  error: null,
+                }),
             }),
           }),
           update: () => {
@@ -309,8 +338,18 @@ describe('tryPublishBlindReviews', () => {
 
   it('publishes both reviews simultaneously when both are submitted', async () => {
     const twoSubmitted = [
-      { id: 'r1', rater_id: 'sender', rated_id: 'traveler', status: 'submitted' },
-      { id: 'r2', rater_id: 'traveler', rated_id: 'sender', status: 'submitted' },
+      {
+        id: 'r1',
+        rater_id: 'sender',
+        rated_id: 'traveler',
+        status: 'submitted',
+      },
+      {
+        id: 'r2',
+        rater_id: 'traveler',
+        rated_id: 'sender',
+        status: 'submitted',
+      },
     ]
 
     let publishedIds: string[] = []
@@ -342,10 +381,11 @@ describe('tryPublishBlindReviews', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({
-                data: { unique_sender_count: 0, unique_traveler_count: 0 },
-                error: null,
-              }),
+              single: () =>
+                Promise.resolve({
+                  data: { unique_sender_count: 0, unique_traveler_count: 0 },
+                  error: null,
+                }),
             }),
           }),
           update: () => ({ eq: () => Promise.resolve({ error: null }) }),
@@ -361,7 +401,12 @@ describe('tryPublishBlindReviews', () => {
 
   it('does not publish when only one party has submitted', async () => {
     const oneSubmitted = [
-      { id: 'r1', rater_id: 'sender', rated_id: 'traveler', status: 'submitted' },
+      {
+        id: 'r1',
+        rater_id: 'sender',
+        rated_id: 'traveler',
+        status: 'submitted',
+      },
       { id: 'r2', rater_id: 'traveler', rated_id: 'sender', status: 'pending' },
     ]
 

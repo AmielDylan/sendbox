@@ -16,7 +16,13 @@ import {
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   Accordion,
   AccordionContent,
@@ -114,7 +120,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Puis-je annuler une mise en relation ?',
     answer:
-      "Avant la confirmation mutuelle des deux parties, la mise en relation peut être annulée sans frais. Une fois les deux parties confirmées, les frais de 1,50 € sont prélevés et la mise en relation est effective.",
+      'Avant la confirmation mutuelle des deux parties, la mise en relation peut être annulée sans frais. Une fois les deux parties confirmées, les frais de 1,50 € sont prélevés et la mise en relation est effective.',
   },
   {
     question: 'Dans quels pays Sendbox est-il disponible ?',
@@ -124,7 +130,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Comment fonctionnent les avis ?',
     answer:
-      "Les avis sont laissés simultanément par les deux parties après la livraison — le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.",
+      'Les avis sont laissés simultanément par les deux parties après la livraison — le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.',
   },
   {
     question: 'Mes données personnelles sont-elles protégées ?',
@@ -135,7 +141,10 @@ const faqs: { question: string; answer: string }[] = [
 
 const senderBenefits: React.ReactNode[] = [
   'Trouvez un voyageur sur votre corridor diaspora',
-  <>Confirmez la mise en relation pour <strong className="font-semibold text-foreground">1,50 €</strong></>,
+  <>
+    Confirmez la mise en relation pour{' '}
+    <strong className="font-semibold text-foreground">1,50 €</strong>
+  </>,
   'Suivez la remise et la livraison avec preuves',
 ]
 
@@ -156,7 +165,9 @@ export function HomePageContent() {
               <h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
                 Faites voyager vos colis avec des voyageurs{' '}
                 <span className="relative inline-block">
-                  <span className="relative z-10 text-primary">de confiance</span>
+                  <span className="relative z-10 text-primary">
+                    de confiance
+                  </span>
                   <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1" />
                 </span>
               </h1>
@@ -170,7 +181,10 @@ export function HomePageContent() {
                 {trustSignals.map(signal => {
                   const Icon = signal.icon
                   return (
-                    <span key={signal.label} className="inline-flex items-center gap-2">
+                    <span
+                      key={signal.label}
+                      className="inline-flex items-center gap-2"
+                    >
                       <Icon className="h-4 w-4 text-primary" />
                       {signal.label}
                     </span>

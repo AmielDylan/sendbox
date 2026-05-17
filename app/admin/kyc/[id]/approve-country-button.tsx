@@ -11,7 +11,9 @@ interface Props {
 }
 
 export function ApproveCountryButton({ userId, label }: Props) {
-  const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>(
+    'idle'
+  )
 
   async function handleApprove() {
     setStatus('loading')

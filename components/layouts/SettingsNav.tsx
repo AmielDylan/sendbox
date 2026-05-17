@@ -7,11 +7,7 @@
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import {
-  IconUser,
-  IconIdBadge2,
-  IconUserShield,
-} from '@tabler/icons-react'
+import { IconUser, IconIdBadge2, IconUserShield } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { createClient } from '@/lib/shared/db/client'

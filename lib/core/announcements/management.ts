@@ -398,9 +398,7 @@ export async function toggleAnnouncementStatus(announcementId: string) {
   if (newStatus === 'active') {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select(
-        'kyc_status, kyc_rejection_reason, role'
-      )
+      .select('kyc_status, kyc_rejection_reason, role')
       .eq('id', user.id)
       .single()
 

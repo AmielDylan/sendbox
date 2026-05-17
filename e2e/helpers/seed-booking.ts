@@ -12,7 +12,8 @@ export async function createTestBooking(
     .eq('id', announcementId)
     .single()
 
-  if (!announcement) throw new Error('Announcement not found for seeding booking')
+  if (!announcement)
+    throw new Error('Announcement not found for seeding booking')
 
   const kilos = 5
 

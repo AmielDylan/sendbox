@@ -140,7 +140,11 @@ export async function cancelBookingWithReason(
 
     ;(async () => {
       const adminDb = createAdminClient()
-      const { data: otherProfile } = await adminDb.from('profiles').select('email, firstname').eq('id', otherUserId).single()
+      const { data: otherProfile } = await adminDb
+        .from('profiles')
+        .select('email, firstname')
+        .eq('id', otherUserId)
+        .single()
       if (otherProfile?.email) {
         await sendEmail({
           to: otherProfile.email,
@@ -395,7 +399,11 @@ export async function markAsInTransit(
 
     ;(async () => {
       const adminDb = createAdminClient()
-      const { data: senderProfile } = await adminDb.from('profiles').select('email, firstname').eq('id', booking.sender_id).single()
+      const { data: senderProfile } = await adminDb
+        .from('profiles')
+        .select('email, firstname')
+        .eq('id', booking.sender_id)
+        .single()
       if (senderProfile?.email) {
         await sendEmail({
           to: senderProfile.email,
@@ -558,7 +566,11 @@ export async function markAsDelivered(
 
     ;(async () => {
       const adminDb = createAdminClient()
-      const { data: senderProfile } = await adminDb.from('profiles').select('email, firstname').eq('id', booking.sender_id).single()
+      const { data: senderProfile } = await adminDb
+        .from('profiles')
+        .select('email, firstname')
+        .eq('id', booking.sender_id)
+        .single()
       if (senderProfile?.email) {
         await sendEmail({
           to: senderProfile.email,
@@ -727,7 +739,11 @@ export async function confirmDeliveryReceipt(bookingId: string) {
 
   ;(async () => {
     const adminDb = createAdminClient()
-    const { data: travelerProfile } = await adminDb.from('profiles').select('email, firstname').eq('id', booking.traveler_id).single()
+    const { data: travelerProfile } = await adminDb
+      .from('profiles')
+      .select('email, firstname')
+      .eq('id', booking.traveler_id)
+      .single()
     if (travelerProfile?.email) {
       await sendEmail({
         to: travelerProfile.email,

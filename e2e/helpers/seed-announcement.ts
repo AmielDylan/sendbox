@@ -1,6 +1,8 @@
 import { createE2EAdminClient } from './supabase-admin'
 
-export async function createTestAnnouncement(travelerId: string): Promise<{ id: string }> {
+export async function createTestAnnouncement(
+  travelerId: string
+): Promise<{ id: string }> {
   const supabase = createE2EAdminClient()
 
   const departureDate = new Date()
@@ -33,7 +35,9 @@ export async function createTestAnnouncement(travelerId: string): Promise<{ id: 
   return { id: data.id }
 }
 
-export async function deleteTestAnnouncements(travelerId: string): Promise<void> {
+export async function deleteTestAnnouncements(
+  travelerId: string
+): Promise<void> {
   const supabase = createE2EAdminClient()
   await supabase
     .from('announcements')

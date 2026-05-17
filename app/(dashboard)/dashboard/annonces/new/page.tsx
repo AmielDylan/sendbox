@@ -445,8 +445,10 @@ export default function NewAnnouncementPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Trajet</span>
                     <span className="text-sm text-muted-foreground">
-                      {departureCity} · {LOCATIONS[departureCountry]?.label ?? departureCountry} →{' '}
-                      {arrivalCity} · {LOCATIONS[arrivalCountry]?.label ?? arrivalCountry}
+                      {departureCity} ·{' '}
+                      {LOCATIONS[departureCountry]?.label ?? departureCountry} →{' '}
+                      {arrivalCity} ·{' '}
+                      {LOCATIONS[arrivalCountry]?.label ?? arrivalCountry}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">

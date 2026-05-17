@@ -30,7 +30,9 @@ export function DisputeForm({
 
   const handleSubmit = async () => {
     if (!reason || description.length < 30) {
-      setError('Choisissez une raison et décrivez le problème (30 caractères minimum).')
+      setError(
+        'Choisissez une raison et décrivez le problème (30 caractères minimum).'
+      )
       return
     }
 

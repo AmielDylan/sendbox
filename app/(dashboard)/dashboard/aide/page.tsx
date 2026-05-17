@@ -23,7 +23,7 @@ const faqCategories = [
     questions: [
       {
         q: 'Comment fonctionne Sendbox ?',
-        a: "Sendbox met en relation des expéditeurs et des voyageurs. Un expéditeur dépose un colis, un voyageur qui effectue le trajet correspondant accepte de le transporter contre rémunération. Une fois la livraison confirmée, le paiement est libéré automatiquement.",
+        a: 'Sendbox met en relation des expéditeurs et des voyageurs. Un expéditeur dépose un colis, un voyageur qui effectue le trajet correspondant accepte de le transporter contre rémunération. Une fois la livraison confirmée, le paiement est libéré automatiquement.',
       },
       {
         q: 'Comment créer un compte ?',
@@ -44,15 +44,15 @@ const faqCategories = [
     questions: [
       {
         q: 'Comment trouver un voyageur pour mon colis ?',
-        a: "Utilisez la page Rechercher pour trouver des annonces de voyageurs selon votre destination et vos dates. Vous pouvez ensuite envoyer une demande directement depuis la fiche du voyageur.",
+        a: 'Utilisez la page Rechercher pour trouver des annonces de voyageurs selon votre destination et vos dates. Vous pouvez ensuite envoyer une demande directement depuis la fiche du voyageur.',
       },
       {
         q: 'Comment préparer mon colis ?',
-        a: "Votre colis doit être correctement emballé, étanche si nécessaire, et ne pas dépasser le poids et les dimensions convenus avec le voyageur. Joignez une description claire du contenu.",
+        a: 'Votre colis doit être correctement emballé, étanche si nécessaire, et ne pas dépasser le poids et les dimensions convenus avec le voyageur. Joignez une description claire du contenu.',
       },
       {
         q: 'Quels articles sont interdits ?',
-        a: "Sont interdits : les produits illicites, les médicaments sur ordonnance, les liquides en grande quantité, les matières dangereuses ou inflammables, les objets de valeur non déclarés, ainsi que tout article soumis à des restrictions douanières.",
+        a: 'Sont interdits : les produits illicites, les médicaments sur ordonnance, les liquides en grande quantité, les matières dangereuses ou inflammables, les objets de valeur non déclarés, ainsi que tout article soumis à des restrictions douanières.',
       },
       {
         q: 'Que faire si mon colis est endommagé ou perdu ?',
@@ -65,7 +65,7 @@ const faqCategories = [
     questions: [
       {
         q: 'Comment accepter une demande de transport ?',
-        a: "Publiez votre trajet dans la section Voyages en indiquant votre destination, vos dates et la capacité disponible. Les expéditeurs peuvent alors vous contacter. Vous pouvez accepter ou refuser chaque demande.",
+        a: 'Publiez votre trajet dans la section Voyages en indiquant votre destination, vos dates et la capacité disponible. Les expéditeurs peuvent alors vous contacter. Vous pouvez accepter ou refuser chaque demande.',
       },
       {
         q: 'Quelles règles dois-je respecter en tant que voyageur ?',
@@ -73,7 +73,7 @@ const faqCategories = [
       },
       {
         q: 'Comment confirmer une livraison ?',
-        a: "Une fois le colis remis au destinataire, marquez la livraison comme effectuée depuis votre espace Colis. Le destinataire devra confirmer la réception pour déclencher le paiement.",
+        a: 'Une fois le colis remis au destinataire, marquez la livraison comme effectuée depuis votre espace Colis. Le destinataire devra confirmer la réception pour déclencher le paiement.',
       },
     ],
   },
@@ -86,7 +86,7 @@ const faqCategories = [
       },
       {
         q: 'Quand est-ce que je suis payé en tant que voyageur ?',
-        a: "Le paiement est libéré dès que le destinataire confirme la réception du colis. Les fonds sont ensuite virés sur votre compte bancaire sous 3 à 5 jours ouvrés.",
+        a: 'Le paiement est libéré dès que le destinataire confirme la réception du colis. Les fonds sont ensuite virés sur votre compte bancaire sous 3 à 5 jours ouvrés.',
       },
       {
         q: 'Que faire en cas de problème de paiement ?',
@@ -107,7 +107,7 @@ const faqCategories = [
       },
       {
         q: 'Mes données personnelles sont-elles protégées ?',
-        a: "Oui. Sendbox traite vos données conformément au RGPD. Vos coordonnées ne sont jamais partagées publiquement. Pour en savoir plus, consultez notre Politique de confidentialité.",
+        a: 'Oui. Sendbox traite vos données conformément au RGPD. Vos coordonnées ne sont jamais partagées publiquement. Pour en savoir plus, consultez notre Politique de confidentialité.',
       },
     ],
   },
@@ -115,9 +115,21 @@ const faqCategories = [
 
 const supportTypes = [
   { value: 'bug', label: 'Problème technique', feedbackType: 'bug' as const },
-  { value: 'colis', label: 'Question sur un colis', feedbackType: 'other' as const },
-  { value: 'paiement', label: 'Problème de paiement', feedbackType: 'bug' as const },
-  { value: 'signalement', label: 'Signalement', feedbackType: 'other' as const },
+  {
+    value: 'colis',
+    label: 'Question sur un colis',
+    feedbackType: 'other' as const,
+  },
+  {
+    value: 'paiement',
+    label: 'Problème de paiement',
+    feedbackType: 'bug' as const,
+  },
+  {
+    value: 'signalement',
+    label: 'Signalement',
+    feedbackType: 'other' as const,
+  },
   { value: 'autre', label: 'Autre', feedbackType: 'other' as const },
 ]
 
@@ -145,9 +157,14 @@ function FaqTab() {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       {faqCategories.map(category => (
-        <div key={category.title} className="rounded-xl border bg-card overflow-hidden">
+        <div
+          key={category.title}
+          className="rounded-xl border bg-card overflow-hidden"
+        >
           <div className="border-b bg-primary/8 px-4 py-3">
-            <h2 className="text-sm font-semibold text-primary">{category.title}</h2>
+            <h2 className="text-sm font-semibold text-primary">
+              {category.title}
+            </h2>
           </div>
           <div className="divide-y">
             {category.questions.map(item => (
@@ -183,12 +200,16 @@ function AssistanceTab() {
 
       if (!res.ok) throw new Error()
 
-      toast.success('Votre demande a bien été envoyée. Notre équipe vous répondra par e-mail.')
+      toast.success(
+        'Votre demande a bien été envoyée. Notre équipe vous répondra par e-mail.'
+      )
       setSubject('')
       setMessage('')
       setType('autre')
     } catch {
-      toast.error("Une erreur est survenue. Veuillez réessayer ou nous contacter à contact@gosendbox.com.")
+      toast.error(
+        'Une erreur est survenue. Veuillez réessayer ou nous contacter à contact@gosendbox.com.'
+      )
     } finally {
       setLoading(false)
     }
@@ -222,7 +243,10 @@ function AssistanceTab() {
                 onClick={() => setType(t.value)}
               >
                 <RadioGroupItem value={t.value} id={t.value} />
-                <Label htmlFor={t.value} className="cursor-pointer text-sm font-normal">
+                <Label
+                  htmlFor={t.value}
+                  className="cursor-pointer text-sm font-normal"
+                >
                   {t.label}
                 </Label>
               </div>
@@ -231,7 +255,9 @@ function AssistanceTab() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="subject" className="text-sm font-medium">Sujet</Label>
+          <Label htmlFor="subject" className="text-sm font-medium">
+            Sujet
+          </Label>
           <Input
             id="subject"
             placeholder="Résumez votre problème en quelques mots"
@@ -241,7 +267,9 @@ function AssistanceTab() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="message" className="text-sm font-medium">Message</Label>
+          <Label htmlFor="message" className="text-sm font-medium">
+            Message
+          </Label>
           <Textarea
             id="message"
             placeholder="Décrivez votre situation avec le plus de détails possible..."

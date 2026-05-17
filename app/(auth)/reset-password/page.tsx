@@ -95,12 +95,28 @@ function ResetPasswordForm() {
         <Card className="border shadow-sm rounded-2xl overflow-hidden">
           <CardHeader className="space-y-3 pb-4 text-center">
             <div className="flex justify-center pt-2">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+              <Image
+                src="/images/branding/logo.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="dark:hidden"
+              />
+              <Image
+                src="/images/branding/logo-white.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="hidden dark:block"
+              />
             </div>
             <div className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Nouveau mot de passe</CardTitle>
-              <CardDescription>Entrez votre nouveau mot de passe</CardDescription>
+              <CardTitle className="text-2xl font-bold">
+                Nouveau mot de passe
+              </CardTitle>
+              <CardDescription>
+                Entrez votre nouveau mot de passe
+              </CardDescription>
             </div>
           </CardHeader>
           <CardContent>
@@ -209,11 +225,25 @@ function ResetPasswordForm() {
         <Card className="border shadow-sm rounded-2xl overflow-hidden">
           <CardHeader className="space-y-3 pb-4 text-center">
             <div className="flex justify-center pt-2">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+              <Image
+                src="/images/branding/logo.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="dark:hidden"
+              />
+              <Image
+                src="/images/branding/logo-white.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="hidden dark:block"
+              />
             </div>
             <div className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Email envoyé !</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                Email envoyé !
+              </CardTitle>
               <CardDescription>
                 Si cet email existe dans notre système, vous recevrez un lien de
                 réinitialisation dans quelques instants.
@@ -239,12 +269,28 @@ function ResetPasswordForm() {
       <Card className="border shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="space-y-3 pb-4 text-center">
           <div className="flex justify-center pt-2">
-            <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-            <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+            <Image
+              src="/images/branding/logo.svg"
+              alt="Sendbox"
+              width={100}
+              height={20}
+              className="dark:hidden"
+            />
+            <Image
+              src="/images/branding/logo-white.svg"
+              alt="Sendbox"
+              width={100}
+              height={20}
+              className="hidden dark:block"
+            />
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Mot de passe oublié ?</CardTitle>
-            <CardDescription>Entrez votre email pour recevoir un lien de réinitialisation</CardDescription>
+            <CardTitle className="text-2xl font-bold">
+              Mot de passe oublié ?
+            </CardTitle>
+            <CardDescription>
+              Entrez votre email pour recevoir un lien de réinitialisation
+            </CardDescription>
           </div>
         </CardHeader>
         <CardContent className="px-6 sm:px-8 pb-6">
@@ -315,8 +361,20 @@ export default function ResetPasswordPage() {
         <Card className="w-full border shadow-sm rounded-2xl">
           <CardHeader className="space-y-4 py-10 text-center">
             <div className="flex justify-center">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+              <Image
+                src="/images/branding/logo.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="dark:hidden"
+              />
+              <Image
+                src="/images/branding/logo-white.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="hidden dark:block"
+              />
             </div>
             <CardTitle className="text-2xl">Chargement...</CardTitle>
           </CardHeader>

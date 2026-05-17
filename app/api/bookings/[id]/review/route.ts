@@ -14,7 +14,10 @@ export async function POST(
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Non authentifié', code: 'UNAUTHENTICATED' }, { status: 401 })
+    return NextResponse.json(
+      { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
+      { status: 401 }
+    )
   }
 
   const admin = createAdminClient()
@@ -26,7 +29,10 @@ export async function POST(
     .single()
 
   if (profile?.is_suspended) {
-    return NextResponse.json({ error: 'Compte suspendu', code: 'SUSPENDED' }, { status: 403 })
+    return NextResponse.json(
+      { error: 'Compte suspendu', code: 'SUSPENDED' },
+      { status: 403 }
+    )
   }
 
   const { data: booking } = await admin
@@ -36,18 +42,30 @@ export async function POST(
     .single()
 
   if (!booking) {
-    return NextResponse.json({ error: 'Réservation introuvable', code: 'NOT_FOUND' }, { status: 404 })
+    return NextResponse.json(
+      { error: 'Réservation introuvable', code: 'NOT_FOUND' },
+      { status: 404 }
+    )
   }
 
   const isSender = booking.sender_id === user.id
   const isTraveler = booking.traveler_id === user.id
 
   if (!isSender && !isTraveler) {
-    return NextResponse.json({ error: 'Accès non autorisé', code: 'FORBIDDEN' }, { status: 403 })
+    return NextResponse.json(
+      { error: 'Accès non autorisé', code: 'FORBIDDEN' },
+      { status: 403 }
+    )
   }
 
   if (!['delivered', 'completed'].includes(booking.status)) {
-    return NextResponse.json({ error: 'La livraison doit être confirmée avant de noter', code: 'INVALID_STATUS' }, { status: 422 })
+    return NextResponse.json(
+      {
+        error: 'La livraison doit être confirmée avant de noter',
+        code: 'INVALID_STATUS',
+      },
+      { status: 422 }
+    )
   }
 
   // RÈGLE D'IMMUTABILITÉ : un avis publié ne peut jamais être modifié
@@ -59,20 +77,29 @@ export async function POST(
     .maybeSingle()
 
   if (existing?.status === 'published') {
-    return NextResponse.json({ error: 'Avis déjà publié', code: 'REVIEW_IMMUTABLE' }, { status: 403 })
+    return NextResponse.json(
+      { error: 'Avis déjà publié', code: 'REVIEW_IMMUTABLE' },
+      { status: 403 }
+    )
   }
 
   let body: { rating: number; comment?: string }
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: 'Corps de requête invalide', code: 'BAD_REQUEST' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Corps de requête invalide', code: 'BAD_REQUEST' },
+      { status: 400 }
+    )
   }
 
   const { rating, comment } = body
 
   if (typeof rating !== 'number' || rating < 1 || rating > 5) {
-    return NextResponse.json({ error: 'Note invalide (1 à 5)', code: 'INVALID_RATING' }, { status: 400 })
+    return NextResponse.json(
+      { error: 'Note invalide (1 à 5)', code: 'INVALID_RATING' },
+      { status: 400 }
+    )
   }
 
   const now = new Date().toISOString()
@@ -82,7 +109,12 @@ export async function POST(
     // Mettre à jour l'avis existant (pending → submitted)
     await admin
       .from('ratings')
-      .update({ rating, comment: comment ?? null, status: 'submitted', submitted_at: now })
+      .update({
+        rating,
+        comment: comment ?? null,
+        status: 'submitted',
+        submitted_at: now,
+      })
       .eq('id', existing.id)
   } else {
     // Insérer un nouvel avis

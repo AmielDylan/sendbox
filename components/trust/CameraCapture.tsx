@@ -10,7 +10,11 @@ interface CameraCaptureProps {
   label?: string
 }
 
-export function CameraCapture({ onCapture, disabled, label = 'Prendre une photo' }: CameraCaptureProps) {
+export function CameraCapture({
+  onCapture,
+  disabled,
+  label = 'Prendre une photo',
+}: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -23,7 +27,11 @@ export function CameraCapture({ onCapture, disabled, label = 'Prendre une photo'
     setError(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
       })
       streamRef.current = stream
       if (videoRef.current) {
@@ -58,14 +66,20 @@ export function CameraCapture({ onCapture, disabled, label = 'Prendre une photo'
     if (!ctx) return
     ctx.drawImage(video, 0, 0)
 
-    canvas.toBlob(blob => {
-      if (!blob) return
-      // capturedAt généré côté serveur uniquement — ce timestamp n'est pas transmis
-      const file = new File([blob], `photo-${Date.now()}.jpg`, { type: 'image/jpeg' })
-      const previewUrl = URL.createObjectURL(blob)
-      onCapture(file, previewUrl)
-      closeCamera()
-    }, 'image/jpeg', 0.85)
+    canvas.toBlob(
+      blob => {
+        if (!blob) return
+        // capturedAt généré côté serveur uniquement — ce timestamp n'est pas transmis
+        const file = new File([blob], `photo-${Date.now()}.jpg`, {
+          type: 'image/jpeg',
+        })
+        const previewUrl = URL.createObjectURL(blob)
+        onCapture(file, previewUrl)
+        closeCamera()
+      },
+      'image/jpeg',
+      0.85
+    )
   }, [onCapture, closeCamera])
 
   return (
@@ -93,7 +107,13 @@ export function CameraCapture({ onCapture, disabled, label = 'Prendre une photo'
               <IconCamera className="mr-2 h-4 w-4" />
               Capturer
             </Button>
-            <Button type="button" variant="ghost" size="icon" onClick={closeCamera} className="text-white hover:bg-white/20">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={closeCamera}
+              className="text-white hover:bg-white/20"
+            >
               <IconX className="h-5 w-5" />
             </Button>
           </div>

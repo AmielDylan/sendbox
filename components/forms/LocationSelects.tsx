@@ -13,7 +13,12 @@ interface LocationSelectsProps {
   }
 }
 
-export function LocationSelects({ prefix, label, control, errors }: LocationSelectsProps) {
+export function LocationSelects({
+  prefix,
+  label,
+  control,
+  errors,
+}: LocationSelectsProps) {
   const country = useWatch({ control, name: `${prefix}_country` }) ?? ''
 
   return (
@@ -30,11 +35,13 @@ export function LocationSelects({ prefix, label, control, errors }: LocationSele
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">Pays…</option>
-            {Object.entries(LOCATIONS).map(([code, { label: countryLabel }]) => (
-              <option key={code} value={code}>
-                {countryLabel}
-              </option>
-            ))}
+            {Object.entries(LOCATIONS).map(
+              ([code, { label: countryLabel }]) => (
+                <option key={code} value={code}>
+                  {countryLabel}
+                </option>
+              )
+            )}
           </select>
         )}
       />

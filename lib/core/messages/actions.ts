@@ -174,7 +174,11 @@ export async function sendMessage(data: SendMessageInput) {
 
     ;(async () => {
       const adminDb = createAdminClient()
-      const { data: receiverProfile } = await adminDb.from('profiles').select('email').eq('id', receiver_id).single()
+      const { data: receiverProfile } = await adminDb
+        .from('profiles')
+        .select('email')
+        .eq('id', receiver_id)
+        .single()
       if (receiverProfile?.email) {
         await sendEmail({
           to: receiverProfile.email,
