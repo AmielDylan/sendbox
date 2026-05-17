@@ -20,7 +20,7 @@ const PIPELINE_ERRORS: Record<string, { message: string; status: number }> = {
   },
   PDF_RENDER_ERROR: {
     message:
-      "Impossible de lire le PDF. Vérifiez que le fichier n'est pas corrompu",
+      'Impossible de traiter le PDF. Veuillez fournir une image JPG, PNG ou HEIC à la place.',
     status: 422,
   },
   FILE_PROCESSING_ERROR: {

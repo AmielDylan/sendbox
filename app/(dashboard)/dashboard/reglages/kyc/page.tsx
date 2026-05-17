@@ -524,11 +524,19 @@ export default function KYCPage() {
       )}
 
       {state.phase === 'error' && (
-        <Alert variant="destructive">
-          <IconAlertCircle className="h-5 w-5" />
-          <AlertTitle>Erreur</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
+        <div className="space-y-4">
+          <Alert variant="destructive">
+            <IconAlertCircle className="h-5 w-5" />
+            <AlertTitle>Erreur</AlertTitle>
+            <AlertDescription>{state.message}</AlertDescription>
+          </Alert>
+          <Button
+            variant="outline"
+            onClick={() => setState({ phase: 'form', step: 1 })}
+          >
+            Réessayer
+          </Button>
+        </div>
       )}
     </div>
   )
