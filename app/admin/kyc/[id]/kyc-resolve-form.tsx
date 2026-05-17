@@ -30,7 +30,7 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
   const [verifiedName, setVerifiedName] = useState(suggestedName ?? '')
   const [rejectionReason, setRejectionReason] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
-  const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
+  const [loading, setLoading] = useState<'approve' | 'reject' | 'mrz' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function applyPreset(preset: string) {
@@ -39,6 +39,16 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
       if (prev.includes(preset)) return prev
       return `${prev.trim()}, ${preset}`
     })
+  }
+
+  async function retryMRZ() {
+    setLoading('mrz')
+    try {
+      await fetch(`/api/admin/kyc/${userId}/retry-mrz`, { method: 'POST' })
+      router.refresh()
+    } finally {
+      setLoading(null)
+    }
   }
 
   async function resolve(outcome: 'VERIFIED' | 'REJECTED') {
@@ -146,6 +156,20 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
             rows={2}
           />
         </div>
+
+        {mrzFailed && (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!!loading}
+            onClick={retryMRZ}
+          >
+            {loading === 'mrz' ? (
+              <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            Relancer l&apos;extraction MRZ
+          </Button>
+        )}
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button

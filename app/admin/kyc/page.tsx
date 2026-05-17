@@ -151,11 +151,14 @@ export default async function AdminKYCPage() {
                       variant={
                         kycStatus === 'verified'
                           ? 'default'
-                          : kycStatus === 'pending'
-                            ? 'secondary'
-                            : kycStatus === 'rejected'
-                              ? 'destructive'
-                              : 'outline'
+                          : kycStatus === 'rejected'
+                            ? 'destructive'
+                            : 'outline'
+                      }
+                      className={
+                        kycStatus === 'pending'
+                          ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-600'
+                          : undefined
                       }
                     >
                       {kycStatus === 'verified'
@@ -235,11 +238,14 @@ export default async function AdminKYCPage() {
                           variant={
                             user.verification_status === 'verified'
                               ? 'default'
-                              : user.verification_status === 'pending'
-                                ? 'secondary'
-                                : user.verification_status === 'rejected'
-                                  ? 'destructive'
-                                  : 'outline'
+                              : user.verification_status === 'rejected'
+                                ? 'destructive'
+                                : 'outline'
+                          }
+                          className={
+                            user.verification_status === 'pending'
+                              ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-600'
+                              : undefined
                           }
                         >
                           {user.verification_status === 'verified' && (
