@@ -87,7 +87,7 @@ export default async function AdminKYCDetailPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Dossier KYC — ${displayName}`}
+        title={`Dossier KYC : ${displayName}`}
         description={profile.email ?? ''}
         breadcrumbs={[
           { label: 'Dashboard Admin', href: '/admin/dashboard' },
@@ -168,7 +168,7 @@ export default async function AdminKYCDetailPage({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-destructive text-sm">
                     <IconAlertTriangle className="h-4 w-4" />
-                    Extraction automatique échouée — vérification manuelle requise
+                    Extraction automatique échouée, vérification manuelle requise
                   </div>
                   {review.ocr_confidence !== null && (
                     <p className="text-xs text-muted-foreground">
@@ -227,7 +227,7 @@ export default async function AdminKYCDetailPage({
                     label="Pays d'émission"
                     value={
                       (review as any).doc_country === 'other'
-                        ? `Autre — ${(review as any).custom_country ?? '?'}`
+                        ? `Autre : ${(review as any).custom_country ?? '?'}`
                         : (review as any).doc_country
                     }
                   />
