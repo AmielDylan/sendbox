@@ -80,10 +80,17 @@ export async function POST(req: NextRequest) {
   }
 
   // 5. Insérer dans kyc_reviews
+  const docType    = formData.get('docType')        as string | null
+  const docCountry = formData.get('country')        as string | null
+  const customCtry = formData.get('customCountry')  as string | null
+
   const { error: reviewErr } = await admin.from('kyc_reviews').insert({
-    user_id: user.id,
-    consent_at: new Date().toISOString(),
-    status: 'PENDING',
+    user_id:        user.id,
+    consent_at:     new Date().toISOString(),
+    status:         'PENDING',
+    doc_type:       docType    || null,
+    doc_country:    docCountry || null,
+    custom_country: customCtry || null,
   })
 
   if (reviewErr) {
