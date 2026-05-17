@@ -263,7 +263,14 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
   `
 
   switch (template) {
-    case 'notification':
+    case 'notification': {
+      const contentHtml = (data.content || '').replace(/\n/g, '<br>')
+      const ctaHref =
+        data.ctaUrl ||
+        (data.booking_id
+          ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${data.booking_id}`
+          : null)
+      const ctaLabel = data.ctaText || 'Voir les détails'
       return `
         <!DOCTYPE html>
         <html>
@@ -278,17 +285,18 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
               </div>
               <div class="content">
                 <h2>${data.title}</h2>
-                <p>${data.content}</p>
-                ${data.booking_id ? `<a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${data.booking_id}" class="button">Voir la réservation</a>` : ''}
+                <p>${contentHtml}</p>
+                ${ctaHref ? `<a href="${ctaHref}" class="button">${ctaLabel}</a>` : ''}
               </div>
               <div class="footer">
-                <p>Sendbox - Covoiturage France ↔ Bénin</p>
+                <p>Sendbox — Covoiturage France ↔ Bénin</p>
                 <p>Vous recevez cet email car vous avez une notification sur Sendbox.</p>
               </div>
             </div>
           </body>
         </html>
       `
+    }
 
     case 'booking_request':
       return `

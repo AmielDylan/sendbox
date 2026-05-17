@@ -48,25 +48,43 @@ async function navigateToStep2(page: Page) {
   await page.getByRole('button', { name: /continuer/i }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
   await page.getByRole('button', { name: /confirmer et continuer/i }).click()
-  await page.waitForSelector('#firstName', { state: 'visible', timeout: 15_000 })
+  await page.waitForSelector('#firstName', {
+    state: 'visible',
+    timeout: 15_000,
+  })
 }
 
 async function waitForKYCForm(page: Page) {
-  await page.waitForSelector('#accountCountry', { state: 'visible', timeout: 25_000 })
+  await page.waitForSelector('#accountCountry', {
+    state: 'visible',
+    timeout: 25_000,
+  })
 }
 
-async function selectCountryInPopover(page: Page, triggerId: string, countryName: string) {
+async function selectCountryInPopover(
+  page: Page,
+  triggerId: string,
+  countryName: string
+) {
   await page.locator(`#${triggerId}`).click()
-  const searchInput = page.locator('input[placeholder="Rechercher un pays..."]').last()
+  const searchInput = page
+    .locator('input[placeholder="Rechercher un pays..."]')
+    .last()
   await searchInput.waitFor({ state: 'visible', timeout: 5_000 })
   await searchInput.fill(countryName)
-  await page.locator('.max-h-64 button').filter({ hasText: countryName }).first().click()
+  await page
+    .locator('.max-h-64 button')
+    .filter({ hasText: countryName })
+    .first()
+    .click()
 }
 
 test.describe('KYC — Step 1 : sélection document', () => {
   test.beforeEach(async () => resetSenderToStep1())
 
-  test('page renders country and document selectors', async ({ senderPage }) => {
+  test('page renders country and document selectors', async ({
+    senderPage,
+  }) => {
     await senderPage.goto('/dashboard/reglages/kyc')
     await waitForKYCForm(senderPage)
     await expect(senderPage.locator('#accountCountry')).toBeVisible()
@@ -74,10 +92,14 @@ test.describe('KYC — Step 1 : sélection document', () => {
     await expect(senderPage.locator('#documentType')).toBeVisible()
   })
 
-  test('"Continuer" disabled until all fields selected', async ({ senderPage }) => {
+  test('"Continuer" disabled until all fields selected', async ({
+    senderPage,
+  }) => {
     await senderPage.goto('/dashboard/reglages/kyc')
     await waitForKYCForm(senderPage)
-    await expect(senderPage.getByRole('button', { name: /continuer/i })).toBeDisabled()
+    await expect(
+      senderPage.getByRole('button', { name: /continuer/i })
+    ).toBeDisabled()
   })
 
   test('selecting all fields enables "Continuer"', async ({ senderPage }) => {
@@ -90,7 +112,9 @@ test.describe('KYC — Step 1 : sélection document', () => {
     await senderPage.locator('#documentType').click()
     await senderPage.getByRole('option').first().click()
 
-    await expect(senderPage.getByRole('button', { name: /continuer/i })).toBeEnabled()
+    await expect(
+      senderPage.getByRole('button', { name: /continuer/i })
+    ).toBeEnabled()
   })
 })
 
@@ -141,7 +165,9 @@ test.describe('KYC — Step 2 : formulaire détails', () => {
     await expect(senderPage.locator('#firstName')).not.toHaveValue('')
   })
 
-  test('sélecteur indicatif téléphone visible (+33 / +229)', async ({ senderPage }) => {
+  test('sélecteur indicatif téléphone visible (+33 / +229)', async ({
+    senderPage,
+  }) => {
     await navigateToStep2(senderPage)
     await expect(
       senderPage.getByRole('combobox').filter({ hasText: /\+/ }).first()
@@ -150,17 +176,24 @@ test.describe('KYC — Step 2 : formulaire détails', () => {
 })
 
 test.describe('KYC — Statut affiché selon kyc_status', () => {
-  test('user approved voit le panel "Identité vérifiée"', async ({ senderPage }) => {
+  test('user approved voit le panel "Identité vérifiée"', async ({
+    senderPage,
+  }) => {
     const supabase = createE2EAdminClient()
     const id = await getSenderId()
     if (id) {
-      await supabase.from('profiles').update({ kyc_status: 'approved' } as any).eq('id', id)
+      await supabase
+        .from('profiles')
+        .update({ kyc_status: 'approved' } as any)
+        .eq('id', id)
     }
     // Use the real sender.json storageState which has kyc_status: 'approved' in localStorage.
     // The KYC page reads from Zustand initially, so it shows the approved panel immediately.
     await senderPage.goto('/dashboard/reglages/kyc')
     await expect(
-      senderPage.getByText(/vérifié|approuvé|identité (vérifiée|confirmée)/i).first()
+      senderPage
+        .getByText(/vérifié|approuvé|identité (vérifiée|confirmée)/i)
+        .first()
     ).toBeVisible({ timeout: 15_000 })
   })
 })

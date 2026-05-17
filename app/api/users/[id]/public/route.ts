@@ -32,12 +32,18 @@ export async function GET(
     .single()
 
   if (error || !profile) {
-    return NextResponse.json({ error: 'Profil introuvable', code: 'NOT_FOUND' }, { status: 404 })
+    return NextResponse.json(
+      { error: 'Profil introuvable', code: 'NOT_FOUND' },
+      { status: 404 }
+    )
   }
 
   // Masquer les profils admin des vues publiques
   if ((profile as any).role === 'admin') {
-    return NextResponse.json({ error: 'Profil non disponible', code: 'NOT_FOUND' }, { status: 404 })
+    return NextResponse.json(
+      { error: 'Profil non disponible', code: 'NOT_FOUND' },
+      { status: 404 }
+    )
   }
 
   // Récupérer les avis publiés (ne jamais exposer email, phone, kyc_*, is_flagged)
@@ -101,9 +107,13 @@ export async function GET(
   const { data: disputes } = await admin
     .from('disputes')
     .select('id, reason, status, opened_at')
-    .or(`booking_id.in.(${
-      [...(bookingsAsTraveler ?? []), ...(bookingsAsSender ?? [])].map(b => `"${b.id}"`).join(',') || '""'
-    })`)
+    .or(
+      `booking_id.in.(${
+        [...(bookingsAsTraveler ?? []), ...(bookingsAsSender ?? [])]
+          .map(b => `"${b.id}"`)
+          .join(',') || '""'
+      })`
+    )
     .eq('is_public', true)
     .limit(5)
 

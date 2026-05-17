@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: '13.0.5'
   }
   public: {
     Tables: {
@@ -50,11 +50,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "admin_audit_logs_admin_id_fkey"
-            columns: ["admin_id"]
+            foreignKeyName: 'admin_audit_logs_admin_id_fkey'
+            columns: ['admin_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -75,7 +75,7 @@ export type Database = {
           price_per_kg: number
           reserved_kg: number | null
           sendbox_available: boolean | null
-          status: Database["public"]["Enums"]["announcement_status"]
+          status: Database['public']['Enums']['announcement_status']
           travel_proof_url: string | null
           travel_proof_verified: boolean
           travel_proof_verified_at: string | null
@@ -99,7 +99,7 @@ export type Database = {
           price_per_kg: number
           reserved_kg?: number | null
           sendbox_available?: boolean | null
-          status?: Database["public"]["Enums"]["announcement_status"]
+          status?: Database['public']['Enums']['announcement_status']
           travel_proof_url?: string | null
           travel_proof_verified?: boolean
           travel_proof_verified_at?: string | null
@@ -123,7 +123,7 @@ export type Database = {
           price_per_kg?: number
           reserved_kg?: number | null
           sendbox_available?: boolean | null
-          status?: Database["public"]["Enums"]["announcement_status"]
+          status?: Database['public']['Enums']['announcement_status']
           travel_proof_url?: string | null
           travel_proof_verified?: boolean
           travel_proof_verified_at?: string | null
@@ -133,11 +133,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "announcements_traveler_id_fkey"
-            columns: ["traveler_id"]
+            foreignKeyName: 'announcements_traveler_id_fkey'
+            columns: ['traveler_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -201,11 +201,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "audit_logs_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'audit_logs_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -218,7 +218,7 @@ export type Database = {
           file_hash: string
           id: string
           size_bytes: number
-          type: Database["public"]["Enums"]["photo_type_enum"]
+          type: Database['public']['Enums']['photo_type_enum']
           uploaded_by_id: string
           url: string
         }
@@ -230,7 +230,7 @@ export type Database = {
           file_hash: string
           id?: string
           size_bytes: number
-          type: Database["public"]["Enums"]["photo_type_enum"]
+          type: Database['public']['Enums']['photo_type_enum']
           uploaded_by_id: string
           url: string
         }
@@ -242,31 +242,31 @@ export type Database = {
           file_hash?: string
           id?: string
           size_bytes?: number
-          type?: Database["public"]["Enums"]["photo_type_enum"]
+          type?: Database['public']['Enums']['photo_type_enum']
           uploaded_by_id?: string
           url?: string
         }
         Relationships: [
           {
-            foreignKeyName: "booking_photos_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'booking_photos_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "booking_photos_confirmed_by_id_fkey"
-            columns: ["confirmed_by_id"]
+            foreignKeyName: 'booking_photos_confirmed_by_id_fkey'
+            columns: ['confirmed_by_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "booking_photos_uploaded_by_id_fkey"
-            columns: ["uploaded_by_id"]
+            foreignKeyName: 'booking_photos_uploaded_by_id_fkey'
+            columns: ['uploaded_by_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -322,7 +322,7 @@ export type Database = {
           released_at: string | null
           sender_confirmed_at: string | null
           sender_id: string
-          status: Database["public"]["Enums"]["booking_status"]
+          status: Database['public']['Enums']['booking_status']
           status_history: Json | null
           total_price: number
           tracking_number: string | null
@@ -382,7 +382,7 @@ export type Database = {
           released_at?: string | null
           sender_confirmed_at?: string | null
           sender_id: string
-          status?: Database["public"]["Enums"]["booking_status"]
+          status?: Database['public']['Enums']['booking_status']
           status_history?: Json | null
           total_price?: number
           tracking_number?: string | null
@@ -442,7 +442,7 @@ export type Database = {
           released_at?: string | null
           sender_confirmed_at?: string | null
           sender_id?: string
-          status?: Database["public"]["Enums"]["booking_status"]
+          status?: Database['public']['Enums']['booking_status']
           status_history?: Json | null
           total_price?: number
           tracking_number?: string | null
@@ -453,39 +453,39 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "bookings_announcement_id_fkey"
-            columns: ["announcement_id"]
+            foreignKeyName: 'bookings_announcement_id_fkey'
+            columns: ['announcement_id']
             isOneToOne: false
-            referencedRelation: "announcements"
-            referencedColumns: ["id"]
+            referencedRelation: 'announcements'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "bookings_cancelled_by_fkey"
-            columns: ["cancelled_by"]
+            foreignKeyName: 'bookings_cancelled_by_fkey'
+            columns: ['cancelled_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "bookings_delivery_confirmed_by_fkey"
-            columns: ["delivery_confirmed_by"]
+            foreignKeyName: 'bookings_delivery_confirmed_by_fkey'
+            columns: ['delivery_confirmed_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "bookings_sender_id_fkey"
-            columns: ["sender_id"]
+            foreignKeyName: 'bookings_sender_id_fkey'
+            columns: ['sender_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "bookings_traveler_id_fkey"
-            columns: ["traveler_id"]
+            foreignKeyName: 'bookings_traveler_id_fkey'
+            columns: ['traveler_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -570,25 +570,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "disputes_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'disputes_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "disputes_opened_by_id_fkey"
-            columns: ["opened_by_id"]
+            foreignKeyName: 'disputes_opened_by_id_fkey'
+            columns: ['opened_by_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "disputes_resolved_by_fkey"
-            columns: ["resolved_by"]
+            foreignKeyName: 'disputes_resolved_by_fkey'
+            columns: ['resolved_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -616,11 +616,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "feedback_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'feedback_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -678,18 +678,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "kyc_reviews_admin_id_fkey"
-            columns: ["admin_id"]
+            foreignKeyName: 'kyc_reviews_admin_id_fkey'
+            columns: ['admin_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "kyc_reviews_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'kyc_reviews_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -732,18 +732,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "matching_payments_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'matching_payments_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "matching_payments_paid_by_fkey"
-            columns: ["paid_by"]
+            foreignKeyName: 'matching_payments_paid_by_fkey'
+            columns: ['paid_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -786,25 +786,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "messages_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'messages_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "messages_receiver_id_fkey"
-            columns: ["receiver_id"]
+            foreignKeyName: 'messages_receiver_id_fkey'
+            columns: ['receiver_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
+            foreignKeyName: 'messages_sender_id_fkey'
+            columns: ['sender_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -819,7 +819,7 @@ export type Database = {
           link: string | null
           read_at: string | null
           title: string
-          type: Database["public"]["Enums"]["notification_type"]
+          type: Database['public']['Enums']['notification_type']
           user_id: string
         }
         Insert: {
@@ -832,7 +832,7 @@ export type Database = {
           link?: string | null
           read_at?: string | null
           title: string
-          type: Database["public"]["Enums"]["notification_type"]
+          type: Database['public']['Enums']['notification_type']
           user_id: string
         }
         Update: {
@@ -845,30 +845,30 @@ export type Database = {
           link?: string | null
           read_at?: string | null
           title?: string
-          type?: Database["public"]["Enums"]["notification_type"]
+          type?: Database['public']['Enums']['notification_type']
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "notifications_announcement_id_fkey"
-            columns: ["announcement_id"]
+            foreignKeyName: 'notifications_announcement_id_fkey'
+            columns: ['announcement_id']
             isOneToOne: false
-            referencedRelation: "announcements"
-            referencedColumns: ["id"]
+            referencedRelation: 'announcements'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "notifications_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'notifications_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'notifications_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -881,7 +881,7 @@ export type Database = {
           currency: string
           id: string
           platform_fee: number
-          status: Database["public"]["Enums"]["payment_status_enum"]
+          status: Database['public']['Enums']['payment_status_enum']
           stripe_payment_intent_id: string | null
         }
         Insert: {
@@ -892,7 +892,7 @@ export type Database = {
           currency?: string
           id?: string
           platform_fee?: number
-          status?: Database["public"]["Enums"]["payment_status_enum"]
+          status?: Database['public']['Enums']['payment_status_enum']
           stripe_payment_intent_id?: string | null
         }
         Update: {
@@ -903,16 +903,16 @@ export type Database = {
           currency?: string
           id?: string
           platform_fee?: number
-          status?: Database["public"]["Enums"]["payment_status_enum"]
+          status?: Database['public']['Enums']['payment_status_enum']
           stripe_payment_intent_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "payments_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'payments_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -950,7 +950,7 @@ export type Database = {
           kyc_nationality: string | null
           kyc_rejection_reason: string | null
           kyc_reviewed_at: string | null
-          kyc_status: Database["public"]["Enums"]["kyc_status"]
+          kyc_status: Database['public']['Enums']['kyc_status']
           kyc_submitted_at: string | null
           lastname: string | null
           payout_error_at: string | null
@@ -962,7 +962,7 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           rating: number | null
-          role: Database["public"]["Enums"]["user_role"]
+          role: Database['public']['Enums']['user_role']
           stripe_connect_account_id: string | null
           stripe_customer_id: string | null
           stripe_onboarding_completed: boolean
@@ -971,7 +971,7 @@ export type Database = {
           stripe_subscription_id: string | null
           subscription_expires_at: string | null
           subscription_started_at: string | null
-          subscription_status: Database["public"]["Enums"]["subscription_status_enum"]
+          subscription_status: Database['public']['Enums']['subscription_status_enum']
           suspended_reason: string | null
           trial_ends_at: string | null
           trust_score: number | null
@@ -979,7 +979,7 @@ export type Database = {
           unique_traveler_count: number | null
           updated_at: string | null
           verification_status:
-            | Database["public"]["Enums"]["verification_status_enum"]
+            | Database['public']['Enums']['verification_status_enum']
             | null
           verified_at: string | null
           verified_name: string | null
@@ -1022,7 +1022,7 @@ export type Database = {
           kyc_nationality?: string | null
           kyc_rejection_reason?: string | null
           kyc_reviewed_at?: string | null
-          kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          kyc_status?: Database['public']['Enums']['kyc_status']
           kyc_submitted_at?: string | null
           lastname?: string | null
           payout_error_at?: string | null
@@ -1034,7 +1034,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           rating?: number | null
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: Database['public']['Enums']['user_role']
           stripe_connect_account_id?: string | null
           stripe_customer_id?: string | null
           stripe_onboarding_completed?: boolean
@@ -1043,7 +1043,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           subscription_expires_at?: string | null
           subscription_started_at?: string | null
-          subscription_status?: Database["public"]["Enums"]["subscription_status_enum"]
+          subscription_status?: Database['public']['Enums']['subscription_status_enum']
           suspended_reason?: string | null
           trial_ends_at?: string | null
           trust_score?: number | null
@@ -1051,7 +1051,7 @@ export type Database = {
           unique_traveler_count?: number | null
           updated_at?: string | null
           verification_status?:
-            | Database["public"]["Enums"]["verification_status_enum"]
+            | Database['public']['Enums']['verification_status_enum']
             | null
           verified_at?: string | null
           verified_name?: string | null
@@ -1094,7 +1094,7 @@ export type Database = {
           kyc_nationality?: string | null
           kyc_rejection_reason?: string | null
           kyc_reviewed_at?: string | null
-          kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          kyc_status?: Database['public']['Enums']['kyc_status']
           kyc_submitted_at?: string | null
           lastname?: string | null
           payout_error_at?: string | null
@@ -1106,7 +1106,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           rating?: number | null
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: Database['public']['Enums']['user_role']
           stripe_connect_account_id?: string | null
           stripe_customer_id?: string | null
           stripe_onboarding_completed?: boolean
@@ -1115,7 +1115,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           subscription_expires_at?: string | null
           subscription_started_at?: string | null
-          subscription_status?: Database["public"]["Enums"]["subscription_status_enum"]
+          subscription_status?: Database['public']['Enums']['subscription_status_enum']
           suspended_reason?: string | null
           trial_ends_at?: string | null
           trust_score?: number | null
@@ -1123,7 +1123,7 @@ export type Database = {
           unique_traveler_count?: number | null
           updated_at?: string | null
           verification_status?:
-            | Database["public"]["Enums"]["verification_status_enum"]
+            | Database['public']['Enums']['verification_status_enum']
             | null
           verified_at?: string | null
           verified_name?: string | null
@@ -1174,18 +1174,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "qr_scan_logs_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'qr_scan_logs_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "qr_scan_logs_scanned_by_fkey"
-            columns: ["scanned_by"]
+            foreignKeyName: 'qr_scan_logs_scanned_by_fkey'
+            columns: ['scanned_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1199,7 +1199,7 @@ export type Database = {
           rated_id: string
           rater_id: string
           rating: number
-          status: Database["public"]["Enums"]["review_status_enum"] | null
+          status: Database['public']['Enums']['review_status_enum'] | null
           submitted_at: string | null
         }
         Insert: {
@@ -1211,7 +1211,7 @@ export type Database = {
           rated_id: string
           rater_id: string
           rating: number
-          status?: Database["public"]["Enums"]["review_status_enum"] | null
+          status?: Database['public']['Enums']['review_status_enum'] | null
           submitted_at?: string | null
         }
         Update: {
@@ -1223,30 +1223,30 @@ export type Database = {
           rated_id?: string
           rater_id?: string
           rating?: number
-          status?: Database["public"]["Enums"]["review_status_enum"] | null
+          status?: Database['public']['Enums']['review_status_enum'] | null
           submitted_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "ratings_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'ratings_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "ratings_rated_id_fkey"
-            columns: ["rated_id"]
+            foreignKeyName: 'ratings_rated_id_fkey'
+            columns: ['rated_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "ratings_rater_id_fkey"
-            columns: ["rater_id"]
+            foreignKeyName: 'ratings_rater_id_fkey'
+            columns: ['rater_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1258,12 +1258,12 @@ export type Database = {
           currency: string
           id: string
           metadata: Json | null
-          status: Database["public"]["Enums"]["transaction_status_enum"]
+          status: Database['public']['Enums']['transaction_status_enum']
           stripe_charge_id: string | null
           stripe_payment_intent_id: string | null
           stripe_payout_id: string | null
           stripe_transfer_id: string | null
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: Database['public']['Enums']['transaction_type']
           user_id: string
         }
         Insert: {
@@ -1273,12 +1273,12 @@ export type Database = {
           currency?: string
           id?: string
           metadata?: Json | null
-          status?: Database["public"]["Enums"]["transaction_status_enum"]
+          status?: Database['public']['Enums']['transaction_status_enum']
           stripe_charge_id?: string | null
           stripe_payment_intent_id?: string | null
           stripe_payout_id?: string | null
           stripe_transfer_id?: string | null
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: Database['public']['Enums']['transaction_type']
           user_id: string
         }
         Update: {
@@ -1288,28 +1288,28 @@ export type Database = {
           currency?: string
           id?: string
           metadata?: Json | null
-          status?: Database["public"]["Enums"]["transaction_status_enum"]
+          status?: Database['public']['Enums']['transaction_status_enum']
           stripe_charge_id?: string | null
           stripe_payment_intent_id?: string | null
           stripe_payout_id?: string | null
           stripe_transfer_id?: string | null
-          type?: Database["public"]["Enums"]["transaction_type"]
+          type?: Database['public']['Enums']['transaction_type']
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "transactions_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'transactions_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "transactions_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'transactions_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1323,7 +1323,7 @@ export type Database = {
           external_transfer_id: string | null
           id: string
           payout_provider: string | null
-          status: Database["public"]["Enums"]["transfer_status_enum"]
+          status: Database['public']['Enums']['transfer_status_enum']
           stripe_transfer_id: string | null
         }
         Insert: {
@@ -1335,7 +1335,7 @@ export type Database = {
           external_transfer_id?: string | null
           id?: string
           payout_provider?: string | null
-          status?: Database["public"]["Enums"]["transfer_status_enum"]
+          status?: Database['public']['Enums']['transfer_status_enum']
           stripe_transfer_id?: string | null
         }
         Update: {
@@ -1347,16 +1347,16 @@ export type Database = {
           external_transfer_id?: string | null
           id?: string
           payout_provider?: string | null
-          status?: Database["public"]["Enums"]["transfer_status_enum"]
+          status?: Database['public']['Enums']['transfer_status_enum']
           stripe_transfer_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "transfers_booking_id_fkey"
-            columns: ["booking_id"]
+            foreignKeyName: 'transfers_booking_id_fkey'
+            columns: ['booking_id']
             isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1365,7 +1365,7 @@ export type Database = {
           created_at: string
           detail: string | null
           id: string
-          reason: Database["public"]["Enums"]["flag_reason_enum"]
+          reason: Database['public']['Enums']['flag_reason_enum']
           resolved_at: string | null
           resolved_by: string | null
           user_id: string
@@ -1374,7 +1374,7 @@ export type Database = {
           created_at?: string
           detail?: string | null
           id?: string
-          reason: Database["public"]["Enums"]["flag_reason_enum"]
+          reason: Database['public']['Enums']['flag_reason_enum']
           resolved_at?: string | null
           resolved_by?: string | null
           user_id: string
@@ -1383,25 +1383,25 @@ export type Database = {
           created_at?: string
           detail?: string | null
           id?: string
-          reason?: Database["public"]["Enums"]["flag_reason_enum"]
+          reason?: Database['public']['Enums']['flag_reason_enum']
           resolved_at?: string | null
           resolved_by?: string | null
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "user_flags_resolved_by_fkey"
-            columns: ["resolved_by"]
+            foreignKeyName: 'user_flags_resolved_by_fkey'
+            columns: ['resolved_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "user_flags_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'user_flags_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1463,7 +1463,7 @@ export type Database = {
               p_content: string
               p_link?: string
               p_title: string
-              p_type: Database["public"]["Enums"]["notification_type"]
+              p_type: Database['public']['Enums']['notification_type']
               p_user_id: string
             }
             Returns: string
@@ -1503,7 +1503,7 @@ export type Database = {
           created_at: string
           firstname: string
           id: string
-          kyc_status: Database["public"]["Enums"]["kyc_status"]
+          kyc_status: Database['public']['Enums']['kyc_status']
           lastname: string
           rating: number
         }[]
@@ -1574,77 +1574,77 @@ export type Database = {
     }
     Enums: {
       announcement_status:
-        | "draft"
-        | "published"
-        | "partially_booked"
-        | "fully_booked"
-        | "completed"
-        | "cancelled"
-        | "active"
+        | 'draft'
+        | 'published'
+        | 'partially_booked'
+        | 'fully_booked'
+        | 'completed'
+        | 'cancelled'
+        | 'active'
       booking_status:
-        | "pending"
-        | "accepted"
-        | "refused"
-        | "paid"
-        | "deposited"
-        | "in_transit"
-        | "delivered"
-        | "cancelled"
-        | "disputed"
-        | "matched"
-        | "confirmed"
-        | "handed"
-        | "completed"
-        | "payment_pending"
+        | 'pending'
+        | 'accepted'
+        | 'refused'
+        | 'paid'
+        | 'deposited'
+        | 'in_transit'
+        | 'delivered'
+        | 'cancelled'
+        | 'disputed'
+        | 'matched'
+        | 'confirmed'
+        | 'handed'
+        | 'completed'
+        | 'payment_pending'
       dispute_status_enum:
-        | "none"
-        | "open"
-        | "won_by_sender"
-        | "won_by_traveler"
-        | "resolved"
-      document_type: "passport" | "national_id" | "driving_license"
+        | 'none'
+        | 'open'
+        | 'won_by_sender'
+        | 'won_by_traveler'
+        | 'resolved'
+      document_type: 'passport' | 'national_id' | 'driving_license'
       flag_reason_enum:
-        | "concentration_ratio"
-        | "duration_too_short"
-        | "ring_collusion"
-        | "manual"
-      kyc_status: "pending" | "approved" | "rejected" | "incomplete"
+        | 'concentration_ratio'
+        | 'duration_too_short'
+        | 'ring_collusion'
+        | 'manual'
+      kyc_status: 'pending' | 'approved' | 'rejected' | 'incomplete'
       notification_type:
-        | "booking_request"
-        | "booking_accepted"
-        | "booking_refused"
-        | "payment_confirmed"
-        | "deposit_reminder"
-        | "transit_started"
-        | "delivery_reminder"
-        | "rating_request"
-        | "admin_message"
-        | "system_alert"
-        | "delivery_confirmed"
+        | 'booking_request'
+        | 'booking_accepted'
+        | 'booking_refused'
+        | 'payment_confirmed'
+        | 'deposit_reminder'
+        | 'transit_started'
+        | 'delivery_reminder'
+        | 'rating_request'
+        | 'admin_message'
+        | 'system_alert'
+        | 'delivery_confirmed'
       payment_status_enum:
-        | "requires_payment_method"
-        | "requires_confirmation"
-        | "succeeded"
-        | "refunded"
-        | "partially_refunded"
-      photo_type_enum: "handoff" | "delivery"
-      review_status_enum: "pending" | "submitted" | "published" | "skipped"
+        | 'requires_payment_method'
+        | 'requires_confirmation'
+        | 'succeeded'
+        | 'refunded'
+        | 'partially_refunded'
+      photo_type_enum: 'handoff' | 'delivery'
+      review_status_enum: 'pending' | 'submitted' | 'published' | 'skipped'
       subscription_status_enum:
-        | "trialing"
-        | "active"
-        | "past_due"
-        | "canceled"
-        | "inactive"
-      transaction_status_enum: "pending" | "completed" | "failed" | "refunded"
+        | 'trialing'
+        | 'active'
+        | 'past_due'
+        | 'canceled'
+        | 'inactive'
+      transaction_status_enum: 'pending' | 'completed' | 'failed' | 'refunded'
       transaction_type:
-        | "payment"
-        | "commission"
-        | "insurance"
-        | "payout"
-        | "refund"
-      transfer_status_enum: "pending" | "paid" | "failed" | "reversed"
-      user_role: "user" | "partner" | "admin"
-      verification_status_enum: "none" | "pending" | "verified" | "rejected"
+        | 'payment'
+        | 'commission'
+        | 'insurance'
+        | 'payout'
+        | 'refund'
+      transfer_status_enum: 'pending' | 'paid' | 'failed' | 'reversed'
+      user_role: 'user' | 'partner' | 'admin'
+      verification_status_enum: 'none' | 'pending' | 'verified' | 'rejected'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1663,7 +1663,7 @@ export type Database = {
           owner: string | null
           owner_id: string | null
           public: boolean | null
-          type: Database["storage"]["Enums"]["buckettype"]
+          type: Database['storage']['Enums']['buckettype']
           updated_at: string | null
         }
         Insert: {
@@ -1676,7 +1676,7 @@ export type Database = {
           owner?: string | null
           owner_id?: string | null
           public?: boolean | null
-          type?: Database["storage"]["Enums"]["buckettype"]
+          type?: Database['storage']['Enums']['buckettype']
           updated_at?: string | null
         }
         Update: {
@@ -1689,7 +1689,7 @@ export type Database = {
           owner?: string | null
           owner_id?: string | null
           public?: boolean | null
-          type?: Database["storage"]["Enums"]["buckettype"]
+          type?: Database['storage']['Enums']['buckettype']
           updated_at?: string | null
         }
         Relationships: []
@@ -1701,7 +1701,7 @@ export type Database = {
           format: string
           id: string
           name: string
-          type: Database["storage"]["Enums"]["buckettype"]
+          type: Database['storage']['Enums']['buckettype']
           updated_at: string
         }
         Insert: {
@@ -1710,7 +1710,7 @@ export type Database = {
           format?: string
           id?: string
           name: string
-          type?: Database["storage"]["Enums"]["buckettype"]
+          type?: Database['storage']['Enums']['buckettype']
           updated_at?: string
         }
         Update: {
@@ -1719,7 +1719,7 @@ export type Database = {
           format?: string
           id?: string
           name?: string
-          type?: Database["storage"]["Enums"]["buckettype"]
+          type?: Database['storage']['Enums']['buckettype']
           updated_at?: string
         }
         Relationships: []
@@ -1728,19 +1728,19 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          type: Database["storage"]["Enums"]["buckettype"]
+          type: Database['storage']['Enums']['buckettype']
           updated_at: string
         }
         Insert: {
           created_at?: string
           id: string
-          type?: Database["storage"]["Enums"]["buckettype"]
+          type?: Database['storage']['Enums']['buckettype']
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
-          type?: Database["storage"]["Enums"]["buckettype"]
+          type?: Database['storage']['Enums']['buckettype']
           updated_at?: string
         }
         Relationships: []
@@ -1811,11 +1811,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "objects_bucketId_fkey"
-            columns: ["bucket_id"]
+            foreignKeyName: 'objects_bucketId_fkey'
+            columns: ['bucket_id']
             isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
+            referencedRelation: 'buckets'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1858,11 +1858,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "s3_multipart_uploads_bucket_id_fkey"
-            columns: ["bucket_id"]
+            foreignKeyName: 's3_multipart_uploads_bucket_id_fkey'
+            columns: ['bucket_id']
             isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
+            referencedRelation: 'buckets'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1905,18 +1905,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey"
-            columns: ["bucket_id"]
+            foreignKeyName: 's3_multipart_uploads_parts_bucket_id_fkey'
+            columns: ['bucket_id']
             isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
+            referencedRelation: 'buckets'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey"
-            columns: ["upload_id"]
+            foreignKeyName: 's3_multipart_uploads_parts_upload_id_fkey'
+            columns: ['upload_id']
             isOneToOne: false
-            referencedRelation: "s3_multipart_uploads"
-            referencedColumns: ["id"]
+            referencedRelation: 's3_multipart_uploads'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1956,11 +1956,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "vector_indexes_bucket_id_fkey"
-            columns: ["bucket_id"]
+            foreignKeyName: 'vector_indexes_bucket_id_fkey'
+            columns: ['bucket_id']
             isOneToOne: false
-            referencedRelation: "buckets_vectors"
-            referencedColumns: ["id"]
+            referencedRelation: 'buckets_vectors'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2121,7 +2121,7 @@ export type Database = {
       }
     }
     Enums: {
-      buckettype: "STANDARD" | "ANALYTICS" | "VECTOR"
+      buckettype: 'STANDARD' | 'ANALYTICS' | 'VECTOR'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2129,33 +2129,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -2164,23 +2164,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -2189,23 +2189,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+    | keyof DefaultSchema['Tables']
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -2214,134 +2214,134 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+    | keyof DefaultSchema['Enums']
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
       announcement_status: [
-        "draft",
-        "published",
-        "partially_booked",
-        "fully_booked",
-        "completed",
-        "cancelled",
-        "active",
+        'draft',
+        'published',
+        'partially_booked',
+        'fully_booked',
+        'completed',
+        'cancelled',
+        'active',
       ],
       booking_status: [
-        "pending",
-        "accepted",
-        "refused",
-        "paid",
-        "deposited",
-        "in_transit",
-        "delivered",
-        "cancelled",
-        "disputed",
-        "matched",
-        "confirmed",
-        "handed",
-        "completed",
-        "payment_pending",
+        'pending',
+        'accepted',
+        'refused',
+        'paid',
+        'deposited',
+        'in_transit',
+        'delivered',
+        'cancelled',
+        'disputed',
+        'matched',
+        'confirmed',
+        'handed',
+        'completed',
+        'payment_pending',
       ],
       dispute_status_enum: [
-        "none",
-        "open",
-        "won_by_sender",
-        "won_by_traveler",
-        "resolved",
+        'none',
+        'open',
+        'won_by_sender',
+        'won_by_traveler',
+        'resolved',
       ],
-      document_type: ["passport", "national_id", "driving_license"],
+      document_type: ['passport', 'national_id', 'driving_license'],
       flag_reason_enum: [
-        "concentration_ratio",
-        "duration_too_short",
-        "ring_collusion",
-        "manual",
+        'concentration_ratio',
+        'duration_too_short',
+        'ring_collusion',
+        'manual',
       ],
-      kyc_status: ["pending", "approved", "rejected", "incomplete"],
+      kyc_status: ['pending', 'approved', 'rejected', 'incomplete'],
       notification_type: [
-        "booking_request",
-        "booking_accepted",
-        "booking_refused",
-        "payment_confirmed",
-        "deposit_reminder",
-        "transit_started",
-        "delivery_reminder",
-        "rating_request",
-        "admin_message",
-        "system_alert",
-        "delivery_confirmed",
+        'booking_request',
+        'booking_accepted',
+        'booking_refused',
+        'payment_confirmed',
+        'deposit_reminder',
+        'transit_started',
+        'delivery_reminder',
+        'rating_request',
+        'admin_message',
+        'system_alert',
+        'delivery_confirmed',
       ],
       payment_status_enum: [
-        "requires_payment_method",
-        "requires_confirmation",
-        "succeeded",
-        "refunded",
-        "partially_refunded",
+        'requires_payment_method',
+        'requires_confirmation',
+        'succeeded',
+        'refunded',
+        'partially_refunded',
       ],
-      photo_type_enum: ["handoff", "delivery"],
-      review_status_enum: ["pending", "submitted", "published", "skipped"],
+      photo_type_enum: ['handoff', 'delivery'],
+      review_status_enum: ['pending', 'submitted', 'published', 'skipped'],
       subscription_status_enum: [
-        "trialing",
-        "active",
-        "past_due",
-        "canceled",
-        "inactive",
+        'trialing',
+        'active',
+        'past_due',
+        'canceled',
+        'inactive',
       ],
-      transaction_status_enum: ["pending", "completed", "failed", "refunded"],
+      transaction_status_enum: ['pending', 'completed', 'failed', 'refunded'],
       transaction_type: [
-        "payment",
-        "commission",
-        "insurance",
-        "payout",
-        "refund",
+        'payment',
+        'commission',
+        'insurance',
+        'payout',
+        'refund',
       ],
-      transfer_status_enum: ["pending", "paid", "failed", "reversed"],
-      user_role: ["user", "partner", "admin"],
-      verification_status_enum: ["none", "pending", "verified", "rejected"],
+      transfer_status_enum: ['pending', 'paid', 'failed', 'reversed'],
+      user_role: ['user', 'partner', 'admin'],
+      verification_status_enum: ['none', 'pending', 'verified', 'rejected'],
     },
   },
   storage: {
     Enums: {
-      buckettype: ["STANDARD", "ANALYTICS", "VECTOR"],
+      buckettype: ['STANDARD', 'ANALYTICS', 'VECTOR'],
     },
   },
 } as const
 
-export type Profile = Tables<"profiles">
-export type Announcement = Tables<"announcements">
-export type Booking = Tables<"bookings">
-export type Message = Tables<"messages">
-export type Notification = Tables<"notifications">
-export type Rating = Tables<"ratings">
-export type Transaction = Tables<"transactions">
+export type Profile = Tables<'profiles'>
+export type Announcement = Tables<'announcements'>
+export type Booking = Tables<'bookings'>
+export type Message = Tables<'messages'>
+export type Notification = Tables<'notifications'>
+export type Rating = Tables<'ratings'>
+export type Transaction = Tables<'transactions'>

@@ -22,7 +22,11 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 export default function AdminDisputesPage() {
-  const { data: disputes, isLoading, isError } = useQuery({
+  const {
+    data: disputes,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['adminDisputes'],
     retry: 1,
     queryFn: getAdminDisputes,
@@ -66,36 +70,36 @@ export default function AdminDisputesPage() {
             </p>
           ) : (
             <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Raison</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {disputes?.map((dispute: any) => (
-                  <TableRow key={dispute.id}>
-                    <TableCell className="font-mono text-xs">
-                      {dispute.id.slice(0, 8)}...
-                    </TableCell>
-                    <TableCell>{dispute.total_price || 0} EUR</TableCell>
-                    <TableCell>{dispute.disputed_reason || 'N/A'}</TableCell>
-                    <TableCell>
-                      {format(new Date(dispute.created_at), 'PP', {
-                        locale: fr,
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="destructive">À traiter</Badge>
-                    </TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Montant</TableHead>
+                    <TableHead>Raison</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {disputes?.map((dispute: any) => (
+                    <TableRow key={dispute.id}>
+                      <TableCell className="font-mono text-xs">
+                        {dispute.id.slice(0, 8)}...
+                      </TableCell>
+                      <TableCell>{dispute.total_price || 0} EUR</TableCell>
+                      <TableCell>{dispute.disputed_reason || 'N/A'}</TableCell>
+                      <TableCell>
+                        {format(new Date(dispute.created_at), 'PP', {
+                          locale: fr,
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="destructive">À traiter</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>

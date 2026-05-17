@@ -91,8 +91,20 @@ function LoginForm() {
         <Card className="border shadow-sm rounded-2xl">
           <CardHeader className="space-y-4 py-12 text-center">
             <div className="flex justify-center">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+              <Image
+                src="/images/branding/logo.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="dark:hidden"
+              />
+              <Image
+                src="/images/branding/logo-white.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="hidden dark:block"
+              />
             </div>
             <CardTitle className="text-2xl">Vérification...</CardTitle>
           </CardHeader>
@@ -132,8 +144,20 @@ function LoginForm() {
       <Card className="border shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="space-y-3 pb-4 text-center">
           <div className="flex justify-center pt-2">
-            <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-            <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+            <Image
+              src="/images/branding/logo.svg"
+              alt="Sendbox"
+              width={100}
+              height={20}
+              className="dark:hidden"
+            />
+            <Image
+              src="/images/branding/logo-white.svg"
+              alt="Sendbox"
+              width={100}
+              height={20}
+              className="hidden dark:block"
+            />
           </div>
           <div className="space-y-1">
             <CardTitle className="text-2xl font-bold">Se connecter</CardTitle>
@@ -154,7 +178,11 @@ function LoginForm() {
                 aria-describedby={errors.email ? 'email-error' : undefined}
               />
               {errors.email && (
-                <p id="email-error" className="text-sm text-destructive" role="alert">
+                <p
+                  id="email-error"
+                  className="text-sm text-destructive"
+                  role="alert"
+                >
                   {errors.email.message}
                 </p>
               )}
@@ -177,10 +205,16 @@ function LoginForm() {
                 autoComplete="current-password"
                 {...register('password')}
                 aria-invalid={errors.password ? 'true' : 'false'}
-                aria-describedby={errors.password ? 'password-error' : undefined}
+                aria-describedby={
+                  errors.password ? 'password-error' : undefined
+                }
               />
               {errors.password && (
-                <p id="password-error" className="text-sm text-destructive" role="alert">
+                <p
+                  id="password-error"
+                  className="text-sm text-destructive"
+                  role="alert"
+                >
                   {errors.password.message}
                 </p>
               )}
@@ -198,7 +232,10 @@ function LoginForm() {
                   />
                 )}
               />
-              <Label htmlFor="rememberMe" className="text-sm font-normal cursor-pointer">
+              <Label
+                htmlFor="rememberMe"
+                className="text-sm font-normal cursor-pointer"
+              >
                 Se souvenir de moi
               </Label>
             </div>
@@ -232,7 +269,11 @@ function LoginForm() {
               onClick={() => handleOAuth('google')}
               aria-label="Connexion avec Google"
             >
-              <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                className="mr-2 h-4 w-4"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                   fill="#4285F4"
@@ -255,7 +296,10 @@ function LoginForm() {
 
             <p className="text-center text-sm text-muted-foreground">
               Pas encore de compte ?{' '}
-              <Link href="/register" className="text-primary underline hover:no-underline">
+              <Link
+                href="/register"
+                className="text-primary underline hover:no-underline"
+              >
                 Créer un compte
               </Link>
             </p>
@@ -273,8 +317,20 @@ export default function LoginPage() {
         <Card className="w-full border shadow-sm rounded-2xl">
           <CardHeader className="space-y-4 py-12 text-center">
             <div className="flex justify-center">
-              <Image src="/images/branding/logo.svg" alt="Sendbox" width={100} height={20} className="dark:hidden" />
-              <Image src="/images/branding/logo-white.svg" alt="Sendbox" width={100} height={20} className="hidden dark:block" />
+              <Image
+                src="/images/branding/logo.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="dark:hidden"
+              />
+              <Image
+                src="/images/branding/logo-white.svg"
+                alt="Sendbox"
+                width={100}
+                height={20}
+                className="hidden dark:block"
+              />
             </div>
             <CardTitle className="text-2xl">Chargement...</CardTitle>
           </CardHeader>

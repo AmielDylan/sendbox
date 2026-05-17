@@ -7,7 +7,7 @@ import { sendEmail } from '@/lib/shared/services/email/client'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // 1. Auth admin
   const supabase = await createClient()
@@ -20,7 +20,12 @@ export async function POST(
 
   const { id: userId } = await params
 
-  let body: { outcome: string; verifiedName?: string | null; rejectionReason?: string | null; adminNotes?: string | null }
+  let body: {
+    outcome: string
+    verifiedName?: string | null
+    rejectionReason?: string | null
+    adminNotes?: string | null
+  }
   try {
     body = await req.json()
   } catch {
@@ -42,7 +47,10 @@ export async function POST(
     .single()
 
   if (!profile) {
-    return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 })
+    return NextResponse.json(
+      { error: 'Utilisateur introuvable' },
+      { status: 404 }
+    )
   }
 
   const { data: reviews } = await admin
@@ -70,13 +78,17 @@ export async function POST(
 
     if (profileErr) {
       console.error('[kyc/resolve] profile update error:', profileErr)
-      return NextResponse.json({ error: 'Erreur mise à jour profil' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Erreur mise à jour profil' },
+        { status: 500 }
+      )
     }
 
     // Supprimer les fichiers du bucket
-    const toRemove = [profile.kyc_document_front, profile.kyc_document_back].filter(
-      Boolean,
-    ) as string[]
+    const toRemove = [
+      profile.kyc_document_front,
+      profile.kyc_document_back,
+    ].filter(Boolean) as string[]
     if (toRemove.length) {
       await admin.storage.from('kyc-documents').remove(toRemove)
     }
@@ -85,7 +97,12 @@ export async function POST(
     if (review) {
       await admin
         .from('kyc_reviews')
-        .update({ status: 'VERIFIED', admin_id: adminUser.id, reviewed_at: now, admin_notes: adminNotes ?? null })
+        .update({
+          status: 'VERIFIED',
+          admin_id: adminUser.id,
+          reviewed_at: now,
+          admin_notes: adminNotes ?? null,
+        })
         .eq('id', review.id)
     }
 
@@ -108,7 +125,10 @@ export async function POST(
   } else {
     // 3b. Rejeter
     if (!rejectionReason?.trim()) {
-      return NextResponse.json({ error: 'Le motif de refus est obligatoire' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Le motif de refus est obligatoire' },
+        { status: 400 }
+      )
     }
 
     const { error: profileErr } = await admin
@@ -121,13 +141,17 @@ export async function POST(
 
     if (profileErr) {
       console.error('[kyc/resolve] profile update error:', profileErr)
-      return NextResponse.json({ error: 'Erreur mise à jour profil' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Erreur mise à jour profil' },
+        { status: 500 }
+      )
     }
 
     // Supprimer les fichiers immédiatement
-    const toRemove = [profile.kyc_document_front, profile.kyc_document_back].filter(
-      Boolean,
-    ) as string[]
+    const toRemove = [
+      profile.kyc_document_front,
+      profile.kyc_document_back,
+    ].filter(Boolean) as string[]
     if (toRemove.length) {
       await admin.storage.from('kyc-documents').remove(toRemove)
     }
@@ -135,7 +159,12 @@ export async function POST(
     if (review) {
       await admin
         .from('kyc_reviews')
-        .update({ status: 'REJECTED', admin_id: adminUser.id, reviewed_at: now, admin_notes: adminNotes ?? null })
+        .update({
+          status: 'REJECTED',
+          admin_id: adminUser.id,
+          reviewed_at: now,
+          admin_notes: adminNotes ?? null,
+        })
         .eq('id', review.id)
     }
 

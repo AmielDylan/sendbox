@@ -50,7 +50,8 @@ export async function POST() {
     userId: user.id,
     type: 'system_alert',
     title: "Action requise : vérification d'identité",
-    content: 'Veuillez vérifier votre identité pour débloquer toutes les fonctionnalités.',
+    content:
+      'Veuillez vérifier votre identité pour débloquer toutes les fonctionnalités.',
   })
 
   if (error) {

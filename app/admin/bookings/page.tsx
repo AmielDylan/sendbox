@@ -150,65 +150,67 @@ export default function AdminBookingsPage() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Poids</TableHead>
-                <TableHead>Montant</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bookings?.map((booking: any) => (
-                <TableRow key={booking.id}>
-                  <TableCell className="font-mono text-xs">
-                    {booking.id.slice(0, 8)}...
-                  </TableCell>
-                  <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                  <TableCell>{booking.weight_kg} kg</TableCell>
-                  <TableCell>{booking.total_price || 0} EUR</TableCell>
-                  <TableCell>
-                    {format(new Date(booking.created_at), 'PP', { locale: fr })}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleReleasePayment(booking.id)}
-                        disabled={booking.status !== 'delivered'}
-                      >
-                        <IconLockOpen className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedBooking(booking)
-                          setRefundDialogOpen(true)
-                        }}
-                      >
-                        <IconCurrencyDollar className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedBooking(booking)
-                          setDisputeDialogOpen(true)
-                        }}
-                      >
-                        <IconAlertTriangle className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Poids</TableHead>
+                  <TableHead>Montant</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {bookings?.map((booking: any) => (
+                  <TableRow key={booking.id}>
+                    <TableCell className="font-mono text-xs">
+                      {booking.id.slice(0, 8)}...
+                    </TableCell>
+                    <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                    <TableCell>{booking.weight_kg} kg</TableCell>
+                    <TableCell>{booking.total_price || 0} EUR</TableCell>
+                    <TableCell>
+                      {format(new Date(booking.created_at), 'PP', {
+                        locale: fr,
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleReleasePayment(booking.id)}
+                          disabled={booking.status !== 'delivered'}
+                        >
+                          <IconLockOpen className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedBooking(booking)
+                            setRefundDialogOpen(true)
+                          }}
+                        >
+                          <IconCurrencyDollar className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedBooking(booking)
+                            setDisputeDialogOpen(true)
+                          }}
+                        >
+                          <IconAlertTriangle className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

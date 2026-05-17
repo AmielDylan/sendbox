@@ -10,7 +10,7 @@ import { describe, it, expect } from 'vitest'
 
 const MAX_PHOTO_SIZE_MB = 10
 const VALID_PHOTO_TYPES = ['handoff', 'delivery'] as const
-type PhotoType = typeof VALID_PHOTO_TYPES[number]
+type PhotoType = (typeof VALID_PHOTO_TYPES)[number]
 
 function validatePhotoSize(sizeBytes: number, maxMb: number): boolean {
   return sizeBytes <= maxMb * 1024 * 1024

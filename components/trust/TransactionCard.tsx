@@ -49,7 +49,10 @@ const STATUS_LABELS: Record<TransactionStatus, string> = {
   disputed: 'En litige',
 }
 
-const STATUS_VARIANT: Record<TransactionStatus, 'default' | 'secondary' | 'destructive' | 'outline' | 'warning'> = {
+const STATUS_VARIANT: Record<
+  TransactionStatus,
+  'default' | 'secondary' | 'destructive' | 'outline' | 'warning'
+> = {
   pending: 'warning',
   accepted: 'secondary',
   matched: 'secondary',
@@ -78,8 +81,12 @@ export function TransactionCard({
   createdAt,
 }: TransactionCardProps) {
   const totalPrice = pricePerKg ? kilosRequested * pricePerKg : null
-  const formattedDate = format(new Date(departureDate), 'dd MMM yyyy', { locale: fr })
-  const formattedCreatedAt = format(new Date(createdAt), 'dd MMM', { locale: fr })
+  const formattedDate = format(new Date(departureDate), 'dd MMM yyyy', {
+    locale: fr,
+  })
+  const formattedCreatedAt = format(new Date(createdAt), 'dd MMM', {
+    locale: fr,
+  })
 
   return (
     <Card className="hover:shadow-sm transition-shadow">
@@ -96,17 +103,23 @@ export function TransactionCard({
               </Badge>
             )}
           </div>
-          <span className="text-xs text-muted-foreground">{formattedCreatedAt}</span>
+          <span className="text-xs text-muted-foreground">
+            {formattedCreatedAt}
+          </span>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-3">
         <div className="flex items-center gap-2 text-sm">
           <span className="font-medium">{departureCity}</span>
-          <span className="text-muted-foreground text-xs">{departureCountry}</span>
+          <span className="text-muted-foreground text-xs">
+            {departureCountry}
+          </span>
           <IconArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="font-medium">{arrivalCity}</span>
-          <span className="text-muted-foreground text-xs">{arrivalCountry}</span>
+          <span className="text-muted-foreground text-xs">
+            {arrivalCountry}
+          </span>
         </div>
 
         <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -125,7 +138,9 @@ export function TransactionCard({
         {counterpartName && (
           <p className="text-xs text-muted-foreground">
             {counterpartRole === 'sender' ? 'Expéditeur' : 'Voyageur'} :{' '}
-            <span className="font-medium text-foreground">{counterpartName}</span>
+            <span className="font-medium text-foreground">
+              {counterpartName}
+            </span>
           </p>
         )}
 

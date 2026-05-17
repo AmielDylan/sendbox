@@ -23,7 +23,11 @@ import { fr } from 'date-fns/locale'
 import { PageHeader } from '@/components/ui/page-header'
 
 export default function AdminTransactionsPage() {
-  const { data: transactions, isLoading, isError } = useQuery({
+  const {
+    data: transactions,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['adminTransactions'],
     retry: 1,
     queryFn: getAdminTransactions,
@@ -108,40 +112,40 @@ export default function AdminTransactionsPage() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Montant</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions?.map((transaction: any) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{getTypeBadge(transaction.type)}</TableCell>
-                  <TableCell>{transaction.amount || 0} EUR</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        transaction.status === 'completed'
-                          ? 'default'
-                          : 'secondary'
-                      }
-                    >
-                      {transaction.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(transaction.created_at), 'PP', {
-                      locale: fr,
-                    })}
-                  </TableCell>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Montant</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Date</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {transactions?.map((transaction: any) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{getTypeBadge(transaction.type)}</TableCell>
+                    <TableCell>{transaction.amount || 0} EUR</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          transaction.status === 'completed'
+                            ? 'default'
+                            : 'secondary'
+                        }
+                      >
+                        {transaction.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(transaction.created_at), 'PP', {
+                        locale: fr,
+                      })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

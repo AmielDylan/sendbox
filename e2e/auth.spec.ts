@@ -16,7 +16,9 @@ test.describe('Login', () => {
     await page.fill('#email', PERSONAS.sender.email)
     await page.fill('#password', 'WrongPass999!')
     await page.click('button[type="submit"]')
-    await expect(page.locator('[role="alert"], [id$="-error"]').first()).toBeVisible()
+    await expect(
+      page.locator('[role="alert"], [id$="-error"]').first()
+    ).toBeVisible()
   })
 
   test('"Se souvenir de moi" checkbox is present', async ({ page }) => {
@@ -90,7 +92,9 @@ test.describe('Registration', () => {
     await page.fill('#confirmPassword', 'TestPass123!')
     await page.locator('#terms').check()
     await page.click('button[type="submit"]')
-    await expect(page.locator('[role="alert"], [id$="-error"]').first()).toBeVisible()
+    await expect(
+      page.locator('[role="alert"], [id$="-error"]').first()
+    ).toBeVisible()
   })
 
   test('terms checkbox required', async ({ page }) => {
@@ -107,7 +111,9 @@ test.describe('Registration', () => {
 })
 
 test.describe('Reset Password', () => {
-  test('shows success message regardless of email existence', async ({ page }) => {
+  test('shows success message regardless of email existence', async ({
+    page,
+  }) => {
     await page.goto('/reset-password')
     await page.fill('#email', 'anyone@example.com')
     await page.click('button[type="submit"]')

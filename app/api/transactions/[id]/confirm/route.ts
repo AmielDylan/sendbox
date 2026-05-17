@@ -35,7 +35,10 @@ export async function POST(
   }
 
   try {
-    const result = await confirmMatchingForBooking(transaction.booking_id, user.id)
+    const result = await confirmMatchingForBooking(
+      transaction.booking_id,
+      user.id
+    )
     return NextResponse.json(result)
   } catch (error) {
     const status = (error as { status?: number }).status ?? 500

@@ -60,7 +60,7 @@ interface AdminLayoutProps {
 interface AdminNavItem {
   title: string
   href: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<{ className?: string; stroke?: number }>
 }
 
 const adminNavItems: AdminNavItem[] = [
@@ -206,7 +206,7 @@ function SidebarContent({
               )}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="h-5 w-5" aria-hidden="true" />
+              <Icon className="h-4 w-4" stroke={1.5} aria-hidden="true" />
               <span className="flex-1">{item.title}</span>
             </Link>
           )
@@ -297,7 +297,8 @@ function AdminUserMenu() {
     (profile as any)?.lastname || null
   )
   const rawInitials = generateInitials(nameParts.firstName, nameParts.lastName)
-  const initials = rawInitials !== 'U' ? rawInitials : (email[0]?.toUpperCase() || 'A')
+  const initials =
+    rawInitials !== 'U' ? rawInitials : email[0]?.toUpperCase() || 'A'
   const avatarUrl = getAvatarUrl(
     (profile as any)?.avatar_url || null,
     (profile as any)?.id || user?.id || email
@@ -329,7 +330,9 @@ function AdminUserMenu() {
         <DropdownMenuLabel className="pb-3">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">Admin</p>
-            <p className="text-xs leading-none text-muted-foreground">{email}</p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {email}
+            </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

@@ -31,6 +31,7 @@ import {
   IconLoader2,
   IconShieldCheck,
   IconUpload,
+  IconFileTypePdf,
 } from '@tabler/icons-react'
 import { createClient } from '@/lib/shared/db/client'
 
@@ -46,7 +47,18 @@ type PageState =
   | { phase: 'error'; message: string }
 
 type DocType = 'passport' | 'cni' | ''
-type CountryCode = 'FR' | 'BJ' | 'TG' | 'CI' | 'SN' | 'MA' | 'DZ' | 'TN' | 'CM' | 'other' | ''
+type CountryCode =
+  | 'FR'
+  | 'BJ'
+  | 'TG'
+  | 'CI'
+  | 'SN'
+  | 'MA'
+  | 'DZ'
+  | 'TN'
+  | 'CM'
+  | 'other'
+  | ''
 
 const DOC_TYPES: { value: DocType; label: string }[] = [
   { value: 'passport', label: 'Passeport' },
@@ -67,7 +79,8 @@ const COUNTRIES: { value: CountryCode; label: string }[] = [
 ]
 
 const docHint: Record<NonNullable<Exclude<DocType, ''>>, string> = {
-  passport: 'Page principale ouverte (photo + informations). Passeport entier visible, fond uni, sans reflet.',
+  passport:
+    'Page principale ouverte (photo + informations). Passeport entier visible, fond uni, sans reflet.',
   cni: 'Recto de la carte. Pièce entière visible, fond uni, sans reflet.',
 }
 
@@ -81,6 +94,7 @@ export default function KYCPage() {
   const [selfieFile, setSelfieFile] = useState<File | null>(null)
   const [docPreview, setDocPreview] = useState<string | null>(null)
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null)
+  const [docIsPdf, setDocIsPdf] = useState(false)
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const docInputRef = useRef<HTMLInputElement>(null)
@@ -102,14 +116,18 @@ export default function KYCPage() {
         .eq('id', user.id)
         .single()
 
-      const status: VerificationStatus = (profile?.verification_status ?? 'none') as VerificationStatus
+      const status: VerificationStatus = (profile?.verification_status ??
+        'none') as VerificationStatus
       if (status === 'verified') {
         setState({ phase: 'verified' })
         setTimeout(() => router.push('/dashboard'), 1500)
       } else if (status === 'pending') {
         setState({ phase: 'pending' })
       } else if (status === 'rejected') {
-        setState({ phase: 'rejected', reason: (profile as any)?.kyc_rejection_reason ?? null })
+        setState({
+          phase: 'rejected',
+          reason: (profile as any)?.kyc_rejection_reason ?? null,
+        })
       } else {
         setState({ phase: 'form', step: 1 })
       }
@@ -120,8 +138,16 @@ export default function KYCPage() {
   function handleDocChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null
     setDocFile(file)
-    if (file) setDocPreview(URL.createObjectURL(file))
-    else setDocPreview(null)
+    if (file) {
+      setDocIsPdf(
+        file.type === 'application/pdf' ||
+          file.name.toLowerCase().endsWith('.pdf')
+      )
+      setDocPreview(URL.createObjectURL(file))
+    } else {
+      setDocIsPdf(false)
+      setDocPreview(null)
+    }
   }
 
   function handleSelfieChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -141,7 +167,8 @@ export default function KYCPage() {
       body.append('consent', 'true')
       if (docType) body.append('docType', docType)
       if (country) body.append('country', country)
-      if (country === 'other' && customCountry.trim()) body.append('customCountry', customCountry.trim())
+      if (country === 'other' && customCountry.trim())
+        body.append('customCountry', customCountry.trim())
 
       const res = await fetch('/api/kyc/submit', { method: 'POST', body })
       if (!res.ok) {
@@ -150,13 +177,17 @@ export default function KYCPage() {
       }
       setState({ phase: 'success' })
     } catch (err) {
-      setState({ phase: 'error', message: err instanceof Error ? err.message : 'Erreur inattendue' })
+      setState({
+        phase: 'error',
+        message: err instanceof Error ? err.message : 'Erreur inattendue',
+      })
     } finally {
       setSubmitting(false)
     }
   }
 
-  const countryReady = !!country && (country !== 'other' || !!customCountry.trim())
+  const countryReady =
+    !!country && (country !== 'other' || !!customCountry.trim())
   const canProceedStep1 = !!docType && countryReady && !!docFile && consent
 
   return (
@@ -180,7 +211,9 @@ export default function KYCPage() {
         <Alert className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
           <IconShieldCheck className="h-5 w-5 text-green-600" />
           <AlertTitle>Identité vérifiée</AlertTitle>
-          <AlertDescription>Votre identité a déjà été vérifiée. Redirection en cours…</AlertDescription>
+          <AlertDescription>
+            Votre identité a déjà été vérifiée. Redirection en cours…
+          </AlertDescription>
         </Alert>
       )}
 
@@ -192,12 +225,14 @@ export default function KYCPage() {
               <CardTitle>Dossier en cours d&apos;examen</CardTitle>
             </div>
             <CardDescription>
-              Notre équipe examine votre dossier. Ce processus prend généralement 24 à 48 heures.
+              Notre équipe examine votre dossier. Ce processus prend
+              généralement 24 à 48 heures.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Vous recevrez un email dès que votre identité sera vérifiée ou si des informations supplémentaires sont nécessaires.
+              Vous recevrez un email dès que votre identité sera vérifiée ou si
+              des informations supplémentaires sont nécessaires.
             </p>
           </CardContent>
         </Card>
@@ -208,9 +243,12 @@ export default function KYCPage() {
           <IconAlertCircle className="h-5 w-5" />
           <AlertTitle>Vérification refusée</AlertTitle>
           <AlertDescription>
-            {state.reason
-              ? <>Motif : <strong>{state.reason}</strong><br /></>
-              : null}
+            {state.reason ? (
+              <>
+                Motif : <strong>{state.reason}</strong>
+                <br />
+              </>
+            ) : null}
             Vous pouvez relancer la procédure en soumettant un nouveau dossier.
           </AlertDescription>
         </Alert>
@@ -219,16 +257,22 @@ export default function KYCPage() {
       {(state.phase === 'rejected' || state.phase === 'form') && (
         <div className="grid gap-6 md:grid-cols-2">
           {/* Étape 1 : Document */}
-          <Card className={state.phase === 'form' && state.step === 2 ? 'opacity-60' : ''}>
+          <Card
+            className={
+              state.phase === 'form' && state.step === 2 ? 'opacity-60' : ''
+            }
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <IconId className="h-5 w-5 text-primary/80" />
-                <CardTitle className="text-base">Étape 1 : Pièce d&apos;identité</CardTitle>
+                <CardTitle className="text-base">
+                  Étape 1 : Pièce d&apos;identité
+                </CardTitle>
               </div>
               <CardDescription>
                 {docType
                   ? docHint[docType as Exclude<DocType, ''>]
-                  : 'Sélectionnez le type de pièce et le pays d\'émission, puis prenez une photo nette sur fond uni.'}
+                  : "Sélectionnez le type de pièce et le pays d'émission, puis prenez une photo nette sur fond uni."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -238,7 +282,7 @@ export default function KYCPage() {
                   <Label htmlFor="doc-type">Type de pièce</Label>
                   <Select
                     value={docType}
-                    onValueChange={(v) => setDocType(v as DocType)}
+                    onValueChange={v => setDocType(v as DocType)}
                   >
                     <SelectTrigger id="doc-type">
                       <SelectValue placeholder="Choisir…" />
@@ -257,7 +301,7 @@ export default function KYCPage() {
                   <Label htmlFor="doc-country">Pays d&apos;émission</Label>
                   <Select
                     value={country}
-                    onValueChange={(v) => setCountry(v as CountryCode)}
+                    onValueChange={v => setCountry(v as CountryCode)}
                   >
                     <SelectTrigger id="doc-country">
                       <SelectValue placeholder="Choisir…" />
@@ -275,7 +319,9 @@ export default function KYCPage() {
 
               {country === 'other' && (
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="custom-country">Précisez le pays d&apos;émission</Label>
+                  <Label htmlFor="custom-country">
+                    Précisez le pays d&apos;émission
+                  </Label>
                   <Input
                     id="custom-country"
                     value={customCountry}
@@ -289,15 +335,34 @@ export default function KYCPage() {
               <input
                 ref={docInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/heic,application/pdf"
                 capture="environment"
                 className="hidden"
                 onChange={handleDocChange}
               />
               {docPreview ? (
-                <div className="relative aspect-video overflow-hidden rounded-lg border">
-                  <Image src={docPreview} alt="Aperçu document" fill className="object-contain" />
-                </div>
+                docIsPdf ? (
+                  <div className="flex items-center gap-3 rounded-lg border p-4 bg-muted/30">
+                    <IconFileTypePdf className="h-8 w-8 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {docFile?.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {((docFile?.size ?? 0) / 1024 / 1024).toFixed(1)} Mo
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative aspect-video overflow-hidden rounded-lg border">
+                    <Image
+                      src={docPreview}
+                      alt="Aperçu document"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                )
               ) : (
                 <button
                   type="button"
@@ -306,12 +371,21 @@ export default function KYCPage() {
                   className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-10 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                 >
                   <IconUpload className="h-8 w-8" />
-                  <span className="text-sm">Prendre une photo ou choisir un fichier</span>
+                  <span className="text-sm">
+                    Prendre une photo ou choisir un fichier
+                  </span>
+                  <span className="text-xs text-muted-foreground/70">
+                    JPG, PNG, HEIC ou PDF · max 10 Mo
+                  </span>
                 </button>
               )}
               {docPreview && (
-                <Button variant="outline" size="sm" onClick={() => docInputRef.current?.click()}>
-                  Changer la photo
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => docInputRef.current?.click()}
+                >
+                  {docIsPdf ? 'Changer le fichier' : 'Changer la photo'}
                 </Button>
               )}
 
@@ -323,9 +397,15 @@ export default function KYCPage() {
                   className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
                 />
                 <span className="text-muted-foreground leading-5">
-                  J&apos;accepte que mes données d&apos;identité soient traitées par Sendbox
-                  dans le cadre de la vérification KYC, conformément à la{' '}
-                  <a href="/legal/privacy" className="underline hover:text-foreground" target="_blank" rel="noreferrer">
+                  J&apos;accepte que mes données d&apos;identité soient traitées
+                  par Sendbox dans le cadre de la vérification KYC, conformément
+                  à la{' '}
+                  <a
+                    href="/legal/privacy"
+                    className="underline hover:text-foreground"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     politique de confidentialité
                   </a>
                   . Les documents seront supprimés après vérification.
@@ -345,28 +425,40 @@ export default function KYCPage() {
           </Card>
 
           {/* Étape 2 : Selfie */}
-          <Card className={state.phase === 'form' && state.step === 1 ? 'opacity-60' : ''}>
+          <Card
+            className={
+              state.phase === 'form' && state.step === 1 ? 'opacity-60' : ''
+            }
+          >
             <CardHeader>
               <div className="flex items-center gap-3">
                 <IconCamera className="h-5 w-5 text-primary/80" />
-                <CardTitle className="text-base">Étape 2 : Selfie avec la pièce</CardTitle>
+                <CardTitle className="text-base">
+                  Étape 2 : Selfie avec la pièce
+                </CardTitle>
               </div>
               <CardDescription>
-                Prenez un selfie en tenant votre pièce d&apos;identité bien visible à côté de votre visage.
+                Prenez un selfie en tenant votre pièce d&apos;identité bien
+                visible à côté de votre visage.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <input
                 ref={selfieInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/heic"
                 capture="user"
                 className="hidden"
                 onChange={handleSelfieChange}
               />
               {selfiePreview ? (
                 <div className="relative aspect-video overflow-hidden rounded-lg border">
-                  <Image src={selfiePreview} alt="Aperçu selfie" fill className="object-contain" />
+                  <Image
+                    src={selfiePreview}
+                    alt="Aperçu selfie"
+                    fill
+                    className="object-contain"
+                  />
                 </div>
               ) : (
                 <button
@@ -376,23 +468,36 @@ export default function KYCPage() {
                   className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-10 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-50"
                 >
                   <IconCamera className="h-8 w-8" />
-                  <span className="text-sm">Prendre un selfie ou choisir un fichier</span>
+                  <span className="text-sm">
+                    Prendre un selfie ou choisir un fichier
+                  </span>
+                  <span className="text-xs text-muted-foreground/70">
+                    JPG, PNG ou HEIC · max 10 Mo
+                  </span>
                 </button>
               )}
               {selfiePreview && (
-                <Button variant="outline" size="sm" onClick={() => selfieInputRef.current?.click()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => selfieInputRef.current?.click()}
+                >
                   Changer le selfie
                 </Button>
               )}
 
-              {(state.phase === 'rejected' || (state.phase === 'form' && state.step === 2)) && (
+              {(state.phase === 'rejected' ||
+                (state.phase === 'form' && state.step === 2)) && (
                 <Button
                   className="w-full"
                   disabled={!selfieFile || submitting}
                   onClick={handleSubmit}
                 >
                   {submitting ? (
-                    <><IconLoader2 className="h-4 w-4 animate-spin mr-2" />Soumission en cours…</>
+                    <>
+                      <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+                      Soumission en cours…
+                    </>
                   ) : (
                     'Soumettre mon dossier'
                   )}
@@ -411,7 +516,8 @@ export default function KYCPage() {
               <CardTitle>Dossier soumis avec succès</CardTitle>
             </div>
             <CardDescription>
-              Votre dossier est en cours d&apos;examen. Notre équipe vous contactera dans les 24 à 48 heures.
+              Votre dossier est en cours d&apos;examen. Notre équipe vous
+              contactera dans les 24 à 48 heures.
             </CardDescription>
           </CardHeader>
         </Card>

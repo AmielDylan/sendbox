@@ -3,7 +3,8 @@ import { Separator } from '@/components/ui/separator'
 
 export const metadata = {
   title: 'Changelog — Sendbox',
-  description: 'Historique des mises à jour et nouvelles fonctionnalités de Sendbox.',
+  description:
+    'Historique des mises à jour et nouvelles fonctionnalités de Sendbox.',
 }
 
 type ChangelogEntry = {
@@ -21,9 +22,9 @@ const entries: ChangelogEntry[] = [
     label: 'Trust system',
     type: 'major',
     highlights: [
-      'Notes en aveugle — les avis ne sont révélés qu\'une fois les deux parties ayant soumis le leur, éliminant toute influence mutuelle.',
-      'Lifecycle horodaté des mises en relation : chaque transition d\'état (confirmation, remise, livraison, évaluation) porte un timestamp serveur immuable.',
-      'Mécanisme anti-collusion : impossibilité de consulter l\'avis adverse avant de soumettre le sien.',
+      "Notes en aveugle — les avis ne sont révélés qu'une fois les deux parties ayant soumis le leur, éliminant toute influence mutuelle.",
+      "Lifecycle horodaté des mises en relation : chaque transition d'état (confirmation, remise, livraison, évaluation) porte un timestamp serveur immuable.",
+      "Mécanisme anti-collusion : impossibilité de consulter l'avis adverse avant de soumettre le sien.",
       'Score de confiance public recalculé à chaque évaluation et visible sur tous les profils.',
     ],
   },
@@ -34,7 +35,7 @@ const entries: ChangelogEntry[] = [
     type: 'minor',
     highlights: [
       'Remplacement des champs texte libres (ville de départ / arrivée) par des sélecteurs contraints basés sur la base LOCATIONS.',
-      'Sélecteur de pays avec drapeau, suivi d\'un sélecteur de ville filtré dynamiquement par pays.',
+      "Sélecteur de pays avec drapeau, suivi d'un sélecteur de ville filtré dynamiquement par pays.",
       'Cohérence garantie des données pour la recherche par corridor — fin des variantes orthographiques.',
       'Couverture initiale : France (Paris, Lyon, Bordeaux, Marseille…) ↔ Bénin (Cotonou, Porto-Novo, Parakou…).',
     ],
@@ -45,10 +46,10 @@ const entries: ChangelogEntry[] = [
     label: 'KYC automatisé',
     type: 'minor',
     highlights: [
-      'Lecture automatique de la zone MRZ (Machine Readable Zone) des pièces d\'identité soumises.',
+      "Lecture automatique de la zone MRZ (Machine Readable Zone) des pièces d'identité soumises.",
       'Score de confiance OCR : si la confiance est insuffisante, le dossier bascule en vérification manuelle admin.',
-      'Dashboard admin dédié à la revue KYC : visualisation des documents, résultats MRZ, actions d\'approbation ou de rejet.',
-      'Notifications en temps réel à l\'utilisateur à chaque changement de statut de son dossier.',
+      "Dashboard admin dédié à la revue KYC : visualisation des documents, résultats MRZ, actions d'approbation ou de rejet.",
+      "Notifications en temps réel à l'utilisateur à chaque changement de statut de son dossier.",
     ],
   },
   {
@@ -59,7 +60,7 @@ const entries: ChangelogEntry[] = [
     highlights: [
       'Messagerie temps réel entre expéditeur et voyageur via Supabase Realtime.',
       'Photos horodatées côté serveur à la remise du colis et à la livraison.',
-      'Confirmation mutuelle par QR code : chaque partie scanne le code de l\'autre pour valider l\'étape.',
+      "Confirmation mutuelle par QR code : chaque partie scanne le code de l'autre pour valider l'étape.",
       'Conservation des preuves photos pendant 12 mois dans le système de stockage chiffré.',
     ],
   },
@@ -69,8 +70,8 @@ const entries: ChangelogEntry[] = [
     label: 'Lancement beta',
     type: 'major',
     highlights: [
-      'Publication d\'annonces de trajets : corridor, dates, capacité disponible, prix indicatif.',
-      'Profils utilisateurs avec vérification d\'identité manuelle (KYC v1).',
+      "Publication d'annonces de trajets : corridor, dates, capacité disponible, prix indicatif.",
+      "Profils utilisateurs avec vérification d'identité manuelle (KYC v1).",
       'Système de mise en relation : recherche de voyageurs par corridor et date, demande et acceptation.',
       'Frais de mise en relation de 1,50 € TTC prélevés à la confirmation mutuelle.',
       'Lancement du corridor France — Bénin.',
@@ -78,7 +79,10 @@ const entries: ChangelogEntry[] = [
   },
 ]
 
-const typeConfig: Record<ChangelogEntry['type'], { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
+const typeConfig: Record<
+  ChangelogEntry['type'],
+  { label: string; variant: 'default' | 'secondary' | 'outline' }
+> = {
   major: { label: 'Majeur', variant: 'default' },
   minor: { label: 'Fonctionnalité', variant: 'secondary' },
   patch: { label: 'Correctif', variant: 'outline' },
@@ -98,7 +102,8 @@ export default function ChangelogPage() {
           Changelog
         </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-          Toutes les mises à jour de la plateforme, dans l&apos;ordre chronologique inverse.
+          Toutes les mises à jour de la plateforme, dans l&apos;ordre
+          chronologique inverse.
         </p>
       </header>
 
@@ -134,7 +139,10 @@ export default function ChangelogPage() {
                   {/* Highlights */}
                   <ul className="space-y-3">
                     {entry.highlights.map((item, i) => (
-                      <li key={i} className="flex items-start gap-3 text-sm leading-6 text-muted-foreground sm:text-[15px] sm:leading-7">
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-sm leading-6 text-muted-foreground sm:text-[15px] sm:leading-7"
+                      >
                         <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
                         {item}
                       </li>

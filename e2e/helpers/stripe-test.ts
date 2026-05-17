@@ -11,7 +11,9 @@ export async function approveVerificationSession(
   sessionId: string
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (stripe.testHelpers as any).identity.verificationSessions.approve(sessionId)
+  await (stripe.testHelpers as any).identity.verificationSessions.approve(
+    sessionId
+  )
 }
 
 export async function simulateSubscriptionWebhook(

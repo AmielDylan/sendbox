@@ -50,32 +50,83 @@ describe('Blind review system — business rules', () => {
   describe('Publication trigger', () => {
     it('does not publish when only one party has submitted', () => {
       const reviews: Review[] = [
-        { id: 'r1', bookingId: 'b1', raterId: 'sender', ratedId: 'traveler', status: 'submitted', rating: 4 },
-        { id: 'r2', bookingId: 'b1', raterId: 'traveler', ratedId: 'sender', status: 'pending' },
+        {
+          id: 'r1',
+          bookingId: 'b1',
+          raterId: 'sender',
+          ratedId: 'traveler',
+          status: 'submitted',
+          rating: 4,
+        },
+        {
+          id: 'r2',
+          bookingId: 'b1',
+          raterId: 'traveler',
+          ratedId: 'sender',
+          status: 'pending',
+        },
       ]
       expect(canPublishBlind(reviews)).toBe(false)
     })
 
     it('publishes when both parties have submitted', () => {
       const reviews: Review[] = [
-        { id: 'r1', bookingId: 'b1', raterId: 'sender', ratedId: 'traveler', status: 'submitted', rating: 4 },
-        { id: 'r2', bookingId: 'b1', raterId: 'traveler', ratedId: 'sender', status: 'submitted', rating: 5 },
+        {
+          id: 'r1',
+          bookingId: 'b1',
+          raterId: 'sender',
+          ratedId: 'traveler',
+          status: 'submitted',
+          rating: 4,
+        },
+        {
+          id: 'r2',
+          bookingId: 'b1',
+          raterId: 'traveler',
+          ratedId: 'sender',
+          status: 'submitted',
+          rating: 5,
+        },
       ]
       expect(canPublishBlind(reviews)).toBe(true)
     })
 
     it('does not publish when both are still pending', () => {
       const reviews: Review[] = [
-        { id: 'r1', bookingId: 'b1', raterId: 'sender', ratedId: 'traveler', status: 'pending' },
-        { id: 'r2', bookingId: 'b1', raterId: 'traveler', ratedId: 'sender', status: 'pending' },
+        {
+          id: 'r1',
+          bookingId: 'b1',
+          raterId: 'sender',
+          ratedId: 'traveler',
+          status: 'pending',
+        },
+        {
+          id: 'r2',
+          bookingId: 'b1',
+          raterId: 'traveler',
+          ratedId: 'sender',
+          status: 'pending',
+        },
       ]
       expect(canPublishBlind(reviews)).toBe(false)
     })
 
     it('does not trigger publication when one review is already published and one pending', () => {
       const reviews: Review[] = [
-        { id: 'r1', bookingId: 'b1', raterId: 'sender', ratedId: 'traveler', status: 'published' },
-        { id: 'r2', bookingId: 'b1', raterId: 'traveler', ratedId: 'sender', status: 'pending' },
+        {
+          id: 'r1',
+          bookingId: 'b1',
+          raterId: 'sender',
+          ratedId: 'traveler',
+          status: 'published',
+        },
+        {
+          id: 'r2',
+          bookingId: 'b1',
+          raterId: 'traveler',
+          ratedId: 'sender',
+          status: 'pending',
+        },
       ]
       // Only 0 submitted → no trigger
       expect(canPublishBlind(reviews)).toBe(false)
@@ -85,8 +136,12 @@ describe('Blind review system — business rules', () => {
   describe('Immutability rule', () => {
     it('marks published reviews as immutable', () => {
       const published: Review = {
-        id: 'r1', bookingId: 'b1', raterId: 'A', ratedId: 'B',
-        status: 'published', rating: 4,
+        id: 'r1',
+        bookingId: 'b1',
+        raterId: 'A',
+        ratedId: 'B',
+        status: 'published',
+        rating: 4,
         publishedAt: new Date().toISOString(),
       }
       expect(isReviewImmutable(published)).toBe(true)
@@ -94,15 +149,22 @@ describe('Blind review system — business rules', () => {
 
     it('allows modification of submitted (not yet published) reviews', () => {
       const submitted: Review = {
-        id: 'r1', bookingId: 'b1', raterId: 'A', ratedId: 'B',
-        status: 'submitted', rating: 3,
+        id: 'r1',
+        bookingId: 'b1',
+        raterId: 'A',
+        ratedId: 'B',
+        status: 'submitted',
+        rating: 3,
       }
       expect(isReviewImmutable(submitted)).toBe(false)
     })
 
     it('allows modification of pending reviews', () => {
       const pending: Review = {
-        id: 'r1', bookingId: 'b1', raterId: 'A', ratedId: 'B',
+        id: 'r1',
+        bookingId: 'b1',
+        raterId: 'A',
+        ratedId: 'B',
         status: 'pending',
       }
       expect(isReviewImmutable(pending)).toBe(false)

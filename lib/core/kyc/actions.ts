@@ -79,7 +79,8 @@ export async function startKYCVerification(input: StripeIdentityInput) {
   revalidatePath('/dashboard/reglages/kyc')
   return {
     success: true,
-    message: 'Vérification soumise. Notre équipe examinera votre dossier sous 24-48h.',
+    message:
+      'Vérification soumise. Notre équipe examinera votre dossier sous 24-48h.',
   }
 }
 

@@ -1,3 +1,4 @@
+import * as path from 'path'
 import { test, expect } from './fixtures'
 import { PERSONAS } from './globalSetup'
 import { createE2EAdminClient } from './helpers/supabase-admin'
@@ -15,7 +16,9 @@ test.describe('Page abonnement', () => {
   test('affiche le statut abonnement du traveler', async ({ travelerPage }) => {
     await travelerPage.goto('/dashboard/reglages/abonnement')
     await expect(travelerPage).toHaveURL(/abonnement/)
-    await expect(travelerPage.getByText(/abonnement|subscription|actif|trial/i).first()).toBeVisible()
+    await expect(
+      travelerPage.getByText(/abonnement|subscription|actif|trial/i).first()
+    ).toBeVisible()
   })
 
   test('affiche les jours restants si trial actif', async ({ browser }) => {
@@ -28,12 +31,15 @@ test.describe('Page abonnement', () => {
       trialEnd.setDate(trialEnd.getDate() + 10)
       await supabase
         .from('profiles')
-        .update({ subscription_status: 'trialing', trial_ends_at: trialEnd.toISOString() })
+        .update({
+          subscription_status: 'trialing',
+          trial_ends_at: trialEnd.toISOString(),
+        })
         .eq('id', traveler.id)
     }
 
     const ctx = await browser.newContext({
-      storageState: require('path').join(__dirname, '../.playwright/state/traveler.json'),
+      storageState: path.join(__dirname, '../.playwright/state/traveler.json'),
     })
     const page = await ctx.newPage()
     await page.goto('/dashboard/reglages/abonnement')
@@ -51,7 +57,7 @@ test.describe('Page abonnement', () => {
 })
 
 test.describe('Checkout abonnement', () => {
-  test('clic S\'abonner redirige vers Stripe Checkout', async ({ browser }) => {
+  test("clic S'abonner redirige vers Stripe Checkout", async ({ browser }) => {
     const supabase = createE2EAdminClient()
     const { data: users } = await supabase.auth.admin.listUsers()
     const traveler = users?.users.find(u => u.email === PERSONAS.traveler.email)
@@ -65,12 +71,14 @@ test.describe('Checkout abonnement', () => {
     }
 
     const ctx = await browser.newContext({
-      storageState: require('path').join(__dirname, '../.playwright/state/traveler.json'),
+      storageState: path.join(__dirname, '../.playwright/state/traveler.json'),
     })
     const page = await ctx.newPage()
     await page.goto('/dashboard/reglages/abonnement')
 
-    const subscribeBtn = page.getByRole('button', { name: /s'abonner|subscribe|abonnement pro/i }).first()
+    const subscribeBtn = page
+      .getByRole('button', { name: /s'abonner|subscribe|abonnement pro/i })
+      .first()
     if (await subscribeBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await Promise.all([
         page.waitForURL(/checkout\.stripe\.com/, { timeout: 15_000 }),
@@ -92,7 +100,10 @@ test.describe('Checkout abonnement', () => {
 })
 
 test.describe('Webhook abonnement', () => {
-  test('simuler customer.subscription.created met à jour le profil', async ({ stripe, supabaseAdmin }) => {
+  test('simuler customer.subscription.created met à jour le profil', async ({
+    stripe,
+    supabaseAdmin,
+  }) => {
     const travelerId = await getTravelerUserId()
 
     // Reset to no subscription

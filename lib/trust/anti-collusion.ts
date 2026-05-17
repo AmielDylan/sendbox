@@ -12,11 +12,20 @@ const CONCENTRATION_MIN_TRANSACTIONS = parseInt(
   process.env.CONCENTRATION_MIN_TRANSACTIONS || '5',
   10
 )
-const COLLUSION_RING_DEPTH = parseInt(process.env.COLLUSION_RING_DEPTH || '3', 10)
+const COLLUSION_RING_DEPTH = parseInt(
+  process.env.COLLUSION_RING_DEPTH || '3',
+  10
+)
 
-type FlagReason = 'concentration_ratio' | 'duration_too_short' | 'ring_collusion'
+type FlagReason =
+  | 'concentration_ratio'
+  | 'duration_too_short'
+  | 'ring_collusion'
 
-async function flagExists(userId: string, reason: FlagReason): Promise<boolean> {
+async function flagExists(
+  userId: string,
+  reason: FlagReason
+): Promise<boolean> {
   const admin = createAdminClient()
   const { data } = await admin
     .from('user_flags')
@@ -49,7 +58,9 @@ async function flagBooking(bookingId: string, reason: string): Promise<void> {
  * Vérifie le ratio de concentration des transactions pour un voyageur.
  * Un ratio élevé (>60% ou >75% selon volume) indique un réseau fermé suspect.
  */
-export async function checkConcentrationRatio(travelerId: string): Promise<void> {
+export async function checkConcentrationRatio(
+  travelerId: string
+): Promise<void> {
   const admin = createAdminClient()
 
   const { data: bookings } = await admin

@@ -1,6 +1,9 @@
 import { createE2EAdminClient } from './supabase-admin'
 
-export async function cleanupTestData(travelerId: string, senderId: string): Promise<void> {
+export async function cleanupTestData(
+  travelerId: string,
+  senderId: string
+): Promise<void> {
   const supabase = createE2EAdminClient()
 
   await supabase
