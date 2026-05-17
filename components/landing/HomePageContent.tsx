@@ -17,6 +17,12 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { LandingCta } from '@/components/landing/LandingCta'
 import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 import { PricingSection } from '@/components/landing/PricingSection'
@@ -81,6 +87,49 @@ const steps = [
   {
     title: 'Évaluation mutuelle',
     description: 'Avis simultanés et immuables',
+  },
+]
+
+const faqs: { question: string; answer: string }[] = [
+  {
+    question: 'Combien coûte Sendbox ?',
+    answer:
+      "La mise en relation coûte 1,50 € TTC, payée par l'expéditeur à la confirmation mutuelle. L'utilisation est entièrement gratuite pour les voyageurs. Le montant du transport se négocie directement entre les parties, hors plateforme.",
+  },
+  {
+    question: 'Comment sont vérifiés les profils ?',
+    answer:
+      "Chaque utilisateur passe par un KYC obligatoire : pièce d'identité + selfie, avec lecture automatique de la zone MRZ. Les profils non vérifiés ne peuvent pas publier d'annonces ni finaliser de mise en relation.",
+  },
+  {
+    question: 'Que se passe-t-il si mon colis est endommagé ou perdu ?',
+    answer:
+      "Sendbox est une plateforme de mise en relation et n'assure pas le transport. Cependant, des photos horodatées par le serveur sont prises à la remise et à la livraison, confirmées par les deux parties et conservées 12 mois comme preuves en cas de litige.",
+  },
+  {
+    question: 'Comment fonctionne le paiement du transport ?',
+    answer:
+      "Le montant du transport se règle directement entre l'expéditeur et le voyageur, selon les modalités que vous convenez ensemble. Sendbox ne prélève que les 1,50 € de frais de mise en relation à la confirmation.",
+  },
+  {
+    question: 'Puis-je annuler une mise en relation ?',
+    answer:
+      "Avant la confirmation mutuelle des deux parties, la mise en relation peut être annulée sans frais. Une fois les deux parties confirmées, les frais de 1,50 € sont prélevés et la mise en relation est effective.",
+  },
+  {
+    question: 'Dans quels pays Sendbox est-il disponible ?',
+    answer:
+      "Sendbox est actuellement actif sur le corridor France — Bénin. Des extensions vers le Togo, la Côte d'Ivoire et le Sénégal sont en cours de préparation.",
+  },
+  {
+    question: 'Comment fonctionnent les avis ?',
+    answer:
+      "Les avis sont laissés simultanément par les deux parties après la livraison — le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.",
+  },
+  {
+    question: 'Mes données personnelles sont-elles protégées ?',
+    answer:
+      "Vos données sont hébergées en Europe. Les documents KYC sont chiffrés et accessibles uniquement à l'équipe de vérification, avec une durée de conservation limitée conformément au RGPD. Consultez notre politique de confidentialité pour les détails.",
   },
 ]
 
@@ -333,6 +382,45 @@ export function HomePageContent() {
 
       <PricingSection />
       <LatestAnnouncementsCarousel />
+
+      {/* FAQ */}
+      <section className="py-24 sm:py-32">
+        <div className="container-wide">
+          <div className="grid gap-12 lg:grid-cols-[1fr_2fr] lg:gap-20">
+            <div className="space-y-4 animate-fade-in-up">
+              <Badge
+                variant="outline"
+                className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
+              >
+                FAQ
+              </Badge>
+              <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+                Questions fréquentes
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+                Tout ce que vous devez savoir avant de commencer.
+              </p>
+            </div>
+
+            <Accordion type="single" collapsible className="space-y-2">
+              {faqs.map((faq, i) => (
+                <AccordionItem
+                  key={i}
+                  value={`faq-${i}`}
+                  className="rounded-lg border border-border/60 px-5 transition-colors hover:border-border data-[state=open]:border-primary/30"
+                >
+                  <AccordionTrigger className="py-5 text-left text-sm font-semibold leading-snug hover:no-underline sm:text-base">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-5 text-sm leading-6 text-muted-foreground sm:text-[15px] sm:leading-7">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
+      </section>
 
       {/* CTA final */}
       <section className="relative overflow-hidden py-28 sm:py-36">
