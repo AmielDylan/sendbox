@@ -36,14 +36,14 @@ function detectKind(buf: Buffer): FileKind | null {
 
 async function pdfToJpeg(buf: Buffer): Promise<Buffer | PipelineErrorCode> {
   let pdfjsLib: typeof import('pdfjs-dist/legacy/build/pdf.mjs')
-  let createCanvas: (typeof import('canvas'))['createCanvas']
+  let createCanvas: (typeof import('@napi-rs/canvas'))['createCanvas']
 
   try {
     pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
-    const canvasMod = await import('canvas')
+    const canvasMod = await import('@napi-rs/canvas')
     createCanvas = canvasMod.createCanvas
   } catch {
-    return 'FILE_PROCESSING_ERROR'
+    return 'PDF_RENDER_ERROR'
   }
 
   pdfjsLib.GlobalWorkerOptions.workerSrc = ''
