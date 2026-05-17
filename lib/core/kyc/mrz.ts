@@ -17,7 +17,10 @@ export interface MRZResult {
  * Télécharge le document depuis le bucket, lance Tesseract OCR,
  * extrait et valide les lignes MRZ, puis met à jour kyc_reviews.
  */
-export async function processKYCMRZ(userId: string, docPath: string): Promise<MRZResult> {
+export async function processKYCMRZ(
+  userId: string,
+  docPath: string
+): Promise<MRZResult> {
   const admin = createAdminClient()
 
   // 1. Télécharger l'image depuis le bucket
@@ -25,7 +28,9 @@ export async function processKYCMRZ(userId: string, docPath: string): Promise<MR
     .from('kyc-documents')
     .download(docPath)
   if (dlError || !fileData) {
-    throw new Error(`Impossible de télécharger le document: ${dlError?.message}`)
+    throw new Error(
+      `Impossible de télécharger le document: ${dlError?.message}`
+    )
   }
 
   const buffer = Buffer.from(await fileData.arrayBuffer())
@@ -94,7 +99,8 @@ export async function processKYCMRZ(userId: string, docPath: string): Promise<MR
 
     result = {
       mrz_valid: true,
-      mrz_name: [fields.lastName, fields.firstName].filter(Boolean).join(' ') || null,
+      mrz_name:
+        [fields.lastName, fields.firstName].filter(Boolean).join(' ') || null,
       mrz_nationality: fields.nationality ?? null,
       mrz_birth_date: fields.birthDate ?? null,
       mrz_expiry: expiryRaw || null,
@@ -113,7 +119,7 @@ export async function processKYCMRZ(userId: string, docPath: string): Promise<MR
 async function upsertReview(
   admin: ReturnType<typeof createAdminClient>,
   userId: string,
-  result: MRZResult,
+  result: MRZResult
 ) {
   await admin
     .from('kyc_reviews')

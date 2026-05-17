@@ -104,15 +104,21 @@ export default async function AdminDashboardPage() {
           <TableBody>
             {data.openDisputes.map(dispute => (
               <TableRow key={dispute.id}>
-                <TableCell className="hidden sm:table-cell">{formatDate(dispute.opened_at)}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {formatDate(dispute.opened_at)}
+                </TableCell>
                 <TableCell>{dispute.reason || 'Non renseignée'}</TableCell>
-                <TableCell className="hidden sm:table-cell">{dispute.openedByName}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {dispute.openedByName}
+                </TableCell>
                 <TableCell>
                   <Badge variant="destructive">{dispute.status}</Badge>
                 </TableCell>
                 <TableCell>
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/admin/disputes/${dispute.id}`}>Instruire</Link>
+                    <Link href={`/admin/disputes/${dispute.id}`}>
+                      Instruire
+                    </Link>
                   </Button>
                 </TableCell>
               </TableRow>
@@ -142,8 +148,12 @@ export default async function AdminDashboardPage() {
             {data.pendingKyc.map(profile => (
               <TableRow key={profile.id}>
                 <TableCell>{profile.name}</TableCell>
-                <TableCell className="hidden sm:table-cell">{profile.email}</TableCell>
-                <TableCell className="hidden sm:table-cell">{formatDate(profile.created_at)}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {profile.email}
+                </TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {formatDate(profile.created_at)}
+                </TableCell>
                 <TableCell>
                   <Button asChild size="sm" variant="outline">
                     <Link href={`/admin/kyc/${profile.id}`}>Vérifier</Link>
@@ -178,12 +188,16 @@ export default async function AdminDashboardPage() {
                 key={transaction.id}
                 className={cn(transaction.is_flagged && 'bg-destructive/10')}
               >
-                <TableCell className="hidden sm:table-cell">{formatDate(transaction.created_at)}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {formatDate(transaction.created_at)}
+                </TableCell>
                 <TableCell>{transaction.corridor}</TableCell>
                 <TableCell>
                   <Badge variant="secondary">{transaction.status}</Badge>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">{transaction.is_flagged ? 'Oui' : 'Non'}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {transaction.is_flagged ? 'Oui' : 'Non'}
+                </TableCell>
               </TableRow>
             ))}
             {data.latestTransactions.length === 0 ? (
@@ -356,7 +370,11 @@ async function getDashboardData() {
       id: profile.id,
       created_at: profile.created_at,
       email: profile.email,
-      name: formatProfileName(profile.firstname, profile.lastname, profile.email),
+      name: formatProfileName(
+        profile.firstname,
+        profile.lastname,
+        profile.email
+      ),
     })),
     latestTransactions: (latestBookings.data ?? []).map(booking => {
       const announcement = Array.isArray((booking as any).announcements)

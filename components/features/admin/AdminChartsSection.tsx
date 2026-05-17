@@ -11,12 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -53,11 +48,19 @@ export function AdminChartsSection({
         </CardHeader>
         <CardContent>
           {weeklyData.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune donnée disponible</p>
+            <p className="text-sm text-muted-foreground">
+              Aucune donnée disponible
+            </p>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={weeklyData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <BarChart
+                data={weeklyData}
+                margin={{ top: 4, right: 8, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  className="stroke-border"
+                />
                 <XAxis
                   dataKey="label"
                   tick={{ fontSize: 11 }}
@@ -97,17 +100,39 @@ export function AdminChartsSection({
         </CardHeader>
         <CardContent>
           {dailyData.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune donnée disponible</p>
+            <p className="text-sm text-muted-foreground">
+              Aucune donnée disponible
+            </p>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={dailyData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+              <AreaChart
+                data={dailyData}
+                margin={{ top: 4, right: 8, left: -10, bottom: 0 }}
+              >
                 <defs>
-                  <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  <linearGradient
+                    id="volumeGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor="hsl(var(--primary))"
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="hsl(var(--primary))"
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  className="stroke-border"
+                />
                 <XAxis
                   dataKey="label"
                   tick={{ fontSize: 11 }}
@@ -118,7 +143,10 @@ export function AdminChartsSection({
                   className="text-muted-foreground"
                 />
                 <Tooltip
-                  formatter={(value: number) => [`${value.toFixed(2)} €`, 'Volume']}
+                  formatter={(value: number) => [
+                    `${value.toFixed(2)} €`,
+                    'Volume',
+                  ]}
                   contentStyle={{
                     fontSize: 12,
                     borderRadius: 6,

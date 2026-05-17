@@ -26,11 +26,7 @@ import {
 } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
-import {
-  IconLoader2,
-  IconUpload,
-  IconLock,
-} from '@tabler/icons-react'
+import { IconLoader2, IconUpload, IconLock } from '@tabler/icons-react'
 import {
   generateInitials,
   getAvatarUrl,

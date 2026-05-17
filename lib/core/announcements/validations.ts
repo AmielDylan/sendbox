@@ -1,5 +1,8 @@
 import { z } from 'zod'
-import { LOCATIONS, validateTripLocation } from '@/lib/shared/constants/locations'
+import {
+  LOCATIONS,
+  validateTripLocation,
+} from '@/lib/shared/constants/locations'
 
 const locationCountryValidator = z
   .string()
@@ -9,13 +12,36 @@ const locationCountryValidator = z
 const locationCityValidator = z.string().min(1, 'Ville requise')
 
 const locationRefine = (
-  data: { departure_country: string; departure_city: string; arrival_country: string; arrival_city: string },
+  data: {
+    departure_country: string
+    departure_city: string
+    arrival_country: string
+    arrival_city: string
+  },
   ctx: z.RefinementCtx
 ) => {
-  const depErr = validateTripLocation(data.departure_country, data.departure_city, 'departure')
-  if (depErr) ctx.addIssue({ code: 'custom', message: 'Ville de départ non autorisée pour ce pays', path: ['departure_city'] })
-  const arrErr = validateTripLocation(data.arrival_country, data.arrival_city, 'arrival')
-  if (arrErr) ctx.addIssue({ code: 'custom', message: "Ville d'arrivée non autorisée pour ce pays", path: ['arrival_city'] })
+  const depErr = validateTripLocation(
+    data.departure_country,
+    data.departure_city,
+    'departure'
+  )
+  if (depErr)
+    ctx.addIssue({
+      code: 'custom',
+      message: 'Ville de départ non autorisée pour ce pays',
+      path: ['departure_city'],
+    })
+  const arrErr = validateTripLocation(
+    data.arrival_country,
+    data.arrival_city,
+    'arrival'
+  )
+  if (arrErr)
+    ctx.addIssue({
+      code: 'custom',
+      message: "Ville d'arrivée non autorisée pour ce pays",
+      path: ['arrival_city'],
+    })
 }
 
 export const createAnnouncementSchema = z
@@ -27,7 +53,10 @@ export const createAnnouncementSchema = z
     arrival_city: locationCityValidator,
     arrival_date: z.date({ message: "Date d'arrivée requise et valide" }),
     available_kg: z.number().min(1, 'Minimum 1 kg').max(30, 'Maximum 30 kg'),
-    price_per_kg: z.number().min(5, 'Minimum 5 € par kg').max(100, 'Maximum 100 € par kg'),
+    price_per_kg: z
+      .number()
+      .min(5, 'Minimum 5 € par kg')
+      .max(100, 'Maximum 100 € par kg'),
     description: z.string().max(500, 'Description trop longue').optional(),
     intent: z.enum(['draft', 'publish']).optional(),
     sendbox_available: z.boolean().optional(),
@@ -58,7 +87,10 @@ export const updateAnnouncementSchema = z
     arrival_city: locationCityValidator,
     arrival_date: z.date({ message: "Date d'arrivée requise et valide" }),
     available_kg: z.number().min(1, 'Minimum 1 kg').max(30, 'Maximum 30 kg'),
-    price_per_kg: z.number().min(5, 'Minimum 5 € par kg').max(100, 'Maximum 100 € par kg'),
+    price_per_kg: z
+      .number()
+      .min(5, 'Minimum 5 € par kg')
+      .max(100, 'Maximum 100 € par kg'),
     description: z.string().max(500, 'Description trop longue').optional(),
   })
   .superRefine(locationRefine)

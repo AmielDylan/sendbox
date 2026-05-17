@@ -11,11 +11,15 @@ test.describe('Guard — accès admin', () => {
 })
 
 test.describe('Dashboard admin', () => {
-  test('page charge sans erreur et affiche les stats', async ({ adminPage }) => {
+  test('page charge sans erreur et affiche les stats', async ({
+    adminPage,
+  }) => {
     await adminPage.goto('/admin/dashboard')
     await expect(adminPage).toHaveURL(/\/admin\/dashboard/)
     // Stats cards should be visible
-    await expect(adminPage.locator('[class*="card"], [class*="stat"]').first()).toBeVisible()
+    await expect(
+      adminPage.locator('[class*="card"], [class*="stat"]').first()
+    ).toBeVisible()
   })
 })
 
@@ -36,7 +40,9 @@ test.describe('Admin KYC', () => {
 
     await adminPage.goto('/admin/kyc')
     await expect(adminPage).toHaveURL(/\/admin\/kyc/)
-    await expect(adminPage.locator('table, [role="table"]').first()).toBeVisible()
+    await expect(
+      adminPage.locator('table, [role="table"]').first()
+    ).toBeVisible()
 
     // Restore sender KYC status
     if (sender) {

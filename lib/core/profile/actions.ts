@@ -340,7 +340,7 @@ export async function uploadAvatar(file: File) {
 
     if (updateError) {
       console.error('Update avatar_url error:', updateError)
-      return { error: "Erreur lors de la mise à jour du profil" }
+      return { error: 'Erreur lors de la mise à jour du profil' }
     }
 
     revalidatePath('/admin/settings')
@@ -421,7 +421,8 @@ export async function changePassword(formData: ChangePasswordInput) {
         template: 'notification',
         data: {
           title: 'Mot de passe modifié',
-          content: 'Votre mot de passe Sendbox a été modifié avec succès. Si vous n\'êtes pas à l\'origine de cette action, contactez-nous immédiatement.',
+          content:
+            "Votre mot de passe Sendbox a été modifié avec succès. Si vous n'êtes pas à l'origine de cette action, contactez-nous immédiatement.",
           ctaText: 'Accéder à mon compte',
           ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
         },
@@ -591,7 +592,8 @@ export async function deleteAccount(formData: DeleteAccountInput) {
         template: 'notification',
         data: {
           title: 'Compte supprimé',
-          content: 'Votre compte Sendbox a bien été supprimé. Toutes vos données personnelles seront effacées sous 30 jours conformément à notre politique de confidentialité. Si vous souhaitez revenir, vous pouvez créer un nouveau compte à tout moment.',
+          content:
+            'Votre compte Sendbox a bien été supprimé. Toutes vos données personnelles seront effacées sous 30 jours conformément à notre politique de confidentialité. Si vous souhaitez revenir, vous pouvez créer un nouveau compte à tout moment.',
         },
       }).catch(console.error)
     }

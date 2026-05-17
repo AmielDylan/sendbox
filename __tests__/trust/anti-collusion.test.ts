@@ -26,8 +26,19 @@ import {
 
 function makeChain(returnValue: unknown) {
   const chain: Record<string, unknown> = {}
-  const methods = ['select', 'eq', 'is', 'in', 'update', 'insert', 'maybeSingle', 'single']
-  methods.forEach(m => { chain[m] = () => chain })
+  const methods = [
+    'select',
+    'eq',
+    'is',
+    'in',
+    'update',
+    'insert',
+    'maybeSingle',
+    'single',
+  ]
+  methods.forEach(m => {
+    chain[m] = () => chain
+  })
   chain['then'] = (resolve: (v: unknown) => void) => resolve(returnValue)
   chain[Symbol.toStringTag] = 'Promise'
   // Make it thenable properly
@@ -38,7 +49,7 @@ function makeChain(returnValue: unknown) {
       }
       if (prop in target) return target[prop as string]
       return () => chain
-    }
+    },
   })
 }
 
@@ -49,13 +60,16 @@ describe('Anti-collusion checks', () => {
 
   describe('checkConcentrationRatio', () => {
     it('does nothing when fewer than CONCENTRATION_MIN_TRANSACTIONS bookings', async () => {
-      mockFrom.mockReturnValue(makeChain({ data: [
-        { sender_id: 'A' },
-        { sender_id: 'B' },
-        { sender_id: 'C' },
-      ], error: null }))
+      mockFrom.mockReturnValue(
+        makeChain({
+          data: [{ sender_id: 'A' }, { sender_id: 'B' }, { sender_id: 'C' }],
+          error: null,
+        })
+      )
 
-      await expect(checkConcentrationRatio('traveler-1')).resolves.toBeUndefined()
+      await expect(
+        checkConcentrationRatio('traveler-1')
+      ).resolves.toBeUndefined()
     })
 
     it('flags a traveler when top sender ratio exceeds threshold', async () => {

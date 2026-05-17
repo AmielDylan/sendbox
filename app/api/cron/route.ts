@@ -6,7 +6,10 @@ import { runKYCDocumentsCleanup } from '@/lib/jobs/kyc-documents-cleanup'
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-cron-secret')
   if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
-    return NextResponse.json({ error: 'Non autorisé', code: 'UNAUTHORIZED' }, { status: 401 })
+    return NextResponse.json(
+      { error: 'Non autorisé', code: 'UNAUTHORIZED' },
+      { status: 401 }
+    )
   }
 
   const { searchParams } = new URL(req.url)

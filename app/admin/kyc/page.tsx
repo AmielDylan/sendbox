@@ -39,14 +39,19 @@ export default async function AdminKYCPage() {
 
   const { data: profiles } = await admin
     .from('profiles')
-    .select('id, firstname, lastname, email, verification_status, kyc_submitted_at, created_at')
+    .select(
+      'id, firstname, lastname, email, verification_status, kyc_submitted_at, created_at'
+    )
     .order('kyc_submitted_at', { ascending: true })
 
   const allProfiles = profiles ?? []
 
   // Charger les kyc_reviews pour savoir si MRZ a été traité
   const userIds = allProfiles.map(p => p.id)
-  const reviewMap = new Map<string, { mrz_valid: boolean | null; status: string }>()
+  const reviewMap = new Map<
+    string,
+    { mrz_valid: boolean | null; status: string }
+  >()
 
   if (userIds.length > 0) {
     const { data: reviews } = await admin
@@ -62,9 +67,15 @@ export default async function AdminKYCPage() {
     }
   }
 
-  const pendingCount = allProfiles.filter(u => u.verification_status === 'pending').length
-  const verifiedCount = allProfiles.filter(u => u.verification_status === 'verified').length
-  const rejectedCount = allProfiles.filter(u => u.verification_status === 'rejected').length
+  const pendingCount = allProfiles.filter(
+    u => u.verification_status === 'pending'
+  ).length
+  const verifiedCount = allProfiles.filter(
+    u => u.verification_status === 'verified'
+  ).length
+  const rejectedCount = allProfiles.filter(
+    u => u.verification_status === 'rejected'
+  ).length
 
   return (
     <div className="space-y-6">
@@ -123,40 +134,77 @@ export default async function AdminKYCPage() {
               const review = reviewMap.get(user.id)
               const kycStatus = user.verification_status
               return (
-                <div key={user.id} className="rounded-lg border p-4 space-y-3 text-sm">
+                <div
+                  key={user.id}
+                  className="rounded-lg border p-4 space-y-3 text-sm"
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-medium">{user.firstname} {user.lastname}</p>
-                      <p className="text-xs text-muted-foreground">{user.email || 'N/A'}</p>
+                      <p className="font-medium">
+                        {user.firstname} {user.lastname}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {user.email || 'N/A'}
+                      </p>
                     </div>
                     <Badge
                       variant={
-                        kycStatus === 'verified' ? 'default'
-                          : kycStatus === 'pending' ? 'secondary'
-                          : kycStatus === 'rejected' ? 'destructive'
-                          : 'outline'
+                        kycStatus === 'verified'
+                          ? 'default'
+                          : kycStatus === 'pending'
+                            ? 'secondary'
+                            : kycStatus === 'rejected'
+                              ? 'destructive'
+                              : 'outline'
                       }
                     >
-                      {kycStatus === 'verified' ? 'Vérifié'
-                        : kycStatus === 'pending' ? 'En attente'
-                        : kycStatus === 'rejected' ? 'Rejeté'
-                        : 'Non soumis'}
+                      {kycStatus === 'verified'
+                        ? 'Vérifié'
+                        : kycStatus === 'pending'
+                          ? 'En attente'
+                          : kycStatus === 'rejected'
+                            ? 'Rejeté'
+                            : 'Non soumis'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>MRZ : {!review ? '-' : review.mrz_valid === null ? 'En attente' : review.mrz_valid ? 'OK' : 'Échec'}</span>
-                    <span>{user.kyc_submitted_at ? format(new Date(user.kyc_submitted_at), 'PP', { locale: fr }) : '-'}</span>
+                    <span>
+                      MRZ :{' '}
+                      {!review
+                        ? '-'
+                        : review.mrz_valid === null
+                          ? 'En attente'
+                          : review.mrz_valid
+                            ? 'OK'
+                            : 'Échec'}
+                    </span>
+                    <span>
+                      {user.kyc_submitted_at
+                        ? format(new Date(user.kyc_submitted_at), 'PP', {
+                            locale: fr,
+                          })
+                        : '-'}
+                    </span>
                   </div>
                   {kycStatus === 'pending' && (
-                    <Button asChild size="sm" variant="outline" className="w-full">
-                      <Link href={`/admin/kyc/${user.id}`}>Vérifier le dossier</Link>
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                    >
+                      <Link href={`/admin/kyc/${user.id}`}>
+                        Vérifier le dossier
+                      </Link>
                     </Button>
                   )}
                 </div>
               )
             })}
             {allProfiles.length === 0 && (
-              <p className="text-sm text-muted-foreground py-4 text-center">Aucun utilisateur.</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                Aucun utilisateur.
+              </p>
             )}
           </div>
 
@@ -214,7 +262,9 @@ export default async function AdminKYCPage() {
                       </TableCell>
                       <TableCell>
                         {!review ? (
-                          <span className="text-muted-foreground text-xs">-</span>
+                          <span className="text-muted-foreground text-xs">
+                            -
+                          </span>
                         ) : review.mrz_valid === null ? (
                           <IconAlertTriangle className="h-4 w-4 text-amber-500" />
                         ) : review.mrz_valid ? (
@@ -225,7 +275,9 @@ export default async function AdminKYCPage() {
                       </TableCell>
                       <TableCell>
                         {user.kyc_submitted_at
-                          ? format(new Date(user.kyc_submitted_at), 'PP', { locale: fr })
+                          ? format(new Date(user.kyc_submitted_at), 'PP', {
+                              locale: fr,
+                            })
                           : '-'}
                       </TableCell>
                       <TableCell>

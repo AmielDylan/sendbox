@@ -70,7 +70,9 @@ async function ensureTestUser(
     })
 
     if (error || !data.user) {
-      throw new Error(`Failed to create test user ${persona.email}: ${error?.message}`)
+      throw new Error(
+        `Failed to create test user ${persona.email}: ${error?.message}`
+      )
     }
 
     userId = data.user.id

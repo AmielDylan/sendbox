@@ -17,11 +17,20 @@ export type PipelineResult =
 
 function detectKind(buf: Buffer): FileKind | null {
   if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpeg'
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png'
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47)
+    return 'png'
   // HEIC : bytes 4–7 = 'ftyp'
-  if (buf.length >= 12 && buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70) return 'heic'
+  if (
+    buf.length >= 12 &&
+    buf[4] === 0x66 &&
+    buf[5] === 0x74 &&
+    buf[6] === 0x79 &&
+    buf[7] === 0x70
+  )
+    return 'heic'
   // PDF : %PDF
-  if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46) return 'pdf'
+  if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46)
+    return 'pdf'
   return null
 }
 
@@ -55,7 +64,10 @@ async function pdfToJpeg(buf: Buffer): Promise<Buffer | PipelineErrorCode> {
   }
 
   const viewport = page.getViewport({ scale: 2.0 })
-  const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height))
+  const canvas = createCanvas(
+    Math.ceil(viewport.width),
+    Math.ceil(viewport.height)
+  )
 
   try {
     // pdfjs-dist v4 attend `canvas` (le canvas lui-même, pas le contexte 2d)

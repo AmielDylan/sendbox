@@ -164,28 +164,25 @@ export default function DashboardPage() {
       const supabase = createClient()
 
       try {
-        const [
-          announcementsResult,
-          unreadResult,
-          bookingsResult,
-        ] = await Promise.all([
-          supabase
-            .from('announcements')
-            .select('id', { count: 'exact', head: true })
-            .eq('traveler_id', user.id)
-            .in('status', ['active', 'partially_booked', 'fully_booked']),
-          supabase
-            .from('messages')
-            .select('id', { count: 'exact', head: true })
-            .eq('receiver_id', user.id)
-            .eq('is_read', false),
-          supabase
-            .from('bookings')
-            .select(
-              'id, status, sender_id, traveler_id, total_price, commission_amount, insurance_premium, delivery_confirmed_at, paid_at'
-            )
-            .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`),
-        ])
+        const [announcementsResult, unreadResult, bookingsResult] =
+          await Promise.all([
+            supabase
+              .from('announcements')
+              .select('id', { count: 'exact', head: true })
+              .eq('traveler_id', user.id)
+              .in('status', ['active', 'partially_booked', 'fully_booked']),
+            supabase
+              .from('messages')
+              .select('id', { count: 'exact', head: true })
+              .eq('receiver_id', user.id)
+              .eq('is_read', false),
+            supabase
+              .from('bookings')
+              .select(
+                'id, status, sender_id, traveler_id, total_price, commission_amount, insurance_premium, delivery_confirmed_at, paid_at'
+              )
+              .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`),
+          ])
 
         const bookings = (bookingsResult.data as BookingRow[]) || []
         const sentBookings = bookings.filter(
@@ -214,7 +211,6 @@ export default function DashboardPage() {
           receivedStatus,
           packagesStatus: sentStatus,
         })
-
       } catch (error) {
         console.error('Dashboard data load error:', error)
         toast.error('Erreur lors du chargement des statistiques')
@@ -345,13 +341,20 @@ export default function DashboardPage() {
             <CardContent>
               {kycStatus === 'pending' && (
                 <div className="space-y-2">
-                  <Badge variant="outline" className="text-xs font-normal text-yellow-700 border-yellow-400 bg-yellow-50">
+                  <Badge
+                    variant="outline"
+                    className="text-xs font-normal text-yellow-700 border-yellow-400 bg-yellow-50"
+                  >
                     En cours
                   </Badge>
-                  <p className="text-xs text-muted-foreground">Vérification sous 24-48h</p>
+                  <p className="text-xs text-muted-foreground">
+                    Vérification sous 24-48h
+                  </p>
                 </div>
               )}
-              {(!kycStatus || kycStatus === 'incomplete' || kycStatus === 'rejected') && (
+              {(!kycStatus ||
+                kycStatus === 'incomplete' ||
+                kycStatus === 'rejected') && (
                 <div className="space-y-3">
                   <p className="text-xs text-muted-foreground">
                     Vérifiez votre identité
@@ -525,7 +528,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
     </div>
   )
 }

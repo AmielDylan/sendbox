@@ -87,7 +87,11 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
         <div className="space-y-2">
           <Label htmlFor="verified-name">
             Nom vérifié
-            {mrzFailed && <span className="ml-1 text-xs text-amber-600">(saisie manuelle requise)</span>}
+            {mrzFailed && (
+              <span className="ml-1 text-xs text-amber-600">
+                (saisie manuelle requise)
+              </span>
+            )}
           </Label>
           <Input
             id="verified-name"
@@ -99,7 +103,12 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
 
         {/* Motif de refus */}
         <div className="space-y-2">
-          <Label htmlFor="rejection-reason">Motif de refus <span className="text-muted-foreground text-xs">(transmis à l&apos;utilisateur)</span></Label>
+          <Label htmlFor="rejection-reason">
+            Motif de refus{' '}
+            <span className="text-muted-foreground text-xs">
+              (transmis à l&apos;utilisateur)
+            </span>
+          </Label>
           <div className="flex flex-wrap gap-1.5 pb-1">
             {REJECTION_PRESETS.map(preset => (
               <button
@@ -125,7 +134,9 @@ export function KYCResolveForm({ userId, suggestedName, mrzFailed }: Props) {
         <div className="space-y-2">
           <Label htmlFor="admin-notes">
             Notes internes{' '}
-            <span className="text-muted-foreground text-xs">(non transmises à l&apos;utilisateur)</span>
+            <span className="text-muted-foreground text-xs">
+              (non transmises à l&apos;utilisateur)
+            </span>
           </Label>
           <Textarea
             id="admin-notes"

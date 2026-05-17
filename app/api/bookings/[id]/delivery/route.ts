@@ -14,7 +14,10 @@ export async function POST(
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: 'Non authentifié', code: 'UNAUTHENTICATED' }, { status: 401 })
+    return NextResponse.json(
+      { error: 'Non authentifié', code: 'UNAUTHENTICATED' },
+      { status: 401 }
+    )
   }
 
   const admin = createAdminClient()
@@ -26,7 +29,10 @@ export async function POST(
     .single()
 
   if (profile?.is_suspended) {
-    return NextResponse.json({ error: 'Compte suspendu', code: 'SUSPENDED' }, { status: 403 })
+    return NextResponse.json(
+      { error: 'Compte suspendu', code: 'SUSPENDED' },
+      { status: 403 }
+    )
   }
 
   const { data: booking } = await admin
@@ -36,16 +42,31 @@ export async function POST(
     .single()
 
   if (!booking) {
-    return NextResponse.json({ error: 'Réservation introuvable', code: 'NOT_FOUND' }, { status: 404 })
+    return NextResponse.json(
+      { error: 'Réservation introuvable', code: 'NOT_FOUND' },
+      { status: 404 }
+    )
   }
 
   // Le voyageur confirme la livraison
   if (booking.traveler_id !== user.id) {
-    return NextResponse.json({ error: 'Seul le voyageur peut confirmer la livraison', code: 'FORBIDDEN' }, { status: 403 })
+    return NextResponse.json(
+      {
+        error: 'Seul le voyageur peut confirmer la livraison',
+        code: 'FORBIDDEN',
+      },
+      { status: 403 }
+    )
   }
 
   if (booking.status !== 'handed') {
-    return NextResponse.json({ error: 'Statut incompatible (attendu: handed)', code: 'INVALID_STATUS' }, { status: 422 })
+    return NextResponse.json(
+      {
+        error: 'Statut incompatible (attendu: handed)',
+        code: 'INVALID_STATUS',
+      },
+      { status: 422 }
+    )
   }
 
   const now = new Date()
@@ -58,8 +79,14 @@ export async function POST(
     durationHours = (now.getTime() - handedAt.getTime()) / (1000 * 60 * 60)
   }
 
-  const historyEntry = { status: 'delivered', actor_id: user.id, timestamp: nowISO }
-  const history = Array.isArray(booking.status_history) ? booking.status_history : []
+  const historyEntry = {
+    status: 'delivered',
+    actor_id: user.id,
+    timestamp: nowISO,
+  }
+  const history = Array.isArray(booking.status_history)
+    ? booking.status_history
+    : []
 
   await admin
     .from('bookings')

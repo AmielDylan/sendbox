@@ -8,11 +8,7 @@ import { processKYCMRZ } from '@/lib/core/kyc/mrz'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  IconAlertTriangle,
-  IconCheck,
-  IconX,
-} from '@tabler/icons-react'
+import { IconAlertTriangle, IconCheck, IconX } from '@tabler/icons-react'
 import { KYCResolveForm } from './kyc-resolve-form'
 import { ApproveCountryButton } from './approve-country-button'
 
@@ -30,7 +26,9 @@ export default async function AdminKYCDetailPage({
 
   const { data: profile } = await admin
     .from('profiles')
-    .select('id, firstname, lastname, email, verification_status, kyc_document_front, kyc_document_back, kyc_submitted_at, kyc_rejection_reason')
+    .select(
+      'id, firstname, lastname, email, verification_status, kyc_document_front, kyc_document_back, kyc_submitted_at, kyc_rejection_reason'
+    )
     .eq('id', id)
     .single()
 
@@ -68,7 +66,10 @@ export default async function AdminKYCDetailPage({
   }
 
   // Générer les signed URLs (10 min)
-  const signedUrls: { doc: string | null; selfie: string | null } = { doc: null, selfie: null }
+  const signedUrls: { doc: string | null; selfie: string | null } = {
+    doc: null,
+    selfie: null,
+  }
   if (profile.kyc_document_front) {
     const { data } = await admin.storage
       .from('kyc-documents')
@@ -82,7 +83,9 @@ export default async function AdminKYCDetailPage({
     signedUrls.selfie = data?.signedUrl ?? null
   }
 
-  const displayName = [profile.firstname, profile.lastname].filter(Boolean).join(' ') || 'Utilisateur'
+  const displayName =
+    [profile.firstname, profile.lastname].filter(Boolean).join(' ') ||
+    'Utilisateur'
 
   return (
     <div className="space-y-6">
@@ -115,7 +118,9 @@ export default async function AdminKYCDetailPage({
                   />
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Aucun document disponible</p>
+                <p className="text-sm text-muted-foreground">
+                  Aucun document disponible
+                </p>
               )}
             </CardContent>
           </Card>
@@ -136,7 +141,9 @@ export default async function AdminKYCDetailPage({
                   />
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Aucun selfie disponible</p>
+                <p className="text-sm text-muted-foreground">
+                  Aucun selfie disponible
+                </p>
               )}
             </CardContent>
           </Card>
@@ -144,7 +151,9 @@ export default async function AdminKYCDetailPage({
           {profile.kyc_submitted_at && (
             <p className="text-xs text-muted-foreground">
               Soumis le{' '}
-              {format(new Date(profile.kyc_submitted_at as string), 'PPp', { locale: fr })}
+              {format(new Date(profile.kyc_submitted_at as string), 'PPp', {
+                locale: fr,
+              })}
             </p>
           )}
         </div>
@@ -158,7 +167,9 @@ export default async function AdminKYCDetailPage({
             </CardHeader>
             <CardContent>
               {!review ? (
-                <p className="text-sm text-muted-foreground">Aucun résultat MRZ disponible</p>
+                <p className="text-sm text-muted-foreground">
+                  Aucun résultat MRZ disponible
+                </p>
               ) : review.mrz_valid === null ? (
                 <div className="flex items-center gap-2 text-amber-600 text-sm">
                   <IconAlertTriangle className="h-4 w-4" />
@@ -168,11 +179,13 @@ export default async function AdminKYCDetailPage({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-destructive text-sm">
                     <IconAlertTriangle className="h-4 w-4" />
-                    Extraction automatique échouée, vérification manuelle requise
+                    Extraction automatique échouée, vérification manuelle
+                    requise
                   </div>
                   {review.ocr_confidence !== null && (
                     <p className="text-xs text-muted-foreground">
-                      Confiance OCR : {Math.round((review.ocr_confidence ?? 0) * 100)}%
+                      Confiance OCR :{' '}
+                      {Math.round((review.ocr_confidence ?? 0) * 100)}%
                     </p>
                   )}
                 </div>
@@ -180,19 +193,39 @@ export default async function AdminKYCDetailPage({
                 <div className="space-y-3">
                   <MRZRow label="MRZ détectée" value={<StatusIcon ok />} />
                   <MRZRow label="Checksums" value={<StatusIcon ok />} />
-                  {review.mrz_name && <MRZRow label="Nom extrait" value={review.mrz_name} />}
-                  {review.mrz_nationality && <MRZRow label="Nationalité" value={review.mrz_nationality} />}
-                  {review.mrz_birth_date && <MRZRow label="Date naissance" value={formatMRZDate(review.mrz_birth_date)} />}
+                  {review.mrz_name && (
+                    <MRZRow label="Nom extrait" value={review.mrz_name} />
+                  )}
+                  {review.mrz_nationality && (
+                    <MRZRow
+                      label="Nationalité"
+                      value={review.mrz_nationality}
+                    />
+                  )}
+                  {review.mrz_birth_date && (
+                    <MRZRow
+                      label="Date naissance"
+                      value={formatMRZDate(review.mrz_birth_date)}
+                    />
+                  )}
                   {review.mrz_expiry && (
                     <MRZRow
                       label="Expiration"
                       value={
-                        <span className={review.mrz_expired ? 'text-destructive' : ''}>
+                        <span
+                          className={
+                            review.mrz_expired ? 'text-destructive' : ''
+                          }
+                        >
                           {formatMRZDate(review.mrz_expiry)}{' '}
                           {review.mrz_expired ? (
-                            <Badge variant="destructive" className="text-xs">Expiré</Badge>
+                            <Badge variant="destructive" className="text-xs">
+                              Expiré
+                            </Badge>
                           ) : (
-                            <Badge variant="secondary" className="text-xs">Valide</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              Valide
+                            </Badge>
                           )}
                         </span>
                       }
@@ -210,39 +243,48 @@ export default async function AdminKYCDetailPage({
           </Card>
 
           {/* Infos document soumis */}
-          {review && ((review as any).doc_type || (review as any).doc_country) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Document soumis</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {(review as any).doc_type && (
-                  <MRZRow
-                    label="Type de pièce"
-                    value={(review as any).doc_type === 'passport' ? 'Passeport' : "Carte nationale d'identité"}
-                  />
-                )}
-                {(review as any).doc_country && (
-                  <MRZRow
-                    label="Pays d'émission"
-                    value={
-                      (review as any).doc_country === 'other'
-                        ? `Autre : ${(review as any).custom_country ?? '?'}`
-                        : (review as any).doc_country
-                    }
-                  />
-                )}
-                {(review as any).custom_country && (
-                  <div className="pt-1 space-y-2">
-                    <p className="text-xs text-amber-600">
-                      Pays non répertorié : <strong>{(review as any).custom_country}</strong>
-                    </p>
-                    <ApproveCountryButton userId={id} label={(review as any).custom_country} />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+          {review &&
+            ((review as any).doc_type || (review as any).doc_country) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Document soumis</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {(review as any).doc_type && (
+                    <MRZRow
+                      label="Type de pièce"
+                      value={
+                        (review as any).doc_type === 'passport'
+                          ? 'Passeport'
+                          : "Carte nationale d'identité"
+                      }
+                    />
+                  )}
+                  {(review as any).doc_country && (
+                    <MRZRow
+                      label="Pays d'émission"
+                      value={
+                        (review as any).doc_country === 'other'
+                          ? `Autre : ${(review as any).custom_country ?? '?'}`
+                          : (review as any).doc_country
+                      }
+                    />
+                  )}
+                  {(review as any).custom_country && (
+                    <div className="pt-1 space-y-2">
+                      <p className="text-xs text-amber-600">
+                        Pays non répertorié :{' '}
+                        <strong>{(review as any).custom_country}</strong>
+                      </p>
+                      <ApproveCountryButton
+                        userId={id}
+                        label={(review as any).custom_country}
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
           {/* Formulaire de résolution */}
           <KYCResolveForm

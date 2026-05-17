@@ -146,17 +146,32 @@ export default function AdminUsersPage() {
             {users?.map((user: any) => {
               const isCurrentUser = currentUser?.id === user.id
               return (
-                <div key={user.id} className="rounded-lg border p-4 space-y-3 text-sm">
+                <div
+                  key={user.id}
+                  className="rounded-lg border p-4 space-y-3 text-sm"
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="font-medium">
                         {user.firstname} {user.lastname}
-                        {isCurrentUser && <span className="ml-1 text-xs text-muted-foreground">(vous)</span>}
+                        {isCurrentUser && (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            (vous)
+                          </span>
+                        )}
                       </p>
-                      <p className="text-xs text-muted-foreground">{user.email || 'N/A'}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {user.email || 'N/A'}
+                      </p>
                     </div>
                     <div className="flex gap-1 flex-wrap justify-end">
-                      <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>{user.role}</Badge>
+                      <Badge
+                        variant={
+                          user.role === 'admin' ? 'default' : 'secondary'
+                        }
+                      >
+                        {user.role}
+                      </Badge>
                       {user.is_banned ? (
                         <Badge variant="destructive">Banni</Badge>
                       ) : (
@@ -165,7 +180,8 @@ export default function AdminUsersPage() {
                     </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Inscrit le {format(new Date(user.created_at), 'PP', { locale: fr })}
+                    Inscrit le{' '}
+                    {format(new Date(user.created_at), 'PP', { locale: fr })}
                   </p>
                   <div className="flex gap-2">
                     <Button
@@ -183,7 +199,12 @@ export default function AdminUsersPage() {
                       Rôle
                     </Button>
                     {user.is_banned ? (
-                      <Button variant="outline" size="sm" className="flex-1" onClick={() => handleBan(user.id, false)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleBan(user.id, false)}
+                      >
                         <IconLockOpen className="h-4 w-4 mr-1" />
                         Débannir
                       </Button>
@@ -253,7 +274,9 @@ export default function AdminUsersPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {format(new Date(user.created_at), 'PP', { locale: fr })}
+                        {format(new Date(user.created_at), 'PP', {
+                          locale: fr,
+                        })}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">

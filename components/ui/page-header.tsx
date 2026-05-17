@@ -41,7 +41,10 @@ export function PageHeader({
             return (
               <div key={index} className="flex items-center gap-1.5">
                 {index > 0 && (
-                  <IconChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  <IconChevronRight
+                    className="h-3.5 w-3.5"
+                    aria-hidden="true"
+                  />
                 )}
                 {item.href && !isLast ? (
                   <Link

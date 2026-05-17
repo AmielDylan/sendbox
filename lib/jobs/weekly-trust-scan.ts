@@ -1,7 +1,10 @@
 'use server'
 
 import { createAdminClient } from '@/lib/shared/db/admin'
-import { checkConcentrationRatio, checkCollusionRing } from '@/lib/trust/anti-collusion'
+import {
+  checkConcentrationRatio,
+  checkCollusionRing,
+} from '@/lib/trust/anti-collusion'
 import { computeAndSaveTrustScore } from '@/lib/trust/score'
 
 /**
@@ -9,7 +12,10 @@ import { computeAndSaveTrustScore } from '@/lib/trust/score'
  * vérifications anti-collusion pour tous les utilisateurs actifs non suspendus.
  * Ne suspend jamais automatiquement — signale uniquement pour revue admin.
  */
-export async function runWeeklyTrustScan(): Promise<{ scanned: number; errors: number }> {
+export async function runWeeklyTrustScan(): Promise<{
+  scanned: number
+  errors: number
+}> {
   const admin = createAdminClient()
 
   const { data: users, error } = await admin
@@ -34,7 +40,10 @@ export async function runWeeklyTrustScan(): Promise<{ scanned: number; errors: n
 
     for (const result of results) {
       if (result.status === 'rejected') {
-        console.error(`[weekly-trust-scan] Error for user ${user.id}:`, result.reason)
+        console.error(
+          `[weekly-trust-scan] Error for user ${user.id}:`,
+          result.reason
+        )
         errors++
       }
     }
