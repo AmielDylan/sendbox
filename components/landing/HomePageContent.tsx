@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -7,19 +8,21 @@ import {
   IconCamera,
   IconCheck,
   IconCircleCheck,
-  IconClipboardCheck,
   IconUserCheck,
   IconId,
   IconMapPin,
-  IconPlaneDeparture,
-  IconRosetteDiscountCheck,
-  IconShieldCheck,
   IconStar,
   IconUserCircle,
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { LandingCta } from '@/components/landing/LandingCta'
 import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 import { PricingSection } from '@/components/landing/PricingSection'
@@ -67,34 +70,72 @@ const steps = [
   {
     title: 'Créer son profil vérifié',
     description: "KYC obligatoire à l'inscription",
-    icon: IconShieldCheck,
   },
   {
     title: 'Trouver un voyageur ou annoncer son trip',
     description: 'Recherche par corridor et date',
-    icon: IconPlaneDeparture,
   },
   {
     title: 'Confirmer la mise en relation',
     description: 'Les deux parties confirment',
-    icon: IconClipboardCheck,
     badge: '1,50 € de frais de mise en relation',
   },
   {
     title: 'Remise + livraison avec photo',
     description: 'Horodatée par le serveur, confirmée par les deux',
-    icon: IconCamera,
   },
   {
     title: 'Évaluation mutuelle',
     description: 'Avis simultanés et immuables',
-    icon: IconRosetteDiscountCheck,
   },
 ]
 
-const senderBenefits = [
+const faqs: { question: string; answer: string }[] = [
+  {
+    question: 'Combien coûte Sendbox ?',
+    answer:
+      "La mise en relation coûte 1,50 € TTC, payée par l'expéditeur à la confirmation mutuelle. L'utilisation est entièrement gratuite pour les voyageurs. Le montant du transport se négocie directement entre les parties, hors plateforme.",
+  },
+  {
+    question: 'Comment sont vérifiés les profils ?',
+    answer:
+      "Chaque utilisateur passe par un KYC obligatoire : pièce d'identité + selfie, avec lecture automatique de la zone MRZ. Les profils non vérifiés ne peuvent pas publier d'annonces ni finaliser de mise en relation.",
+  },
+  {
+    question: 'Que se passe-t-il si mon colis est endommagé ou perdu ?',
+    answer:
+      "Sendbox est une plateforme de mise en relation et n'assure pas le transport. Cependant, des photos horodatées par le serveur sont prises à la remise et à la livraison, confirmées par les deux parties et conservées 12 mois comme preuves en cas de litige.",
+  },
+  {
+    question: 'Comment fonctionne le paiement du transport ?',
+    answer:
+      "Le montant du transport se règle directement entre l'expéditeur et le voyageur, selon les modalités que vous convenez ensemble. Sendbox ne prélève que les 1,50 € de frais de mise en relation à la confirmation.",
+  },
+  {
+    question: 'Puis-je annuler une mise en relation ?',
+    answer:
+      "Avant la confirmation mutuelle des deux parties, la mise en relation peut être annulée sans frais. Une fois les deux parties confirmées, les frais de 1,50 € sont prélevés et la mise en relation est effective.",
+  },
+  {
+    question: 'Dans quels pays Sendbox est-il disponible ?',
+    answer:
+      "Sendbox est actuellement actif sur le corridor France — Bénin. Des extensions vers le Togo, la Côte d'Ivoire et le Sénégal sont en cours de préparation.",
+  },
+  {
+    question: 'Comment fonctionnent les avis ?',
+    answer:
+      "Les avis sont laissés simultanément par les deux parties après la livraison — le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.",
+  },
+  {
+    question: 'Mes données personnelles sont-elles protégées ?',
+    answer:
+      "Vos données sont hébergées en Europe. Les documents KYC sont chiffrés et accessibles uniquement à l'équipe de vérification, avec une durée de conservation limitée conformément au RGPD. Consultez notre politique de confidentialité pour les détails.",
+  },
+]
+
+const senderBenefits: React.ReactNode[] = [
   'Trouvez un voyageur sur votre corridor diaspora',
-  'Confirmez la mise en relation pour 1,50 €',
+  <>Confirmez la mise en relation pour <strong className="font-semibold text-foreground">1,50 €</strong></>,
   'Suivez la remise et la livraison avec preuves',
 ]
 
@@ -192,9 +233,7 @@ export function HomePageContent() {
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 transition-all duration-500 group-hover:from-primary/5 group-hover:to-transparent" />
 
                   <div className="relative space-y-5 p-8">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                      <Icon className="h-7 w-7 text-primary" />
-                    </div>
+                    <Icon className="h-5 w-5 text-primary/80" />
 
                     <div className="space-y-3">
                       <h3 className="text-xl font-bold sm:text-2xl">
@@ -275,37 +314,27 @@ export function HomePageContent() {
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-5">
-            {steps.map((step, index) => {
-              const Icon = step.icon
-              return (
-                <div
-                  key={step.title}
-                  className="flex flex-col gap-4 rounded-lg border bg-background p-5 animate-fade-in-up"
-                  style={{ animationDelay: `${index * 80}ms` }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <Icon aria-hidden="true" />
-                    </div>
-                    <span className="text-sm font-semibold text-muted-foreground">
-                      {index + 1}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2">
-                    <h3 className="font-semibold leading-snug">{step.title}</h3>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      {step.description}
-                    </p>
-                  </div>
-                  {step.badge ? (
-                    <Badge variant="secondary" className="w-fit text-xs">
-                      {step.badge}
-                    </Badge>
-                  ) : null}
-                </div>
-              )
-            })}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+            {steps.map((step, index) => (
+              <div
+                key={step.title}
+                className="group flex flex-col gap-3 rounded-lg border border-transparent p-4 transition-all duration-300 hover:border-border/50 animate-fade-in-up"
+                style={{ animationDelay: `${index * 80}ms` }}
+              >
+                <span className="font-display text-4xl font-bold leading-none text-primary/15 transition-colors duration-300 group-hover:text-primary/55 sm:text-5xl">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3 className="font-semibold leading-snug">{step.title}</h3>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {step.description}
+                </p>
+                {step.badge ? (
+                  <Badge variant="secondary" className="w-fit text-xs">
+                    {step.badge}
+                  </Badge>
+                ) : null}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -353,6 +382,45 @@ export function HomePageContent() {
 
       <PricingSection />
       <LatestAnnouncementsCarousel />
+
+      {/* FAQ */}
+      <section className="py-24 sm:py-32">
+        <div className="container-wide">
+          <div className="grid gap-12 lg:grid-cols-[1fr_2fr] lg:gap-20">
+            <div className="space-y-4 animate-fade-in-up">
+              <Badge
+                variant="outline"
+                className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
+              >
+                FAQ
+              </Badge>
+              <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+                Questions fréquentes
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+                Tout ce que vous devez savoir avant de commencer.
+              </p>
+            </div>
+
+            <Accordion type="single" collapsible className="space-y-2">
+              {faqs.map((faq, i) => (
+                <AccordionItem
+                  key={i}
+                  value={`faq-${i}`}
+                  className="rounded-lg border border-border/60 px-5 transition-colors hover:border-border data-[state=open]:border-primary/30"
+                >
+                  <AccordionTrigger className="py-5 text-left text-sm font-semibold leading-snug hover:no-underline sm:text-base">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-5 text-sm leading-6 text-muted-foreground sm:text-[15px] sm:leading-7">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
+      </section>
 
       {/* CTA final */}
       <section className="relative overflow-hidden py-28 sm:py-36">
@@ -414,7 +482,7 @@ function AudienceCard({
   href,
 }: {
   title: string
-  benefits: string[]
+  benefits: React.ReactNode[]
   cta: string
   href: string
 }) {
@@ -425,8 +493,8 @@ function AudienceCard({
       </CardHeader>
       <CardContent>
         <ul className="flex flex-col gap-3">
-          {benefits.map(benefit => (
-            <li key={benefit} className="flex gap-3 text-sm leading-6">
+          {benefits.map((benefit, i) => (
+            <li key={i} className="flex gap-3 text-sm leading-6">
               <IconCheck
                 aria-hidden="true"
                 className="mt-1 h-4 w-4 shrink-0 text-primary"

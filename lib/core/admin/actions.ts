@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { headers } from 'next/headers'
-import { COMMISSION_RATE } from '@/lib/core/bookings/validations'
+
 
 /**
  * Vérifie si l'utilisateur est admin
@@ -351,8 +351,6 @@ export async function getAdminStats() {
   const monthlyRevenue =
     transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
 
-  const platformCommission = monthlyRevenue * COMMISSION_RATE
-
   // Nouveaux utilisateurs ce mois
   const { count: newUsersThisMonth } = await supabase
     .from('profiles')
@@ -412,12 +410,39 @@ export async function getAdminStats() {
     pendingKYC: pendingKYC || 0,
     activeBookings: activeBookings || 0,
     monthlyRevenue,
-    platformCommission,
     newUsersThisMonth: newUsersThisMonth || 0,
     activeDisputes: activeDisputes || 0,
     weeklyRegistrations,
     dailyTransactions,
   }
+}
+
+/**
+ * Approuve un pays personnalisé suggéré lors d'un KYC (pays = "Autre")
+ */
+export async function approveCustomKYCCountry(suggestedByUserId: string, label: string) {
+  if (!(await isAdmin())) {
+    return { error: 'Non autorisé' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Non authentifié' }
+
+  const adminSupabase = createAdminClient()
+  const code = label.toUpperCase().replace(/\s+/g, '_').slice(0, 20) + '_CUSTOM'
+
+  const { error } = await (adminSupabase as any).from('kyc_approved_countries').upsert(
+    { code, label, suggested_by: suggestedByUserId, approved_by: user.id, approved_at: new Date().toISOString() },
+    { onConflict: 'code' }
+  )
+
+  if (error) {
+    console.error('[approveCustomKYCCountry]', error)
+    return { error: "Erreur lors de l'enregistrement" }
+  }
+
+  return { success: true }
 }
 
 export async function getAdminAnnouncements(filter?: 'sendbox' | 'sendbox_available') {
