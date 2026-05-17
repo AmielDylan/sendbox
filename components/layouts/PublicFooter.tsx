@@ -108,6 +108,15 @@ export function PublicFooter() {
                   Inscription
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/changelog"
+                  className="text-muted-foreground hover:text-primary transition-colors duration-200 inline-flex items-center gap-2 group"
+                >
+                  <span className="w-0 group-hover:w-1.5 h-1.5 rounded-full bg-primary transition-all duration-200" />
+                  Changelog
+                </Link>
+              </li>
             </ul>
           </div>
 
