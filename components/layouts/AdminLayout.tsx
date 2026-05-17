@@ -206,7 +206,7 @@ function SidebarContent({
               )}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="h-4 w-4" stroke={1.5} aria-hidden="true" />
+              <Icon className="h-4 w-4" stroke={1} aria-hidden="true" />
               <span className="flex-1">{item.title}</span>
             </Link>
           )
