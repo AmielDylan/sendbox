@@ -950,6 +950,7 @@ export type Database = {
           kyc_nationality: string | null
           kyc_rejection_reason: string | null
           kyc_reviewed_at: string | null
+          kyc_selfie: string | null
           kyc_status: Database['public']['Enums']['kyc_status']
           kyc_submitted_at: string | null
           lastname: string | null
@@ -1022,6 +1023,7 @@ export type Database = {
           kyc_nationality?: string | null
           kyc_rejection_reason?: string | null
           kyc_reviewed_at?: string | null
+          kyc_selfie?: string | null
           kyc_status?: Database['public']['Enums']['kyc_status']
           kyc_submitted_at?: string | null
           lastname?: string | null
@@ -1094,6 +1096,7 @@ export type Database = {
           kyc_nationality?: string | null
           kyc_rejection_reason?: string | null
           kyc_reviewed_at?: string | null
+          kyc_selfie?: string | null
           kyc_status?: Database['public']['Enums']['kyc_status']
           kyc_submitted_at?: string | null
           lastname?: string | null

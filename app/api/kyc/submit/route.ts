@@ -50,33 +50,59 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const docFile = formData.get('docFile') as File | null
+  const frontFile = formData.get('frontFile') as File | null
+  const backFile = formData.get('backFile') as File | null
   const selfieFile = formData.get('selfieFile') as File | null
-  if (!docFile || !selfieFile) {
+  const documentType = formData.get('documentType') as string | null
+
+  if (!frontFile || !selfieFile) {
     return NextResponse.json(
-      { error: 'Les deux fichiers sont requis' },
+      { error: 'Les fichiers recto et selfie sont requis' },
+      { status: 400 }
+    )
+  }
+  if (documentType === 'cni' && !backFile) {
+    return NextResponse.json(
+      {
+        error: 'Le verso de la CNI est obligatoire',
+        code: 'BACK_REQUIRED',
+      },
       { status: 400 }
     )
   }
 
   const admin = createAdminClient()
   const ts = Date.now()
-  const idPath = `${user.id}/id-${ts}.jpg`
+  const frontPath = `${user.id}/front-${ts}.jpg`
+  const backPath = `${user.id}/back-${ts}.jpg`
   const selfiePath = `${user.id}/selfie-${ts}.jpg`
 
   // 3. Validation + conversion via pipeline sécurisé
-  const [docResult, selfieResult] = await Promise.all([
-    processKYCFile(Buffer.from(await docFile.arrayBuffer())),
+  const [frontResult, selfieResult] = await Promise.all([
+    processKYCFile(Buffer.from(await frontFile.arrayBuffer())),
     processKYCFile(Buffer.from(await selfieFile.arrayBuffer())),
   ])
+  const backResult = backFile
+    ? await processKYCFile(Buffer.from(await backFile.arrayBuffer()))
+    : null
 
-  if (!docResult.ok) {
-    const err = PIPELINE_ERRORS[docResult.code] ?? {
+  if (!frontResult.ok) {
+    const err = PIPELINE_ERRORS[frontResult.code] ?? {
       message: 'Erreur fichier',
       status: 422,
     }
     return NextResponse.json(
-      { error: err.message, code: docResult.code },
+      { error: err.message, code: frontResult.code },
+      { status: err.status }
+    )
+  }
+  if (backResult && !backResult.ok) {
+    const err = PIPELINE_ERRORS[backResult.code] ?? {
+      message: 'Erreur fichier',
+      status: 422,
+    }
+    return NextResponse.json(
+      { error: err.message, code: backResult.code },
       { status: err.status }
     )
   }
@@ -91,9 +117,9 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // 4. Upload des buffers JPEG résultants (bypass RLS bucket)
-  const [{ error: docErr }, { error: selfieErr }] = await Promise.all([
-    admin.storage.from('kyc-documents').upload(idPath, docResult.buffer, {
+  // 4. Upload front + selfie (toujours), back conditionnel
+  const [{ error: frontErr }, { error: selfieErr }] = await Promise.all([
+    admin.storage.from('kyc-documents').upload(frontPath, frontResult.buffer, {
       contentType: 'image/jpeg',
       upsert: true,
     }),
@@ -105,12 +131,30 @@ export async function POST(req: NextRequest) {
       }),
   ])
 
-  if (docErr || selfieErr) {
-    console.error('KYC upload error:', docErr ?? selfieErr)
+  if (frontErr || selfieErr) {
+    console.error('KYC upload error (front/selfie):', frontErr ?? selfieErr)
     return NextResponse.json(
       { error: "Erreur lors de l'upload des fichiers" },
       { status: 500 }
     )
+  }
+
+  let backUploaded = false
+  if (backResult?.ok) {
+    const { error: backErr } = await admin.storage
+      .from('kyc-documents')
+      .upload(backPath, backResult.buffer, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      })
+    if (backErr) {
+      console.error('KYC upload error (back):', backErr)
+      return NextResponse.json(
+        { error: "Erreur lors de l'upload des fichiers" },
+        { status: 500 }
+      )
+    }
+    backUploaded = true
   }
 
   // 5. Mettre à jour profiles
@@ -119,8 +163,9 @@ export async function POST(req: NextRequest) {
     .update({
       kyc_submitted_at: new Date().toISOString(),
       verification_status: 'pending',
-      kyc_document_front: idPath,
-      kyc_document_back: selfiePath,
+      kyc_document_front: frontPath,
+      kyc_document_back: backUploaded ? backPath : null,
+      kyc_selfie: selfiePath,
       kyc_rejection_reason: null,
     })
     .eq('id', user.id)
@@ -134,7 +179,6 @@ export async function POST(req: NextRequest) {
   }
 
   // 6. Insérer dans kyc_reviews
-  const docType = formData.get('docType') as string | null
   const docCountry = formData.get('country') as string | null
   const customCtry = formData.get('customCountry') as string | null
 
@@ -142,7 +186,7 @@ export async function POST(req: NextRequest) {
     user_id: user.id,
     consent_at: new Date().toISOString(),
     status: 'PENDING',
-    doc_type: docType || null,
+    doc_type: documentType || null,
     doc_country: docCountry || null,
     custom_country: customCtry || null,
   })
@@ -167,9 +211,9 @@ export async function POST(req: NextRequest) {
         userProfile?.email ||
         user.id
       const docTypeLabel =
-        docType === 'passport'
+        documentType === 'passport'
           ? 'Passeport'
-          : docType === 'cni'
+          : documentType === 'cni'
             ? 'CNI'
             : 'Non précisé'
       await sendEmail({
@@ -186,8 +230,14 @@ export async function POST(req: NextRequest) {
     }
   })().catch(console.error)
 
-  // 8. Fire-and-forget MRZ (fragile en serverless — le fallback est dans /admin/kyc/[id])
-  processKYCMRZ(user.id, idPath).catch(err =>
+  // 8. MRZ ciblé selon le type de document
+  // CNI : MRZ sur le verso ; Passeport : MRZ sur le recto, fallback verso si fourni
+  const mrzPrimaryPath =
+    documentType === 'cni' && backUploaded ? backPath : frontPath
+  const mrzFallbackPath =
+    documentType === 'passport' && backUploaded ? backPath : undefined
+
+  processKYCMRZ(user.id, mrzPrimaryPath, mrzFallbackPath).catch(err =>
     console.error('[kyc/submit] MRZ processing failed:', err)
   )
 

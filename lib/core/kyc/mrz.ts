@@ -13,17 +13,16 @@ export interface MRZResult {
   ocr_confidence: number
 }
 
-/**
- * Télécharge le document depuis le bucket, lance Tesseract OCR,
- * extrait et valide les lignes MRZ, puis met à jour kyc_reviews.
- */
-export async function processKYCMRZ(
-  userId: string,
-  docPath: string
-): Promise<MRZResult> {
-  const admin = createAdminClient()
+interface OCRLines {
+  lines: string[]
+  rawText: string
+  confidence: number
+}
 
-  // 1. Télécharger l'image depuis le bucket
+async function downloadBuffer(
+  admin: ReturnType<typeof createAdminClient>,
+  docPath: string
+): Promise<Buffer> {
   const { data: fileData, error: dlError } = await admin.storage
     .from('kyc-documents')
     .download(docPath)
@@ -32,10 +31,10 @@ export async function processKYCMRZ(
       `Impossible de télécharger le document: ${dlError?.message}`
     )
   }
+  return Buffer.from(await fileData.arrayBuffer())
+}
 
-  const buffer = Buffer.from(await fileData.arrayBuffer())
-
-  // 2. OCR via Tesseract — charset MRZ uniquement
+async function runOCR(buffer: Buffer): Promise<OCRLines> {
   const worker = await createWorker('eng')
   await worker.setParameters({
     tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',
@@ -43,47 +42,27 @@ export async function processKYCMRZ(
   const { data } = await worker.recognize(buffer)
   await worker.terminate()
 
-  const ocrText: string = data.text ?? ''
-  const ocrConfidence: number = (data.confidence ?? 0) / 100
-
-  // 3. Extraire les lignes MRZ (TD3: 2 lignes de 44 chars, TD1: 3 lignes de 30 chars)
-  const lines = ocrText
+  const rawText: string = data.text ?? ''
+  const confidence: number = (data.confidence ?? 0) / 100
+  const lines = rawText
     .split('\n')
     .map(l => l.trim().replace(/\s/g, ''))
     .filter(l => /^[A-Z0-9<]{20,}$/.test(l))
 
-  let result: MRZResult = {
-    mrz_valid: false,
-    mrz_name: null,
-    mrz_nationality: null,
-    mrz_birth_date: null,
-    mrz_expiry: null,
-    mrz_expired: null,
-    mrz_raw: ocrText.slice(0, 500),
-    ocr_confidence: ocrConfidence,
-  }
+  return { lines, rawText, confidence }
+}
 
-  // Essayer TD3 (2 lignes × 44) puis TD1 (3 lignes × 30)
-  const td3Candidates = lines.filter(l => l.length === 44)
-  const td1Candidates = lines.filter(l => l.length === 30)
+function parseMRZLines(ocr: OCRLines): MRZResult | null {
+  const td3 = ocr.lines.filter(l => l.length === 44)
+  const td1 = ocr.lines.filter(l => l.length === 30)
   const mrzLines =
-    td3Candidates.length >= 2
-      ? td3Candidates.slice(-2)
-      : td1Candidates.length >= 3
-        ? td1Candidates.slice(-3)
-        : null
+    td3.length >= 2 ? td3.slice(-2) : td1.length >= 3 ? td1.slice(-3) : null
 
-  if (!mrzLines) {
-    await upsertReview(admin, userId, result)
-    return result
-  }
+  if (!mrzLines) return null
 
   try {
     const parsed = parse(mrzLines)
-    if (!parsed.valid) {
-      await upsertReview(admin, userId, result)
-      return result
-    }
+    if (!parsed.valid) return null
 
     const fields = parsed.fields
     const expiryRaw: string = fields.expirationDate ?? ''
@@ -93,11 +72,10 @@ export async function processKYCMRZ(
       const year = parseInt(expiryRaw.slice(0, 2), 10)
       const month = parseInt(expiryRaw.slice(2, 4), 10)
       const fullYear = year >= 0 && year <= 30 ? 2000 + year : 1900 + year
-      const expiryDate = new Date(fullYear, month - 1, 1)
-      expired = expiryDate < today
+      expired = new Date(fullYear, month - 1, 1) < today
     }
 
-    result = {
+    return {
       mrz_valid: true,
       mrz_name:
         [fields.lastName, fields.firstName].filter(Boolean).join(' ') || null,
@@ -106,10 +84,55 @@ export async function processKYCMRZ(
       mrz_expiry: expiryRaw || null,
       mrz_expired: expired,
       mrz_raw: mrzLines.join('\n'),
-      ocr_confidence: ocrConfidence,
+      ocr_confidence: ocr.confidence,
     }
   } catch {
-    // parse() a jeté — résultat invalide déjà initialisé
+    return null
+  }
+}
+
+export async function processKYCMRZ(
+  userId: string,
+  docPath: string,
+  fallbackPath?: string
+): Promise<MRZResult> {
+  const admin = createAdminClient()
+
+  const buffer = await downloadBuffer(admin, docPath)
+  const ocr = await runOCR(buffer)
+
+  let result = parseMRZLines(ocr)
+
+  // Si MRZ non trouvée et fallbackPath fourni, réessayer sur le fichier alternatif
+  if (!result && fallbackPath) {
+    const fallbackBuffer = await downloadBuffer(admin, fallbackPath)
+    const fallbackOcr = await runOCR(fallbackBuffer)
+    result = parseMRZLines(fallbackOcr)
+    if (!result) {
+      result = {
+        mrz_valid: false,
+        mrz_name: null,
+        mrz_nationality: null,
+        mrz_birth_date: null,
+        mrz_expiry: null,
+        mrz_expired: null,
+        mrz_raw: fallbackOcr.rawText.slice(0, 500),
+        ocr_confidence: fallbackOcr.confidence,
+      }
+    }
+  }
+
+  if (!result) {
+    result = {
+      mrz_valid: false,
+      mrz_name: null,
+      mrz_nationality: null,
+      mrz_birth_date: null,
+      mrz_expiry: null,
+      mrz_expired: null,
+      mrz_raw: ocr.rawText.slice(0, 500),
+      ocr_confidence: ocr.confidence,
+    }
   }
 
   await upsertReview(admin, userId, result)
