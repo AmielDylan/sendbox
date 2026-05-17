@@ -9,6 +9,7 @@ import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { sendEmail } from '@/lib/shared/services/email/client'
 
 /**
  * Annule une réservation avec raison (acceptée non payée par les deux parties,
@@ -136,6 +137,24 @@ export async function cancelBookingWithReason(
     if (notifError) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
+
+    ;(async () => {
+      const adminDb = createAdminClient()
+      const { data: otherProfile } = await adminDb.from('profiles').select('email, firstname').eq('id', otherUserId).single()
+      if (otherProfile?.email) {
+        await sendEmail({
+          to: otherProfile.email,
+          subject: 'Mise en relation annulée',
+          template: 'notification',
+          data: {
+            title: 'Réservation annulée',
+            content: `${otherProfile.firstname ? `Bonjour ${otherProfile.firstname},\n\n` : ''}${cancelerLabel} a annulé la réservation.\n\nMotif : ${normalizedReason}`,
+            ctaText: 'Voir mes réservations',
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
+          },
+        })
+      }
+    })().catch(console.error)
 
     revalidatePath('/dashboard/colis')
     revalidatePath(`/dashboard/colis/${bookingId}`)
@@ -374,6 +393,24 @@ export async function markAsInTransit(
       console.error('Notification creation failed (non-blocking):', notifError)
     }
 
+    ;(async () => {
+      const adminDb = createAdminClient()
+      const { data: senderProfile } = await adminDb.from('profiles').select('email, firstname').eq('id', booking.sender_id).single()
+      if (senderProfile?.email) {
+        await sendEmail({
+          to: senderProfile.email,
+          subject: 'Votre colis est en route',
+          template: 'notification',
+          data: {
+            title: 'Colis en transit',
+            content: `${senderProfile.firstname ? `Bonjour ${senderProfile.firstname},\n\n` : ''}Votre colis a été pris en charge par le voyageur et est maintenant en transit.`,
+            ctaText: 'Suivre mon colis',
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
+          },
+        })
+      }
+    })().catch(console.error)
+
     revalidatePath('/dashboard/colis')
     revalidatePath(`/dashboard/colis/${bookingId}`)
 
@@ -518,6 +555,24 @@ export async function markAsDelivered(
     if (notifError) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
+
+    ;(async () => {
+      const adminDb = createAdminClient()
+      const { data: senderProfile } = await adminDb.from('profiles').select('email, firstname').eq('id', booking.sender_id).single()
+      if (senderProfile?.email) {
+        await sendEmail({
+          to: senderProfile.email,
+          subject: 'Votre colis a été livré — confirmez la réception',
+          template: 'notification',
+          data: {
+            title: 'Colis livré',
+            content: `${senderProfile.firstname ? `Bonjour ${senderProfile.firstname},\n\n` : ''}Votre colis a été livré. Merci de confirmer la réception sur Sendbox.\n\nSans action de votre part, les fonds seront versés au voyageur après 7 jours.`,
+            ctaText: 'Confirmer la réception',
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
+          },
+        })
+      }
+    })().catch(console.error)
 
     // Mettre à jour les statistiques du voyageur
     await (supabase.rpc as any)('increment_user_stats', {
@@ -669,6 +724,24 @@ export async function confirmDeliveryReceipt(bookingId: string) {
   if (notifError) {
     console.error('Notification creation failed (non-blocking):', notifError)
   }
+
+  ;(async () => {
+    const adminDb = createAdminClient()
+    const { data: travelerProfile } = await adminDb.from('profiles').select('email, firstname').eq('id', booking.traveler_id).single()
+    if (travelerProfile?.email) {
+      await sendEmail({
+        to: travelerProfile.email,
+        subject: 'Livraison confirmée — votre mission est terminée',
+        template: 'notification',
+        data: {
+          title: 'Livraison confirmée',
+          content: `${travelerProfile.firstname ? `Bonjour ${travelerProfile.firstname},\n\n` : ''}Le client a confirmé la remise. Les fonds sont débloqués pour vous. Merci d'avoir utilisé Sendbox !`,
+          ctaText: 'Voir mes réservations',
+          ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
+        },
+      })
+    }
+  })().catch(console.error)
 
   revalidatePath('/dashboard/colis')
   revalidatePath(`/dashboard/colis/${bookingId}`)

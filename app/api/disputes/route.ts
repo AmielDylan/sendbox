@@ -138,6 +138,23 @@ export async function POST(req: NextRequest) {
     bookingId,
   })
 
+  ;(async () => {
+    const { data: otherProfile } = await admin.from('profiles').select('email, firstname').eq('id', otherPartyId).single()
+    if (otherProfile?.email) {
+      await sendEmail({
+        to: otherProfile.email,
+        subject: '[Litige] Une contestation a été ouverte sur votre envoi',
+        template: 'notification',
+        data: {
+          title: 'Un litige vous concerne',
+          content: `${otherProfile.firstname ? `Bonjour ${otherProfile.firstname},\n\n` : ''}Une contestation a été ouverte sur une réservation vous concernant. Ce litige est visible sur votre profil public pendant l'instruction.\n\nMotif : ${reason}`,
+          ctaText: 'Voir la réservation',
+          ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
+        },
+      })
+    }
+  })().catch(console.error)
+
   return NextResponse.json({ disputeId: dispute.id })
 }
 

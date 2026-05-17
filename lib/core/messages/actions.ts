@@ -6,7 +6,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
 import { createSystemNotification } from '@/lib/core/notifications/system'
+import { sendEmail } from '@/lib/shared/services/email/client'
 import { z } from 'zod'
 
 const sendMessageSchema = z.object({
@@ -169,6 +171,24 @@ export async function sendMessage(data: SendMessageInput) {
     if (notifError) {
       console.error('Notification creation failed (non-blocking):', notifError)
     }
+
+    ;(async () => {
+      const adminDb = createAdminClient()
+      const { data: receiverProfile } = await adminDb.from('profiles').select('email').eq('id', receiver_id).single()
+      if (receiverProfile?.email) {
+        await sendEmail({
+          to: receiverProfile.email,
+          subject: `Nouveau message de ${senderName}`,
+          template: 'notification',
+          data: {
+            title: `Nouveau message de ${senderName}`,
+            content: `${senderName} vous a envoyé un message :\n\n« ${messagePreview} »`,
+            ctaText: 'Répondre',
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/messages?booking=${booking_id}`,
+          },
+        })
+      }
+    })().catch(console.error)
 
     revalidatePath('/dashboard/messages')
     return {
