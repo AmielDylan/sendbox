@@ -60,7 +60,7 @@ interface AdminLayoutProps {
 interface AdminNavItem {
   title: string
   href: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<{ className?: string; stroke?: number }>
 }
 
 const adminNavItems: AdminNavItem[] = [
@@ -206,7 +206,7 @@ function SidebarContent({
               )}
               aria-current={isActive ? 'page' : undefined}
             >
-              <Icon className="h-5 w-5" aria-hidden="true" />
+              <Icon className="h-4 w-4" stroke={1.5} aria-hidden="true" />
               <span className="flex-1">{item.title}</span>
             </Link>
           )
