@@ -4,7 +4,6 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { isAdmin } from '@/lib/core/admin/actions'
 import { createAdminClient } from '@/lib/shared/db/admin'
-import { processKYCMRZ } from '@/lib/core/kyc/mrz'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -42,39 +41,7 @@ export default async function AdminKYCDetailPage({
     .order('created_at', { ascending: false })
     .limit(1)
 
-  let review = reviews?.[0] ?? null
-
-  // Déclencher le MRZ si pas encore traité et qu'un document existe
-  if (
-    profile.kyc_document_front &&
-    review &&
-    review.mrz_valid === null &&
-    review.status === 'PENDING'
-  ) {
-    try {
-      // CNI : MRZ sur le verso ; Passeport : MRZ sur le recto, fallback verso
-      const docType = (review as any).doc_type as string | null
-      const mrzPrimaryPath =
-        docType === 'cni' && profile.kyc_document_back
-          ? (profile.kyc_document_back as string)
-          : (profile.kyc_document_front as string)
-      const mrzFallbackPath =
-        docType === 'passport' && profile.kyc_document_back
-          ? (profile.kyc_document_back as string)
-          : undefined
-
-      await processKYCMRZ(id, mrzPrimaryPath, mrzFallbackPath)
-      const { data: refreshed } = await admin
-        .from('kyc_reviews')
-        .select('*')
-        .eq('user_id', id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-      review = refreshed?.[0] ?? review
-    } catch (err) {
-      console.error('[admin/kyc/[id]] MRZ processing failed:', err)
-    }
-  }
+  const review = reviews?.[0] ?? null
 
   // Générer les signed URLs (10 min)
   const signedUrls: {
