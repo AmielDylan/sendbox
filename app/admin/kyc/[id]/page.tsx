@@ -8,6 +8,7 @@ import { processKYCMRZ } from '@/lib/core/kyc/mrz'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { IconAlertTriangle, IconCheck, IconX } from '@tabler/icons-react'
 import { KYCResolveForm } from './kyc-resolve-form'
 import { ApproveCountryButton } from './approve-country-button'
@@ -27,7 +28,7 @@ export default async function AdminKYCDetailPage({
   const { data: profile } = await admin
     .from('profiles')
     .select(
-      'id, firstname, lastname, email, verification_status, kyc_document_front, kyc_document_back, kyc_submitted_at, kyc_rejection_reason'
+      'id, firstname, lastname, email, verification_status, kyc_document_front, kyc_document_back, kyc_selfie, kyc_submitted_at, kyc_rejection_reason'
     )
     .eq('id', id)
     .single()
@@ -51,8 +52,18 @@ export default async function AdminKYCDetailPage({
     review.status === 'PENDING'
   ) {
     try {
-      await processKYCMRZ(id, profile.kyc_document_front)
-      // Recharger le review mis à jour
+      // CNI : MRZ sur le verso ; Passeport : MRZ sur le recto, fallback verso
+      const docType = (review as any).doc_type as string | null
+      const mrzPrimaryPath =
+        docType === 'cni' && profile.kyc_document_back
+          ? (profile.kyc_document_back as string)
+          : (profile.kyc_document_front as string)
+      const mrzFallbackPath =
+        docType === 'passport' && profile.kyc_document_back
+          ? (profile.kyc_document_back as string)
+          : undefined
+
+      await processKYCMRZ(id, mrzPrimaryPath, mrzFallbackPath)
       const { data: refreshed } = await admin
         .from('kyc_reviews')
         .select('*')
@@ -66,20 +77,28 @@ export default async function AdminKYCDetailPage({
   }
 
   // Générer les signed URLs (10 min)
-  const signedUrls: { doc: string | null; selfie: string | null } = {
-    doc: null,
-    selfie: null,
-  }
+  const signedUrls: {
+    front: string | null
+    back: string | null
+    selfie: string | null
+  } = { front: null, back: null, selfie: null }
+
   if (profile.kyc_document_front) {
     const { data } = await admin.storage
       .from('kyc-documents')
       .createSignedUrl(profile.kyc_document_front as string, 600)
-    signedUrls.doc = data?.signedUrl ?? null
+    signedUrls.front = data?.signedUrl ?? null
   }
   if (profile.kyc_document_back) {
     const { data } = await admin.storage
       .from('kyc-documents')
       .createSignedUrl(profile.kyc_document_back as string, 600)
+    signedUrls.back = data?.signedUrl ?? null
+  }
+  if (profile.kyc_selfie) {
+    const { data } = await admin.storage
+      .from('kyc-documents')
+      .createSignedUrl(profile.kyc_selfie, 600)
     signedUrls.selfie = data?.signedUrl ?? null
   }
 
@@ -102,29 +121,61 @@ export default async function AdminKYCDetailPage({
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Colonne gauche — Photos */}
         <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Pièce d&apos;identité</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {signedUrls.doc ? (
-                <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
-                  <Image
-                    src={signedUrls.doc}
-                    alt="Document d'identité"
-                    fill
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Aucun document disponible
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          {/* Document : recto + verso côte à côte si verso présent */}
+          <div
+            className={cn(
+              'grid gap-4',
+              signedUrls.back ? 'lg:grid-cols-2' : 'lg:grid-cols-1'
+            )}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">
+                  Recto / Page principale
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {signedUrls.front ? (
+                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                    <Image
+                      src={signedUrls.front}
+                      alt="Recto document"
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Aucun document disponible
+                  </p>
+                )}
+              </CardContent>
+            </Card>
 
+            {signedUrls.back && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">
+                    Verso / Page suivante
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                    <Image
+                      src={signedUrls.back}
+                      alt="Verso document"
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Selfie */}
           <Card>
             <CardHeader>
               <CardTitle className="text-sm">Selfie avec la pièce</CardTitle>
