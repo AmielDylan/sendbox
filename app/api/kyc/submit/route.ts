@@ -21,6 +21,18 @@ const PIPELINE_ERRORS: Record<string, { message: string; status: number }> = {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handleKYCSubmit(req)
+  } catch (err: any) {
+    console.error('[kyc/submit] Unhandled error:', err?.message ?? err)
+    return NextResponse.json(
+      { error: `Erreur serveur inattendue : ${err?.message ?? 'unknown'}` },
+      { status: 500 }
+    )
+  }
+}
+
+async function handleKYCSubmit(req: NextRequest) {
   // 1. Auth
   const supabase = await createClient()
   const {

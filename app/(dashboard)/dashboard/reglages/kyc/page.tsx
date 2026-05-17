@@ -192,8 +192,14 @@ export default function KYCPage() {
 
       const res = await fetch('/api/kyc/submit', { method: 'POST', body })
       if (!res.ok) {
-        const payload = await res.json().catch(() => null)
-        throw new Error(payload?.error || 'Erreur lors de la soumission')
+        const raw = await res.text().catch(() => '')
+        let message = `Erreur ${res.status}`
+        try {
+          const payload = JSON.parse(raw)
+          if (payload?.error) message = `[${res.status}] ${payload.error}`
+        } catch {}
+        console.error('[kyc/submit]', res.status, raw.slice(0, 500))
+        throw new Error(message)
       }
       setState({ phase: 'success' })
     } catch (err) {
