@@ -60,8 +60,8 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
-  // Modules natifs : ne pas bundler, charger nativement au runtime
-  serverExternalPackages: ['sharp', '@napi-rs/canvas', 'pdfjs-dist'],
+  // Sharp est utilisé uniquement côté serveur
+  serverExternalPackages: ['sharp'],
   // Configuration optimisation des images
   images: {
     formats: ['image/avif', 'image/webp'],
