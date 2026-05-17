@@ -1,3 +1,4 @@
+import * as path from 'path'
 import { test, expect } from './fixtures'
 import { PERSONAS } from './globalSetup'
 import { createE2EAdminClient } from './helpers/supabase-admin'
@@ -104,7 +105,7 @@ test.describe('Gate abonnement', () => {
     }
 
     const ctx = await browser.newContext({
-      storageState: require('path').join(__dirname, '../.playwright/state/traveler.json'),
+      storageState: path.join(__dirname, '../.playwright/state/traveler.json'),
     })
     const page = await ctx.newPage()
     await page.goto('/dashboard/reglages/abonnement')

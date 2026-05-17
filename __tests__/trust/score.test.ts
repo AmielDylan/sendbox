@@ -121,7 +121,10 @@ describe('Trust score algorithm', () => {
       // First run: 2 open disputes
       mockFrom.mockImplementation((table: string) => {
         if (table === 'ratings') return makeDataChain(ratings)
-        if (table === 'disputes') return makeCountChain(2)
+        if (table === 'disputes') return makeDataChain([
+          { id: 'd1', bookings: { sender_id: 'user-1', traveler_id: 'other-a' } },
+          { id: 'd2', bookings: { sender_id: 'user-1', traveler_id: 'other-b' } },
+        ])
         if (table === 'bookings') return makeCountChain(1)
         if (table === 'profiles') {
           return {
@@ -147,7 +150,7 @@ describe('Trust score algorithm', () => {
       // Second run: no disputes
       mockFrom.mockImplementation((table: string) => {
         if (table === 'ratings') return makeDataChain(ratings)
-        if (table === 'disputes') return makeCountChain(0)
+        if (table === 'disputes') return makeDataChain([])
         if (table === 'bookings') return makeCountChain(1)
         if (table === 'profiles') {
           return {
