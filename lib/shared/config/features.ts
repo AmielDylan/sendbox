@@ -22,7 +22,7 @@ export const FEATURES = {
   /**
    * Mode Beta
    */
-  BETA_MODE: true,
+  BETA_MODE: false,
   MAX_BETA_USERS: 100,
   MAX_BOOKING_AMOUNT: 200,
 
