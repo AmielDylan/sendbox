@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
-import { processKYCMRZ } from '@/lib/core/kyc/mrz'
+import { runDocumentOCR } from '@/lib/core/kyc/ocr'
 import { sendEmail } from '@/lib/shared/services/email/client'
 import { processKYCFile } from '@/lib/core/kyc/file-pipeline'
 
@@ -242,16 +242,10 @@ async function handleKYCSubmit(req: NextRequest) {
     }
   })().catch(console.error)
 
-  // 8. MRZ ciblé selon le type de document
-  // CNI : MRZ sur le verso ; Passeport : MRZ sur le recto, fallback verso si fourni
-  const mrzPrimaryPath =
-    documentType === 'cni' && backUploaded ? backPath : frontPath
-  const mrzFallbackPath =
-    documentType === 'passport' && backUploaded ? backPath : undefined
-
+  // 8. OCR du document recto (fire-and-forget via after)
   after(() =>
-    processKYCMRZ(user.id, mrzPrimaryPath, mrzFallbackPath).catch(err =>
-      console.error('[kyc/submit] MRZ processing failed:', err)
+    runDocumentOCR(user.id, frontPath).catch(err =>
+      console.error('[kyc/submit] OCR failed:', err)
     )
   )
 

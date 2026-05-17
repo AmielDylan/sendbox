@@ -12,9 +12,8 @@ import { IconLoader2 } from '@tabler/icons-react'
 
 interface Props {
   userId: string
-  suggestedName: string | null
   profileName: string | null
-  mrzFailed: boolean
+  hasOCR: boolean
 }
 
 const REJECTION_PRESETS = [
@@ -26,12 +25,12 @@ const REJECTION_PRESETS = [
   'Document incomplet ou tronqué',
 ]
 
-export function KYCResolveForm({ userId, suggestedName, profileName, mrzFailed }: Props) {
+export function KYCResolveForm({ userId, profileName, hasOCR }: Props) {
   const router = useRouter()
-  const [verifiedName, setVerifiedName] = useState(suggestedName ?? profileName ?? '')
+  const [verifiedName, setVerifiedName] = useState(profileName ?? '')
   const [rejectionReason, setRejectionReason] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
-  const [loading, setLoading] = useState<'approve' | 'reject' | 'mrz' | null>(null)
+  const [loading, setLoading] = useState<'approve' | 'reject' | 'ocr' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function applyPreset(preset: string) {
@@ -42,17 +41,17 @@ export function KYCResolveForm({ userId, suggestedName, profileName, mrzFailed }
     })
   }
 
-  async function retryMRZ() {
-    setLoading('mrz')
+  async function retryOCR() {
+    setLoading('ocr')
     try {
       const res = await fetch(`/api/admin/kyc/${userId}/retry-mrz`, { method: 'POST' })
       if (!res.ok) {
         const payload = await res.json().catch(() => null)
-        throw new Error(payload?.error || 'Erreur lors de l\'extraction')
+        throw new Error(payload?.error || "Erreur lors de l'extraction")
       }
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de l\'extraction MRZ')
+      setError(err instanceof Error ? err.message : "Erreur lors de l'extraction OCR")
     } finally {
       setLoading(null)
     }
@@ -102,35 +101,18 @@ export function KYCResolveForm({ userId, suggestedName, profileName, mrzFailed }
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="verified-name">
-            Nom vérifié
-            {mrzFailed && (
-              <span className="ml-1 text-xs text-amber-600">
-                (saisie manuelle requise)
-              </span>
-            )}
-          </Label>
+          <Label htmlFor="verified-name">Nom vérifié</Label>
           <Input
             id="verified-name"
             value={verifiedName}
             onChange={e => setVerifiedName(e.target.value)}
             placeholder="NOM Prénom tel qu'il figure sur la pièce"
           />
-          {(profileName || suggestedName) && (
-            <div className="space-y-0.5 text-xs text-muted-foreground pt-1">
-              {profileName && (
-                <p>
-                  À l&apos;inscription :{' '}
-                  <span className="font-medium text-foreground">{profileName}</span>
-                </p>
-              )}
-              {suggestedName && (
-                <p>
-                  Extrait MRZ :{' '}
-                  <span className="font-medium text-foreground">{suggestedName}</span>
-                </p>
-              )}
-            </div>
+          {profileName && (
+            <p className="text-xs text-muted-foreground pt-0.5">
+              À l&apos;inscription :{' '}
+              <span className="font-medium text-foreground">{profileName}</span>
+            </p>
           )}
         </div>
 
@@ -180,17 +162,17 @@ export function KYCResolveForm({ userId, suggestedName, profileName, mrzFailed }
           />
         </div>
 
-        {mrzFailed && (
+        {!hasOCR && (
           <Button
             variant="outline"
             size="sm"
             disabled={!!loading}
-            onClick={retryMRZ}
+            onClick={retryOCR}
           >
-            {loading === 'mrz' ? (
+            {loading === 'ocr' ? (
               <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
             ) : null}
-            Relancer l&apos;extraction MRZ
+            Lancer l&apos;extraction OCR
           </Button>
         )}
 

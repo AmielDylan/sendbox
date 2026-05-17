@@ -50,19 +50,19 @@ export default async function AdminKYCPage() {
   const userIds = allProfiles.map(p => p.id)
   const reviewMap = new Map<
     string,
-    { mrz_valid: boolean | null; status: string }
+    { mrz_raw: string | null; status: string }
   >()
 
   if (userIds.length > 0) {
     const { data: reviews } = await admin
       .from('kyc_reviews')
-      .select('user_id, mrz_valid, status')
+      .select('user_id, mrz_raw, status')
       .in('user_id', userIds)
       .order('created_at', { ascending: false })
 
     for (const r of reviews ?? []) {
       if (!reviewMap.has(r.user_id)) {
-        reviewMap.set(r.user_id, { mrz_valid: r.mrz_valid, status: r.status })
+        reviewMap.set(r.user_id, { mrz_raw: r.mrz_raw, status: r.status })
       }
     }
   }
@@ -172,14 +172,12 @@ export default async function AdminKYCPage() {
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>
-                      MRZ :{' '}
+                      OCR :{' '}
                       {!review
                         ? '-'
-                        : review.mrz_valid === null
-                          ? 'En attente'
-                          : review.mrz_valid
-                            ? 'OK'
-                            : 'Échec'}
+                        : review.mrz_raw
+                          ? 'Extrait'
+                          : 'En attente'}
                     </span>
                     <span>
                       {user.kyc_submitted_at
@@ -219,7 +217,7 @@ export default async function AdminKYCPage() {
                   <TableHead>Utilisateur</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Statut KYC</TableHead>
-                  <TableHead>MRZ</TableHead>
+                  <TableHead>OCR</TableHead>
                   <TableHead>Soumis le</TableHead>
                   <TableHead>Action</TableHead>
                 </TableRow>
@@ -271,12 +269,10 @@ export default async function AdminKYCPage() {
                           <span className="text-muted-foreground text-xs">
                             -
                           </span>
-                        ) : review.mrz_valid === null ? (
-                          <IconAlertTriangle className="h-4 w-4 text-amber-500" />
-                        ) : review.mrz_valid ? (
+                        ) : review.mrz_raw ? (
                           <IconCheck className="h-4 w-4 text-green-600" />
                         ) : (
-                          <IconAlertCircle className="h-4 w-4 text-destructive" />
+                          <IconAlertTriangle className="h-4 w-4 text-amber-500" />
                         )}
                       </TableCell>
                       <TableCell>
