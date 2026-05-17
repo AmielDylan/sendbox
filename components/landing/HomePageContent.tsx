@@ -8,13 +8,9 @@ import {
   IconCamera,
   IconCheck,
   IconCircleCheck,
-  IconClipboardCheck,
   IconUserCheck,
   IconId,
   IconMapPin,
-  IconPlaneDeparture,
-  IconRosetteDiscountCheck,
-  IconShieldCheck,
   IconStar,
   IconUserCircle,
 } from '@tabler/icons-react'
@@ -68,28 +64,23 @@ const steps = [
   {
     title: 'Créer son profil vérifié',
     description: "KYC obligatoire à l'inscription",
-    icon: IconShieldCheck,
   },
   {
     title: 'Trouver un voyageur ou annoncer son trip',
     description: 'Recherche par corridor et date',
-    icon: IconPlaneDeparture,
   },
   {
     title: 'Confirmer la mise en relation',
     description: 'Les deux parties confirment',
-    icon: IconClipboardCheck,
     badge: '1,50 € de frais de mise en relation',
   },
   {
     title: 'Remise + livraison avec photo',
     description: 'Horodatée par le serveur, confirmée par les deux',
-    icon: IconCamera,
   },
   {
     title: 'Évaluation mutuelle',
     description: 'Avis simultanés et immuables',
-    icon: IconRosetteDiscountCheck,
   },
 ]
 
@@ -274,37 +265,27 @@ export function HomePageContent() {
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-5">
-            {steps.map((step, index) => {
-              const Icon = step.icon
-              return (
-                <div
-                  key={step.title}
-                  className="flex flex-col gap-4 rounded-lg border bg-background p-5 animate-fade-in-up"
-                  style={{ animationDelay: `${index * 80}ms` }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <Icon aria-hidden="true" />
-                    </div>
-                    <span className="text-sm font-semibold text-muted-foreground">
-                      {index + 1}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2">
-                    <h3 className="font-semibold leading-snug">{step.title}</h3>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      {step.description}
-                    </p>
-                  </div>
-                  {step.badge ? (
-                    <Badge variant="secondary" className="w-fit text-xs">
-                      {step.badge}
-                    </Badge>
-                  ) : null}
-                </div>
-              )
-            })}
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+            {steps.map((step, index) => (
+              <div
+                key={step.title}
+                className="flex flex-col gap-3 animate-fade-in-up"
+                style={{ animationDelay: `${index * 80}ms` }}
+              >
+                <span className="font-display text-5xl font-bold leading-none text-primary/15">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3 className="font-semibold leading-snug">{step.title}</h3>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  {step.description}
+                </p>
+                {step.badge ? (
+                  <Badge variant="secondary" className="w-fit text-xs">
+                    {step.badge}
+                  </Badge>
+                ) : null}
+              </div>
+            ))}
           </div>
         </div>
       </section>

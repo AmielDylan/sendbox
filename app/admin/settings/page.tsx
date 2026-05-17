@@ -201,7 +201,7 @@ export default function AdminSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <Avatar className="h-20 w-20">
               <AvatarImage src={avatarSource} alt="Avatar administrateur" />
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">

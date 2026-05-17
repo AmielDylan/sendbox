@@ -167,17 +167,17 @@ export default function AdminAnnouncementsPage() {
                   </TableCell>
                   <TableCell>
                     {announcement.is_sendbox ? (
-                      <Badge className="bg-primary/10 text-primary border-0 text-[10px]">
+                      <Badge className="bg-primary/10 text-primary border-0 text-xs">
                         <IconLuggage className="h-3 w-3 mr-1" />
                         Sendbox
                       </Badge>
                     ) : announcement.sendbox_available ? (
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-xs">
                         <IconLuggage className="h-3 w-3 mr-1" />
                         Sendbox
                       </Badge>
                     ) : (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         P2P
                       </Badge>
                     )}
