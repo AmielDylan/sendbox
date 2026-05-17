@@ -417,6 +417,34 @@ export async function getAdminStats() {
   }
 }
 
+/**
+ * Approuve un pays personnalisé suggéré lors d'un KYC (pays = "Autre")
+ */
+export async function approveCustomKYCCountry(suggestedByUserId: string, label: string) {
+  if (!(await isAdmin())) {
+    return { error: 'Non autorisé' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Non authentifié' }
+
+  const adminSupabase = createAdminClient()
+  const code = label.toUpperCase().replace(/\s+/g, '_').slice(0, 20) + '_CUSTOM'
+
+  const { error } = await (adminSupabase as any).from('kyc_approved_countries').upsert(
+    { code, label, suggested_by: suggestedByUserId, approved_by: user.id, approved_at: new Date().toISOString() },
+    { onConflict: 'code' }
+  )
+
+  if (error) {
+    console.error('[approveCustomKYCCountry]', error)
+    return { error: "Erreur lors de l'enregistrement" }
+  }
+
+  return { success: true }
+}
+
 export async function getAdminAnnouncements(filter?: 'sendbox' | 'sendbox_available') {
   const supabase = createAdminClient()
   let query = supabase
