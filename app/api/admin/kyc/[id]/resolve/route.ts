@@ -66,7 +66,7 @@ export async function POST(
 
   if (outcome === 'VERIFIED') {
     // 3a. Valider — mettre à jour profile
-    const resolvedName = verifiedName || review?.mrz_name || null
+    const resolvedName = verifiedName || null
     const { error: profileErr } = await admin
       .from('profiles')
       .update({

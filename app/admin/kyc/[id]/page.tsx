@@ -5,9 +5,8 @@ import { isAdmin } from '@/lib/core/admin/actions'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { IconAlertTriangle, IconCheck, IconX } from '@tabler/icons-react'
+import { IconAlertTriangle } from '@tabler/icons-react'
 import { KYCResolveForm } from './kyc-resolve-form'
 import { KYCProtectedImage } from './kyc-protected-image'
 import { ApproveCountryButton } from './approve-country-button'
@@ -153,86 +152,27 @@ export default async function AdminKYCDetailPage({
           )}
         </div>
 
-        {/* Colonne droite — MRZ + Actions */}
+        {/* Colonne droite — OCR + Actions */}
         <div className="space-y-4">
-          {/* Résultats MRZ */}
+          {/* Texte OCR extrait */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">Résultats MRZ</CardTitle>
+              <CardTitle className="text-sm">Texte OCR extrait</CardTitle>
             </CardHeader>
             <CardContent>
               {!review ? (
                 <p className="text-sm text-muted-foreground">
-                  Aucun résultat MRZ disponible
+                  Aucun résultat disponible
                 </p>
-              ) : review.mrz_valid === null ? (
+              ) : !review.mrz_raw ? (
                 <div className="flex items-center gap-2 text-amber-600 text-sm">
                   <IconAlertTriangle className="h-4 w-4" />
-                  Extraction en attente de traitement
-                </div>
-              ) : !review.mrz_valid ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-destructive text-sm">
-                    <IconAlertTriangle className="h-4 w-4" />
-                    Extraction automatique échouée, vérification manuelle
-                    requise
-                  </div>
-                  {review.ocr_confidence !== null && (
-                    <p className="text-xs text-muted-foreground">
-                      Confiance OCR :{' '}
-                      {Math.round((review.ocr_confidence ?? 0) * 100)}%
-                    </p>
-                  )}
+                  Extraction en attente
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <MRZRow label="MRZ détectée" value={<StatusIcon ok />} />
-                  <MRZRow label="Checksums" value={<StatusIcon ok />} />
-                  {review.mrz_name && (
-                    <MRZRow label="Nom extrait" value={review.mrz_name} />
-                  )}
-                  {review.mrz_nationality && (
-                    <MRZRow
-                      label="Nationalité"
-                      value={review.mrz_nationality}
-                    />
-                  )}
-                  {review.mrz_birth_date && (
-                    <MRZRow
-                      label="Date naissance"
-                      value={formatMRZDate(review.mrz_birth_date)}
-                    />
-                  )}
-                  {review.mrz_expiry && (
-                    <MRZRow
-                      label="Expiration"
-                      value={
-                        <span
-                          className={
-                            review.mrz_expired ? 'text-destructive' : ''
-                          }
-                        >
-                          {formatMRZDate(review.mrz_expiry)}{' '}
-                          {review.mrz_expired ? (
-                            <Badge variant="destructive" className="text-xs">
-                              Expiré
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="text-xs">
-                              Valide
-                            </Badge>
-                          )}
-                        </span>
-                      }
-                    />
-                  )}
-                  {review.ocr_confidence !== null && (
-                    <MRZRow
-                      label="Confiance OCR"
-                      value={`${Math.round((review.ocr_confidence ?? 0) * 100)}%`}
-                    />
-                  )}
-                </div>
+                <pre className="text-xs text-muted-foreground whitespace-pre-wrap break-all bg-muted/40 rounded p-3 max-h-48 overflow-y-auto">
+                  {review.mrz_raw}
+                </pre>
               )}
             </CardContent>
           </Card>
@@ -284,9 +224,8 @@ export default async function AdminKYCDetailPage({
           {/* Formulaire de résolution */}
           <KYCResolveForm
             userId={id}
-            suggestedName={review?.mrz_name ?? null}
             profileName={profileName}
-            mrzFailed={!review?.mrz_valid}
+            hasOCR={!!review?.mrz_raw}
           />
         </div>
       </div>
@@ -303,18 +242,3 @@ function MRZRow({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-function StatusIcon({ ok }: { ok: boolean }) {
-  return ok ? (
-    <IconCheck className="h-4 w-4 text-green-600" />
-  ) : (
-    <IconX className="h-4 w-4 text-destructive" />
-  )
-}
-
-function formatMRZDate(raw: string): string {
-  if (raw.length !== 6) return raw
-  const year = parseInt(raw.slice(0, 2), 10)
-  const month = raw.slice(2, 4)
-  const fullYear = year >= 0 && year <= 30 ? 2000 + year : 1900 + year
-  return `${month}/${fullYear}`
-}
