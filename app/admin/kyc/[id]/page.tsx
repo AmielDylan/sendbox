@@ -27,50 +27,22 @@ export default async function AdminKYCDetailPage({
   const { id } = await params
   const admin = createAdminClient()
 
-  // Charger le profil (cast any car kyc_document_front/back sont dans une migration en attente)
-  const { data: profile } = await (admin
+  const { data: profile } = await admin
     .from('profiles')
     .select('id, firstname, lastname, email, verification_status, kyc_document_front, kyc_document_back, kyc_submitted_at, kyc_rejection_reason')
     .eq('id', id)
-    .single() as any) as {
-      data: {
-        id: string
-        firstname: string | null
-        lastname: string | null
-        email: string | null
-        verification_status: string | null
-        kyc_document_front: string | null
-        kyc_document_back: string | null
-        kyc_submitted_at: string | null
-        kyc_rejection_reason: string | null
-      } | null
-      error: unknown
-    }
+    .single()
 
   if (!profile) redirect('/admin/kyc')
 
-  // Charger le dernier kyc_review en attente (cast any — table pas encore dans les types générés)
-  type KYCReview = {
-    id: string
-    user_id: string
-    mrz_valid: boolean | null
-    mrz_name: string | null
-    mrz_nationality: string | null
-    mrz_birth_date: string | null
-    mrz_expiry: string | null
-    mrz_expired: boolean | null
-    mrz_raw: string | null
-    ocr_confidence: number | null
-    status: string
-  }
-  const { data: reviews } = (await (admin as any)
+  const { data: reviews } = await admin
     .from('kyc_reviews')
     .select('*')
     .eq('user_id', id)
     .order('created_at', { ascending: false })
-    .limit(1)) as { data: KYCReview[] | null; error: unknown }
+    .limit(1)
 
-  let review: KYCReview | null = reviews?.[0] ?? null
+  let review = reviews?.[0] ?? null
 
   // Déclencher le MRZ si pas encore traité et qu'un document existe
   if (
@@ -82,12 +54,12 @@ export default async function AdminKYCDetailPage({
     try {
       await processKYCMRZ(id, profile.kyc_document_front)
       // Recharger le review mis à jour
-      const { data: refreshed } = (await (admin as any)
+      const { data: refreshed } = await admin
         .from('kyc_reviews')
         .select('*')
         .eq('user_id', id)
         .order('created_at', { ascending: false })
-        .limit(1)) as { data: KYCReview[] | null; error: unknown }
+        .limit(1)
       review = refreshed?.[0] ?? review
     } catch (err) {
       console.error('[admin/kyc/[id]] MRZ processing failed:', err)

@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       kyc_document_front: idPath,
       kyc_document_back: selfiePath,
       kyc_rejection_reason: null,
-    } as any)
+    })
     .eq('id', user.id)
 
   if (profileErr) {
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 5. Insérer dans kyc_reviews
-  const { error: reviewErr } = await (admin as any).from('kyc_reviews').insert({
+  const { error: reviewErr } = await admin.from('kyc_reviews').insert({
     user_id: user.id,
     consent_at: new Date().toISOString(),
     status: 'PENDING',
