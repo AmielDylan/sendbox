@@ -294,22 +294,27 @@ export default function KYCPage() {
       )}
 
       {state.phase === 'verified' && (
-        <Card className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <IconShieldCheck className="h-6 w-6 text-green-600" />
-              <CardTitle>Identité vérifiée</CardTitle>
+        <div className="rounded-md bg-green-800 dark:bg-green-900 p-6 text-white">
+          <div className="flex items-start gap-4">
+            <IconShieldCheck className="h-5 w-5 mt-0.5 shrink-0 text-green-300" />
+            <div className="space-y-1">
+              <p className="font-semibold text-sm">Identité vérifiée</p>
+              <p className="text-sm text-green-200">
+                Votre identité a été confirmée. Vous pouvez publier des trajets et accepter des colis.
+              </p>
             </div>
-            <CardDescription>
-              Votre identité a été vérifiée avec succès.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" size="sm">
+          </div>
+          <div className="mt-4 pl-9">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="border-green-600 text-green-100 hover:bg-green-700 hover:text-white"
+            >
               <Link href="/dashboard">Retour au tableau de bord</Link>
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {state.phase === 'pending' && (
