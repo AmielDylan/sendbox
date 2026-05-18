@@ -19,6 +19,7 @@ export interface CreateSystemNotificationInput {
   content: string
   bookingId?: string | null
   announcementId?: string | null
+  link?: string | null
 }
 
 export async function createSystemNotification(
@@ -44,6 +45,7 @@ export async function createSystemNotification(
         content: input.content,
         booking_id: input.bookingId ?? null,
         announcement_id: input.announcementId ?? null,
+        link: input.link ?? null,
       })
       .select('id')
       .single()

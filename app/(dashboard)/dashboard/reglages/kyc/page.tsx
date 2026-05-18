@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
@@ -189,7 +190,6 @@ export default function KYCPage() {
         'none') as VerificationStatus
       if (status === 'verified') {
         setState({ phase: 'verified' })
-        setTimeout(() => router.push('/dashboard'), 1500)
       } else if (status === 'pending') {
         setState({ phase: 'pending' })
       } else if (status === 'rejected') {
@@ -294,13 +294,22 @@ export default function KYCPage() {
       )}
 
       {state.phase === 'verified' && (
-        <Alert className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
-          <IconShieldCheck className="h-5 w-5 text-green-600" />
-          <AlertTitle>Identité vérifiée</AlertTitle>
-          <AlertDescription>
-            Votre identité a déjà été vérifiée. Redirection en cours…
-          </AlertDescription>
-        </Alert>
+        <Card className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <IconShieldCheck className="h-6 w-6 text-green-600" />
+              <CardTitle>Identité vérifiée</CardTitle>
+            </div>
+            <CardDescription>
+              Votre identité a été vérifiée avec succès.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard">Retour au tableau de bord</Link>
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {state.phase === 'pending' && (
@@ -317,8 +326,8 @@ export default function KYCPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Vous recevrez un email dès que votre identité sera vérifiée ou si
-              des informations supplémentaires sont nécessaires.
+              Vous recevrez une notification dès que votre identité sera
+              vérifiée ou si des informations supplémentaires sont nécessaires.
             </p>
           </CardContent>
         </Card>

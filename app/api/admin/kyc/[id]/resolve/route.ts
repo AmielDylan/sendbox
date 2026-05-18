@@ -4,6 +4,7 @@ import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { isAdmin } from '@/lib/core/admin/actions'
 import { sendEmail } from '@/lib/shared/services/email/client'
+import { createSystemNotification } from '@/lib/core/notifications/system'
 
 export async function POST(
   req: NextRequest,
@@ -112,6 +113,15 @@ export async function POST(
         .eq('id', review.id)
     }
 
+    // Notification in-app
+    createSystemNotification({
+      userId,
+      type: 'system_alert',
+      title: 'Identité vérifiée',
+      content: "Votre vérification d'identité a été approuvée. Vous pouvez maintenant publier des trajets.",
+      link: '/dashboard',
+    }).catch(console.error)
+
     // Email de confirmation
     if (profile.email) {
       ;(async () => {
@@ -179,6 +189,15 @@ export async function POST(
         })
         .eq('id', review.id)
     }
+
+    // Notification in-app
+    createSystemNotification({
+      userId,
+      type: 'system_alert',
+      title: 'Vérification refusée',
+      content: `Votre vérification d'identité a été refusée. Motif : ${rejectionReason}`,
+      link: '/dashboard/reglages/kyc',
+    }).catch(console.error)
 
     // Email de refus
     if (profile.email) {
