@@ -13,7 +13,6 @@ import { IconLoader2 } from '@tabler/icons-react'
 interface Props {
   userId: string
   profileName: string | null
-  hasOCR: boolean
 }
 
 const REJECTION_PRESETS = [
@@ -25,12 +24,12 @@ const REJECTION_PRESETS = [
   'Document incomplet ou tronqué',
 ]
 
-export function KYCResolveForm({ userId, profileName, hasOCR }: Props) {
+export function KYCResolveForm({ userId, profileName }: Props) {
   const router = useRouter()
   const [verifiedName, setVerifiedName] = useState(profileName ?? '')
   const [rejectionReason, setRejectionReason] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
-  const [loading, setLoading] = useState<'approve' | 'reject' | 'ocr' | null>(null)
+  const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function applyPreset(preset: string) {
@@ -39,22 +38,6 @@ export function KYCResolveForm({ userId, profileName, hasOCR }: Props) {
       if (prev.includes(preset)) return prev
       return `${prev.trim()}, ${preset}`
     })
-  }
-
-  async function retryOCR() {
-    setLoading('ocr')
-    try {
-      const res = await fetch(`/api/admin/kyc/${userId}/retry-mrz`, { method: 'POST' })
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null)
-        throw new Error(payload?.error || "Erreur lors de l'extraction")
-      }
-      router.refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de l'extraction OCR")
-    } finally {
-      setLoading(null)
-    }
   }
 
   async function resolve(outcome: 'VERIFIED' | 'REJECTED') {
@@ -161,20 +144,6 @@ export function KYCResolveForm({ userId, profileName, hasOCR }: Props) {
             rows={2}
           />
         </div>
-
-        {!hasOCR && (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!!loading}
-            onClick={retryOCR}
-          >
-            {loading === 'ocr' ? (
-              <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            Lancer l&apos;extraction OCR
-          </Button>
-        )}
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button
