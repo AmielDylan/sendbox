@@ -9,10 +9,7 @@ import {
   IconCheck,
   IconCircleCheck,
   IconUserCheck,
-  IconId,
   IconMapPin,
-  IconStar,
-  IconUserCircle,
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -33,12 +30,6 @@ import { LandingCta } from '@/components/landing/LandingCta'
 import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 import { PricingSection } from '@/components/landing/PricingSection'
 
-const trustSignals = [
-  { label: 'Identité vérifiée', icon: IconId },
-  { label: 'Photos horodatées', icon: IconCamera },
-  { label: 'Avis certifiés', icon: IconStar },
-  { label: 'Profil public', icon: IconUserCircle },
-]
 
 const features = [
   {
@@ -105,7 +96,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Comment sont vérifiés les profils ?',
     answer:
-      "Chaque utilisateur passe par un KYC obligatoire : pièce d'identité + selfie, avec lecture automatique de la zone MRZ. Les profils non vérifiés ne peuvent pas publier d'annonces ni finaliser de mise en relation.",
+      "Chaque utilisateur passe par un KYC obligatoire : pièce d'identité + selfie de vérification. Les profils non vérifiés ne peuvent pas publier d'annonces ni finaliser de mise en relation.",
   },
   {
     question: 'Que se passe-t-il si mon colis est endommagé ou perdu ?',
@@ -125,12 +116,12 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Dans quels pays Sendbox est-il disponible ?',
     answer:
-      "Sendbox est actuellement actif sur le corridor France — Bénin. Des extensions vers le Togo, la Côte d'Ivoire et le Sénégal sont en cours de préparation.",
+      "Sendbox est actuellement actif sur le corridor France-Bénin. Des extensions vers le Togo, la Côte d'Ivoire et le Sénégal sont en cours de préparation.",
   },
   {
     question: 'Comment fonctionnent les avis ?',
     answer:
-      'Les avis sont laissés simultanément par les deux parties après la livraison — le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.',
+      "Les avis sont laissés simultanément par les deux parties après la livraison : le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.",
   },
   {
     question: 'Mes données personnelles sont-elles protégées ?',
@@ -162,14 +153,9 @@ export function HomePageContent() {
         <div className="container-wide relative z-10 py-20 sm:py-28 lg:py-36">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-6 animate-fade-in-up">
-              <h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+              <h1 className="font-display text-3xl font-light leading-tight tracking-tight sm:text-4xl lg:text-5xl">
                 Faites voyager vos colis avec des voyageurs{' '}
-                <span className="relative inline-block">
-                  <span className="relative z-10 text-primary">
-                    de confiance
-                  </span>
-                  <span className="absolute bottom-2 left-0 right-0 h-3 bg-primary/20 -rotate-1" />
-                </span>
+                <span className="text-primary">de confiance</span>
               </h1>
 
               <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
@@ -177,32 +163,21 @@ export function HomePageContent() {
                 livraisons tracées et preuves horodatées à chaque étape.
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-muted-foreground sm:text-sm">
-                {trustSignals.map(signal => {
-                  const Icon = signal.icon
-                  return (
-                    <span
-                      key={signal.label}
-                      className="inline-flex items-center gap-2"
-                    >
-                      <Icon className="h-4 w-4 text-primary" />
-                      {signal.label}
-                    </span>
-                  )
-                })}
-              </div>
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                Identité vérifiée · Photos horodatées · Avis certifiés · Profil public
+              </p>
 
               <LandingCta
                 className="flex-wrap sm:flex-nowrap pt-2"
-                registerClassName="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300"
-                searchClassName="w-full sm:w-auto border-2 hover:bg-accent transition-all duration-300"
+                registerClassName="bg-primary hover:bg-primary/90 transition-colors"
+                searchClassName="hover:bg-accent transition-colors"
               />
             </div>
 
             <div className="relative mt-10 flex justify-center lg:mt-0 lg:block animate-fade-in-up animation-delay-200">
               <Image
                 src="/images/hero.png"
-                alt="Sendbox — covalisage international"
+                alt="Sendbox covalisage international"
                 width={680}
                 height={640}
                 priority
@@ -241,19 +216,14 @@ export function HomePageContent() {
               return (
                 <Card
                   key={feature.title}
-                  className="group relative overflow-hidden border-2 bg-background transition-all duration-500 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 animate-fade-in-up"
+                  className="bg-background transition-colors hover:border-border animate-fade-in-up"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 transition-all duration-500 group-hover:from-primary/5 group-hover:to-transparent" />
-
-                  <div className="relative space-y-5 p-8">
-                    <Icon className="h-5 w-5 text-primary/80" />
-
-                    <div className="space-y-3">
-                      <h3 className="text-xl font-bold sm:text-2xl">
-                        {feature.title}
-                      </h3>
-                      <p className="text-sm leading-6 text-muted-foreground sm:text-[15px]">
+                  <div className="space-y-4 p-6">
+                    <Icon className="h-4 w-4 text-primary/70" />
+                    <div className="space-y-2">
+                      <h3 className="font-semibold">{feature.title}</h3>
+                      <p className="text-sm leading-6 text-muted-foreground">
                         {feature.description}
                       </p>
                     </div>
@@ -441,45 +411,25 @@ export function HomePageContent() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
 
         <div className="container-wide relative">
-          <div className="mx-auto max-w-4xl space-y-8 text-center animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2">
-              <IconCheck className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium sm:text-sm">
-                Prêt à commencer ?
-              </span>
-            </div>
-
-            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-              Créez votre profil et rejoignez un réseau de voyageurs vérifiés.
+          <div className="mx-auto max-w-2xl space-y-6 text-center animate-fade-in-up">
+            <h2 className="font-display text-2xl font-light tracking-tight sm:text-3xl lg:text-4xl">
+              Rejoignez un réseau de voyageurs vérifiés.
             </h2>
 
-            <p className="mx-auto max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-              Créez votre profil vérifié et rejoignez un réseau de voyageurs de
-              confiance.
+            <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+              Créez votre profil vérifié et organisez vos envois en toute confiance.
             </p>
 
-            <div className="flex flex-col items-center justify-center gap-4 pt-4 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="w-full px-8 py-6 text-sm shadow-xl shadow-primary/25 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/30 sm:w-auto sm:text-base"
-              >
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button asChild size="default" className="transition-colors">
                 <Link href="/register">
                   Créer mon compte
-                  <IconArrowRight className="h-5 w-5" />
+                  <IconArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
 
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="w-full border-2 px-8 py-6 text-sm transition-all duration-300 hover:scale-105 sm:w-auto sm:text-base"
-              >
-                <Link href="/recherche">
-                  <IconMapPin className="h-5 w-5" />
-                  Explorer les trajets
-                </Link>
+              <Button asChild size="default" variant="outline" className="transition-colors">
+                <Link href="/recherche">Explorer les trajets</Link>
               </Button>
             </div>
           </div>
@@ -501,7 +451,7 @@ function AudienceCard({
   href: string
 }) {
   return (
-    <Card className="rounded-xl border-2 bg-background transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10">
+    <Card className="bg-background transition-colors hover:border-border">
       <CardHeader>
         <CardTitle className="text-xl">{title}</CardTitle>
       </CardHeader>
@@ -519,7 +469,7 @@ function AudienceCard({
         </ul>
       </CardContent>
       <CardFooter>
-        <Button asChild className="w-full">
+        <Button asChild variant="outline" size="sm">
           <Link href={href}>{cta}</Link>
         </Button>
       </CardFooter>

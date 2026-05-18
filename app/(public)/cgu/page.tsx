@@ -121,8 +121,8 @@ export default function CGUPage() {
           <p>
             Sont acceptés : les passeports de tous pays conformes à la norme
             ICAO 9303, et les cartes nationales d&apos;identité biométriques.
-            Les documents sans zone de lecture automatique (MRZ) ne sont pas
-            acceptés.
+            Les documents non conformes aux normes de lisibilité internationale
+            ne sont pas acceptés.
           </p>
 
           <h3 className="font-semibold">
@@ -137,6 +137,11 @@ export default function CGUPage() {
             (document et selfie) immédiatement après la décision de vérification
             (validation ou rejet), et au plus tard 72 heures après leur
             soumission.
+          </p>
+          <p>
+            Aucune donnée biométrique n&apos;est conservée après la décision de
+            vérification. Seul le résultat (identité vérifiée ou non) est
+            enregistré dans votre profil.
           </p>
           <p>
             Après vérification, seules les informations suivantes sont
