@@ -201,6 +201,9 @@ export default async function AdminKYCDetailPage({
           <KYCResolveForm
             userId={id}
             profileName={profileName}
+            frontSignedUrl={signedUrls.front}
+            backSignedUrl={signedUrls.back}
+            documentType={(review as any)?.doc_type ?? null}
           />
         </div>
       </div>
