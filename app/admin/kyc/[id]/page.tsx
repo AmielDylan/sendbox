@@ -214,7 +214,7 @@ export default async function AdminKYCDetailPage({
               <CardContent>
                 {profile.verification_status === 'verified' ? (
                   <p className="text-sm text-green-700 font-medium">
-                    Identité vérifiée — aucune action supplémentaire.
+                    Identité vérifiée. Aucune action supplémentaire.
                   </p>
                 ) : profile.verification_status === 'rejected' ? (
                   <div className="space-y-2">

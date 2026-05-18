@@ -63,7 +63,7 @@ export default async function SendboxPage() {
             </Badge>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold">
-            Envoi Sendbox — Prochains départs
+            Envoi Sendbox : Prochains départs
           </h1>
           <p className="text-base text-muted-foreground max-w-2xl">
             Un voyageur vérifié transporte vos effets directement jusqu&apos;à

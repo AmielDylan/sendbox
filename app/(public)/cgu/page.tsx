@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Conditions générales d'utilisation — Sendbox",
+  title: "Conditions générales d'utilisation | Sendbox",
 }
 
 export default function CGUPage() {
@@ -10,14 +10,14 @@ export default function CGUPage() {
           Conditions générales d&apos;utilisation
         </h1>
         <p className="text-sm text-muted-foreground">
-          Dernière mise à jour : 17 mai 2026 — Version 1.0
+          Dernière mise à jour : 17 mai 2026, version 1.0
         </p>
       </header>
 
       <div className="flex flex-col gap-10 text-sm leading-7 sm:text-base">
         {/* Article 1 */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Article 1 — Définitions</h2>
+          <h2 className="text-xl font-semibold">Article 1 : Définitions</h2>
           <p>
             <strong>Sendbox</strong> désigne la plateforme éditée par AMIEL
             ADJOVI CONSULTING, entrepreneur individuel immatriculé sous le
@@ -55,7 +55,7 @@ export default function CGUPage() {
         {/* Article 2 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 2 — Nature du service
+            Article 2 : Nature du service
           </h2>
           <p>
             Sendbox est une plateforme de mise en relation entre expéditeurs et
@@ -90,7 +90,7 @@ export default function CGUPage() {
         {/* Article 3 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 3 — Inscription et vérification d&apos;identité
+            Article 3 : Inscription et vérification d&apos;identité
           </h2>
 
           <h3 className="font-semibold">3.1 Conditions d&apos;inscription</h3>
@@ -165,7 +165,7 @@ export default function CGUPage() {
         {/* Article 4 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 4 — Publication d&apos;annonces de voyage
+            Article 4 : Publication d&apos;annonces de voyage
           </h2>
 
           <h3 className="font-semibold">4.1 Contenu de l&apos;annonce</h3>
@@ -200,7 +200,7 @@ export default function CGUPage() {
         {/* Article 5 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 5 — Frais de mise en relation
+            Article 5 : Frais de mise en relation
           </h2>
 
           <h3 className="font-semibold">5.1 Montant</h3>
@@ -242,7 +242,7 @@ export default function CGUPage() {
         {/* Article 6 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 6 — Paiements entre utilisateurs
+            Article 6 : Paiements entre utilisateurs
           </h2>
           <p>
             Le règlement du prix du transport convenu entre expéditeur et
@@ -259,7 +259,7 @@ export default function CGUPage() {
         {/* Article 7 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 7 — Contenu des colis
+            Article 7 : Contenu des colis
           </h2>
 
           <h3 className="font-semibold">7.1 Objets interdits</h3>
@@ -306,7 +306,7 @@ export default function CGUPage() {
         {/* Article 8 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 8 — Déroulement d&apos;une transaction
+            Article 8 : Déroulement d&apos;une transaction
           </h2>
 
           <h3 className="font-semibold">8.1 Étapes</h3>
@@ -356,7 +356,7 @@ export default function CGUPage() {
 
         {/* Article 9 */}
         <section className="flex flex-col gap-3">
-          <h2 className="text-xl font-semibold">Article 9 — Évaluations</h2>
+          <h2 className="text-xl font-semibold">Article 9 : Évaluations</h2>
 
           <h3 className="font-semibold">9.1 Soumission simultanée</h3>
           <p>
@@ -389,7 +389,7 @@ export default function CGUPage() {
         {/* Article 10 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 10 — Litiges entre utilisateurs
+            Article 10 : Litiges entre utilisateurs
           </h2>
 
           <h3 className="font-semibold">10.1 Absence de levier financier</h3>
@@ -442,7 +442,7 @@ export default function CGUPage() {
         {/* Article 11 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 11 — Responsabilités de Sendbox
+            Article 11 : Responsabilités de Sendbox
           </h2>
           <p>Sendbox ne saurait être tenu responsable :</p>
           <ul className="ml-5 flex list-disc flex-col gap-1 text-muted-foreground">
@@ -476,7 +476,7 @@ export default function CGUPage() {
         {/* Article 12 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 12 — Suspension et exclusion
+            Article 12 : Suspension et exclusion
           </h2>
           <p>
             Sendbox se réserve le droit de suspendre ou de bannir définitivement
@@ -513,12 +513,12 @@ export default function CGUPage() {
         {/* Article 13 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 13 — Données personnelles
+            Article 13 : Données personnelles
           </h2>
 
           <h3 className="font-semibold">13.1 Responsable de traitement</h3>
           <p>
-            AMIEL ADJOVI CONSULTING, 92 rue Jean Marin Naudin, 92220 Bagneux —{' '}
+            AMIEL ADJOVI CONSULTING, 92 rue Jean Marin Naudin, 92220 Bagneux,{' '}
             <a
               href="mailto:legal@gosendbox.com"
               className="underline underline-offset-4"
@@ -612,7 +612,7 @@ export default function CGUPage() {
         {/* Article 14 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 14 — Propriété intellectuelle
+            Article 14 : Propriété intellectuelle
           </h2>
           <p>
             La marque Sendbox, le logo, le code source et tous les contenus
@@ -630,7 +630,7 @@ export default function CGUPage() {
         {/* Article 15 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 15 — Modification des CGU
+            Article 15 : Modification des CGU
           </h2>
           <p>
             Sendbox se réserve le droit de modifier les présentes CGU à tout
@@ -644,7 +644,7 @@ export default function CGUPage() {
         {/* Article 16 */}
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">
-            Article 16 — Droit applicable et juridiction
+            Article 16 : Droit applicable et juridiction
           </h2>
           <p>Les présentes CGU sont soumises au droit français.</p>
           <p>
@@ -658,7 +658,7 @@ export default function CGUPage() {
             consommation, tout utilisateur résidant dans l&apos;Union européenne
             peut recourir gratuitement au médiateur de la consommation :{' '}
             <strong>
-              CM2C — Centre de Médiation de la Consommation de Conciliateurs de
+              CM2C, Centre de Médiation de la Consommation de Conciliateurs de
               Justice
             </strong>{' '}
             (
