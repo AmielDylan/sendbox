@@ -197,14 +197,44 @@ export default async function AdminKYCDetailPage({
               </Card>
             )}
 
-          {/* Formulaire de résolution */}
-          <KYCResolveForm
-            userId={id}
-            profileName={profileName}
-            frontSignedUrl={signedUrls.front}
-            backSignedUrl={signedUrls.back}
-            documentType={(review as any)?.doc_type ?? null}
-          />
+          {/* Formulaire de résolution ou statut final */}
+          {profile.verification_status === 'pending' ? (
+            <KYCResolveForm
+              userId={id}
+              profileName={profileName}
+              frontSignedUrl={signedUrls.front}
+              backSignedUrl={signedUrls.back}
+              documentType={(review as any)?.doc_type ?? null}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Décision admin</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {profile.verification_status === 'verified' ? (
+                  <p className="text-sm text-green-700 font-medium">
+                    Identité vérifiée — aucune action supplémentaire.
+                  </p>
+                ) : profile.verification_status === 'rejected' ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-destructive font-medium">
+                      Dossier rejeté.
+                    </p>
+                    {profile.kyc_rejection_reason && (
+                      <p className="text-xs text-muted-foreground">
+                        Motif : {profile.kyc_rejection_reason as string}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Aucun dossier en attente.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
