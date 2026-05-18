@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
-import { processKYCMRZ } from '@/lib/core/kyc/mrz'
 import { sendEmail } from '@/lib/shared/services/email/client'
 import { processKYCFile } from '@/lib/core/kyc/file-pipeline'
 
@@ -21,6 +20,18 @@ const PIPELINE_ERRORS: Record<string, { message: string; status: number }> = {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handleKYCSubmit(req)
+  } catch (err: any) {
+    console.error('[kyc/submit] Unhandled error:', err?.message ?? err)
+    return NextResponse.json(
+      { error: `Erreur serveur inattendue : ${err?.message ?? 'unknown'}` },
+      { status: 500 }
+    )
+  }
+}
+
+async function handleKYCSubmit(req: NextRequest) {
   // 1. Auth
   const supabase = await createClient()
   const {
@@ -229,17 +240,6 @@ export async function POST(req: NextRequest) {
       })
     }
   })().catch(console.error)
-
-  // 8. MRZ ciblé selon le type de document
-  // CNI : MRZ sur le verso ; Passeport : MRZ sur le recto, fallback verso si fourni
-  const mrzPrimaryPath =
-    documentType === 'cni' && backUploaded ? backPath : frontPath
-  const mrzFallbackPath =
-    documentType === 'passport' && backUploaded ? backPath : undefined
-
-  processKYCMRZ(user.id, mrzPrimaryPath, mrzFallbackPath).catch(err =>
-    console.error('[kyc/submit] MRZ processing failed:', err)
-  )
 
   return NextResponse.json({ ok: true })
 }

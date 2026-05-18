@@ -105,6 +105,52 @@ const FIELD_LABELS = {
   },
 } as const
 
+async function compressImage(file: File): Promise<File> {
+  const isHeic =
+    file.type === 'image/heic' ||
+    file.type === 'image/heif' ||
+    file.name.toLowerCase().endsWith('.heic') ||
+    file.name.toLowerCase().endsWith('.heif')
+  // HEIC cannot be re-encoded via Canvas; small files don't need compression
+  if (isHeic || file.size <= 1 * 1024 * 1024) return file
+
+  return new Promise(resolve => {
+    const img = new window.Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const MAX_DIM = 1920
+      let { width: w, height: h } = img
+      if (w > MAX_DIM || h > MAX_DIM) {
+        const r = Math.min(MAX_DIM / w, MAX_DIM / h)
+        w = Math.round(w * r)
+        h = Math.round(h * r)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+      canvas.toBlob(
+        blob =>
+          resolve(
+            blob
+              ? new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                  type: 'image/jpeg',
+                })
+              : file
+          ),
+        'image/jpeg',
+        0.82
+      )
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      resolve(file)
+    }
+    img.src = url
+  })
+}
+
 export default function KYCPage() {
   const router = useRouter()
   const [state, setState] = useState<PageState>({ phase: 'loading' })
@@ -180,10 +226,16 @@ export default function KYCPage() {
     if (!frontFile || !selfieFile || !consent) return
     setSubmitting(true)
     try {
+      const [cFront, cSelfie] = await Promise.all([
+        compressImage(frontFile),
+        compressImage(selfieFile),
+      ])
+      const cBack = backFile ? await compressImage(backFile) : null
+
       const body = new FormData()
-      body.append('frontFile', frontFile)
-      if (backFile) body.append('backFile', backFile)
-      body.append('selfieFile', selfieFile)
+      body.append('frontFile', cFront)
+      if (cBack) body.append('backFile', cBack)
+      body.append('selfieFile', cSelfie)
       body.append('consent', 'true')
       if (docType) body.append('documentType', docType)
       if (country) body.append('country', country)
@@ -192,8 +244,14 @@ export default function KYCPage() {
 
       const res = await fetch('/api/kyc/submit', { method: 'POST', body })
       if (!res.ok) {
-        const payload = await res.json().catch(() => null)
-        throw new Error(payload?.error || 'Erreur lors de la soumission')
+        const raw = await res.text().catch(() => '')
+        let message = `Erreur ${res.status}`
+        try {
+          const payload = JSON.parse(raw)
+          if (payload?.error) message = `[${res.status}] ${payload.error}`
+        } catch {}
+        console.error('[kyc/submit]', res.status, raw.slice(0, 500))
+        throw new Error(message)
       }
       setState({ phase: 'success' })
     } catch (err) {
@@ -379,15 +437,13 @@ export default function KYCPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* Recto / Page principale */}
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2">
                   <p className="text-sm font-medium">
                     {fieldLabels ? fieldLabels.front.title : 'Recto'}
                   </p>
-                  {fieldLabels && (
-                    <p className="text-xs text-muted-foreground">
-                      {fieldLabels.front.description}
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground min-h-[2.5rem]">
+                    {fieldLabels?.front.description ?? ''}
+                  </p>
                   {frontPreview ? (
                     <div className="relative aspect-video overflow-hidden rounded-lg border">
                       <Image
@@ -424,7 +480,7 @@ export default function KYCPage() {
                 </div>
 
                 {/* Verso / Page suivante */}
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium">
                       {fieldLabels ? fieldLabels.back.title : 'Verso'}
@@ -435,11 +491,9 @@ export default function KYCPage() {
                       </Badge>
                     )}
                   </div>
-                  {fieldLabels && (
-                    <p className="text-xs text-muted-foreground">
-                      {fieldLabels.back.description}
-                    </p>
-                  )}
+                  <p className="text-xs text-muted-foreground min-h-[2.5rem]">
+                    {fieldLabels?.back.description ?? ''}
+                  </p>
                   {backPreview ? (
                     <div className="relative aspect-video overflow-hidden rounded-lg border">
                       <Image

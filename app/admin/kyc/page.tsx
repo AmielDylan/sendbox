@@ -23,8 +23,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   IconAlertCircle,
-  IconAlertTriangle,
-  IconCheck,
   IconClock,
   IconShieldCheck,
 } from '@tabler/icons-react'
@@ -45,27 +43,6 @@ export default async function AdminKYCPage() {
     .order('kyc_submitted_at', { ascending: true })
 
   const allProfiles = profiles ?? []
-
-  // Charger les kyc_reviews pour savoir si MRZ a été traité
-  const userIds = allProfiles.map(p => p.id)
-  const reviewMap = new Map<
-    string,
-    { mrz_valid: boolean | null; status: string }
-  >()
-
-  if (userIds.length > 0) {
-    const { data: reviews } = await admin
-      .from('kyc_reviews')
-      .select('user_id, mrz_valid, status')
-      .in('user_id', userIds)
-      .order('created_at', { ascending: false })
-
-    for (const r of reviews ?? []) {
-      if (!reviewMap.has(r.user_id)) {
-        reviewMap.set(r.user_id, { mrz_valid: r.mrz_valid, status: r.status })
-      }
-    }
-  }
 
   const pendingCount = allProfiles.filter(
     u => u.verification_status === 'pending'
@@ -131,7 +108,6 @@ export default async function AdminKYCPage() {
           {/* Mobile — cards */}
           <div className="grid gap-3 md:hidden">
             {allProfiles.map(user => {
-              const review = reviewMap.get(user.id)
               const kycStatus = user.verification_status
               return (
                 <div
@@ -151,11 +127,14 @@ export default async function AdminKYCPage() {
                       variant={
                         kycStatus === 'verified'
                           ? 'default'
-                          : kycStatus === 'pending'
-                            ? 'secondary'
-                            : kycStatus === 'rejected'
-                              ? 'destructive'
-                              : 'outline'
+                          : kycStatus === 'rejected'
+                            ? 'destructive'
+                            : 'outline'
+                      }
+                      className={
+                        kycStatus === 'pending'
+                          ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-600'
+                          : undefined
                       }
                     >
                       {kycStatus === 'verified'
@@ -167,17 +146,7 @@ export default async function AdminKYCPage() {
                             : 'Non soumis'}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>
-                      MRZ :{' '}
-                      {!review
-                        ? '-'
-                        : review.mrz_valid === null
-                          ? 'En attente'
-                          : review.mrz_valid
-                            ? 'OK'
-                            : 'Échec'}
-                    </span>
+                  <div className="flex items-center justify-end text-xs text-muted-foreground">
                     <span>
                       {user.kyc_submitted_at
                         ? format(new Date(user.kyc_submitted_at), 'PP', {
@@ -216,14 +185,12 @@ export default async function AdminKYCPage() {
                   <TableHead>Utilisateur</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Statut KYC</TableHead>
-                  <TableHead>MRZ</TableHead>
                   <TableHead>Soumis le</TableHead>
                   <TableHead>Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {allProfiles.map(user => {
-                  const review = reviewMap.get(user.id)
                   return (
                     <TableRow key={user.id}>
                       <TableCell>
@@ -235,11 +202,14 @@ export default async function AdminKYCPage() {
                           variant={
                             user.verification_status === 'verified'
                               ? 'default'
-                              : user.verification_status === 'pending'
-                                ? 'secondary'
-                                : user.verification_status === 'rejected'
-                                  ? 'destructive'
-                                  : 'outline'
+                              : user.verification_status === 'rejected'
+                                ? 'destructive'
+                                : 'outline'
+                          }
+                          className={
+                            user.verification_status === 'pending'
+                              ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-600'
+                              : undefined
                           }
                         >
                           {user.verification_status === 'verified' && (
@@ -259,19 +229,6 @@ export default async function AdminKYCPage() {
                                 ? 'Rejeté'
                                 : 'Non soumis'}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {!review ? (
-                          <span className="text-muted-foreground text-xs">
-                            -
-                          </span>
-                        ) : review.mrz_valid === null ? (
-                          <IconAlertTriangle className="h-4 w-4 text-amber-500" />
-                        ) : review.mrz_valid ? (
-                          <IconCheck className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <IconAlertCircle className="h-4 w-4 text-destructive" />
-                        )}
                       </TableCell>
                       <TableCell>
                         {user.kyc_submitted_at

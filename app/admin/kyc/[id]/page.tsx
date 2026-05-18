@@ -1,16 +1,13 @@
 import { redirect } from 'next/navigation'
-import Image from 'next/image'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { isAdmin } from '@/lib/core/admin/actions'
 import { createAdminClient } from '@/lib/shared/db/admin'
-import { processKYCMRZ } from '@/lib/core/kyc/mrz'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { IconAlertTriangle, IconCheck, IconX } from '@tabler/icons-react'
 import { KYCResolveForm } from './kyc-resolve-form'
+import { KYCProtectedImage } from './kyc-protected-image'
 import { ApproveCountryButton } from './approve-country-button'
 
 export const dynamic = 'force-dynamic'
@@ -42,39 +39,7 @@ export default async function AdminKYCDetailPage({
     .order('created_at', { ascending: false })
     .limit(1)
 
-  let review = reviews?.[0] ?? null
-
-  // Déclencher le MRZ si pas encore traité et qu'un document existe
-  if (
-    profile.kyc_document_front &&
-    review &&
-    review.mrz_valid === null &&
-    review.status === 'PENDING'
-  ) {
-    try {
-      // CNI : MRZ sur le verso ; Passeport : MRZ sur le recto, fallback verso
-      const docType = (review as any).doc_type as string | null
-      const mrzPrimaryPath =
-        docType === 'cni' && profile.kyc_document_back
-          ? (profile.kyc_document_back as string)
-          : (profile.kyc_document_front as string)
-      const mrzFallbackPath =
-        docType === 'passport' && profile.kyc_document_back
-          ? (profile.kyc_document_back as string)
-          : undefined
-
-      await processKYCMRZ(id, mrzPrimaryPath, mrzFallbackPath)
-      const { data: refreshed } = await admin
-        .from('kyc_reviews')
-        .select('*')
-        .eq('user_id', id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-      review = refreshed?.[0] ?? review
-    } catch (err) {
-      console.error('[admin/kyc/[id]] MRZ processing failed:', err)
-    }
-  }
+  const review = reviews?.[0] ?? null
 
   // Générer les signed URLs (10 min)
   const signedUrls: {
@@ -102,9 +67,10 @@ export default async function AdminKYCDetailPage({
     signedUrls.selfie = data?.signedUrl ?? null
   }
 
-  const displayName =
-    [profile.firstname, profile.lastname].filter(Boolean).join(' ') ||
-    'Utilisateur'
+  const profileName =
+    [profile.lastname, profile.firstname].filter(Boolean).join(' ') || null
+
+  const displayName = profileName ?? 'Utilisateur'
 
   return (
     <div className="space-y-6">
@@ -136,15 +102,7 @@ export default async function AdminKYCDetailPage({
               </CardHeader>
               <CardContent>
                 {signedUrls.front ? (
-                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
-                    <Image
-                      src={signedUrls.front}
-                      alt="Recto document"
-                      fill
-                      className="object-contain"
-                      unoptimized
-                    />
-                  </div>
+                  <KYCProtectedImage src={signedUrls.front} alt="Recto document" />
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     Aucun document disponible
@@ -161,15 +119,7 @@ export default async function AdminKYCDetailPage({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
-                    <Image
-                      src={signedUrls.back}
-                      alt="Verso document"
-                      fill
-                      className="object-contain"
-                      unoptimized
-                    />
-                  </div>
+                  <KYCProtectedImage src={signedUrls.back} alt="Verso document" />
                 </CardContent>
               </Card>
             )}
@@ -182,15 +132,7 @@ export default async function AdminKYCDetailPage({
             </CardHeader>
             <CardContent>
               {signedUrls.selfie ? (
-                <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
-                  <Image
-                    src={signedUrls.selfie}
-                    alt="Selfie"
-                    fill
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
+                <KYCProtectedImage src={signedUrls.selfie} alt="Selfie" />
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Aucun selfie disponible
@@ -209,90 +151,8 @@ export default async function AdminKYCDetailPage({
           )}
         </div>
 
-        {/* Colonne droite — MRZ + Actions */}
+        {/* Colonne droite — Infos + Actions */}
         <div className="space-y-4">
-          {/* Résultats MRZ */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Résultats MRZ</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!review ? (
-                <p className="text-sm text-muted-foreground">
-                  Aucun résultat MRZ disponible
-                </p>
-              ) : review.mrz_valid === null ? (
-                <div className="flex items-center gap-2 text-amber-600 text-sm">
-                  <IconAlertTriangle className="h-4 w-4" />
-                  Extraction en attente de traitement
-                </div>
-              ) : !review.mrz_valid ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-destructive text-sm">
-                    <IconAlertTriangle className="h-4 w-4" />
-                    Extraction automatique échouée, vérification manuelle
-                    requise
-                  </div>
-                  {review.ocr_confidence !== null && (
-                    <p className="text-xs text-muted-foreground">
-                      Confiance OCR :{' '}
-                      {Math.round((review.ocr_confidence ?? 0) * 100)}%
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <MRZRow label="MRZ détectée" value={<StatusIcon ok />} />
-                  <MRZRow label="Checksums" value={<StatusIcon ok />} />
-                  {review.mrz_name && (
-                    <MRZRow label="Nom extrait" value={review.mrz_name} />
-                  )}
-                  {review.mrz_nationality && (
-                    <MRZRow
-                      label="Nationalité"
-                      value={review.mrz_nationality}
-                    />
-                  )}
-                  {review.mrz_birth_date && (
-                    <MRZRow
-                      label="Date naissance"
-                      value={formatMRZDate(review.mrz_birth_date)}
-                    />
-                  )}
-                  {review.mrz_expiry && (
-                    <MRZRow
-                      label="Expiration"
-                      value={
-                        <span
-                          className={
-                            review.mrz_expired ? 'text-destructive' : ''
-                          }
-                        >
-                          {formatMRZDate(review.mrz_expiry)}{' '}
-                          {review.mrz_expired ? (
-                            <Badge variant="destructive" className="text-xs">
-                              Expiré
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="text-xs">
-                              Valide
-                            </Badge>
-                          )}
-                        </span>
-                      }
-                    />
-                  )}
-                  {review.ocr_confidence !== null && (
-                    <MRZRow
-                      label="Confiance OCR"
-                      value={`${Math.round((review.ocr_confidence ?? 0) * 100)}%`}
-                    />
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Infos document soumis */}
           {review &&
             ((review as any).doc_type || (review as any).doc_country) && (
@@ -340,8 +200,10 @@ export default async function AdminKYCDetailPage({
           {/* Formulaire de résolution */}
           <KYCResolveForm
             userId={id}
-            suggestedName={review?.mrz_name ?? null}
-            mrzFailed={!review?.mrz_valid}
+            profileName={profileName}
+            frontSignedUrl={signedUrls.front}
+            backSignedUrl={signedUrls.back}
+            documentType={(review as any)?.doc_type ?? null}
           />
         </div>
       </div>
@@ -358,18 +220,3 @@ function MRZRow({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-function StatusIcon({ ok }: { ok: boolean }) {
-  return ok ? (
-    <IconCheck className="h-4 w-4 text-green-600" />
-  ) : (
-    <IconX className="h-4 w-4 text-destructive" />
-  )
-}
-
-function formatMRZDate(raw: string): string {
-  if (raw.length !== 6) return raw
-  const year = parseInt(raw.slice(0, 2), 10)
-  const month = raw.slice(2, 4)
-  const fullYear = year >= 0 && year <= 30 ? 2000 + year : 1900 + year
-  return `${month}/${fullYear}`
-}

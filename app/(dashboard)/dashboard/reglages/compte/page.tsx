@@ -5,6 +5,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '@/hooks/use-auth'
+import { createClient } from '@/lib/shared/db/client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -47,11 +49,16 @@ import {
   IconMail,
   IconTrash,
   IconAlertTriangle,
+  IconBrandGoogle,
+  IconCheck,
 } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 
 export default function AccountPage() {
   const router = useRouter()
+  const { user } = useAuth()
+  const isGoogleLinked =
+    user?.identities?.some(i => i.provider === 'google') ?? false
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [isChangingEmail, setIsChangingEmail] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -122,6 +129,17 @@ export default function AccountPage() {
     } finally {
       setIsChangingEmail(false)
     }
+  }
+
+  async function handleLinkGoogle() {
+    const supabase = createClient()
+    const { error } = await supabase.auth.linkIdentity({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?oauth=true`,
+      },
+    })
+    if (error) toast.error(error.message)
   }
 
   const onDeleteSubmit = async (data: DeleteAccountInput) => {
@@ -373,6 +391,32 @@ export default function AccountPage() {
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Connexion Google */}
+      <Card className="border-border/70 bg-background">
+        <CardHeader className="space-y-1.5">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <IconBrandGoogle className="h-4 w-4 text-muted-foreground" />
+            Connexion Google
+          </CardTitle>
+          <CardDescription className="text-sm">
+            Associez votre compte Google pour vous connecter sans mot de passe.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isGoogleLinked ? (
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <IconCheck className="h-4 w-4 text-green-600" />
+              Compte Google associé
+            </p>
+          ) : (
+            <Button variant="outline" onClick={handleLinkGoogle}>
+              <IconBrandGoogle className="mr-2 h-4 w-4" />
+              Associer mon compte Google
+            </Button>
+          )}
         </CardContent>
       </Card>
 

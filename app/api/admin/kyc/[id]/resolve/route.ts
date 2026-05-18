@@ -42,7 +42,7 @@ export async function POST(
   // 2. Charger le profil + dernier review en attente
   const { data: profile } = await admin
     .from('profiles')
-    .select('email, firstname, kyc_document_front, kyc_document_back')
+    .select('email, firstname, kyc_document_front, kyc_document_back, kyc_selfie')
     .eq('id', userId)
     .single()
 
@@ -66,7 +66,7 @@ export async function POST(
 
   if (outcome === 'VERIFIED') {
     // 3a. Valider — mettre à jour profile
-    const resolvedName = verifiedName || review?.mrz_name || null
+    const resolvedName = verifiedName || null
     const { error: profileErr } = await admin
       .from('profiles')
       .update({
@@ -84,13 +84,18 @@ export async function POST(
       )
     }
 
-    // Supprimer les fichiers du bucket
+    // Supprimer les fichiers du bucket + nullifier les paths
     const toRemove = [
       profile.kyc_document_front,
       profile.kyc_document_back,
+      (profile as any).kyc_selfie,
     ].filter(Boolean) as string[]
     if (toRemove.length) {
       await admin.storage.from('kyc-documents').remove(toRemove)
+      await admin
+        .from('profiles')
+        .update({ kyc_document_front: null, kyc_document_back: null, kyc_selfie: null })
+        .eq('id', userId)
     }
 
     // Mettre à jour le kyc_review
@@ -147,13 +152,18 @@ export async function POST(
       )
     }
 
-    // Supprimer les fichiers immédiatement
+    // Supprimer les fichiers immédiatement + nullifier les paths
     const toRemove = [
       profile.kyc_document_front,
       profile.kyc_document_back,
+      (profile as any).kyc_selfie,
     ].filter(Boolean) as string[]
     if (toRemove.length) {
       await admin.storage.from('kyc-documents').remove(toRemove)
+      await admin
+        .from('profiles')
+        .update({ kyc_document_front: null, kyc_document_back: null, kyc_selfie: null })
+        .eq('id', userId)
     }
 
     if (review) {
