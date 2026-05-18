@@ -86,6 +86,18 @@ export async function POST(
       )
     }
 
+    // Supprimer les notifications "Action requise" créées au setup
+    await admin
+      .from('notifications')
+      .delete()
+      .eq('user_id', userId)
+      .eq('type', 'system_alert')
+      .in('title', [
+        'Action requise : identité et paiements',
+        "Action requise : vérification d'identité",
+        'Action requise : activer vos paiements',
+      ])
+
     // Supprimer les fichiers du bucket + nullifier les paths
     const toRemove = [
       profile.kyc_document_front,
