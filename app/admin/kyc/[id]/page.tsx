@@ -6,7 +6,6 @@ import { createAdminClient } from '@/lib/shared/db/admin'
 import { PageHeader } from '@/components/ui/page-header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { IconAlertTriangle } from '@tabler/icons-react'
 import { KYCResolveForm } from './kyc-resolve-form'
 import { KYCProtectedImage } from './kyc-protected-image'
 import { ApproveCountryButton } from './approve-country-button'
@@ -152,31 +151,8 @@ export default async function AdminKYCDetailPage({
           )}
         </div>
 
-        {/* Colonne droite — OCR + Actions */}
+        {/* Colonne droite — Infos + Actions */}
         <div className="space-y-4">
-          {/* Texte OCR extrait */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Texte OCR extrait</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!review ? (
-                <p className="text-sm text-muted-foreground">
-                  Aucun résultat disponible
-                </p>
-              ) : !review.mrz_raw ? (
-                <div className="flex items-center gap-2 text-amber-600 text-sm">
-                  <IconAlertTriangle className="h-4 w-4" />
-                  Extraction en attente
-                </div>
-              ) : (
-                <pre className="text-xs text-muted-foreground whitespace-pre-wrap break-all bg-muted/40 rounded p-3 max-h-48 overflow-y-auto">
-                  {review.mrz_raw}
-                </pre>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Infos document soumis */}
           {review &&
             ((review as any).doc_type || (review as any).doc_country) && (
@@ -225,7 +201,6 @@ export default async function AdminKYCDetailPage({
           <KYCResolveForm
             userId={id}
             profileName={profileName}
-            hasOCR={!!review?.mrz_raw}
           />
         </div>
       </div>

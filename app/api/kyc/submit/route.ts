@@ -1,7 +1,6 @@
-import { NextRequest, NextResponse, after } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
-import { runDocumentOCR } from '@/lib/core/kyc/ocr'
 import { sendEmail } from '@/lib/shared/services/email/client'
 import { processKYCFile } from '@/lib/core/kyc/file-pipeline'
 
@@ -241,13 +240,6 @@ async function handleKYCSubmit(req: NextRequest) {
       })
     }
   })().catch(console.error)
-
-  // 8. OCR du document recto (fire-and-forget via after)
-  after(() =>
-    runDocumentOCR(user.id, frontPath).catch(err =>
-      console.error('[kyc/submit] OCR failed:', err)
-    )
-  )
 
   return NextResponse.json({ ok: true })
 }
