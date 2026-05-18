@@ -71,6 +71,7 @@ export async function POST(
       .from('profiles')
       .update({
         verification_status: 'verified',
+        kyc_status: 'approved',
         verified_at: now,
         verified_name: resolvedName,
       })
@@ -140,6 +141,7 @@ export async function POST(
       .from('profiles')
       .update({
         verification_status: 'rejected',
+        kyc_status: 'rejected',
         kyc_rejection_reason: rejectionReason,
       })
       .eq('id', userId)
@@ -197,5 +199,6 @@ export async function POST(
   }
 
   revalidatePath('/admin/kyc')
+  revalidatePath('/dashboard')
   return NextResponse.json({ ok: true })
 }

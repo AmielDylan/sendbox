@@ -106,7 +106,7 @@ const sumCounts = (counts: StatusCounts) =>
 const dashboardCardTitleClassName = 'text-[13px] font-medium tracking-tight'
 
 export default function DashboardPage() {
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
   const [kycStatus, setKycStatus] = useState<KYCStatus | null>(null)
   const [kycRejectionReason, setKycRejectionReason] = useState<string | null>(
     null
@@ -143,16 +143,23 @@ export default function DashboardPage() {
       }
     }
 
-    // Charger le statut KYC
+    // Charger le statut KYC depuis la base (pas le store Zustand qui peut être périmé)
     const loadKycStatus = async () => {
-      if (profile) {
-        setKycStatus((profile as any).kyc_status as KYCStatus)
-        setKycRejectionReason((profile as any).kyc_rejection_reason || null)
+      if (!user?.id) return
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('profiles')
+        .select('kyc_status, kyc_rejection_reason')
+        .eq('id', user.id)
+        .single()
+      if (data) {
+        setKycStatus(data.kyc_status as KYCStatus)
+        setKycRejectionReason((data as any).kyc_rejection_reason || null)
       }
     }
 
     loadKycStatus()
-  }, [user?.id, profile])
+  }, [user?.id])
 
   useEffect(() => {
     const loadDashboardData = async () => {

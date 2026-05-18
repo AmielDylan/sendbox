@@ -124,7 +124,6 @@ export function KYCResolveForm({
         const payload = await res.json().catch(() => null)
         throw new Error(payload?.error || 'Erreur lors de la résolution')
       }
-      router.push('/admin/kyc')
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inattendue')
