@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
 export const metadata = {
-  title: 'Changelog — Sendbox',
+  title: 'Changelog | Sendbox',
   description:
     'Historique des mises à jour et nouvelles fonctionnalités de Sendbox.',
 }
@@ -22,7 +22,7 @@ const entries: ChangelogEntry[] = [
     label: 'Trust system',
     type: 'major',
     highlights: [
-      "Notes en aveugle — les avis ne sont révélés qu'une fois les deux parties ayant soumis le leur, éliminant toute influence mutuelle.",
+      "Notes en aveugle : les avis ne sont révélés qu'une fois les deux parties ayant soumis le leur, éliminant toute influence mutuelle.",
       "Lifecycle horodaté des mises en relation : chaque transition d'état (confirmation, remise, livraison, évaluation) porte un timestamp serveur immuable.",
       "Mécanisme anti-collusion : impossibilité de consulter l'avis adverse avant de soumettre le sien.",
       'Score de confiance public recalculé à chaque évaluation et visible sur tous les profils.',
@@ -36,7 +36,7 @@ const entries: ChangelogEntry[] = [
     highlights: [
       'Remplacement des champs texte libres (ville de départ / arrivée) par des sélecteurs contraints basés sur la base LOCATIONS.',
       "Sélecteur de pays avec drapeau, suivi d'un sélecteur de ville filtré dynamiquement par pays.",
-      'Cohérence garantie des données pour la recherche par corridor — fin des variantes orthographiques.',
+      'Cohérence garantie des données pour la recherche par corridor, fin des variantes orthographiques.',
       'Couverture initiale : France (Paris, Lyon, Bordeaux, Marseille…) ↔ Bénin (Cotonou, Porto-Novo, Parakou…).',
     ],
   },
@@ -74,7 +74,7 @@ const entries: ChangelogEntry[] = [
       "Profils utilisateurs avec vérification d'identité manuelle (KYC v1).",
       'Système de mise en relation : recherche de voyageurs par corridor et date, demande et acceptation.',
       'Frais de mise en relation de 1,50 € TTC prélevés à la confirmation mutuelle.',
-      'Lancement du corridor France — Bénin.',
+      'Lancement du corridor France-Bénin.',
     ],
   },
 ]

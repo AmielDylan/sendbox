@@ -229,11 +229,11 @@ async function handleKYCSubmit(req: NextRequest) {
             : 'Non précisé'
       await sendEmail({
         to: adminEmail,
-        subject: `[KYC] Nouveau dossier à vérifier — ${displayName}`,
+        subject: `[KYC] Nouveau dossier à vérifier : ${displayName}`,
         template: 'notification',
         data: {
           title: 'Nouveau dossier KYC à vérifier',
-          content: `Un nouveau dossier KYC vient d'être soumis et attend votre validation.\n\nUtilisateur : ${displayName}\nEmail : ${userProfile?.email || '—'}\nType de pièce : ${docTypeLabel}\nPays d'émission : ${docCountry === 'other' ? `Autre — ${customCtry || '?'}` : docCountry || 'Non précisé'}`,
+          content: `Un nouveau dossier KYC vient d'être soumis et attend votre validation.\n\nUtilisateur : ${displayName}\nEmail : ${userProfile?.email || '-'}\nType de pièce : ${docTypeLabel}\nPays d'émission : ${docCountry === 'other' ? `Autre : ${customCtry || '?'}` : docCountry || 'Non précisé'}`,
           ctaText: 'Examiner le dossier',
           ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin/kyc/${user.id}`,
         },
