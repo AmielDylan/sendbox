@@ -106,7 +106,7 @@ const sumCounts = (counts: StatusCounts) =>
 const dashboardCardTitleClassName = 'text-[13px] font-medium tracking-tight'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [kycStatus, setKycStatus] = useState<KYCStatus | null>(null)
   const [kycRejectionReason, setKycRejectionReason] = useState<string | null>(
     null
@@ -143,23 +143,15 @@ export default function DashboardPage() {
       }
     }
 
-    // Charger le statut KYC depuis la base (pas le store Zustand qui peut être périmé)
-    const loadKycStatus = async () => {
-      if (!user?.id) return
-      const supabase = createClient()
-      const { data } = await supabase
-        .from('profiles')
-        .select('kyc_status, kyc_rejection_reason')
-        .eq('id', user.id)
-        .single()
-      if (data) {
-        setKycStatus(data.kyc_status as KYCStatus)
-        setKycRejectionReason((data as any).kyc_rejection_reason || null)
-      }
-    }
+  }, [])
 
-    loadKycStatus()
-  }, [user?.id])
+  // Synchronise kycStatus depuis le store Zustand — OptimizedAuthProvider le met à jour via realtime
+  useEffect(() => {
+    if (profile) {
+      setKycStatus(((profile as any).kyc_status as KYCStatus) ?? null)
+      setKycRejectionReason((profile as any).kyc_rejection_reason || null)
+    }
+  }, [profile])
 
   useEffect(() => {
     const loadDashboardData = async () => {
