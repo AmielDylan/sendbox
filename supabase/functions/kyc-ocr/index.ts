@@ -3,9 +3,18 @@ import { decode } from 'https://deno.land/x/imagescript@1.2.15/mod.ts'
 import { createOCREngine } from 'npm:tesseract-wasm'
 import { parse } from 'npm:mrz'
 
-const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-
 const JSON_HEADERS = { 'content-type': 'application/json' }
+
+function isServiceRole(authHeader: string | null): boolean {
+  if (!authHeader?.startsWith('Bearer ')) return false
+  const token = authHeader.slice(7)
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.role === 'service_role'
+  } catch {
+    return false
+  }
+}
 
 // Module-level cache — persists across warm invocations
 let wasmCache: Uint8Array | null = null
@@ -14,7 +23,7 @@ let modelCache: Uint8Array | null = null
 async function loadAssets(): Promise<{ wasm: Uint8Array; model: Uint8Array }> {
   if (!wasmCache) {
     const r = await fetch(
-      'https://cdn.jsdelivr.net/npm/tesseract-wasm/dist/tesseract-core-fast.wasm'
+      'https://unpkg.com/tesseract-wasm@0.11.0/dist/tesseract-core.wasm'
     )
     wasmCache = new Uint8Array(await r.arrayBuffer())
   }
@@ -31,13 +40,12 @@ function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS })
 }
 
-serve(async req => {
+serve(async (req: Request) => {
   if (req.method !== 'POST') {
     return new Response('Method Not Allowed', { status: 405 })
   }
 
-  const token = req.headers.get('Authorization')?.replace('Bearer ', '')
-  if (!token || !SERVICE_ROLE_KEY || token !== SERVICE_ROLE_KEY) {
+  if (!isServiceRole(req.headers.get('Authorization'))) {
     return jsonResponse({ error: 'Unauthorized' }, 401)
   }
 
@@ -52,39 +60,39 @@ serve(async req => {
     return jsonResponse({ error: 'Missing signedUrl or documentType' }, 400)
   }
 
-  // 1. Fetch image
-  const imgResp = await fetch(signedUrl)
-  if (!imgResp.ok) return jsonResponse({ error: 'Failed to fetch image' }, 502)
-  const imgBuffer = new Uint8Array(await imgResp.arrayBuffer())
+  let rawText: string
+  try {
+    // 1. Fetch image
+    const imgResp = await fetch(signedUrl)
+    if (!imgResp.ok) return jsonResponse({ error: 'Failed to fetch image', status: imgResp.status }, 502)
+    const imgBuffer = new Uint8Array(await imgResp.arrayBuffer())
 
-  // 2. Decode + crop bottom 30%
-  const img = await decode(imgBuffer)
-  const cropY = Math.floor(img.height * 0.7)
-  const cropH = img.height - cropY
-  // @ts-ignore — imagescript Frame has crop()
-  const cropped = img.crop(0, cropY, img.width, cropH)
+    // 2. Decode + crop bottom 30%
+    const img = await decode(imgBuffer)
+    const cropY = Math.floor(img.height * 0.55)
+    const cropH = img.height - cropY
+    // @ts-ignore — imagescript Frame has crop()
+    const cropped = img.crop(0, cropY, img.width, cropH)
 
-  // 3. Convert imagescript RGBA pixels (32-bit ints) to Uint8ClampedArray
-  const rgba = new Uint8ClampedArray(cropped.width * cropped.height * 4)
-  let i = 0
-  for (const px of cropped) {
-    rgba[i++] = (px >> 24) & 0xff
-    rgba[i++] = (px >> 16) & 0xff
-    rgba[i++] = (px >> 8) & 0xff
-    rgba[i++] = px & 0xff
+    // 3. imagescript.bitmap is already a Uint8ClampedArray in RGBA order
+    // @ts-ignore — bitmap is a public property on imagescript Image
+    const imageData = { data: cropped.bitmap as Uint8ClampedArray, width: cropped.width, height: cropped.height }
+
+    // 4. OCR
+    const { wasm, model } = await loadAssets()
+    const engine = await createOCREngine({ wasmBinary: wasm })
+    await engine.loadModel(model)
+    engine.loadImage(imageData)
+    engine.setVariable('tessedit_char_whitelist', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<')
+    engine.setVariable('tessedit_pageseg_mode', '6')
+    rawText = engine.getText()
+    engine.clearImage()
+    engine.destroy()
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[kyc-ocr] processing error:', msg)
+    return jsonResponse({ error: 'Processing failed', detail: msg }, 500)
   }
-  const imageData = { data: rgba, width: cropped.width, height: cropped.height }
-
-  // 4. OCR
-  const { wasm, model } = await loadAssets()
-  const engine = await createOCREngine({ wasmBinary: wasm })
-  await engine.loadModel(model)
-  engine.loadImage(imageData)
-  engine.setVariable('tessedit_char_whitelist', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<')
-  engine.setVariable('tessedit_pageseg_mode', '6')
-  const rawText: string = engine.getText()
-  engine.clearImage()
-  engine.destroy()
 
   // 5. Detect MRZ lines
   const isPassport = documentType === 'PASSPORT'
@@ -93,7 +101,14 @@ serve(async req => {
 
   const lines = rawText
     .split('\n')
-    .map(l => l.trim().replace(/\s+/g, ''))
+    .map(l => {
+      let line = l.trim().toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9<]/g, '')
+      // Pad with < if slightly short — OCR often truncates trailing fill chars
+      if (line.length >= expectedLen - 6 && line.length < expectedLen) {
+        line = line.padEnd(expectedLen, '<')
+      }
+      return line
+    })
     .filter(l => l.length === expectedLen && /^[A-Z0-9<]+$/.test(l))
 
   if (lines.length < expectedCount) {
