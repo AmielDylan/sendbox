@@ -10,9 +10,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IconLoader2 } from '@tabler/icons-react'
 
+interface OcrFields {
+  firstName: string | null
+  lastName: string | null
+  nationality: string | null
+  birthDate: string | null
+  expiryDate: string | null
+  documentNumber: string | null
+}
+
 interface Props {
   userId: string
   profileName: string | null
+  frontSignedUrl: string | null
+  backSignedUrl: string | null
+  documentType: string | null
 }
 
 const REJECTION_PRESETS = [
@@ -24,13 +36,30 @@ const REJECTION_PRESETS = [
   'Document incomplet ou tronqué',
 ]
 
-export function KYCResolveForm({ userId, profileName }: Props) {
+const FIELD_LABELS: Record<keyof OcrFields, string> = {
+  firstName: 'Prénom(s)',
+  lastName: 'Nom',
+  nationality: 'Nationalité',
+  birthDate: 'Date de naissance',
+  expiryDate: "Date d'expiration",
+  documentNumber: 'N° document',
+}
+
+export function KYCResolveForm({
+  userId,
+  profileName,
+  frontSignedUrl,
+  backSignedUrl,
+  documentType,
+}: Props) {
   const router = useRouter()
   const [verifiedName, setVerifiedName] = useState(profileName ?? '')
   const [rejectionReason, setRejectionReason] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
-  const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
+  const [loading, setLoading] = useState<'approve' | 'reject' | 'ocr' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [ocrResult, setOcrResult] = useState<OcrFields | null>(null)
+  const [ocrDetected, setOcrDetected] = useState<boolean | null>(null)
 
   function applyPreset(preset: string) {
     setRejectionReason(prev => {
@@ -38,6 +67,39 @@ export function KYCResolveForm({ userId, profileName }: Props) {
       if (prev.includes(preset)) return prev
       return `${prev.trim()}, ${preset}`
     })
+  }
+
+  async function extractOCR() {
+    // For CNI: MRZ is on the back — use backSignedUrl if available
+    const signedUrl =
+      documentType === 'cni' && backSignedUrl ? backSignedUrl : frontSignedUrl
+    if (!signedUrl) return
+    setLoading('ocr')
+    setError(null)
+    setOcrDetected(null)
+    setOcrResult(null)
+    try {
+      const docType = documentType === 'passport' ? 'PASSPORT' : 'CNI'
+      const res = await fetch(`/api/admin/kyc/${userId}/ocr`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signedUrl, documentType: docType }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || "Erreur lors de l'extraction")
+      setOcrDetected(json.detected ?? false)
+      if (json.detected && json.valid && json.fields) {
+        setOcrResult(json.fields)
+        const name = [json.fields.firstName, json.fields.lastName]
+          .filter(Boolean)
+          .join(' ')
+        if (name) setVerifiedName(name)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de l'extraction OCR")
+    } finally {
+      setLoading(null)
+    }
   }
 
   async function resolve(outcome: 'VERIFIED' | 'REJECTED') {
@@ -83,6 +145,56 @@ export function KYCResolveForm({ userId, profileName }: Props) {
           </Alert>
         )}
 
+        {/* Bouton extraction OCR */}
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={!!loading || !frontSignedUrl}
+          onClick={extractOCR}
+        >
+          {loading === 'ocr' ? (
+            <IconLoader2 className="h-4 w-4 animate-spin mr-1.5" />
+          ) : null}
+          Extraire les informations
+        </Button>
+
+        {/* Résultat extraction impossible */}
+        {ocrDetected === false && (
+          <p className="text-sm text-amber-600">
+            Extraction automatique impossible, vérification manuelle requise.
+          </p>
+        )}
+
+        {/* Champs MRZ éditables */}
+        {ocrResult && (
+          <Card className="border-dashed">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xs text-muted-foreground uppercase tracking-wide">
+                Informations extraites (MRZ)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-3">
+              {(Object.keys(FIELD_LABELS) as (keyof OcrFields)[]).map(key => (
+                <div key={key} className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">
+                    {FIELD_LABELS[key]}
+                  </Label>
+                  <Input
+                    value={ocrResult[key] ?? ''}
+                    onChange={e =>
+                      setOcrResult(prev =>
+                        prev ? { ...prev, [key]: e.target.value } : prev
+                      )
+                    }
+                    className="text-xs h-8"
+                  />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Nom vérifié */}
         <div className="space-y-2">
           <Label htmlFor="verified-name">Nom vérifié</Label>
           <Input
