@@ -43,7 +43,9 @@ export async function POST(
   // 2. Charger le profil + dernier review en attente
   const { data: profile } = await admin
     .from('profiles')
-    .select('email, firstname, kyc_document_front, kyc_document_back, kyc_selfie')
+    .select(
+      'email, firstname, kyc_document_front, kyc_document_back, kyc_selfie'
+    )
     .eq('id', userId)
     .single()
 
@@ -108,7 +110,11 @@ export async function POST(
       await admin.storage.from('kyc-documents').remove(toRemove)
       await admin
         .from('profiles')
-        .update({ kyc_document_front: null, kyc_document_back: null, kyc_selfie: null })
+        .update({
+          kyc_document_front: null,
+          kyc_document_back: null,
+          kyc_selfie: null,
+        })
         .eq('id', userId)
     }
 
@@ -130,7 +136,8 @@ export async function POST(
       userId,
       type: 'system_alert',
       title: 'Identité vérifiée',
-      content: "Votre vérification d'identité a été approuvée. Vous pouvez maintenant publier des trajets.",
+      content:
+        "Votre vérification d'identité a été approuvée. Vous pouvez maintenant publier des trajets.",
       link: '/dashboard',
     }).catch(console.error)
 
@@ -186,7 +193,11 @@ export async function POST(
       await admin.storage.from('kyc-documents').remove(toRemove)
       await admin
         .from('profiles')
-        .update({ kyc_document_front: null, kyc_document_back: null, kyc_selfie: null })
+        .update({
+          kyc_document_front: null,
+          kyc_document_back: null,
+          kyc_selfie: null,
+        })
         .eq('id', userId)
     }
 

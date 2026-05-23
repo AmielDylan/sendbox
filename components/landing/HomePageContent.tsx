@@ -30,7 +30,6 @@ import { LandingCta } from '@/components/landing/LandingCta'
 import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 import { PricingSection } from '@/components/landing/PricingSection'
 
-
 const features = [
   {
     title: 'Mise en relation claire',
@@ -121,7 +120,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Comment fonctionnent les avis ?',
     answer:
-      "Les avis sont laissés simultanément par les deux parties après la livraison : le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.",
+      'Les avis sont laissés simultanément par les deux parties après la livraison : le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.',
   },
   {
     question: 'Mes données personnelles sont-elles protégées ?',
@@ -149,7 +148,19 @@ export function HomePageContent() {
   return (
     <div className="landing-v2 relative overflow-x-hidden bg-background">
       {/* Hero */}
-      <section className="relative flex min-h-[calc(100svh-4rem)] items-center bg-gradient-to-br from-primary/5 via-background to-background">
+      <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden bg-gradient-to-br from-primary/8 via-background to-background">
+        {/* Decorative blobs */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-32 top-0 h-[480px] w-[480px] rounded-full blur-3xl"
+          style={{ background: 'oklch(0.6 0.1 185 / 6%)' }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-20 right-0 h-[360px] w-[360px] rounded-full blur-3xl"
+          style={{ background: 'oklch(0.6 0.1 185 / 8%)' }}
+        />
+
         <div className="container-wide relative z-10 py-20 sm:py-28 lg:py-36">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div className="space-y-6 animate-fade-in-up">
@@ -163,8 +174,9 @@ export function HomePageContent() {
                 livraisons tracées et preuves horodatées à chaque étape.
               </p>
 
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                Identité vérifiée · Photos horodatées · Avis certifiés · Profil public
+              <p className="text-xs sm:text-sm text-[oklch(0.35_0.01_286)] dark:text-[oklch(0.72_0.01_286)]">
+                Identité vérifiée · Photos horodatées · Avis certifiés · Profil
+                public
               </p>
 
               <LandingCta
@@ -175,13 +187,19 @@ export function HomePageContent() {
             </div>
 
             <div className="relative mt-10 flex justify-center lg:mt-0 lg:block animate-fade-in-up animation-delay-200">
+              {/* Image halo */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-8 inset-y-12 rounded-full blur-3xl"
+                style={{ background: 'oklch(0.6 0.1 185 / 10%)' }}
+              />
               <Image
                 src="/images/hero.png"
                 alt="Sendbox covalisage international"
                 width={680}
                 height={640}
                 priority
-                className="h-auto w-full max-w-none object-contain"
+                className="relative h-auto w-full max-w-none object-contain"
               />
             </div>
           </div>
@@ -292,7 +310,7 @@ export function HomePageContent() {
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Comment ça marche
             </h2>
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+            <p className="max-w-2xl text-sm leading-6 sm:text-base sm:leading-7 text-[oklch(0.35_0.01_286)] dark:text-[oklch(0.72_0.01_286)]">
               Un parcours simple, vérifiable et conçu pour que chacun sache où
               il en est.
             </p>
@@ -309,7 +327,7 @@ export function HomePageContent() {
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <h3 className="font-semibold leading-snug">{step.title}</h3>
-                <p className="text-sm leading-6 text-muted-foreground">
+                <p className="text-sm leading-6 text-[oklch(0.35_0.01_286)] dark:text-[oklch(0.72_0.01_286)]">
                   {step.description}
                 </p>
                 {step.badge ? (
@@ -417,7 +435,8 @@ export function HomePageContent() {
             </h2>
 
             <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-              Créez votre profil vérifié et organisez vos envois en toute confiance.
+              Créez votre profil vérifié et organisez vos envois en toute
+              confiance.
             </p>
 
             <div className="flex items-center justify-center gap-3 pt-2">
@@ -428,7 +447,12 @@ export function HomePageContent() {
                 </Link>
               </Button>
 
-              <Button asChild size="default" variant="outline" className="transition-colors">
+              <Button
+                asChild
+                size="default"
+                variant="outline"
+                className="transition-colors"
+              >
                 <Link href="/recherche">Explorer les trajets</Link>
               </Button>
             </div>

@@ -142,7 +142,6 @@ export default function DashboardPage() {
         window.history.replaceState({}, '', '/dashboard')
       }
     }
-
   }, [])
 
   // Synchronise kycStatus depuis le store Zustand — OptimizedAuthProvider le met à jour via realtime
@@ -152,7 +151,9 @@ export default function DashboardPage() {
       const rawKycStatus = (profile as any).kyc_status as KYCStatus
       // verification_status est la source de vérité — kyc_status peut être désynchronisé
       // pour les comptes vérifiés avant qu'on ajoute la mise à jour de kyc_status dans resolve
-      setKycStatus(verificationStatus === 'verified' ? 'approved' : rawKycStatus ?? null)
+      setKycStatus(
+        verificationStatus === 'verified' ? 'approved' : (rawKycStatus ?? null)
+      )
       setKycRejectionReason((profile as any).kyc_rejection_reason || null)
     }
   }, [profile])

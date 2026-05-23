@@ -166,16 +166,19 @@ export default function AdminUsersPage() {
                     </div>
                     <div className="flex gap-1 flex-wrap justify-end">
                       <Badge
-                        variant={
-                          user.role === 'admin' ? 'default' : 'outline'
-                        }
+                        variant={user.role === 'admin' ? 'default' : 'outline'}
                       >
                         {user.role}
                       </Badge>
                       {user.is_banned ? (
                         <Badge variant="destructive">Banni</Badge>
                       ) : (
-                        <Badge variant="outline" className="border-green-400 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600">Actif</Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-green-400 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600"
+                        >
+                          Actif
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -270,7 +273,12 @@ export default function AdminUsersPage() {
                         {user.is_banned ? (
                           <Badge variant="destructive">Banni</Badge>
                         ) : (
-                          <Badge variant="outline" className="border-green-400 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600">Actif</Badge>
+                          <Badge
+                            variant="outline"
+                            className="border-green-400 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600"
+                          >
+                            Actif
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell>

@@ -102,7 +102,10 @@ export default async function AdminKYCDetailPage({
               </CardHeader>
               <CardContent>
                 {signedUrls.front ? (
-                  <KYCProtectedImage src={signedUrls.front} alt="Recto document" />
+                  <KYCProtectedImage
+                    src={signedUrls.front}
+                    alt="Recto document"
+                  />
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     Aucun document disponible
@@ -119,7 +122,10 @@ export default async function AdminKYCDetailPage({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <KYCProtectedImage src={signedUrls.back} alt="Verso document" />
+                  <KYCProtectedImage
+                    src={signedUrls.back}
+                    alt="Verso document"
+                  />
                 </CardContent>
               </Card>
             )}
@@ -249,4 +255,3 @@ function MRZRow({ label, value }: { label: string; value: React.ReactNode }) {
     </div>
   )
 }
-

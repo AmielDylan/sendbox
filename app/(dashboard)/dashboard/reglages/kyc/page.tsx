@@ -35,6 +35,10 @@ import {
   IconUpload,
 } from '@tabler/icons-react'
 import { createClient } from '@/lib/shared/db/client'
+import {
+  KYCUploadDrawer,
+  type UploadMode,
+} from '@/components/features/kyc/KYCUploadDrawer'
 
 type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected'
 
@@ -166,9 +170,17 @@ export default function KYCPage() {
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null)
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const frontInputRef = useRef<HTMLInputElement>(null)
-  const backInputRef = useRef<HTMLInputElement>(null)
-  const selfieInputRef = useRef<HTMLInputElement>(null)
+  const [drawerTarget, setDrawerTarget] = useState<
+    'front' | 'back' | 'selfie' | null
+  >(null)
+  // Camera inputs (with capture)
+  const frontCameraRef = useRef<HTMLInputElement>(null)
+  const backCameraRef = useRef<HTMLInputElement>(null)
+  const selfieCameraRef = useRef<HTMLInputElement>(null)
+  // Gallery/file inputs (without capture)
+  const frontGalleryRef = useRef<HTMLInputElement>(null)
+  const backGalleryRef = useRef<HTMLInputElement>(null)
+  const selfieGalleryRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -208,18 +220,39 @@ export default function KYCPage() {
     const file = e.target.files?.[0] ?? null
     setFrontFile(file)
     setFrontPreview(file ? URL.createObjectURL(file) : null)
+    e.target.value = ''
   }
 
   function handleBackChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null
     setBackFile(file)
     setBackPreview(file ? URL.createObjectURL(file) : null)
+    e.target.value = ''
   }
 
   function handleSelfieChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null
     setSelfieFile(file)
     setSelfiePreview(file ? URL.createObjectURL(file) : null)
+    e.target.value = ''
+  }
+
+  function handleDrawerSelect(mode: UploadMode) {
+    if (!drawerTarget) return
+    const cameraRefs = {
+      front: frontCameraRef,
+      back: backCameraRef,
+      selfie: selfieCameraRef,
+    }
+    const galleryRefs = {
+      front: frontGalleryRef,
+      back: backGalleryRef,
+      selfie: selfieGalleryRef,
+    }
+    const ref =
+      mode === 'camera' ? cameraRefs[drawerTarget] : galleryRefs[drawerTarget]
+    ref.current?.click()
+    setDrawerTarget(null)
   }
 
   async function handleSubmit() {
@@ -300,7 +333,8 @@ export default function KYCPage() {
             <div className="space-y-1">
               <p className="font-semibold text-sm">Identité vérifiée</p>
               <p className="text-sm text-green-200">
-                Votre identité a été confirmée. Vous pouvez publier des trajets et accepter des colis.
+                Votre identité a été confirmée. Vous pouvez publier des trajets
+                et accepter des colis.
               </p>
             </div>
           </div>
@@ -431,20 +465,35 @@ export default function KYCPage() {
                 </div>
               )}
 
-              {/* Upload recto + verso */}
+              {/* Hidden inputs recto */}
               <input
-                ref={frontInputRef}
+                ref={frontCameraRef}
                 type="file"
-                accept="image/jpeg,image/png,image/heic"
+                accept="image/*"
                 capture="environment"
                 className="hidden"
                 onChange={handleFrontChange}
               />
               <input
-                ref={backInputRef}
+                ref={frontGalleryRef}
                 type="file"
                 accept="image/jpeg,image/png,image/heic"
+                className="hidden"
+                onChange={handleFrontChange}
+              />
+              {/* Hidden inputs verso */}
+              <input
+                ref={backCameraRef}
+                type="file"
+                accept="image/*"
                 capture="environment"
+                className="hidden"
+                onChange={handleBackChange}
+              />
+              <input
+                ref={backGalleryRef}
+                type="file"
+                accept="image/jpeg,image/png,image/heic"
                 className="hidden"
                 onChange={handleBackChange}
               />
@@ -470,7 +519,7 @@ export default function KYCPage() {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => frontInputRef.current?.click()}
+                      onClick={() => setDrawerTarget('front')}
                       disabled={!docType || !countryReady}
                       className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-8 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                     >
@@ -486,7 +535,7 @@ export default function KYCPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => frontInputRef.current?.click()}
+                      onClick={() => setDrawerTarget('front')}
                     >
                       Changer la photo
                     </Button>
@@ -520,7 +569,7 @@ export default function KYCPage() {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => backInputRef.current?.click()}
+                      onClick={() => setDrawerTarget('back')}
                       disabled={!docType || !countryReady}
                       className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-8 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-40"
                     >
@@ -536,7 +585,7 @@ export default function KYCPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => backInputRef.current?.click()}
+                      onClick={() => setDrawerTarget('back')}
                     >
                       Changer la photo
                     </Button>
@@ -598,11 +647,19 @@ export default function KYCPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Hidden inputs selfie */}
               <input
-                ref={selfieInputRef}
+                ref={selfieCameraRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                onChange={handleSelfieChange}
+              />
+              <input
+                ref={selfieGalleryRef}
                 type="file"
                 accept="image/jpeg,image/png,image/heic"
-                capture="user"
                 className="hidden"
                 onChange={handleSelfieChange}
               />
@@ -618,7 +675,7 @@ export default function KYCPage() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => selfieInputRef.current?.click()}
+                  onClick={() => setDrawerTarget('selfie')}
                   disabled={state.phase === 'form' && state.step === 1}
                   className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border py-10 text-muted-foreground transition hover:border-primary/50 hover:text-primary disabled:pointer-events-none disabled:opacity-50"
                 >
@@ -635,7 +692,7 @@ export default function KYCPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => selfieInputRef.current?.click()}
+                  onClick={() => setDrawerTarget('selfie')}
                 >
                   Changer le selfie
                 </Button>
@@ -693,6 +750,22 @@ export default function KYCPage() {
           </Button>
         </div>
       )}
+
+      <KYCUploadDrawer
+        open={drawerTarget !== null}
+        onOpenChange={open => {
+          if (!open) setDrawerTarget(null)
+        }}
+        onSelect={handleDrawerSelect}
+        title={
+          drawerTarget === 'selfie'
+            ? 'Ajouter un selfie'
+            : drawerTarget === 'front'
+              ? 'Ajouter le recto'
+              : 'Ajouter le verso'
+        }
+        description="JPG, PNG ou HEIC · max 10 Mo"
+      />
     </div>
   )
 }
