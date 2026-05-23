@@ -74,7 +74,6 @@ const steps = [
   {
     title: 'Confirmer la mise en relation',
     description: 'Les deux parties confirment',
-    badge: '1,50 € de frais de mise en relation',
   },
   {
     title: 'Remise + livraison avec photo',
