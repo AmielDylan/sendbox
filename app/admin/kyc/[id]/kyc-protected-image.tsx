@@ -35,7 +35,10 @@ export function KYCProtectedImage({ src, alt }: Props) {
           className="max-w-4xl w-full p-2 bg-black/90 border-0"
           onContextMenu={e => e.preventDefault()}
         >
-          <div className="relative w-full select-none" style={{ minHeight: '70vh' }}>
+          <div
+            className="relative w-full select-none"
+            style={{ minHeight: '70vh' }}
+          >
             <Image
               src={src}
               alt={alt}

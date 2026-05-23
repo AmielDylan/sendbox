@@ -56,7 +56,9 @@ export function KYCResolveForm({
   const [verifiedName, setVerifiedName] = useState(profileName ?? '')
   const [rejectionReason, setRejectionReason] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
-  const [loading, setLoading] = useState<'approve' | 'reject' | 'ocr' | null>(null)
+  const [loading, setLoading] = useState<'approve' | 'reject' | 'ocr' | null>(
+    null
+  )
   const [error, setError] = useState<string | null>(null)
   const [ocrResult, setOcrResult] = useState<OcrFields | null>(null)
   const [ocrDetected, setOcrDetected] = useState<boolean | null>(null)
@@ -96,7 +98,9 @@ export function KYCResolveForm({
         if (name) setVerifiedName(name)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de l'extraction OCR")
+      setError(
+        err instanceof Error ? err.message : "Erreur lors de l'extraction OCR"
+      )
     } finally {
       setLoading(null)
     }
