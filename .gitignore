@@ -46,3 +46,7 @@ next-env.d.ts
 supabase/.temp/
 supabase/.branches/
 supabase/.db/
+
+# claude code
+skills-lock.json
+.claude/settings.local.json
