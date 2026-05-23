@@ -30,11 +30,6 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.gosendbox.com'),
   title: siteTitle,
   description: siteDescription,
-  icons: {
-    icon: '/images/branding/icon.svg',
-    shortcut: '/images/branding/icon.svg',
-    apple: '/images/branding/icon.svg',
-  },
   openGraph: {
     url: 'https://www.gosendbox.com/',
     type: 'website',
