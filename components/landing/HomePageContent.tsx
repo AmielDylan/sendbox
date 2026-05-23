@@ -30,7 +30,6 @@ import { LandingCta } from '@/components/landing/LandingCta'
 import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 import { PricingSection } from '@/components/landing/PricingSection'
 
-
 const features = [
   {
     title: 'Mise en relation claire',
@@ -121,7 +120,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Comment fonctionnent les avis ?',
     answer:
-      "Les avis sont laissés simultanément par les deux parties après la livraison : le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.",
+      'Les avis sont laissés simultanément par les deux parties après la livraison : le principe des notes en aveugle empêche toute influence mutuelle. Ils sont immuables une fois publiés et contribuent au score de confiance public du profil.',
   },
   {
     question: 'Mes données personnelles sont-elles protégées ?',
@@ -176,7 +175,8 @@ export function HomePageContent() {
               </p>
 
               <p className="text-xs sm:text-sm text-[oklch(0.35_0.01_286)] dark:text-[oklch(0.72_0.01_286)]">
-                Identité vérifiée · Photos horodatées · Avis certifiés · Profil public
+                Identité vérifiée · Photos horodatées · Avis certifiés · Profil
+                public
               </p>
 
               <LandingCta
@@ -435,7 +435,8 @@ export function HomePageContent() {
             </h2>
 
             <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-              Créez votre profil vérifié et organisez vos envois en toute confiance.
+              Créez votre profil vérifié et organisez vos envois en toute
+              confiance.
             </p>
 
             <div className="flex items-center justify-center gap-3 pt-2">
@@ -446,7 +447,12 @@ export function HomePageContent() {
                 </Link>
               </Button>
 
-              <Button asChild size="default" variant="outline" className="transition-colors">
+              <Button
+                asChild
+                size="default"
+                variant="outline"
+                className="transition-colors"
+              >
                 <Link href="/recherche">Explorer les trajets</Link>
               </Button>
             </div>

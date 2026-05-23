@@ -35,7 +35,10 @@ import {
   IconUpload,
 } from '@tabler/icons-react'
 import { createClient } from '@/lib/shared/db/client'
-import { KYCUploadDrawer, type UploadMode } from '@/components/features/kyc/KYCUploadDrawer'
+import {
+  KYCUploadDrawer,
+  type UploadMode,
+} from '@/components/features/kyc/KYCUploadDrawer'
 
 type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected'
 
@@ -167,7 +170,9 @@ export default function KYCPage() {
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null)
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [drawerTarget, setDrawerTarget] = useState<'front' | 'back' | 'selfie' | null>(null)
+  const [drawerTarget, setDrawerTarget] = useState<
+    'front' | 'back' | 'selfie' | null
+  >(null)
   // Camera inputs (with capture)
   const frontCameraRef = useRef<HTMLInputElement>(null)
   const backCameraRef = useRef<HTMLInputElement>(null)
@@ -234,9 +239,18 @@ export default function KYCPage() {
 
   function handleDrawerSelect(mode: UploadMode) {
     if (!drawerTarget) return
-    const cameraRefs = { front: frontCameraRef, back: backCameraRef, selfie: selfieCameraRef }
-    const galleryRefs = { front: frontGalleryRef, back: backGalleryRef, selfie: selfieGalleryRef }
-    const ref = mode === 'camera' ? cameraRefs[drawerTarget] : galleryRefs[drawerTarget]
+    const cameraRefs = {
+      front: frontCameraRef,
+      back: backCameraRef,
+      selfie: selfieCameraRef,
+    }
+    const galleryRefs = {
+      front: frontGalleryRef,
+      back: backGalleryRef,
+      selfie: selfieGalleryRef,
+    }
+    const ref =
+      mode === 'camera' ? cameraRefs[drawerTarget] : galleryRefs[drawerTarget]
     ref.current?.click()
     setDrawerTarget(null)
   }
@@ -319,7 +333,8 @@ export default function KYCPage() {
             <div className="space-y-1">
               <p className="font-semibold text-sm">Identité vérifiée</p>
               <p className="text-sm text-green-200">
-                Votre identité a été confirmée. Vous pouvez publier des trajets et accepter des colis.
+                Votre identité a été confirmée. Vous pouvez publier des trajets
+                et accepter des colis.
               </p>
             </div>
           </div>
@@ -451,11 +466,37 @@ export default function KYCPage() {
               )}
 
               {/* Hidden inputs recto */}
-              <input ref={frontCameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFrontChange} />
-              <input ref={frontGalleryRef} type="file" accept="image/jpeg,image/png,image/heic" className="hidden" onChange={handleFrontChange} />
+              <input
+                ref={frontCameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleFrontChange}
+              />
+              <input
+                ref={frontGalleryRef}
+                type="file"
+                accept="image/jpeg,image/png,image/heic"
+                className="hidden"
+                onChange={handleFrontChange}
+              />
               {/* Hidden inputs verso */}
-              <input ref={backCameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleBackChange} />
-              <input ref={backGalleryRef} type="file" accept="image/jpeg,image/png,image/heic" className="hidden" onChange={handleBackChange} />
+              <input
+                ref={backCameraRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={handleBackChange}
+              />
+              <input
+                ref={backGalleryRef}
+                type="file"
+                accept="image/jpeg,image/png,image/heic"
+                className="hidden"
+                onChange={handleBackChange}
+              />
 
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* Recto / Page principale */}
@@ -607,8 +648,21 @@ export default function KYCPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Hidden inputs selfie */}
-              <input ref={selfieCameraRef} type="file" accept="image/*" capture="user" className="hidden" onChange={handleSelfieChange} />
-              <input ref={selfieGalleryRef} type="file" accept="image/jpeg,image/png,image/heic" className="hidden" onChange={handleSelfieChange} />
+              <input
+                ref={selfieCameraRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                onChange={handleSelfieChange}
+              />
+              <input
+                ref={selfieGalleryRef}
+                type="file"
+                accept="image/jpeg,image/png,image/heic"
+                className="hidden"
+                onChange={handleSelfieChange}
+              />
               {selfiePreview ? (
                 <div className="relative aspect-video overflow-hidden rounded-lg border">
                   <Image
@@ -699,7 +753,9 @@ export default function KYCPage() {
 
       <KYCUploadDrawer
         open={drawerTarget !== null}
-        onOpenChange={open => { if (!open) setDrawerTarget(null) }}
+        onOpenChange={open => {
+          if (!open) setDrawerTarget(null)
+        }}
         onSelect={handleDrawerSelect}
         title={
           drawerTarget === 'selfie'

@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  IconCamera,
-  IconFolder,
-  IconPhoto,
-  IconX,
-} from '@tabler/icons-react'
+import { IconCamera, IconFolder, IconPhoto, IconX } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -24,7 +19,11 @@ interface KYCUploadDrawerProps {
   description?: string
 }
 
-const OPTIONS: { mode: UploadMode; label: string; Icon: React.FC<{ className?: string }> }[] = [
+const OPTIONS: {
+  mode: UploadMode
+  label: string
+  Icon: React.FC<{ className?: string }>
+}[] = [
   { mode: 'camera', label: 'Prendre une photo', Icon: IconCamera },
   { mode: 'gallery', label: 'Depuis la galerie', Icon: IconPhoto },
   { mode: 'file', label: 'Depuis les fichiers', Icon: IconFolder },

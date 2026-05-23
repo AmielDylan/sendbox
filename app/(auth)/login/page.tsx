@@ -65,7 +65,6 @@ function LoginForm() {
     if (message === 'password-reset-success') {
       toast.success('Mot de passe réinitialisé avec succès !')
     }
-
   }, [searchParams])
 
   if (!authCheckComplete) {

@@ -64,7 +64,11 @@ serve(async (req: Request) => {
   try {
     // 1. Fetch image
     const imgResp = await fetch(signedUrl)
-    if (!imgResp.ok) return jsonResponse({ error: 'Failed to fetch image', status: imgResp.status }, 502)
+    if (!imgResp.ok)
+      return jsonResponse(
+        { error: 'Failed to fetch image', status: imgResp.status },
+        502
+      )
     const imgBuffer = new Uint8Array(await imgResp.arrayBuffer())
 
     // 2. Decode + crop bottom 30%
@@ -76,14 +80,21 @@ serve(async (req: Request) => {
 
     // 3. imagescript.bitmap is already a Uint8ClampedArray in RGBA order
     // @ts-expect-error — bitmap is a public property on imagescript Image
-    const imageData = { data: cropped.bitmap as Uint8ClampedArray, width: cropped.width, height: cropped.height }
+    const imageData = {
+      data: cropped.bitmap as Uint8ClampedArray,
+      width: cropped.width,
+      height: cropped.height,
+    }
 
     // 4. OCR
     const { wasm, model } = await loadAssets()
     const engine = await createOCREngine({ wasmBinary: wasm })
     await engine.loadModel(model)
     engine.loadImage(imageData)
-    engine.setVariable('tessedit_char_whitelist', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<')
+    engine.setVariable(
+      'tessedit_char_whitelist',
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<'
+    )
     engine.setVariable('tessedit_pageseg_mode', '6')
     rawText = engine.getText()
     engine.clearImage()
@@ -102,7 +113,11 @@ serve(async (req: Request) => {
   const lines = rawText
     .split('\n')
     .map(l => {
-      let line = l.trim().toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9<]/g, '')
+      let line = l
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '')
+        .replace(/[^A-Z0-9<]/g, '')
       // Pad with < if slightly short — OCR often truncates trailing fill chars
       if (line.length >= expectedLen - 6 && line.length < expectedLen) {
         line = line.padEnd(expectedLen, '<')
