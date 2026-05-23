@@ -74,7 +74,6 @@ const steps = [
   {
     title: 'Confirmer la mise en relation',
     description: 'Les deux parties confirment',
-    badge: '1,50 € de frais de mise en relation',
   },
   {
     title: 'Remise + livraison avec photo',
@@ -323,18 +322,13 @@ export function HomePageContent() {
                 className="group flex flex-col gap-3 rounded-lg border border-transparent p-4 transition-all duration-300 hover:border-border/50 animate-fade-in-up"
                 style={{ animationDelay: `${index * 80}ms` }}
               >
-                <span className="font-display text-4xl font-bold leading-none text-primary/15 transition-colors duration-300 group-hover:text-primary/55 sm:text-5xl">
+                <span className="font-display text-4xl font-bold leading-none text-primary/35 transition-colors duration-300 group-hover:text-primary/65 sm:text-5xl">
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <h3 className="font-semibold leading-snug">{step.title}</h3>
                 <p className="text-sm leading-6 text-[oklch(0.35_0.01_286)] dark:text-[oklch(0.72_0.01_286)]">
                   {step.description}
                 </p>
-                {step.badge ? (
-                  <Badge variant="secondary" className="w-fit text-xs">
-                    {step.badge}
-                  </Badge>
-                ) : null}
               </div>
             ))}
           </div>
