@@ -22,9 +22,12 @@
 
 ### Pour pousser vers main
 
-8. Créer une PR `develop -> main` via `gh pr create --base main --head develop`
-9. Merger via `gh pr merge --merge` (jamais `git push origin main` directement)
-10. Revenir sur `develop` : `git checkout develop`
+8. Pousser `develop` sur le remote si ce n'est pas fait : `git push origin develop`
+9. Créer une PR `develop -> main` : `gh pr create --base main --head develop`
+10. Activer l'auto-merge si nécessaire : `gh api repos/{owner}/{repo} --method PATCH --field allow_auto_merge=true`
+11. Déclencher l'auto-merge : `gh pr merge <numéro> --merge --auto`
+12. Revenir sur `develop` immédiatement : `git checkout develop`
+13. Les checks CI se déclenchent automatiquement - le merge sur `main` s'effectue dès qu'ils passent
 
 ### Interdit
 
