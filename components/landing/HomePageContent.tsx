@@ -322,7 +322,7 @@ export function HomePageContent() {
                 className="group flex flex-col gap-3 rounded-lg border border-transparent p-4 transition-all duration-300 hover:border-border/50 animate-fade-in-up"
                 style={{ animationDelay: `${index * 80}ms` }}
               >
-                <span className="font-display text-4xl font-bold leading-none text-primary/35 transition-colors duration-300 group-hover:text-primary/65 sm:text-5xl">
+                <span className="font-display text-4xl font-bold leading-none text-primary/35 transition-colors duration-300 group-hover:text-primary/65 dark:text-white/40 dark:group-hover:text-white/70 sm:text-5xl">
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <h3 className="font-semibold leading-snug">{step.title}</h3>
