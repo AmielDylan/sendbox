@@ -71,11 +71,11 @@ serve(async (req: Request) => {
     const img = await decode(imgBuffer)
     const cropY = Math.floor(img.height * 0.55)
     const cropH = img.height - cropY
-    // @ts-ignore — imagescript Frame has crop()
+    // @ts-expect-error — imagescript Frame has crop()
     const cropped = img.crop(0, cropY, img.width, cropH)
 
     // 3. imagescript.bitmap is already a Uint8ClampedArray in RGBA order
-    // @ts-ignore — bitmap is a public property on imagescript Image
+    // @ts-expect-error — bitmap is a public property on imagescript Image
     const imageData = { data: cropped.bitmap as Uint8ClampedArray, width: cropped.width, height: cropped.height }
 
     // 4. OCR
