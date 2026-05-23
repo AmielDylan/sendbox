@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   title: siteTitle,
   description: siteDescription,
   icons: {
-    icon: '/images/branding/web.jpg',
-    shortcut: '/images/branding/web.jpg',
-    apple: '/images/branding/web.jpg',
+    icon: '/images/branding/icon.svg',
+    shortcut: '/images/branding/icon.svg',
+    apple: '/images/branding/icon.svg',
   },
   openGraph: {
     url: 'https://www.gosendbox.com/',
