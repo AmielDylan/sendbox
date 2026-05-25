@@ -34,7 +34,7 @@ const features = [
   {
     title: 'Mise en relation claire',
     description:
-      "1,50 € de frais de mise en relation pour l'expéditeur à la confirmation mutuelle. Le transport se règle directement entre les parties.",
+      "Des frais de mise en relation sont réglés par l'expéditeur à la confirmation mutuelle. Le transport se règle directement entre les parties.",
     icon: IconUserCheck,
   },
   {
@@ -89,7 +89,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Combien coûte Sendbox ?',
     answer:
-      "La mise en relation coûte 1,50 € TTC, payée par l'expéditeur à la confirmation mutuelle. L'utilisation est entièrement gratuite pour les voyageurs. Le montant du transport se négocie directement entre les parties, hors plateforme.",
+      "Des frais de mise en relation sont réglés par l'expéditeur à la confirmation mutuelle. L'utilisation est entièrement gratuite pour les voyageurs. Le montant du transport se négocie directement entre les parties, hors plateforme.",
   },
   {
     question: 'Comment sont vérifiés les profils ?',
@@ -104,12 +104,12 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Comment fonctionne le paiement du transport ?',
     answer:
-      "Le montant du transport se règle directement entre l'expéditeur et le voyageur, selon les modalités que vous convenez ensemble. Sendbox ne prélève que les 1,50 € de frais de mise en relation à la confirmation.",
+      "Le montant du transport se règle directement entre l'expéditeur et le voyageur, selon les modalités que vous convenez ensemble. Sendbox facture uniquement des frais de mise en relation à la confirmation.",
   },
   {
     question: 'Puis-je annuler une mise en relation ?',
     answer:
-      'Avant la confirmation mutuelle des deux parties, la mise en relation peut être annulée sans frais. Une fois les deux parties confirmées, les frais de 1,50 € sont prélevés et la mise en relation est effective.',
+      'Avant la confirmation mutuelle des deux parties, la mise en relation peut être annulée sans frais. Une fois les deux parties confirmées, les frais de mise en relation sont prélevés et la mise en relation est effective.',
   },
   {
     question: 'Dans quels pays Sendbox est-il disponible ?',
@@ -130,10 +130,7 @@ const faqs: { question: string; answer: string }[] = [
 
 const senderBenefits: React.ReactNode[] = [
   'Trouvez un voyageur sur votre corridor diaspora',
-  <>
-    Confirmez la mise en relation pour{' '}
-    <strong className="font-semibold text-foreground">1,50 €</strong>
-  </>,
+  'Confirmez la mise en relation avec un cadre clair',
   'Suivez la remise et la livraison avec preuves',
 ]
 
