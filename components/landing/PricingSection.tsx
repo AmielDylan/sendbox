@@ -45,7 +45,7 @@ export function PricingSection() {
               </p>
               <div className="mt-3 flex items-end gap-3">
                 <p className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  1,50 €
+                  Frais fixes
                 </p>
                 <p className="pb-1.5 text-sm text-muted-foreground sm:pb-2 sm:text-base">
                   / mise en relation
