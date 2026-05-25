@@ -308,11 +308,13 @@ export async function requestPasswordReset(
   const supabase = await createClient()
 
   try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const callbackUrl = new URL('/auth/callback', appUrl)
+    callbackUrl.searchParams.set('next', '/reset-password?update=true')
+
     const { error } = await supabase.auth.resetPasswordForEmail(
       validation.data.email,
-      {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password`,
-      }
+      { redirectTo: callbackUrl.toString() }
     )
 
     // Toujours retourner un succès pour éviter l'énumération
