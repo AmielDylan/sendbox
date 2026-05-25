@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
+    return NextResponse.redirect(new URL(next, requestUrl.origin))
   }
 
   // OTP token_hash (email confirmation, password reset, magic link)
