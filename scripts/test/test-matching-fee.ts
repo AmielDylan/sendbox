@@ -23,7 +23,12 @@ const SENDER_EMAIL = `test-sender-${TEST_SUFFIX}@sendbox-test.com`
 const TRAVELER_EMAIL = `test-traveler-${TEST_SUFFIX}@sendbox-test.com`
 const TEST_PASSWORD = 'TestPass123!'
 
-async function cleanup(senderUid?: string, travelerUid?: string, bookingId?: string, announcementId?: string) {
+async function cleanup(
+  senderUid?: string,
+  travelerUid?: string,
+  bookingId?: string,
+  announcementId?: string
+) {
   if (bookingId) {
     await admin.from('matching_payments').delete().eq('booking_id', bookingId)
     await admin.from('bookings').delete().eq('id', bookingId)
@@ -52,14 +57,17 @@ async function createTestUser(email: string, role: 'sender' | 'traveler') {
   const uid = data.user.id
 
   // Upsert profile (trigger may have already created it)
-  const { error: profileError } = await admin.from('profiles').upsert({
-    id: uid,
-    email,
-    firstname: 'Test',
-    lastname: role === 'sender' ? 'Expediteur' : 'Voyageur',
-    phone: null,
-    is_suspended: false,
-  }, { onConflict: 'id' })
+  const { error: profileError } = await admin.from('profiles').upsert(
+    {
+      id: uid,
+      email,
+      firstname: 'Test',
+      lastname: role === 'sender' ? 'Expediteur' : 'Voyageur',
+      phone: null,
+      is_suspended: false,
+    },
+    { onConflict: 'id' }
+  )
   if (profileError) throw new Error(`Profil ${role}: ${profileError.message}`)
 
   return uid
@@ -73,7 +81,10 @@ function stringToBase64URL(str: string): string {
     .replace(/=+$/, '')
 }
 
-function createSessionCookies(key: string, sessionJson: string): Record<string, string> {
+function createSessionCookies(
+  key: string,
+  sessionJson: string
+): Record<string, string> {
   const encoded = 'base64-' + stringToBase64URL(sessionJson)
   const MAX_CHUNK = 3180
   const uriEncoded = encodeURIComponent(encoded)
@@ -95,7 +106,10 @@ function createSessionCookies(key: string, sessionJson: string): Record<string, 
 
 async function signInAs(email: string): Promise<Record<string, string>> {
   const anon = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  const { data, error } = await anon.auth.signInWithPassword({ email, password: TEST_PASSWORD })
+  const { data, error } = await anon.auth.signInWithPassword({
+    email,
+    password: TEST_PASSWORD,
+  })
   if (error) throw new Error(`Sign-in ${email}: ${error.message}`)
   const session = data.session!
   // Supabase SSR v0.8 stores the full session object in a base64-encoded cookie
@@ -105,7 +119,9 @@ async function signInAs(email: string): Promise<Record<string, string>> {
 }
 
 async function callConfirm(bookingId: string, cookies: Record<string, string>) {
-  const cookieHeader = Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join('; ')
+  const cookieHeader = Object.entries(cookies)
+    .map(([k, v]) => `${k}=${v}`)
+    .join('; ')
   const res = await fetch(`${APP_URL}/api/bookings/${bookingId}/confirm`, {
     method: 'POST',
     headers: {
@@ -136,7 +152,7 @@ async function run() {
     console.log(`   ✅ Voyageur    : ${travelerUid}`)
 
     // ── 2. Créer une annonce (le voyageur propose un trajet) ────────────
-    console.log('\n2a. Création de l\'annonce (voyageur)...')
+    console.log("\n2a. Création de l'annonce (voyageur)...")
     const dept = new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString()
     const arrv = new Date(Date.now() + 9 * 24 * 3600 * 1000).toISOString()
     const { data: announcement, error: annErr } = await admin
@@ -175,12 +191,19 @@ async function run() {
         description: 'Test commission mise en relation',
         package_description: 'Test commission mise en relation',
         duration_hours: 48,
-        status_history: [{ status: 'accepted', actor_id: travelerUid, timestamp: new Date().toISOString() }],
+        status_history: [
+          {
+            status: 'accepted',
+            actor_id: travelerUid,
+            timestamp: new Date().toISOString(),
+          },
+        ],
       })
       .select('id')
       .single()
 
-    if (bookingErr || !booking) throw new Error(`Booking: ${bookingErr?.message}`)
+    if (bookingErr || !booking)
+      throw new Error(`Booking: ${bookingErr?.message}`)
     bookingId = booking.id
     console.log(`   ✅ Booking ID  : ${bookingId}`)
 
@@ -188,23 +211,35 @@ async function run() {
     console.log('\n3. Confirmation du voyageur...')
     const travelerCookies = await signInAs(TRAVELER_EMAIL)
     const travelerConfirm = await callConfirm(bookingId, travelerCookies)
-    console.log(`   HTTP ${travelerConfirm.status} →`, JSON.stringify(travelerConfirm.body))
+    console.log(
+      `   HTTP ${travelerConfirm.status} →`,
+      JSON.stringify(travelerConfirm.body)
+    )
 
     if (travelerConfirm.body.status !== 'WAITING_OTHER_PARTY') {
-      throw new Error(`Attendu WAITING_OTHER_PARTY, reçu: ${travelerConfirm.body.status}`)
+      throw new Error(
+        `Attendu WAITING_OTHER_PARTY, reçu: ${travelerConfirm.body.status}`
+      )
     }
-    console.log("   OK WAITING_OTHER_PARTY (correct, expediteur pas encore confirme)")
+    console.log(
+      '   OK WAITING_OTHER_PARTY (correct, expediteur pas encore confirme)'
+    )
 
     // ── 4. Expéditeur confirme → déclenche la création du PaymentIntent ─
-    console.log('\n4. Confirmation de l\'expediteur (declenche le paiement)...')
+    console.log("\n4. Confirmation de l'expediteur (declenche le paiement)...")
     const senderCookies = await signInAs(SENDER_EMAIL)
     const senderConfirm = await callConfirm(bookingId, senderCookies)
-    console.log(`   HTTP ${senderConfirm.status} →`, JSON.stringify(senderConfirm.body))
+    console.log(
+      `   HTTP ${senderConfirm.status} →`,
+      JSON.stringify(senderConfirm.body)
+    )
 
     const { status: confirmStatus, body: confirmBody } = senderConfirm
 
     if (confirmStatus !== 200) {
-      throw new Error(`Confirm endpoint a retourné HTTP ${confirmStatus}: ${JSON.stringify(confirmBody)}`)
+      throw new Error(
+        `Confirm endpoint a retourné HTTP ${confirmStatus}: ${JSON.stringify(confirmBody)}`
+      )
     }
 
     if (confirmBody.status !== 'PAYMENT_REQUIRED') {
@@ -212,19 +247,23 @@ async function run() {
     }
 
     console.log('   ✅ PAYMENT_REQUIRED reçu')
-    console.log(`   💳 clientSecret  : ${confirmBody.clientSecret?.slice(0, 30)}...`)
+    console.log(
+      `   💳 clientSecret  : ${confirmBody.clientSecret?.slice(0, 30)}...`
+    )
     console.log(`   💰 amountCents   : ${confirmBody.amountCents}`)
     console.log(`   👤 mustPay       : ${confirmBody.mustPay}`)
 
     if (confirmBody.amountCents !== 150) {
-      throw new Error(`❌ ÉCHEC : Montant attendu 150 cents, reçu ${confirmBody.amountCents} cents`)
+      throw new Error(
+        `❌ ÉCHEC : Montant attendu 150 cents, reçu ${confirmBody.amountCents} cents`
+      )
     }
     console.log('   ✅ Montant correct : 150 cents (1,50 €)')
 
     if (!confirmBody.mustPay) {
-      throw new Error('❌ mustPay devrait être true pour l\'expéditeur')
+      throw new Error("❌ mustPay devrait être true pour l'expéditeur")
     }
-    console.log('   ✅ mustPay=true (l\'expéditeur doit payer, comme attendu)')
+    console.log("   ✅ mustPay=true (l'expéditeur doit payer, comme attendu)")
 
     // ── 5. Vérifier la table matching_payments ──────────────────────────
     console.log('\n5. Vérification en base (matching_payments)...')
@@ -240,16 +279,22 @@ async function run() {
 
     console.log('   Enregistrement matching_payments :')
     console.log(`     id                       : ${payment.id}`)
-    console.log(`     stripe_payment_intent_id : ${payment.stripe_payment_intent_id}`)
+    console.log(
+      `     stripe_payment_intent_id : ${payment.stripe_payment_intent_id}`
+    )
     console.log(`     amount_cents             : ${payment.amount_cents}`)
     console.log(`     currency                 : ${payment.currency}`)
     console.log(`     status                   : ${payment.status}`)
     console.log(`     paid_by                  : ${payment.paid_by}`)
 
-    if (payment.amount_cents !== 150) throw new Error(`Montant en base ${payment.amount_cents} ≠ 150`)
-    if (payment.currency !== 'eur') throw new Error(`Devise en base ${payment.currency} ≠ eur`)
-    if (payment.status !== 'pending') throw new Error(`Statut en base ${payment.status} ≠ pending`)
-    if (payment.paid_by !== senderUid) throw new Error(`paid_by ${payment.paid_by} ≠ senderUid`)
+    if (payment.amount_cents !== 150)
+      throw new Error(`Montant en base ${payment.amount_cents} ≠ 150`)
+    if (payment.currency !== 'eur')
+      throw new Error(`Devise en base ${payment.currency} ≠ eur`)
+    if (payment.status !== 'pending')
+      throw new Error(`Statut en base ${payment.status} ≠ pending`)
+    if (payment.paid_by !== senderUid)
+      throw new Error(`paid_by ${payment.paid_by} ≠ senderUid`)
     console.log('   ✅ Tous les champs matching_payments sont corrects')
 
     // ── 6. Vérifier le statut du booking ────────────────────────────────
@@ -262,7 +307,9 @@ async function run() {
 
     console.log(`   Statut booking : ${updatedBooking?.status}`)
     if (updatedBooking?.status !== 'payment_pending') {
-      throw new Error(`Statut attendu payment_pending, reçu: ${updatedBooking?.status}`)
+      throw new Error(
+        `Statut attendu payment_pending, reçu: ${updatedBooking?.status}`
+      )
     }
     console.log('   ✅ Statut booking = payment_pending (correct)')
 
@@ -302,7 +349,10 @@ async function run() {
     const toSign = `${timestamp}.${payload}`
     // Stripe uses the full whsec_xxx string as HMAC key (not base64-decoded)
     const crypto = await import('crypto')
-    const sig = crypto.createHmac('sha256', WEBHOOK_SECRET).update(toSign).digest('hex')
+    const sig = crypto
+      .createHmac('sha256', WEBHOOK_SECRET)
+      .update(toSign)
+      .digest('hex')
     const stripeSignature = `t=${timestamp},v1=${sig}`
 
     const webhookRes = await fetch(`${APP_URL}/api/webhooks/stripe`, {
@@ -314,9 +364,13 @@ async function run() {
       body: payload,
     })
     const webhookBody = await webhookRes.json()
-    console.log(`   Webhook HTTP ${webhookRes.status} → ${JSON.stringify(webhookBody)}`)
+    console.log(
+      `   Webhook HTTP ${webhookRes.status} → ${JSON.stringify(webhookBody)}`
+    )
     if (!webhookRes.ok) {
-      throw new Error(`Webhook handler a retourné HTTP ${webhookRes.status}: ${JSON.stringify(webhookBody)}`)
+      throw new Error(
+        `Webhook handler a retourné HTTP ${webhookRes.status}: ${JSON.stringify(webhookBody)}`
+      )
     }
     console.log('   OK Webhook traité avec succès')
 
@@ -344,10 +398,16 @@ async function run() {
     const bookingOk = finalBooking?.status === 'confirmed'
     const paymentOk = finalPayment?.status === 'succeeded'
 
-    if (!bookingOk) console.warn(`   ⚠️  Booking statut = ${finalBooking?.status} (attendu: confirmed) — webhook peut nécessiter plus de temps`)
+    if (!bookingOk)
+      console.warn(
+        `   ⚠️  Booking statut = ${finalBooking?.status} (attendu: confirmed) — webhook peut nécessiter plus de temps`
+      )
     else console.log('   ✅ Booking confirmé')
 
-    if (!paymentOk) console.warn(`   ⚠️  Payment statut = ${finalPayment?.status} (attendu: succeeded) — webhook peut nécessiter plus de temps`)
+    if (!paymentOk)
+      console.warn(
+        `   ⚠️  Payment statut = ${finalPayment?.status} (attendu: succeeded) — webhook peut nécessiter plus de temps`
+      )
     else console.log('   ✅ Payment succeeded')
 
     // ── Résumé ───────────────────────────────────────────────────────────
@@ -356,10 +416,11 @@ async function run() {
       console.log('  ✅ PASS — Commission 1,50 € correctement prélevée')
     } else {
       console.log('  ⚠️  PARTIEL — PaymentIntent créé, webhook en attente')
-      console.log('  Vérifier /tmp/stripe-listen.log pour les événements webhook')
+      console.log(
+        '  Vérifier /tmp/stripe-listen.log pour les événements webhook'
+      )
     }
     console.log('══════════════════════════════════════════════\n')
-
   } catch (err) {
     console.error('\n❌ ERREUR :', err instanceof Error ? err.message : err)
     console.log('\n══════════════════════════════════════════════')
