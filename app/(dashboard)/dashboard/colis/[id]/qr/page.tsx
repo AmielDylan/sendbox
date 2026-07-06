@@ -129,13 +129,14 @@ async function QRCodePageContent({ params }: QRCodePageProps) {
                 Retour
               </Link>
             </Button>
-            {isTraveler && booking.status === 'paid' && (
-              <Button asChild className="flex-1">
-                <Link href={`/dashboard/scan/depot/${bookingId}`}>
-                  Scanner pour dépôt
-                </Link>
-              </Button>
-            )}
+            {isTraveler &&
+              (booking.status === 'confirmed' || booking.status === 'paid') && (
+                <Button asChild className="flex-1">
+                  <Link href={`/dashboard/scan/depot/${bookingId}`}>
+                    Scanner pour dépôt
+                  </Link>
+                </Button>
+              )}
           </div>
         </div>
       </div>
