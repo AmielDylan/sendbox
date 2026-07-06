@@ -12,8 +12,11 @@ import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { sendEmail } from '@/lib/shared/services/email/client'
 
 /**
- * Annule une réservation avec raison (acceptée non payée par les deux parties,
- * ou payée par le voyageur avec malus de réputation).
+ * Annule une réservation avec raison.
+ *
+ * En V1, le paiement concerne les frais Sendbox de mise en relation, pas le
+ * prix du transport. Une réservation "confirmed" signifie donc que les
+ * coordonnées ont été déverrouillées.
  */
 export async function cancelBookingWithReason(
   bookingId: string,
@@ -60,12 +63,15 @@ export async function cancelBookingWithReason(
     }
   }
 
-  const isPaid = booking.status === 'paid' || Boolean(booking.paid_at)
+  const matchingUnlocked =
+    booking.status === 'confirmed' ||
+    booking.status === 'paid' ||
+    Boolean(booking.paid_at)
 
-  if (booking.status === 'accepted' && !isPaid) {
+  if (booking.status === 'accepted' && !matchingUnlocked) {
     // Autorisé pour expéditeur et voyageur
-  } else if (isPaid && isTraveler) {
-    // Autorisé pour le voyageur (annonceur) avec malus
+  } else if (matchingUnlocked && isTraveler) {
+    // Autorisé pour le voyageur après déverrouillage, avec malus
   } else {
     return {
       error: 'Cette réservation ne peut pas être annulée à ce stade',
@@ -94,7 +100,7 @@ export async function cancelBookingWithReason(
       }
     }
 
-    if (isPaid && isTraveler) {
+    if (matchingUnlocked && isTraveler) {
       const REPUTATION_PENALTY = 0.3
       try {
         const profileClient = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -350,9 +356,13 @@ export async function markAsInTransit(
   }
 
   // Vérifier le statut
-  if (booking.status !== 'accepted' && booking.status !== 'paid') {
+  if (
+    booking.status !== 'accepted' &&
+    booking.status !== 'confirmed' &&
+    booking.status !== 'paid'
+  ) {
     return {
-      error: 'La réservation doit être acceptée et payée',
+      error: 'La réservation doit être acceptée et la mise en relation validée',
     }
   }
 
@@ -546,17 +556,13 @@ export async function markAsDelivered(
       }
     }
 
-    // Déclencher le paiement au voyageur (release des fonds de l'escrow)
-    // TODO: Implémenter le transfert Stripe Connect vers le voyageur
-    console.log('TODO: Release escrow funds to traveler for booking', bookingId)
-
     // Notifier l'expéditeur (non-bloquant)
     const { error: notifError } = await createSystemNotification({
       userId: booking.sender_id,
       type: 'delivery_reminder',
       title: 'Colis livré',
       content:
-        'Votre colis a été livré. Merci de confirmer la réception sur Sendbox. Sans action de votre part, les fonds seront versés au voyageur après 7 jours.',
+        'Votre colis a été livré. Merci de confirmer la réception sur Sendbox pour clôturer la mission et ouvrir les avis.',
       bookingId,
       announcementId: booking.announcement_id,
     })
@@ -578,7 +584,7 @@ export async function markAsDelivered(
           template: 'notification',
           data: {
             title: 'Colis livré',
-            content: `${senderProfile.firstname ? `Bonjour ${senderProfile.firstname},\n\n` : ''}Votre colis a été livré. Merci de confirmer la réception sur Sendbox.\n\nSans action de votre part, les fonds seront versés au voyageur après 7 jours.`,
+            content: `${senderProfile.firstname ? `Bonjour ${senderProfile.firstname},\n\n` : ''}Votre colis a été livré. Merci de confirmer la réception sur Sendbox pour clôturer la mission et ouvrir les avis.`,
             ctaText: 'Confirmer la réception',
             ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
           },
@@ -607,7 +613,7 @@ export async function markAsDelivered(
 }
 
 /**
- * Expéditeur confirme la livraison (débloque les fonds côté plateforme)
+ * Expéditeur confirme la livraison et clôture la mission côté Sendbox.
  */
 export async function confirmDeliveryReceipt(bookingId: string) {
   const supabase = await createClient()
@@ -728,7 +734,7 @@ export async function confirmDeliveryReceipt(bookingId: string) {
     type: 'delivery_confirmed',
     title: 'Livraison confirmée',
     content:
-      'Le client a confirmé la remise. Les fonds sont débloqués pour vous.',
+      'Le client a confirmé la remise. La mission est clôturée et les avis peuvent être déposés.',
     bookingId,
     announcementId: booking.announcement_id,
   })
@@ -751,7 +757,7 @@ export async function confirmDeliveryReceipt(bookingId: string) {
         template: 'notification',
         data: {
           title: 'Livraison confirmée',
-          content: `${travelerProfile.firstname ? `Bonjour ${travelerProfile.firstname},\n\n` : ''}Le client a confirmé la remise. Les fonds sont débloqués pour vous. Merci d'avoir utilisé Sendbox !`,
+          content: `${travelerProfile.firstname ? `Bonjour ${travelerProfile.firstname},\n\n` : ''}Le client a confirmé la remise. La mission est clôturée et les avis peuvent être déposés. Merci d'avoir utilisé Sendbox !`,
           ctaText: 'Voir mes réservations',
           ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
         },

@@ -87,7 +87,8 @@ export async function getAnnouncementDetail(
   const { data: ratings } = await supabase
     .from('ratings')
     .select('rating')
-    .eq('rated_user_id', announcement.traveler_id)
+    .eq('rated_id', announcement.traveler_id)
+    .eq('status', 'published')
 
   const travelerRating =
     ratings && ratings.length > 0
@@ -163,8 +164,9 @@ export async function getTravelerReviews(
       rater_id
     `
     )
-    .eq('rated_user_id', travelerId)
-    .order('created_at', { ascending: false })
+    .eq('rated_id', travelerId)
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
     .limit(limit)
 
   if (error) {
