@@ -579,7 +579,8 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                 )}
 
                 {isSender &&
-                  (booking.status === 'paid' ||
+                  (booking.status === 'confirmed' ||
+                    booking.status === 'paid' ||
                     booking.status === 'deposited') && (
                     <>
                       <Button variant="outline" asChild className="w-full">
@@ -644,7 +645,8 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                 )}
 
                 {isTraveler &&
-                  (booking.status === 'paid' ||
+                  (booking.status === 'confirmed' ||
+                    booking.status === 'paid' ||
                     booking.status === 'deposited') && (
                     <>
                       <Button variant="outline" asChild className="w-full">
@@ -662,14 +664,16 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                     </>
                   )}
 
-                {isTraveler && booking.status === 'paid' && (
-                  <CancelBookingDialog
-                    bookingId={booking.id}
-                    description="Cette réservation est payée. L'annulation entraînera un malus de réputation."
-                    penaltyNotice="Un malus sera appliqué à votre réputation."
-                    confirmLabel="Annuler la réservation (malus)"
-                  />
-                )}
+                {isTraveler &&
+                  (booking.status === 'confirmed' ||
+                    booking.status === 'paid') && (
+                    <CancelBookingDialog
+                      bookingId={booking.id}
+                      description="La mise en relation est confirmée. L'annulation par le voyageur peut entraîner un malus de réputation."
+                      penaltyNotice="Un malus sera appliqué à votre réputation."
+                      confirmLabel="Annuler la réservation (malus)"
+                    />
+                  )}
 
                 {isTraveler && booking.status === 'in_transit' && (
                   <Button asChild className="w-full">

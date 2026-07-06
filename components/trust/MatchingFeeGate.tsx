@@ -71,7 +71,8 @@ function FeeForm({
         <h3 className="text-sm font-semibold">Frais de mise en relation</h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Le voyageur a confirmé. Réglez {euros} € pour valider la mise en
-          relation et accéder à ses coordonnées.
+          relation, accéder à ses coordonnées et conserver le dossier de suivi
+          Sendbox.
         </p>
       </div>
 
@@ -93,8 +94,8 @@ function FeeForm({
       </Button>
 
       <p className="text-center text-xs text-muted-foreground">
-        Frais uniques pour cette mise en relation. Le règlement au voyageur se
-        fait directement entre vous.
+        Frais uniques facturés par Sendbox. Le prix du transport est réglé
+        directement entre vous et le voyageur, hors plateforme.
       </p>
     </div>
   )

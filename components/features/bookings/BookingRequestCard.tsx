@@ -50,7 +50,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
-type BookingRequestStatus = 'pending' | 'accepted' | 'paid'
+type BookingRequestStatus = 'pending' | 'accepted' | 'confirmed' | 'paid'
 
 interface BookingRequest {
   id: string
@@ -92,7 +92,8 @@ const REFUSAL_REASONS = [
 const STATUS_LABELS: Record<BookingRequestStatus, string> = {
   pending: 'En attente',
   accepted: 'Accepté',
-  paid: 'Payé',
+  confirmed: 'Confirmé',
+  paid: 'Confirmé',
 }
 
 const STATUS_VARIANTS: Record<
@@ -101,6 +102,7 @@ const STATUS_VARIANTS: Record<
 > = {
   pending: 'secondary',
   accepted: 'default',
+  confirmed: 'default',
   paid: 'default',
 }
 
@@ -344,8 +346,8 @@ export function BookingRequestCard({
             <div className="space-y-2 pt-2">
               <div className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                 {booking.status === 'accepted'
-                  ? "Demande acceptée. En attente du paiement de l'expéditeur."
-                  : 'Paiement confirmé. Vous pouvez organiser la prise en charge.'}
+                  ? "Demande acceptée. En attente du paiement des frais Sendbox par l'expéditeur."
+                  : 'Mise en relation confirmée. Vous pouvez organiser la prise en charge.'}
               </div>
               <div className="flex gap-2">
                 <Button
@@ -390,9 +392,7 @@ export function BookingRequestCard({
                   })}
                 </li>
                 <li>Poids à transporter : {weightKg} kg</li>
-                <li>
-                  Vous serez payé {formatPrice(totalPrice)} à la livraison
-                </li>
+                <li>Prix de transport convenu : {formatPrice(totalPrice)}</li>
               </ul>
             </div>
             <div className="flex items-start gap-3">

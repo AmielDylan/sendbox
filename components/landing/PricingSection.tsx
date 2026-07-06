@@ -10,7 +10,7 @@ const perks = [
   'Inscription et utilisation gratuites',
   'Profil voyageur vérifié (KYC)',
   'Preuves horodatées serveur',
-  'Avis mutuels immuables',
+  'Avis mutuels et signaux anti-abus',
 ]
 
 export function PricingSection() {
@@ -55,8 +55,8 @@ export function PricingSection() {
 
             <p className="text-sm leading-6 text-muted-foreground">
               {user
-                ? "Payé par l'expéditeur uniquement, à la confirmation mutuelle des deux parties."
-                : "Payé par l'expéditeur à la confirmation mutuelle. Inscription et utilisation gratuites pour tous."}
+                ? "Réglé par l'expéditeur uniquement, après accord mutuel avec le voyageur."
+                : "Réglé par l'expéditeur après accord mutuel. Inscription et utilisation gratuites pour tous."}
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -84,9 +84,10 @@ export function PricingSection() {
             </ul>
 
             <p className="border-t border-border/60 pt-4 text-sm leading-6 text-muted-foreground">
-              Le règlement du transport se fait directement entre expéditeur et
-              voyageur, hors plateforme. Sendbox n'est pas transporteur ni
-              intermédiaire de paiement.
+              Le prix du transport est défini avant le paiement des frais
+              Sendbox, puis réglé directement entre expéditeur et voyageur, hors
+              plateforme. Sendbox n'est pas transporteur ni intermédiaire de
+              paiement.
             </p>
           </div>
         </div>
