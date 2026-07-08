@@ -47,6 +47,10 @@ describe('createBooking', () => {
     validBookingData = {
       announcement_id: mockAnnouncement.id,
       package_description: 'Test package - laptop and documents',
+      package_category: 'electronics',
+      package_dimensions: '30 x 20 x 10 cm',
+      forbidden_items_acknowledged: true,
+      content_truth_attested: true,
       kilos_requested: 5,
       package_value: 100,
       insurance_opted: false,
@@ -202,5 +206,25 @@ describe('createBooking', () => {
 
     expect(result.error).toBeDefined()
     expect(result.field).toBe('package_description')
+  })
+
+  it('rejette si la categorie du colis est absente', async () => {
+    const result = await createBooking({
+      ...validBookingData,
+      package_category: '' as any,
+    })
+
+    expect(result.error).toBeDefined()
+    expect(result.field).toBe('package_category')
+  })
+
+  it('rejette si l expediteur ne confirme pas les objets interdits', async () => {
+    const result = await createBooking({
+      ...validBookingData,
+      forbidden_items_acknowledged: false,
+    })
+
+    expect(result.error).toBeDefined()
+    expect(result.field).toBe('forbidden_items_acknowledged')
   })
 })

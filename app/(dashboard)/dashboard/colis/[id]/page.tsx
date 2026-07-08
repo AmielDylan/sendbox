@@ -489,7 +489,7 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
               {booking.package_description && (
                 <div className="rounded border border-border/60 bg-background/60 p-3">
                   <p className="text-sm font-medium">Description du colis</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">
                     {booking.package_description}
                   </p>
                 </div>

@@ -20,6 +20,7 @@ import { uploadRateLimit } from '@/lib/shared/security/rate-limit'
 import { FEATURES, isFeatureEnabled } from '@/lib/shared/config/features'
 import { notifyUser } from '@/lib/core/notifications/actions'
 import { calculateBookingPrice } from '@/lib/core/bookings/calculations'
+import { buildSafePackageDescription } from '@/lib/core/bookings/package-safety'
 import sharp from 'sharp'
 
 /**
@@ -219,7 +220,11 @@ export async function createBooking(
         sender_id: user.id,
         traveler_id: announcement.traveler_id,
         kilos_requested: validation.data.kilos_requested,
-        package_description: validation.data.package_description,
+        package_description: buildSafePackageDescription({
+          category: validation.data.package_category,
+          dimensions: validation.data.package_dimensions,
+          description: validation.data.package_description,
+        }),
         package_value: validation.data.package_value,
         price_per_kg: announcement.price_per_kg,
         qr_code: '', // Sera remplacé automatiquement par le trigger
