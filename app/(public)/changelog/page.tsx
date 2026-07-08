@@ -73,7 +73,7 @@ const entries: ChangelogEntry[] = [
       "Publication d'annonces de trajets : corridor, dates, capacité disponible, prix indicatif.",
       "Profils utilisateurs avec vérification d'identité manuelle (KYC v1).",
       'Système de mise en relation : recherche de voyageurs par corridor et date, demande et acceptation.',
-      'Frais de mise en relation de 1,50 € TTC prélevés à la confirmation mutuelle.',
+      'Frais de mise en relation beta de 2,90 € TTC prélevés à la confirmation mutuelle.',
       'Lancement du corridor France-Bénin.',
     ],
   },
