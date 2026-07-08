@@ -16,6 +16,11 @@ import {
   MAX_INSURANCE_COVERAGE,
 } from '@/lib/core/bookings/validations'
 import {
+  FORBIDDEN_PACKAGE_ITEMS,
+  PACKAGE_CATEGORIES,
+  PACKAGE_CATEGORY_LABELS,
+} from '@/lib/core/bookings/package-safety'
+import {
   createBooking,
   getAnnouncementForBooking,
 } from '@/lib/core/bookings/actions'
@@ -89,14 +94,21 @@ function NewBookingPageContent() {
     defaultValues: {
       announcement_id: announcementId,
       kilos_requested: initialWeight || 1,
+      package_category: undefined,
+      package_dimensions: '',
       package_value: 0,
       insurance_opted: false as boolean,
+      forbidden_items_acknowledged: false,
+      content_truth_attested: false,
     },
   })
 
   const weightKg = watch('kilos_requested') || 0
   const packageValue = watch('package_value') || 0
   const insuranceOpted = watch('insurance_opted') || false
+  const forbiddenItemsAcknowledged =
+    watch('forbidden_items_acknowledged') || false
+  const contentTruthAttested = watch('content_truth_attested') || false
   const pricePerKg = announcement?.price_per_kg || 0
 
   // Calcul tarifaire en temps réel
@@ -340,6 +352,49 @@ function NewBookingPageContent() {
                   </p>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="package_category">Categorie du colis</Label>
+                  <select
+                    id="package_category"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    {...register('package_category')}
+                    aria-invalid={errors.package_category ? 'true' : 'false'}
+                  >
+                    <option value="">Selectionner une categorie</option>
+                    {PACKAGE_CATEGORIES.map(category => (
+                      <option key={category} value={category}>
+                        {PACKAGE_CATEGORY_LABELS[category]}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.package_category && (
+                    <p className="text-sm text-destructive" role="alert">
+                      {errors.package_category.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="package_dimensions">
+                    Dimensions approximatives
+                  </Label>
+                  <Input
+                    id="package_dimensions"
+                    placeholder="Ex. 30 x 20 x 10 cm"
+                    {...register('package_dimensions')}
+                    aria-invalid={errors.package_dimensions ? 'true' : 'false'}
+                  />
+                  {errors.package_dimensions && (
+                    <p className="text-sm text-destructive" role="alert">
+                      {errors.package_dimensions.message}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Indiquez une estimation simple pour aider le voyageur a
+                    evaluer l'encombrement.
+                  </p>
+                </div>
+
                 {/* Description */}
                 <div className="space-y-2">
                   <Label htmlFor="package_description">
@@ -360,6 +415,76 @@ function NewBookingPageContent() {
                   <p className="text-xs text-muted-foreground">
                     Minimum 10 caractères, maximum 500
                   </p>
+                </div>
+
+                <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
+                  <p className="text-sm font-medium">
+                    Objets interdits ou a risque
+                  </p>
+                  <ul className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                    {FORBIDDEN_PACKAGE_ITEMS.map(item => (
+                      <li key={item} className="flex gap-2">
+                        <span aria-hidden="true">-</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="space-y-3 rounded-lg border border-border/70 bg-background p-4">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="forbidden_items_acknowledged"
+                      checked={forbiddenItemsAcknowledged}
+                      onCheckedChange={checked =>
+                        setValue(
+                          'forbidden_items_acknowledged',
+                          checked === true,
+                          { shouldValidate: true }
+                        )
+                      }
+                    />
+                    <div className="space-y-1">
+                      <Label
+                        htmlFor="forbidden_items_acknowledged"
+                        className="cursor-pointer text-sm font-medium"
+                      >
+                        Je confirme que le colis ne contient aucun objet
+                        interdit ou dangereux.
+                      </Label>
+                      {errors.forbidden_items_acknowledged && (
+                        <p className="text-sm text-destructive" role="alert">
+                          {errors.forbidden_items_acknowledged.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="content_truth_attested"
+                      checked={contentTruthAttested}
+                      onCheckedChange={checked =>
+                        setValue('content_truth_attested', checked === true, {
+                          shouldValidate: true,
+                        })
+                      }
+                    />
+                    <div className="space-y-1">
+                      <Label
+                        htmlFor="content_truth_attested"
+                        className="cursor-pointer text-sm font-medium"
+                      >
+                        J'atteste que la description, la valeur et les
+                        dimensions declarees sont exactes.
+                      </Label>
+                      {errors.content_truth_attested && (
+                        <p className="text-sm text-destructive" role="alert">
+                          {errors.content_truth_attested.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Valeur déclarée */}
