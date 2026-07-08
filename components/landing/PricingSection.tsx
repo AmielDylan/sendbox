@@ -45,10 +45,10 @@ export function PricingSection() {
               </p>
               <div className="mt-3 flex items-end gap-3">
                 <p className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  Frais fixes
+                  2,90 €
                 </p>
                 <p className="pb-1.5 text-sm text-muted-foreground sm:pb-2 sm:text-base">
-                  / mise en relation
+                  beta / mise en relation
                 </p>
               </div>
             </div>
@@ -56,7 +56,7 @@ export function PricingSection() {
             <p className="text-sm leading-6 text-muted-foreground">
               {user
                 ? "Réglé par l'expéditeur uniquement, après accord mutuel avec le voyageur."
-                : "Réglé par l'expéditeur après accord mutuel. Inscription et utilisation gratuites pour tous."}
+                : "Tarif beta réglé par l'expéditeur après accord mutuel. Inscription et utilisation gratuites pour tous."}
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row">

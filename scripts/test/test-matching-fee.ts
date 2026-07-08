@@ -1,11 +1,15 @@
 /**
- * Test end-to-end du prélèvement de la commission 1,50 € à la mise en relation.
+ * Test end-to-end du prélèvement des frais Sendbox à la mise en relation.
  * Exécuter : npx tsx scripts/test/test-matching-fee.ts
  */
 
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 import { config } from 'dotenv'
+import {
+  formatFeeFromCents,
+  getMatchingFeeConfig,
+} from '@/lib/core/matching/fees'
 
 config({ path: '.env.local' })
 
@@ -13,6 +17,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const APP_URL = 'http://localhost:3000'
+const MATCHING_FEE = getMatchingFeeConfig()
 
 const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -140,7 +145,9 @@ async function run() {
   let announcementId: string | undefined
 
   console.log('\n══════════════════════════════════════════════')
-  console.log('  TEST : Commission 1,50 € mise en relation')
+  console.log(
+    `  TEST : Frais Sendbox ${formatFeeFromCents(MATCHING_FEE.amountCents)} mise en relation`
+  )
   console.log('══════════════════════════════════════════════\n')
 
   try {
@@ -253,12 +260,14 @@ async function run() {
     console.log(`   💰 amountCents   : ${confirmBody.amountCents}`)
     console.log(`   👤 mustPay       : ${confirmBody.mustPay}`)
 
-    if (confirmBody.amountCents !== 150) {
+    if (confirmBody.amountCents !== MATCHING_FEE.amountCents) {
       throw new Error(
-        `❌ ÉCHEC : Montant attendu 150 cents, reçu ${confirmBody.amountCents} cents`
+        `❌ ÉCHEC : Montant attendu ${MATCHING_FEE.amountCents} cents, reçu ${confirmBody.amountCents} cents`
       )
     }
-    console.log('   ✅ Montant correct : 150 cents (1,50 €)')
+    console.log(
+      `   ✅ Montant correct : ${MATCHING_FEE.amountCents} cents (${formatFeeFromCents(MATCHING_FEE.amountCents)})`
+    )
 
     if (!confirmBody.mustPay) {
       throw new Error("❌ mustPay devrait être true pour l'expéditeur")
@@ -287,8 +296,10 @@ async function run() {
     console.log(`     status                   : ${payment.status}`)
     console.log(`     paid_by                  : ${payment.paid_by}`)
 
-    if (payment.amount_cents !== 150)
-      throw new Error(`Montant en base ${payment.amount_cents} ≠ 150`)
+    if (payment.amount_cents !== MATCHING_FEE.amountCents)
+      throw new Error(
+        `Montant en base ${payment.amount_cents} ≠ ${MATCHING_FEE.amountCents}`
+      )
     if (payment.currency !== 'eur')
       throw new Error(`Devise en base ${payment.currency} ≠ eur`)
     if (payment.status !== 'pending')
@@ -325,7 +336,7 @@ async function run() {
     const fakePaymentIntent = {
       id: piId,
       object: 'payment_intent',
-      amount: 150,
+      amount: MATCHING_FEE.amountCents,
       currency: 'eur',
       status: 'succeeded',
       metadata: {
@@ -413,7 +424,9 @@ async function run() {
     // ── Résumé ───────────────────────────────────────────────────────────
     console.log('\n══════════════════════════════════════════════')
     if (bookingOk && paymentOk) {
-      console.log('  ✅ PASS — Commission 1,50 € correctement prélevée')
+      console.log(
+        `  ✅ PASS — Frais Sendbox ${formatFeeFromCents(MATCHING_FEE.amountCents)} correctement prélevés`
+      )
     } else {
       console.log('  ⚠️  PARTIEL — PaymentIntent créé, webhook en attente')
       console.log(
