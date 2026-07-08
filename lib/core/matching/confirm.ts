@@ -2,6 +2,7 @@ import 'server-only'
 
 import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/shared/db/admin'
+import { getMatchingFeeConfig } from '@/lib/core/matching/fees'
 import { runAntiCollusionChecks } from '@/lib/trust/anti-collusion'
 
 type MatchingConfirmResult =
@@ -120,11 +121,10 @@ export async function confirmMatchingForBooking(
     }
   }
 
-  const amount = parseInt(process.env.MATCHING_FEE_CENTS ?? '150', 10)
-  const currency = process.env.MATCHING_FEE_CURRENCY ?? 'eur'
+  const { amountCents, currency } = getMatchingFeeConfig()
 
   const paymentIntent = await getStripe().paymentIntents.create({
-    amount,
+    amount: amountCents,
     currency,
     description: 'Frais de mise en relation Sendbox',
     metadata: {

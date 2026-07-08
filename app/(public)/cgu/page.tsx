@@ -210,8 +210,8 @@ export default function CGUPage() {
 
           <h3 className="font-semibold">5.1 Montant</h3>
           <p>
-            Des frais de mise en relation d&apos;un montant de{' '}
-            <strong>1,50&nbsp;€&nbsp;TTC</strong> sont facturés à
+            Des frais de mise en relation d&apos;un montant beta de{' '}
+            <strong>2,90&nbsp;€&nbsp;TTC</strong> sont facturés à
             l&apos;expéditeur au moment de la confirmation mutuelle entre les
             deux parties.
           </p>
