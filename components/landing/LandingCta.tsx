@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { IconPackage, IconPlaneDeparture } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
@@ -23,17 +22,11 @@ export function LandingCta({
   return (
     <div className={cn('flex flex-wrap items-center gap-3', className)}>
       <Button asChild className={registerClassName}>
-        <Link href="/recherche">
-          <IconPackage className="h-4 w-4" />
-          Envoyer un colis
-        </Link>
+        <Link href="/recherche">Envoyer un colis</Link>
       </Button>
 
       <Button asChild className={searchClassName} variant="outline">
-        <Link href={travelerHref}>
-          <IconPlaneDeparture className="h-4 w-4" />
-          Publier un trajet
-        </Link>
+        <Link href={travelerHref}>Publier un trajet</Link>
       </Button>
     </div>
   )
