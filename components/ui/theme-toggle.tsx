@@ -3,8 +3,13 @@
 import { IconMoon, IconSun } from '@tabler/icons-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  className?: string
+}
+
+export function ThemeToggle({ className }: ThemeToggleProps) {
   const { setTheme, theme, resolvedTheme } = useTheme()
   const isDark =
     theme === 'dark' ||
@@ -15,7 +20,7 @@ export function ThemeToggle() {
     <Button
       variant="outline"
       size="icon"
-      className="h-8 w-8"
+      className={cn('h-8 w-8', className)}
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       aria-label="Basculer le thème"
     >
