@@ -150,25 +150,20 @@ export function HomePageContent() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[62%_center]"
+          className="object-cover object-[72%_center] sm:object-[62%_center]"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/48 to-black/10" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-background via-background/70 to-transparent sm:h-56" />
 
         <div className="container-wide relative z-10 py-20 sm:py-24 lg:py-28">
           <div className="max-w-2xl space-y-6 animate-fade-in-up">
-            <Badge className="bg-white/12 text-white ring-1 ring-white/20 hover:bg-white/16">
-              France - Bénin
-            </Badge>
-
             <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
-              Envoyer un colis via un voyageur vérifié, avec un cadre clair.
+              Transformez chaque voyage en solution d’envoi sécurisée.
             </h1>
 
             <p className="max-w-xl text-sm leading-6 text-white/82 sm:text-base sm:leading-7">
-              Sendbox sécurise la mise en relation entre expéditeurs et
-              voyageurs : identité vérifiée, contenu déclaré, preuves photo et
-              avis après livraison.
+              Confiez votre colis à un voyageur vérifié, avec une déclaration
+              claire, des preuves photo et des avis après livraison.
             </p>
 
             <div className="flex flex-wrap gap-2 text-xs font-medium text-white/82 sm:text-sm">
