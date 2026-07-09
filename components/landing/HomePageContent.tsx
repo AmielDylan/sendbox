@@ -150,10 +150,9 @@ export function HomePageContent() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[70%_center] sm:object-center"
+          className="object-cover object-[70%_top] sm:object-top"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/48 to-black/10" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-background via-background/70 to-transparent sm:h-56" />
 
         <div className="relative z-10 w-full px-6 py-20 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
           <div className="max-w-xl space-y-6 text-left animate-fade-in-up">
@@ -166,26 +165,10 @@ export function HomePageContent() {
               claire, des preuves photo et des avis après livraison.
             </p>
 
-            <div className="flex flex-wrap gap-2 text-xs font-medium text-white/82 sm:text-sm">
-              {[
-                'Identité vérifiée',
-                'Colis déclaré',
-                'Photos horodatées',
-                'Avis certifiés',
-              ].map(item => (
-                <span
-                  key={item}
-                  className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-
             <LandingCta
               className="flex-wrap pt-2 sm:flex-nowrap"
               registerClassName="bg-white text-foreground transition-colors hover:bg-white/90"
-              searchClassName="border-white bg-white text-foreground transition-colors hover:bg-white/90"
+              searchClassName="border-white/70 bg-transparent text-white transition-colors hover:border-white hover:bg-white/10 hover:text-white"
             />
           </div>
         </div>
