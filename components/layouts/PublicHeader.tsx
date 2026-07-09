@@ -140,20 +140,20 @@ export function PublicHeader() {
           <Image
             src="/images/branding/logo.svg"
             alt="Sendbox - Covalisage international Europe-Afrique"
-            width={145}
+            width={130}
             height={29}
             priority
-            className="h-7 w-auto sm:h-8 transition-all duration-300 group-hover:scale-105 dark:hidden"
-            style={{ maxWidth: '145px' }}
+            className="h-6 w-auto sm:h-7 transition-all duration-300 group-hover:scale-105 dark:hidden"
+            style={{ maxWidth: '130px' }}
           />
           <Image
             src="/images/branding/logo-white.svg"
             alt="Sendbox - Covalisage international Europe-Afrique"
-            width={145}
+            width={130}
             height={29}
             priority
-            className="hidden h-7 w-auto sm:h-8 transition-all duration-300 group-hover:scale-105 dark:block"
-            style={{ maxWidth: '145px' }}
+            className="hidden h-6 w-auto sm:h-7 transition-all duration-300 group-hover:scale-105 dark:block"
+            style={{ maxWidth: '130px' }}
           />
         </Link>
 
@@ -200,7 +200,7 @@ export function PublicHeader() {
                   <Button
                     asChild
                     size="sm"
-                    className="bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+                    className="bg-foreground text-background shadow-md transition-all duration-200 hover:scale-105 hover:bg-foreground/90 hover:shadow-lg"
                   >
                     <Link href="/register">S'inscrire</Link>
                   </Button>
@@ -347,7 +347,10 @@ export function PublicHeader() {
                             Se connecter
                           </Link>
                         </Button>
-                        <Button asChild className="w-full">
+                        <Button
+                          asChild
+                          className="w-full bg-foreground text-background hover:bg-foreground/90"
+                        >
                           <Link
                             href="/register"
                             onClick={() => setMobileMenuOpen(false)}
