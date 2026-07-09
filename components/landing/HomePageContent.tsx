@@ -9,7 +9,6 @@ import {
   IconCheck,
   IconCircleCheck,
   IconUserCheck,
-  IconMapPin,
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -144,64 +143,58 @@ export function HomePageContent() {
   return (
     <div className="landing-v2 relative overflow-x-hidden bg-background">
       {/* Hero */}
-      <section className="relative flex min-h-[calc(100svh-4rem)] items-center overflow-hidden bg-gradient-to-br from-primary/8 via-background to-background">
-        {/* Decorative blobs */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-32 top-0 h-[480px] w-[480px] rounded-full blur-3xl"
-          style={{ background: 'oklch(0.6 0.1 185 / 6%)' }}
+      <section className="relative flex min-h-[calc(100svh-7rem)] items-center overflow-hidden bg-foreground text-white">
+        <Image
+          src="/images/landing/hero-trust-handoff.png"
+          alt="Remise de colis entre un expéditeur et un voyageur vérifié"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[62%_center]"
         />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-20 right-0 h-[360px] w-[360px] rounded-full blur-3xl"
-          style={{ background: 'oklch(0.6 0.1 185 / 8%)' }}
-        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/48 to-black/10" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background to-transparent" />
 
-        <div className="container-wide relative z-10 py-20 sm:py-28 lg:py-36">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div className="space-y-6 animate-fade-in-up">
-              <h1 className="font-display text-3xl font-light leading-tight tracking-tight sm:text-4xl lg:text-5xl">
-                Faites voyager vos colis avec des voyageurs{' '}
-                <span className="text-primary">de confiance</span>
-              </h1>
+        <div className="container-wide relative z-10 py-20 sm:py-24 lg:py-28">
+          <div className="max-w-2xl space-y-6 animate-fade-in-up">
+            <Badge className="bg-white/12 text-white ring-1 ring-white/20 hover:bg-white/16">
+              France - Bénin
+            </Badge>
 
-              <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-                Une plateforme qui connecte la diaspora. Profils vérifiés,
-                livraisons tracées et preuves horodatées à chaque étape.
-              </p>
+            <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
+              Envoyer un colis via un voyageur vérifié, avec un cadre clair.
+            </h1>
 
-              <p className="text-xs sm:text-sm text-[oklch(0.35_0.01_286)] dark:text-[oklch(0.72_0.01_286)]">
-                Identité vérifiée · Photos horodatées · Avis certifiés · Profil
-                public
-              </p>
+            <p className="max-w-xl text-sm leading-6 text-white/82 sm:text-base sm:leading-7">
+              Sendbox sécurise la mise en relation entre expéditeurs et
+              voyageurs : identité vérifiée, contenu déclaré, preuves photo et
+              avis après livraison.
+            </p>
 
-              <LandingCta
-                className="flex-wrap sm:flex-nowrap pt-2"
-                registerClassName="bg-primary hover:bg-primary/90 transition-colors"
-                searchClassName="hover:bg-accent transition-colors"
-              />
+            <div className="flex flex-wrap gap-2 text-xs font-medium text-white/82 sm:text-sm">
+              {[
+                'Identité vérifiée',
+                'Colis déclaré',
+                'Photos horodatées',
+                'Avis certifiés',
+              ].map(item => (
+                <span
+                  key={item}
+                  className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15"
+                >
+                  {item}
+                </span>
+              ))}
             </div>
 
-            <div className="relative mt-10 flex justify-center lg:mt-0 lg:block animate-fade-in-up animation-delay-200">
-              {/* Image halo */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-8 inset-y-12 rounded-full blur-3xl"
-                style={{ background: 'oklch(0.6 0.1 185 / 10%)' }}
-              />
-              <Image
-                src="/images/hero.png"
-                alt="Sendbox covalisage international"
-                width={680}
-                height={640}
-                priority
-                className="relative h-auto w-full max-w-none object-contain"
-              />
-            </div>
+            <LandingCta
+              className="flex-wrap pt-2 sm:flex-nowrap"
+              registerClassName="bg-white text-foreground transition-colors hover:bg-white/90"
+              searchClassName="border-white/30 bg-white/8 text-white transition-colors hover:bg-white/15"
+            />
           </div>
         </div>
       </section>
-
       {/* Features */}
       <section className="relative bg-muted/30 py-24 sm:py-32">
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
