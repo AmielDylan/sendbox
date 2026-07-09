@@ -4,10 +4,12 @@ import { createMockUser } from '../../factories/user.factory'
 import { createMockPublishedAnnouncement } from '../../factories/announcement.factory'
 import { createMockBooking } from '../../factories/booking.factory'
 import {
+  getMockDatabase,
   seedMockDatabase,
   resetMockDatabase,
   setMockAuthUser,
 } from '../../mocks/server'
+import { buildPackageRefusalReason } from '@/lib/core/bookings/package-safety'
 
 /**
  * Tests pour le refus de réservations (refuseBooking)
@@ -66,6 +68,20 @@ describe('refuseBooking', () => {
     expect(result.error).toBeUndefined()
     expect(result.success).toBe(true)
     expect(result.message).toMatch(/refusée/i)
+  })
+
+  it('enregistre un motif de refus colis structure', async () => {
+    const reason = buildPackageRefusalReason({
+      reason: 'forbidden_or_risky_item',
+    })
+
+    const result = await refuseBooking(mockBooking.id, reason)
+    const storedBooking = getMockDatabase().bookings.get(mockBooking.id)
+
+    expect(result.error).toBeUndefined()
+    expect(result.success).toBe(true)
+    expect(storedBooking?.status).toBe('cancelled')
+    expect(storedBooking?.refused_reason).toBe('Objet interdit ou a risque')
   })
 
   it('rejette si utilisateur non authentifié', async () => {
