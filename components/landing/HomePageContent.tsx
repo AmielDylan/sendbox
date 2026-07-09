@@ -150,13 +150,13 @@ export function HomePageContent() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[72%_center] sm:object-[62%_center]"
+          className="object-cover object-[82%_center] sm:object-[62%_center]"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/48 to-black/10" />
         <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-background via-background/70 to-transparent sm:h-56" />
 
         <div className="container-wide relative z-10 py-20 sm:py-24 lg:py-28">
-          <div className="max-w-2xl space-y-6 animate-fade-in-up">
+          <div className="max-w-2xl space-y-6 text-left animate-fade-in-up">
             <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
               Transformez chaque voyage en solution d’envoi sécurisée.
             </h1>
