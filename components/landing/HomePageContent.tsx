@@ -145,18 +145,18 @@ export function HomePageContent() {
       {/* Hero */}
       <section className="relative flex min-h-[calc(100svh-7rem)] items-center overflow-hidden bg-foreground text-white">
         <Image
-          src="/images/landing/hero-trust-handoff.png"
+          src="/images/landing/hero-trust-handoff-v2.png"
           alt="Remise de colis entre un expéditeur et un voyageur vérifié"
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[82%_center] sm:object-[62%_center]"
+          className="object-cover object-[70%_center] sm:object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/48 to-black/10" />
         <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-background via-background/70 to-transparent sm:h-56" />
 
-        <div className="container-wide relative z-10 py-20 sm:py-24 lg:py-28">
-          <div className="max-w-2xl space-y-6 text-left animate-fade-in-up">
+        <div className="relative z-10 w-full px-6 py-20 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
+          <div className="max-w-xl space-y-6 text-left animate-fade-in-up">
             <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
               Transformez chaque voyage en solution d’envoi sécurisée.
             </h1>
@@ -185,7 +185,7 @@ export function HomePageContent() {
             <LandingCta
               className="flex-wrap pt-2 sm:flex-nowrap"
               registerClassName="bg-white text-foreground transition-colors hover:bg-white/90"
-              searchClassName="border-white/30 bg-white/8 text-white transition-colors hover:bg-white/15"
+              searchClassName="border-white bg-white text-foreground transition-colors hover:bg-white/90"
             />
           </div>
         </div>
