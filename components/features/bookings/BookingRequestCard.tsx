@@ -45,6 +45,11 @@ import {
 } from '@/lib/core/profile/utils'
 import { formatPrice } from '@/lib/core/bookings/calculations'
 import { acceptBooking, refuseBooking } from '@/lib/core/bookings/requests'
+import {
+  buildPackageRefusalReason,
+  PACKAGE_REFUSAL_REASONS,
+  type PackageRefusalReason,
+} from '@/lib/core/bookings/package-safety'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -82,13 +87,6 @@ interface BookingRequestCardProps {
   onUpdate?: () => void
 }
 
-const REFUSAL_REASONS = [
-  { value: 'non_conform', label: 'Colis non conforme' },
-  { value: 'dates_incompatible', label: 'Dates incompatibles' },
-  { value: 'capacity_insufficient', label: 'Capacité insuffisante' },
-  { value: 'other', label: 'Autre' },
-] as const
-
 const STATUS_LABELS: Record<BookingRequestStatus, string> = {
   pending: 'En attente',
   accepted: 'Accepté',
@@ -114,7 +112,8 @@ export function BookingRequestCard({
   const [showAcceptModal, setShowAcceptModal] = useState(false)
   const [showRefuseModal, setShowRefuseModal] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [refusalReason, setRefusalReason] = useState('')
+  const [refusalReason, setRefusalReason] =
+    useState<PackageRefusalReason | null>(null)
   const [refusalReasonOther, setRefusalReasonOther] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(
@@ -148,7 +147,7 @@ export function BookingRequestCard({
 
   const handleAccept = async () => {
     if (!acceptedTerms) {
-      toast.error('Veuillez accepter les conditions')
+      toast.error('Veuillez confirmer la revue de la declaration colis')
       return
     }
 
@@ -177,10 +176,15 @@ export function BookingRequestCard({
   }
 
   const handleRefuse = async () => {
-    const reason =
-      refusalReason === 'other'
-        ? refusalReasonOther
-        : REFUSAL_REASONS.find(r => r.value === refusalReason)?.label || ''
+    if (!refusalReason) {
+      toast.error('Veuillez selectionner une raison de refus')
+      return
+    }
+
+    const reason = buildPackageRefusalReason({
+      reason: refusalReason,
+      details: refusalReason === 'other' ? refusalReasonOther : undefined,
+    })
 
     if (!reason || reason.trim().length < 5) {
       toast.error('Veuillez fournir une raison de refus')
@@ -199,7 +203,7 @@ export function BookingRequestCard({
       if (result.success) {
         toast.success(result.message)
         setShowRefuseModal(false)
-        setRefusalReason('')
+        setRefusalReason(null)
         setRefusalReasonOther('')
         onUpdate?.()
       }
@@ -271,7 +275,7 @@ export function BookingRequestCard({
               </span>
             </div>
             {packageDescription && (
-              <p className="text-sm text-muted-foreground">
+              <p className="whitespace-pre-line text-sm text-muted-foreground">
                 {packageDescription}
               </p>
             )}
@@ -370,15 +374,32 @@ export function BookingRequestCard({
       </Card>
 
       {/* Modal Acceptation */}
-      <Dialog open={showAcceptModal} onOpenChange={setShowAcceptModal}>
+      <Dialog
+        open={showAcceptModal}
+        onOpenChange={open => {
+          setShowAcceptModal(open)
+          if (!open) {
+            setAcceptedTerms(false)
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Accepter cette demande</DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir accepter cette demande de réservation ?
+              Relisez la declaration colis avant de confirmer que vous pouvez
+              transporter cette demande.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {packageDescription && (
+              <div className="rounded-lg border bg-muted/40 p-3">
+                <p className="mb-2 text-sm font-medium">Declaration colis</p>
+                <p className="whitespace-pre-line text-sm text-muted-foreground">
+                  {packageDescription}
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <p className="text-sm font-medium">Rappels importants :</p>
               <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
@@ -405,7 +426,8 @@ export function BookingRequestCard({
                 htmlFor="accept_terms_booking"
                 className="cursor-pointer text-sm"
               >
-                J'ai lu et j'accepte les conditions de transport
+                J'ai relu la declaration colis et je peux transporter ce colis
+                selon les informations fournies.
               </Label>
             </div>
           </div>
@@ -430,23 +452,46 @@ export function BookingRequestCard({
       </Dialog>
 
       {/* Modal Refus */}
-      <Dialog open={showRefuseModal} onOpenChange={setShowRefuseModal}>
+      <Dialog
+        open={showRefuseModal}
+        onOpenChange={open => {
+          setShowRefuseModal(open)
+          if (!open) {
+            setRefusalReason(null)
+            setRefusalReasonOther('')
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Refuser cette demande</DialogTitle>
             <DialogDescription>
-              Veuillez indiquer la raison du refus
+              Indiquez pourquoi la declaration colis ne vous permet pas
+              d'accepter cette demande.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {packageDescription && (
+              <div className="rounded-lg border bg-muted/40 p-3">
+                <p className="mb-2 text-sm font-medium">Declaration colis</p>
+                <p className="whitespace-pre-line text-sm text-muted-foreground">
+                  {packageDescription}
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="refusal_reason">Raison du refus</Label>
-              <Select value={refusalReason} onValueChange={setRefusalReason}>
+              <Select
+                value={refusalReason ?? ''}
+                onValueChange={value =>
+                  setRefusalReason(value as PackageRefusalReason)
+                }
+              >
                 <SelectTrigger id="refusal_reason">
                   <SelectValue placeholder="Sélectionnez une raison" />
                 </SelectTrigger>
                 <SelectContent>
-                  {REFUSAL_REASONS.map(reason => (
+                  {PACKAGE_REFUSAL_REASONS.map(reason => (
                     <SelectItem key={reason.value} value={reason.value}>
                       {reason.label}
                     </SelectItem>
@@ -472,7 +517,7 @@ export function BookingRequestCard({
               variant="outline"
               onClick={() => {
                 setShowRefuseModal(false)
-                setRefusalReason('')
+                setRefusalReason(null)
                 setRefusalReasonOther('')
               }}
             >
