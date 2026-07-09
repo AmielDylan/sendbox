@@ -143,7 +143,7 @@ export function HomePageContent() {
   return (
     <div className="landing-v2 relative overflow-x-hidden bg-background">
       {/* Hero */}
-      <section className="relative flex min-h-[calc(100svh-7rem)] items-center overflow-hidden bg-foreground text-white">
+      <section className="relative flex min-h-[34rem] items-start overflow-hidden bg-foreground text-white sm:min-h-[calc(100svh-7rem)] sm:items-center">
         <Image
           src="/images/landing/hero-trust-handoff-v2.png"
           alt="Remise de colis entre un expéditeur et un voyageur vérifié"
@@ -153,8 +153,29 @@ export function HomePageContent() {
           className="object-cover object-[70%_top] sm:object-top"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/48 to-black/10" />
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 100 100"
+          className="pointer-events-none absolute left-6 top-10 h-24 w-24 text-white/12 sm:left-8 sm:top-24 sm:h-32 sm:w-32 lg:left-24"
+        >
+          <circle
+            cx="50"
+            cy="50"
+            r="42"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <path
+            d="M8 50h84M50 8c13 12 20 26 20 42S63 80 50 92M50 8C37 20 30 34 30 50s7 30 20 42M18 28c9 6 20 9 32 9s23-3 32-9M18 72c9-6 20-9 32-9s23 3 32 9"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="2"
+          />
+        </svg>
 
-        <div className="relative z-10 w-full px-6 py-20 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
+        <div className="relative z-10 w-full px-6 pb-16 pt-12 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
           <div className="max-w-xl space-y-6 text-left animate-fade-in-up">
             <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
               Transformez chaque voyage en solution d’envoi sécurisée.
