@@ -111,8 +111,8 @@ export function RefuseBookingDialog({
         <DialogHeader>
           <DialogTitle>Refuser cette réservation</DialogTitle>
           <DialogDescription>
-            Indiquez pourquoi la declaration colis ne vous permet pas
-            d'accepter cette demande. L'expediteur sera notifie.
+            Indiquez pourquoi la declaration colis ne vous permet pas d'accepter
+            cette demande. L'expediteur sera notifie.
           </DialogDescription>
         </DialogHeader>
 
@@ -121,9 +121,7 @@ export function RefuseBookingDialog({
             <Label htmlFor="reason">Raison du refus *</Label>
             <Select
               value={reason ?? ''}
-              onValueChange={value =>
-                setReason(value as PackageRefusalReason)
-              }
+              onValueChange={value => setReason(value as PackageRefusalReason)}
               disabled={isSubmitting}
             >
               <SelectTrigger id="reason">
