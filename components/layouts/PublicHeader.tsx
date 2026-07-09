@@ -165,10 +165,10 @@ export function PublicHeader() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'text-sm font-medium transition-all duration-200 relative',
+                  'rounded-md px-3 py-2 text-sm font-medium transition-colors',
                   isActive(item.href)
-                    ? 'text-foreground after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-muted/70 text-foreground'
+                    : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                 )}
               >
                 {item.label}
@@ -193,14 +193,15 @@ export function PublicHeader() {
                     asChild
                     variant="ghost"
                     size="sm"
-                    className="hover:bg-accent"
+                    className="hover:bg-muted"
                   >
                     <Link href="/login">Se connecter</Link>
                   </Button>
                   <Button
                     asChild
+                    variant="outline"
                     size="sm"
-                    className="bg-foreground text-background shadow-md transition-all duration-200 hover:scale-105 hover:bg-foreground/90 hover:shadow-lg"
+                    className="border-border bg-background shadow-none transition-colors hover:bg-muted hover:text-foreground"
                   >
                     <Link href="/register">S'inscrire</Link>
                   </Button>
@@ -349,7 +350,8 @@ export function PublicHeader() {
                         </Button>
                         <Button
                           asChild
-                          className="w-full bg-foreground text-background hover:bg-foreground/90"
+                          variant="outline"
+                          className="w-full bg-background hover:bg-muted"
                         >
                           <Link
                             href="/register"
