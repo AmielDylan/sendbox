@@ -143,19 +143,21 @@ export function HomePageContent() {
   return (
     <div className="landing-v2 relative overflow-x-hidden bg-background">
       {/* Hero */}
-      <section className="relative flex min-h-screen items-end overflow-hidden bg-foreground text-white sm:items-center">
-        <Image
-          src="/images/landing/hero-trust-handoff-v2.png"
-          alt="Remise de colis entre un expéditeur et un voyageur vérifié"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[68%_top] sm:object-top"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/84 via-black/32 to-black/18 sm:bg-gradient-to-r sm:from-black/80 sm:via-black/48 sm:to-black/10" />
+      <section className="relative overflow-hidden bg-foreground text-white sm:flex sm:min-h-screen sm:items-center">
+        <div className="relative h-[52svh] min-h-[18rem] max-h-[30rem] sm:absolute sm:inset-0 sm:h-auto sm:min-h-0 sm:max-h-none">
+          <Image
+            src="/images/landing/hero-trust-handoff-v2.png"
+            alt="Remise de colis entre un expéditeur et un voyageur vérifié"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[78%_center] sm:object-top"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/56 via-black/12 to-transparent sm:bg-gradient-to-r sm:from-black/80 sm:via-black/48 sm:to-black/10" />
+        </div>
 
-        <div className="relative z-10 w-full px-6 pb-10 pt-28 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
-          <div className="max-w-xl space-y-6 text-left animate-fade-in-up">
+        <div className="relative z-10 w-full px-6 pb-10 pt-8 text-center sm:px-8 sm:py-24 sm:text-left lg:px-24 lg:py-28 xl:px-[6.25rem]">
+          <div className="mx-auto max-w-xl space-y-6 animate-fade-in-up sm:mx-0">
             <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
               Transformez chaque voyage en solution d’envoi sécurisée.
             </h1>
@@ -166,7 +168,7 @@ export function HomePageContent() {
             </p>
 
             <LandingCta
-              className="flex-wrap pt-2 sm:flex-nowrap"
+              className="justify-center flex-wrap pt-2 sm:justify-start sm:flex-nowrap"
               registerClassName="bg-white text-foreground transition-colors hover:bg-white/90"
               searchClassName="border-white/70 bg-transparent text-white transition-colors hover:border-white hover:bg-white/10 hover:text-white"
             />
