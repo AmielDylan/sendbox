@@ -4,24 +4,28 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-
-const REASONS = [
-  'Colis non remis',
-  'Colis endommagé à la livraison',
-  'Colis perdu',
-  'Voyageur absent au rendez-vous',
-  'Expéditeur absent au rendez-vous',
-  "Contenu non conforme à l'annonce",
-  'Autre',
-]
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { IconInfoCircle } from '@tabler/icons-react'
+import {
+  DISPUTE_REASONS,
+  getDisputeEvidenceChecklist,
+} from '@/lib/core/disputes/policy'
 
 export function DisputeForm({
   transactionId,
   onSuccess,
+  context,
 }: {
   transactionId: string
   onSuccess: () => void
+  context?: string
 }) {
   const [reason, setReason] = useState('')
   const [description, setDescription] = useState('')
@@ -29,9 +33,9 @@ export function DisputeForm({
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
-    if (!reason || description.length < 30) {
+    if (!reason || description.trim().length < 30) {
       setError(
-        'Choisissez une raison et décrivez le problème (30 caractères minimum).'
+        'Choisissez une raison et décrivez les faits (30 caractères minimum).'
       )
       return
     }
@@ -42,7 +46,11 @@ export function DisputeForm({
     const res = await fetch('/api/disputes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transactionId, reason, description }),
+      body: JSON.stringify({
+        transactionId,
+        reason,
+        description,
+      }),
     })
 
     if (!res.ok) {
@@ -55,31 +63,51 @@ export function DisputeForm({
     onSuccess()
   }
 
+  const evidenceChecklist = reason ? getDisputeEvidenceChecklist(reason) : []
+  const selectedReason = DISPUTE_REASONS.find(item => item.code === reason)
+
   return (
     <div className="flex flex-col gap-4">
       <Alert>
+        <IconInfoCircle className="h-4 w-4" />
+        <AlertTitle>Avant d'ouvrir un litige</AlertTitle>
         <AlertDescription>
-          Ce litige sera visible publiquement sur les deux profils pendant toute
-          la durée de l&apos;instruction. Cette action est irréversible.
+          {context ||
+            'Expliquez les faits de manière vérifiable. Le litige sera visible sur les profils pendant son instruction.'}
         </AlertDescription>
       </Alert>
 
       <div className="flex flex-col gap-1">
         <Label htmlFor="dispute-reason">Raison du litige</Label>
-        <select
-          id="dispute-reason"
-          value={reason}
-          onChange={event => setReason(event.target.value)}
-          className="rounded-md border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">Sélectionner...</option>
-          {REASONS.map(item => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
+        <Select value={reason} onValueChange={setReason}>
+          <SelectTrigger id="dispute-reason">
+            <SelectValue placeholder="Sélectionner une raison..." />
+          </SelectTrigger>
+          <SelectContent>
+            {DISPUTE_REASONS.map(item => (
+              <SelectItem key={item.code} value={item.code}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedReason ? (
+          <p className="text-xs leading-5 text-muted-foreground">
+            {selectedReason.description}
+          </p>
+        ) : null}
       </div>
+
+      {evidenceChecklist.length > 0 ? (
+        <div className="rounded-md border bg-muted/30 p-3">
+          <p className="text-sm font-medium">Éléments utiles à fournir</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+            {evidenceChecklist.map(item => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="flex flex-col gap-1">
         <Label htmlFor="dispute-description">
@@ -93,7 +121,7 @@ export function DisputeForm({
           value={description}
           onChange={event => setDescription(event.target.value.slice(0, 500))}
           rows={4}
-          placeholder="Décrivez précisément les faits, avec les dates et le contexte..."
+          placeholder="Décrivez les faits dans l'ordre : date, lieu, échanges, preuves disponibles, action attendue..."
           className="resize-none"
         />
       </div>

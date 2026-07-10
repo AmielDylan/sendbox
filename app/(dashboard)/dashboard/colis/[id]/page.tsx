@@ -12,6 +12,14 @@ import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import {
   IconLoader2,
@@ -26,6 +34,7 @@ import {
   IconStar,
   IconArrowLeft,
   IconInfoCircle,
+  IconAlertTriangle,
 } from '@tabler/icons-react'
 import { BookingStatusBadge } from '@/components/features/bookings/BookingStatusBadge'
 import { BookingTimeline } from '@/components/features/bookings/BookingTimeline'
@@ -35,6 +44,7 @@ import { RefuseBookingDialog } from '@/components/features/bookings/RefuseBookin
 import { CancelBookingDialog } from '@/components/features/bookings/CancelBookingDialog'
 import { DeleteBookingDialog } from '@/components/features/bookings/DeleteBookingDialog'
 import { ConfirmDeliveryDialog } from '@/components/features/bookings/ConfirmDeliveryDialog'
+import { DisputeForm } from '@/components/trust/DisputeForm'
 import { acceptBooking } from '@/lib/core/bookings/requests'
 import { getCancellationPolicy } from '@/lib/core/bookings/cancellation-policy'
 import {
@@ -396,6 +406,11 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
   const displayStatus: BookingStatus = booking.delivery_confirmed_at
     ? 'confirmed'
     : booking.status
+  const canOpenDispute =
+    cancellationPolicy.recommendedAction === 'dispute' ||
+    ['paid', 'confirmed', 'deposited', 'in_transit', 'delivered'].includes(
+      booking.status
+    )
 
   const handleAcceptBooking = async () => {
     setIsAccepting(true)
@@ -639,6 +654,36 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                     </Link>
                   </Button>
                 )}
+
+                {(isSender || isTraveler) &&
+                  canOpenDispute &&
+                  booking.status !== 'cancelled' && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="destructive" className="w-full">
+                          <IconAlertTriangle className="mr-2 h-4 w-4" />
+                          Ouvrir un litige
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                          <DialogTitle>Ouvrir un litige</DialogTitle>
+                          <DialogDescription>
+                            Le dossier sera transmis à l’admin Sendbox avec les
+                            éléments utiles à l’instruction.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DisputeForm
+                          transactionId={booking.id}
+                          context={cancellationPolicy.userNotice}
+                          onSuccess={() => {
+                            toast.success('Litige ouvert')
+                            router.refresh()
+                          }}
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  )}
 
                 {/* Actions Voyageur */}
                 {isTraveler && booking.status === 'pending' && (

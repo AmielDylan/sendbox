@@ -16,10 +16,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { IconLoader2 } from '@tabler/icons-react'
+import { IconLoader2, IconExternalLink } from '@tabler/icons-react'
 import { PageHeader } from '@/components/ui/page-header'
+import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import Link from 'next/link'
 
 export default function AdminDisputesPage() {
   const {
@@ -73,31 +75,81 @@ export default function AdminDisputesPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Montant</TableHead>
-                    <TableHead>Raison</TableHead>
+                    <TableHead>Litige</TableHead>
+                    <TableHead>Réservation</TableHead>
+                    <TableHead>Motif</TableHead>
+                    <TableHead>Description</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {disputes?.map((dispute: any) => (
-                    <TableRow key={dispute.id}>
-                      <TableCell className="font-mono text-xs">
-                        {dispute.id.slice(0, 8)}...
-                      </TableCell>
-                      <TableCell>{dispute.total_price || 0} EUR</TableCell>
-                      <TableCell>{dispute.disputed_reason || 'N/A'}</TableCell>
-                      <TableCell>
-                        {format(new Date(dispute.created_at), 'PP', {
-                          locale: fr,
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="destructive">À traiter</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {disputes?.map((dispute: any) => {
+                    const booking = Array.isArray(dispute.bookings)
+                      ? dispute.bookings[0]
+                      : dispute.bookings
+
+                    return (
+                      <TableRow key={dispute.id}>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <p className="font-mono text-xs">
+                              {dispute.id.slice(0, 8)}...
+                            </p>
+                            <Badge variant="destructive">
+                              {dispute.status || 'OPEN'}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1 text-sm">
+                            <p className="font-mono text-xs">
+                              {dispute.booking_id?.slice(0, 8)}...
+                            </p>
+                            <p className="text-muted-foreground">
+                              {booking?.total_price || 0} EUR
+                              {booking?.kilos_requested
+                                ? ` · ${booking.kilos_requested} kg`
+                                : ''}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[180px]">
+                          <p className="text-sm font-medium">
+                            {dispute.reason || 'N/A'}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Ouvert par {dispute.opened_by_id?.slice(0, 8)}...
+                          </p>
+                        </TableCell>
+                        <TableCell className="max-w-[340px]">
+                          <p className="line-clamp-5 whitespace-pre-line text-sm text-muted-foreground">
+                            {dispute.description || 'Aucune description'}
+                          </p>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(dispute.created_at), 'PP', {
+                            locale: fr,
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-2">
+                            <Badge variant="destructive">À traiter</Badge>
+                            {dispute.booking_id ? (
+                              <Button asChild variant="outline" size="sm">
+                                <Link
+                                  href={`/dashboard/colis/${dispute.booking_id}`}
+                                >
+                                  <IconExternalLink className="mr-2 h-4 w-4" />
+                                  Dossier
+                                </Link>
+                              </Button>
+                            ) : null}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </div>
