@@ -12,6 +12,7 @@ import {
   markAsDispute,
   getAdminBookings,
 } from '@/lib/core/admin/actions'
+import { getCancellationPolicy } from '@/lib/core/bookings/cancellation-policy'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -133,6 +134,12 @@ export default function AdminBookingsPage() {
     return <Badge variant={variants[status] || 'secondary'}>{status}</Badge>
   }
 
+  const getCancelledByRole = (booking: any) => {
+    if (booking.cancelled_by === booking.sender_id) return 'sender'
+    if (booking.cancelled_by === booking.traveler_id) return 'traveler'
+    return 'unknown'
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -157,58 +164,84 @@ export default function AdminBookingsPage() {
                   <TableHead>Statut</TableHead>
                   <TableHead>Poids</TableHead>
                   <TableHead>Montant</TableHead>
+                  <TableHead>Traitement V1</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bookings?.map((booking: any) => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-mono text-xs">
-                      {booking.id.slice(0, 8)}...
-                    </TableCell>
-                    <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                    <TableCell>{booking.weight_kg} kg</TableCell>
-                    <TableCell>{booking.total_price || 0} EUR</TableCell>
-                    <TableCell>
-                      {format(new Date(booking.created_at), 'PP', {
-                        locale: fr,
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleReleasePayment(booking.id)}
-                          disabled={booking.status !== 'delivered'}
-                        >
-                          <IconLockOpen className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedBooking(booking)
-                            setRefundDialogOpen(true)
-                          }}
-                        >
-                          <IconCurrencyDollar className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedBooking(booking)
-                            setDisputeDialogOpen(true)
-                          }}
-                        >
-                          <IconAlertTriangle className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {bookings?.map((booking: any) => {
+                  const cancellationPolicy = getCancellationPolicy({
+                    status: booking.status,
+                    paidAt: booking.paid_at,
+                    actorRole: 'admin',
+                    cancelledByRole: getCancelledByRole(booking),
+                  })
+
+                  return (
+                    <TableRow key={booking.id}>
+                      <TableCell className="font-mono text-xs">
+                        {booking.id.slice(0, 8)}...
+                      </TableCell>
+                      <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                      <TableCell>{booking.weight_kg} kg</TableCell>
+                      <TableCell>{booking.total_price || 0} EUR</TableCell>
+                      <TableCell className="max-w-[220px]">
+                        <div className="space-y-1">
+                          <Badge
+                            variant={
+                              cancellationPolicy.requiresAdminReview
+                                ? 'destructive'
+                                : 'secondary'
+                            }
+                          >
+                            {cancellationPolicy.adminLabel}
+                          </Badge>
+                          <p className="text-xs leading-5 text-muted-foreground">
+                            {cancellationPolicy.adminDescription}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(booking.created_at), 'PP', {
+                          locale: fr,
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleReleasePayment(booking.id)}
+                            disabled={booking.status !== 'delivered'}
+                          >
+                            <IconLockOpen className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedBooking(booking)
+                              setRefundDialogOpen(true)
+                            }}
+                          >
+                            <IconCurrencyDollar className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedBooking(booking)
+                              setDisputeDialogOpen(true)
+                            }}
+                          >
+                            <IconAlertTriangle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>

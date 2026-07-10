@@ -25,6 +25,7 @@ import {
   IconCircleCheck,
   IconStar,
   IconArrowLeft,
+  IconInfoCircle,
 } from '@tabler/icons-react'
 import { BookingStatusBadge } from '@/components/features/bookings/BookingStatusBadge'
 import { BookingTimeline } from '@/components/features/bookings/BookingTimeline'
@@ -35,6 +36,7 @@ import { CancelBookingDialog } from '@/components/features/bookings/CancelBookin
 import { DeleteBookingDialog } from '@/components/features/bookings/DeleteBookingDialog'
 import { ConfirmDeliveryDialog } from '@/components/features/bookings/ConfirmDeliveryDialog'
 import { acceptBooking } from '@/lib/core/bookings/requests'
+import { getCancellationPolicy } from '@/lib/core/bookings/cancellation-policy'
 import {
   getPublicProfiles,
   mapPublicProfilesById,
@@ -69,6 +71,8 @@ interface BookingDetail {
   accepted_at: string | null
   refused_at: string | null
   refused_reason: string | null
+  cancelled_by: string | null
+  cancelled_reason: string | null
   deposited_at: string | null
   delivered_at: string | null
   delivery_confirmed_at: string | null
@@ -376,6 +380,17 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
 
   const isSender = booking.sender_id === currentUserId
   const isTraveler = booking.traveler_id === currentUserId
+  const cancellationPolicy = getCancellationPolicy({
+    status: booking.status,
+    paidAt: booking.paid_at,
+    actorRole: isSender ? 'sender' : isTraveler ? 'traveler' : 'unknown',
+    cancelledByRole:
+      booking.cancelled_by === booking.sender_id
+        ? 'sender'
+        : booking.cancelled_by === booking.traveler_id
+          ? 'traveler'
+          : 'unknown',
+  })
   const fallbackTotalPrice =
     booking.total_price ?? booking.kilos_requested * (booking.price_per_kg || 0)
   const displayStatus: BookingStatus = booking.delivery_confirmed_at
@@ -505,6 +520,16 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                   </p>
                 </div>
               )}
+
+              <div className="rounded border border-border/60 bg-muted/30 p-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <IconInfoCircle className="h-4 w-4 text-primary" />
+                  <span>Annulation et imprévu V1</span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {cancellationPolicy.userNotice}
+                </p>
+              </div>
             </CardContent>
           </Card>
 
@@ -575,6 +600,8 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                   <CancelBookingDialog
                     bookingId={booking.id}
                     description="La réservation est acceptée. Vous pouvez l'annuler en indiquant une raison."
+                    policyTitle={cancellationPolicy.title}
+                    policyNotice={cancellationPolicy.userNotice}
                   />
                 )}
 
@@ -641,6 +668,8 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                   <CancelBookingDialog
                     bookingId={booking.id}
                     description="La réservation est acceptée mais pas encore payée. Vous pouvez l'annuler en indiquant une raison."
+                    policyTitle={cancellationPolicy.title}
+                    policyNotice={cancellationPolicy.userNotice}
                   />
                 )}
 
@@ -672,6 +701,8 @@ export default function BookingDetailPage({ params }: BookingDetailPageProps) {
                       description="La mise en relation est confirmée. L'annulation par le voyageur peut entraîner un malus de réputation."
                       penaltyNotice="Un malus sera appliqué à votre réputation."
                       confirmLabel="Annuler la réservation (malus)"
+                      policyTitle={cancellationPolicy.title}
+                      policyNotice={cancellationPolicy.userNotice}
                     />
                   )}
 
