@@ -18,11 +18,12 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { cancelBookingWithReason } from '@/lib/core/bookings/workflow'
-import { IconLoader2, IconCircleX } from '@tabler/icons-react'
+import { IconLoader2, IconCircleX, IconInfoCircle } from '@tabler/icons-react'
 
 interface CancelBookingDialogProps {
   bookingId: string
@@ -30,6 +31,8 @@ interface CancelBookingDialogProps {
   description?: string
   penaltyNotice?: string
   confirmLabel?: string
+  policyTitle?: string
+  policyNotice?: string
 }
 
 export function CancelBookingDialog({
@@ -38,6 +41,8 @@ export function CancelBookingDialog({
   description,
   penaltyNotice,
   confirmLabel,
+  policyTitle,
+  policyNotice,
 }: CancelBookingDialogProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
@@ -98,19 +103,28 @@ export function CancelBookingDialog({
               "Cette action est irréversible. La réservation sera annulée et l'autre partie sera notifiée."}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="space-y-2">
-          <Label htmlFor="cancel_reason">Raison de l'annulation</Label>
-          <Textarea
-            id="cancel_reason"
-            placeholder="Expliquez brièvement la raison..."
-            value={reason}
-            onChange={event => setReason(event.target.value)}
-            rows={3}
-            disabled={isSubmitting}
-          />
-          {penaltyNotice && (
-            <p className="text-xs text-destructive">{penaltyNotice}</p>
+        <div className="space-y-3">
+          {policyNotice && (
+            <Alert className="bg-muted/40">
+              <IconInfoCircle className="h-4 w-4" />
+              <AlertTitle>{policyTitle || 'Règle V1 Sendbox'}</AlertTitle>
+              <AlertDescription>{policyNotice}</AlertDescription>
+            </Alert>
           )}
+          <div className="space-y-2">
+            <Label htmlFor="cancel_reason">Raison de l'annulation</Label>
+            <Textarea
+              id="cancel_reason"
+              placeholder="Expliquez brièvement la raison..."
+              value={reason}
+              onChange={event => setReason(event.target.value)}
+              rows={3}
+              disabled={isSubmitting}
+            />
+            {penaltyNotice && (
+              <p className="text-xs text-destructive">{penaltyNotice}</p>
+            )}
+          </div>
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>Retour</AlertDialogCancel>

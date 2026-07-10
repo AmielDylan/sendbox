@@ -273,6 +273,23 @@ describe('cancelBookingWithReason', () => {
       expect(result.error).toMatch(/ne peut pas être annulée à ce stade/i)
     })
 
+    it('rejette si réservation en statut deposited même pour le voyageur', async () => {
+      setMockAuthUser({ id: mockTraveler.id, email: mockTraveler.email })
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'deposited',
+        paid_at: new Date().toISOString(),
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await cancelBookingWithReason(booking.id, 'Raison valide')
+
+      expect(result.error).toBeDefined()
+      expect(result.error).toMatch(/ne peut pas être annulée à ce stade/i)
+    })
+
     it('rejette si réservation en statut delivered', async () => {
       const booking = createMockBooking({
         announcement_id: mockAnnouncement.id,
