@@ -537,7 +537,7 @@ export async function getAdminDisputes() {
       description,
       status,
       is_public,
-      created_at,
+      opened_at,
       bookings:booking_id (
         id,
         status,
@@ -549,7 +549,7 @@ export async function getAdminDisputes() {
     `
     )
     .in('status', ['OPEN', 'UNDER_REVIEW', 'open', 'under_review'])
-    .order('created_at', { ascending: false })
+    .order('opened_at', { ascending: false })
 
   if (error) throw new Error(error.message)
   return data ?? []

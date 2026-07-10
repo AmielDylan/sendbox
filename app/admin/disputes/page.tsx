@@ -128,7 +128,7 @@ export default function AdminDisputesPage() {
                           </p>
                         </TableCell>
                         <TableCell>
-                          {format(new Date(dispute.created_at), 'PP', {
+                          {format(new Date(dispute.opened_at), 'PP', {
                             locale: fr,
                           })}
                         </TableCell>
