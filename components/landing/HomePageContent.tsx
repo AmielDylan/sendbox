@@ -51,14 +51,34 @@ const features = [
 ]
 
 const activeCountries = [
-  { flag: '🇫🇷', label: 'France' },
-  { flag: '🇧🇯', label: 'Bénin' },
+  {
+    label: 'France',
+    flagBackground:
+      'linear-gradient(90deg, #002395 0 33.33%, #ffffff 33.33% 66.66%, #ed2939 66.66% 100%)',
+  },
+  {
+    label: 'Bénin',
+    flagBackground:
+      'linear-gradient(90deg, #008751 0 40%, transparent 40% 100%), linear-gradient(180deg, #fcd116 0 50%, #e8112d 50% 100%)',
+  },
 ]
 
 const upcomingCountries = [
-  { flag: '🇹🇬', label: 'Togo' },
-  { flag: '🇨🇮', label: "Côte d'Ivoire" },
-  { flag: '🇸🇳', label: 'Sénégal' },
+  {
+    label: 'Togo',
+    flagBackground:
+      'linear-gradient(180deg, #006a4e 0 20%, #ffce00 20% 40%, #006a4e 40% 60%, #ffce00 60% 80%, #006a4e 80% 100%)',
+  },
+  {
+    label: "Côte d'Ivoire",
+    flagBackground:
+      'linear-gradient(90deg, #f77f00 0 33.33%, #ffffff 33.33% 66.66%, #009e60 66.66% 100%)',
+  },
+  {
+    label: 'Sénégal',
+    flagBackground:
+      'linear-gradient(90deg, #00853f 0 33.33%, #fdef42 33.33% 66.66%, #e31b23 66.66% 100%)',
+  },
 ]
 
 const steps = [
@@ -143,21 +163,19 @@ export function HomePageContent() {
   return (
     <div className="landing-v2 relative overflow-x-hidden bg-background">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-foreground text-white sm:flex sm:min-h-screen sm:items-center">
-        <div className="relative h-[52svh] min-h-[18rem] max-h-[30rem] sm:absolute sm:inset-0 sm:h-auto sm:min-h-0 sm:max-h-none">
-          <Image
-            src="/images/landing/hero-trust-handoff-v2.png"
-            alt="Remise de colis entre un expéditeur et un voyageur vérifié"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-[78%_center] sm:object-top"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/56 via-black/12 to-transparent sm:bg-gradient-to-r sm:from-black/80 sm:via-black/48 sm:to-black/10" />
-        </div>
+      <section className="relative flex min-h-[68svh] items-center overflow-hidden bg-black text-white sm:min-h-screen">
+        <Image
+          src="/images/landing/hero-trust-handoff-v2.png"
+          alt="Remise de colis entre un expéditeur et un voyageur vérifié"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[74%_center] sm:object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/42 to-black/12 sm:from-black/80 sm:via-black/48 sm:to-black/10" />
 
-        <div className="relative z-10 w-full px-6 pb-10 pt-8 text-center sm:px-8 sm:py-24 sm:text-left lg:px-24 lg:py-28 xl:px-[6.25rem]">
-          <div className="mx-auto max-w-xl space-y-6 animate-fade-in-up sm:mx-0">
+        <div className="relative z-10 w-full px-6 pt-16 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
+          <div className="max-w-xl space-y-6 text-left animate-fade-in-up">
             <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
               Transformez chaque voyage en solution d’envoi sécurisée.
             </h1>
@@ -168,9 +186,9 @@ export function HomePageContent() {
             </p>
 
             <LandingCta
-              className="justify-center flex-wrap pt-2 sm:justify-start sm:flex-nowrap"
-              registerClassName="bg-white text-foreground transition-colors hover:bg-white/90"
-              searchClassName="border-white/70 bg-transparent text-white transition-colors hover:border-white hover:bg-white/10 hover:text-white"
+              className="flex-wrap pt-2 sm:flex-nowrap"
+              registerClassName="bg-white text-black transition-colors hover:bg-white/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+              searchClassName="border-white/70 bg-transparent text-white transition-colors hover:border-white hover:bg-white/10 hover:text-white dark:text-white dark:hover:text-white"
             />
           </div>
         </div>
@@ -235,7 +253,12 @@ export function HomePageContent() {
                 {activeCountries.map(country => (
                   <div key={country.label} className="group relative">
                     <div className="rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 px-2.5 py-1.5 transition-all duration-300 hover:scale-105 hover:border-primary/40 hover:shadow-md">
-                      <span className="text-lg sm:text-xl">{country.flag}</span>
+                      <span
+                        aria-label={country.label}
+                        role="img"
+                        className="block h-4 w-6 rounded-[2px] border border-black/10 shadow-sm sm:h-5 sm:w-7"
+                        style={{ background: country.flagBackground }}
+                      />
                     </div>
                     <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
                       {country.label}
@@ -253,7 +276,12 @@ export function HomePageContent() {
                 {upcomingCountries.map(country => (
                   <div key={country.label} className="group relative">
                     <div className="rounded-lg border border-border/60 bg-background px-2.5 py-1.5 opacity-70 transition-all duration-300 hover:opacity-100">
-                      <span className="text-lg sm:text-xl">{country.flag}</span>
+                      <span
+                        aria-label={country.label}
+                        role="img"
+                        className="block h-4 w-6 rounded-[2px] border border-black/10 shadow-sm sm:h-5 sm:w-7"
+                        style={{ background: country.flagBackground }}
+                      />
                     </div>
                     <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
                       {country.label}
