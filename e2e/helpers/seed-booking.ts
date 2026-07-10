@@ -49,6 +49,33 @@ export async function acceptTestBooking(bookingId: string): Promise<void> {
   if (error) throw new Error(`Failed to accept booking: ${error.message}`)
 }
 
+export async function updateTestBookingStatus(
+  bookingId: string,
+  status: string
+): Promise<void> {
+  const supabase = createE2EAdminClient()
+  const now = new Date().toISOString()
+  const patch: Record<string, string | null> = { status }
+
+  if (status === 'paid' || status === 'confirmed') {
+    patch.paid_at = now
+  }
+
+  if (status === 'deposited') {
+    patch.paid_at = now
+    patch.deposited_at = now
+  }
+
+  const { error } = await supabase
+    .from('bookings')
+    .update(patch)
+    .eq('id', bookingId)
+
+  if (error) {
+    throw new Error(`Failed to update booking status: ${error.message}`)
+  }
+}
+
 export async function deleteTestBookings(senderId: string): Promise<void> {
   const supabase = createE2EAdminClient()
   await supabase

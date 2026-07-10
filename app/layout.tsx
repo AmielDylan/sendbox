@@ -53,6 +53,8 @@ export const metadata: Metadata = {
   },
 }
 
+const enableVercelAnalytics = process.env.VERCEL === '1'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -68,7 +70,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster />
-          <Analytics />
+          {enableVercelAnalytics ? <Analytics /> : null}
         </Providers>
       </body>
     </html>
