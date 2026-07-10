@@ -132,7 +132,7 @@ export function PublicHeader() {
         'top-0 z-50 w-full border-b transition-all duration-300',
         isHome ? 'fixed' : 'sticky',
         overHero
-          ? 'border-white/10 bg-transparent text-white shadow-none'
+          ? 'border-border/40 bg-background/75 text-foreground shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-background/65'
           : scrolled
             ? 'bg-background/95 shadow-md backdrop-blur-xl supports-[backdrop-filter]:bg-background/80'
             : 'bg-background/80 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-background/60'
@@ -141,7 +141,7 @@ export function PublicHeader() {
       <div
         className={cn(
           'absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent to-transparent',
-          overHero ? 'via-white/20' : 'via-primary/20'
+          overHero ? 'via-border/60' : 'via-primary/20'
         )}
       />
       <div className="container-wide flex h-16 items-center justify-between relative">
@@ -153,10 +153,7 @@ export function PublicHeader() {
             width={130}
             height={29}
             priority
-            className={cn(
-              'h-6 w-auto transition-all duration-300 group-hover:scale-105 sm:h-7 dark:hidden',
-              overHero && 'hidden'
-            )}
+            className="h-6 w-auto transition-all duration-300 group-hover:scale-105 sm:h-7 dark:hidden"
             style={{ maxWidth: '130px' }}
           />
           <Image
@@ -165,10 +162,7 @@ export function PublicHeader() {
             width={130}
             height={29}
             priority
-            className={cn(
-              'hidden h-6 w-auto transition-all duration-300 group-hover:scale-105 sm:h-7 dark:block',
-              overHero && 'block'
-            )}
+            className="hidden h-6 w-auto transition-all duration-300 group-hover:scale-105 sm:h-7 dark:block"
             style={{ maxWidth: '130px' }}
           />
         </Link>
@@ -184,10 +178,10 @@ export function PublicHeader() {
                   'rounded-md px-3 py-2 text-sm font-medium transition-colors',
                   isActive(item.href)
                     ? overHero
-                      ? 'bg-white/12 text-white'
+                      ? 'bg-muted/70 text-foreground'
                       : 'bg-muted/70 text-foreground'
                     : overHero
-                      ? 'text-white/78 hover:bg-white/10 hover:text-white'
+                      ? 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                       : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
                 )}
               >
@@ -215,8 +209,7 @@ export function PublicHeader() {
                     size="sm"
                     className={cn(
                       'hover:bg-muted',
-                      overHero &&
-                        'text-white hover:bg-white/10 hover:text-white'
+                      overHero && 'text-foreground hover:bg-muted'
                     )}
                   >
                     <Link href="/login">Se connecter</Link>
@@ -228,7 +221,7 @@ export function PublicHeader() {
                     className={cn(
                       'border-border bg-background shadow-none transition-colors hover:bg-muted hover:text-foreground',
                       overHero &&
-                        'border-white/70 bg-transparent text-white hover:bg-white/10 hover:text-white'
+                        'border-border bg-background/80 text-foreground hover:bg-muted hover:text-foreground'
                     )}
                   >
                     <Link href="/register">S'inscrire</Link>
@@ -323,7 +316,7 @@ export function PublicHeader() {
             <ThemeToggle
               className={
                 overHero
-                  ? 'border-white/50 bg-transparent text-white hover:bg-white/10 hover:text-white'
+                  ? 'border-border bg-background/80 text-foreground hover:bg-muted hover:text-foreground'
                   : undefined
               }
             />
@@ -335,7 +328,7 @@ export function PublicHeader() {
           <ThemeToggle
             className={
               overHero
-                ? 'border-white/50 bg-transparent text-white hover:bg-white/10 hover:text-white'
+                ? 'border-border bg-background/80 text-foreground hover:bg-muted hover:text-foreground'
                 : undefined
             }
           />
@@ -347,7 +340,7 @@ export function PublicHeader() {
                 aria-label="Menu"
                 className={
                   overHero
-                    ? 'text-white hover:bg-white/10 hover:text-white'
+                    ? 'text-foreground hover:bg-muted hover:text-foreground'
                     : undefined
                 }
               >
