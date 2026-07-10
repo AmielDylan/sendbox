@@ -10,6 +10,7 @@ import { createAdminClient } from '@/lib/shared/db/admin'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { sendEmail } from '@/lib/shared/services/email/client'
+import { getCancellationPolicy } from '@/lib/core/bookings/cancellation-policy'
 
 /**
  * Annule une réservation avec raison.
@@ -63,16 +64,13 @@ export async function cancelBookingWithReason(
     }
   }
 
-  const matchingUnlocked =
-    booking.status === 'confirmed' ||
-    booking.status === 'paid' ||
-    Boolean(booking.paid_at)
+  const policy = getCancellationPolicy({
+    status: booking.status,
+    paidAt: booking.paid_at,
+    actorRole: isSender ? 'sender' : isTraveler ? 'traveler' : 'unknown',
+  })
 
-  if (booking.status === 'accepted' && !matchingUnlocked) {
-    // Autorisé pour expéditeur et voyageur
-  } else if (matchingUnlocked && isTraveler) {
-    // Autorisé pour le voyageur après déverrouillage, avec malus
-  } else {
+  if (!policy.canCancel) {
     return {
       error: 'Cette réservation ne peut pas être annulée à ce stade',
     }
@@ -100,7 +98,7 @@ export async function cancelBookingWithReason(
       }
     }
 
-    if (matchingUnlocked && isTraveler) {
+    if (policy.reputationPenalty && isTraveler) {
       const REPUTATION_PENALTY = 0.3
       try {
         const profileClient = process.env.SUPABASE_SERVICE_ROLE_KEY
