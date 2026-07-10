@@ -3,17 +3,11 @@ import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 import { sendEmail } from '@/lib/shared/services/email/client'
-
-const DISPUTABLE_STATUSES = [
-  'handed',
-  'in_transit',
-  'delivered',
-  'completed',
-  'HANDED',
-  'IN_TRANSIT',
-  'DELIVERED',
-  'COMPLETED',
-]
+import {
+  formatDisputeReason,
+  getDisputeEvidenceChecklist,
+  isDisputableBookingStatus,
+} from '@/lib/core/disputes/policy'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -70,12 +64,21 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  if (!DISPUTABLE_STATUSES.includes(booking.status)) {
+  if (!isDisputableBookingStatus(booking.status)) {
     return NextResponse.json(
       { error: 'Statut incompatible', code: 'INVALID_STATUS' },
       { status: 422 }
     )
   }
+
+  const reasonLabel = formatDisputeReason(reason)
+  const evidenceChecklist = getDisputeEvidenceChecklist(reason)
+  const enrichedDescription = [
+    description,
+    '',
+    'Éléments attendus pour instruction :',
+    ...evidenceChecklist.map(item => `- ${item}`),
+  ].join('\n')
 
   const { data: existing } = await admin
     .from('disputes')
@@ -99,8 +102,8 @@ export async function POST(req: NextRequest) {
     .insert({
       booking_id: bookingId,
       opened_by_id: user.id,
-      reason,
-      description,
+      reason: reasonLabel,
+      description: enrichedDescription,
       status: 'OPEN',
       is_public: true,
     })
@@ -116,15 +119,19 @@ export async function POST(req: NextRequest) {
 
   await admin
     .from('bookings')
-    .update({ status: 'disputed', is_flagged: true, disputed_reason: reason })
+    .update({
+      status: 'disputed',
+      is_flagged: true,
+      disputed_reason: reasonLabel,
+    })
     .eq('id', bookingId)
 
   await notifyAdmin({
     disputeId: dispute.id,
     bookingId,
     openedById: user.id,
-    reason,
-    description,
+    reason: reasonLabel,
+    description: enrichedDescription,
   })
 
   const otherPartyId = isSender ? booking.traveler_id : booking.sender_id
@@ -150,7 +157,7 @@ export async function POST(req: NextRequest) {
         template: 'notification',
         data: {
           title: 'Un litige vous concerne',
-          content: `${otherProfile.firstname ? `Bonjour ${otherProfile.firstname},\n\n` : ''}Une contestation a été ouverte sur une réservation vous concernant. Ce litige est visible sur votre profil public pendant l'instruction.\n\nMotif : ${reason}`,
+          content: `${otherProfile.firstname ? `Bonjour ${otherProfile.firstname},\n\n` : ''}Une contestation a été ouverte sur une réservation vous concernant. Ce litige est visible sur votre profil public pendant l'instruction.\n\nMotif : ${reasonLabel}`,
           ctaText: 'Voir la réservation',
           ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
         },

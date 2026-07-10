@@ -245,6 +245,15 @@ export async function markAsDispute(bookingId: string, reason: string) {
   }
 
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      error: 'Non authentifié',
+    }
+  }
 
   const { error } = await (supabase.from('bookings').update as any)({
     status: 'disputed',
@@ -255,6 +264,33 @@ export async function markAsDispute(bookingId: string, reason: string) {
     console.error('Error marking as dispute:', error)
     return {
       error: 'Erreur lors du marquage comme litige',
+    }
+  }
+
+  const admin = createAdminClient()
+  const { data: existing } = await admin
+    .from('disputes')
+    .select('id')
+    .eq('booking_id', bookingId)
+    .in('status', ['OPEN', 'UNDER_REVIEW', 'open', 'under_review'])
+    .maybeSingle()
+
+  if (!existing) {
+    const { error: disputeError } = await admin.from('disputes').insert({
+      booking_id: bookingId,
+      opened_by_id: user.id,
+      reason,
+      description: `Litige ouvert par l'administration.\n\nMotif : ${reason}`,
+      status: 'OPEN',
+      is_public: false,
+    })
+
+    if (disputeError) {
+      console.error('Error creating dispute record:', disputeError)
+      return {
+        error:
+          'Réservation marquée, mais erreur lors de la création du dossier litige',
+      }
     }
   }
 
@@ -491,9 +527,28 @@ export async function getAdminBookings() {
 export async function getAdminDisputes() {
   const supabase = createAdminClient()
   const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .eq('status', 'disputed')
+    .from('disputes')
+    .select(
+      `
+      id,
+      booking_id,
+      opened_by_id,
+      reason,
+      description,
+      status,
+      is_public,
+      created_at,
+      bookings:booking_id (
+        id,
+        status,
+        total_price,
+        kilos_requested,
+        sender_id,
+        traveler_id
+      )
+    `
+    )
+    .in('status', ['OPEN', 'UNDER_REVIEW', 'open', 'under_review'])
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
