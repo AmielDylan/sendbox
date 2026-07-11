@@ -55,6 +55,9 @@ export async function proxy(request: NextRequest) {
     '/verify-email',
   ]
   const isPublicRoute = publicRoutes.some(route => pathname === route)
+  const isPasswordUpdateRoute =
+    pathname === '/reset-password' &&
+    request.nextUrl.searchParams.get('update') === 'true'
 
   // Routes protégées (dashboard)
   const isProtectedRoute = pathname.startsWith('/dashboard')
@@ -108,7 +111,12 @@ export async function proxy(request: NextRequest) {
   // Si l'utilisateur est authentifié et essaie d'accéder aux pages publiques
   // Admin → toujours rediriger vers /admin/dashboard (même depuis "/")
   // User → rediriger vers /dashboard (sauf depuis "/" et "/verify-email")
-  if (user && isPublicRoute && pathname !== '/verify-email') {
+  if (
+    user &&
+    isPublicRoute &&
+    pathname !== '/verify-email' &&
+    !isPasswordUpdateRoute
+  ) {
     if (isAdmin) {
       // Admin ne peut pas accéder à la landing page ni aux pages auth
       const url = request.nextUrl.clone()

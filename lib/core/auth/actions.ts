@@ -367,8 +367,8 @@ export async function resetPassword(
       }
     }
 
+    await supabase.auth.signOut()
     revalidatePath('/', 'layout')
-    redirect('/login?message=password-reset-success')
   } catch (error) {
     console.error('Reset password error:', error)
     return {
@@ -376,6 +376,8 @@ export async function resetPassword(
       field: 'unknown',
     }
   }
+
+  redirect('/login?message=password-reset-success')
 }
 
 /**
