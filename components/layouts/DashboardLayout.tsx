@@ -158,9 +158,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       if (!user) {
         router.push('/login')
+      } else if (
+        profile?.role === 'admin' &&
+        pathname.startsWith('/dashboard')
+      ) {
+        router.replace('/admin/dashboard')
       }
     }
-  }, [user, loading, router])
+  }, [user, profile?.role, pathname, loading, router])
 
   // Spinner only when we have no user at all (not yet loaded from localStorage).
   // If user is persisted from localStorage, render immediately while auth validates in background.
