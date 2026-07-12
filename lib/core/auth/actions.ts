@@ -240,13 +240,20 @@ export async function signIn(formData: LoginInput) {
     // Gérer "Se souvenir de moi" via la durée de session
     // Supabase gère cela via les cookies
 
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single()
+
     revalidatePath('/', 'layout')
 
     // Retourner succès pour redirection côté client
     // (redirect() ne fonctionne pas depuis Server Action appelée côté client)
     return {
       success: true,
-      redirectTo: '/dashboard',
+      redirectTo:
+        (profile as any)?.role === 'admin' ? '/admin/dashboard' : '/dashboard',
     }
   } catch (error) {
     console.error('Sign in error:', error)
