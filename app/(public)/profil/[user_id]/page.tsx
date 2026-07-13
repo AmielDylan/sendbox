@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RatingDistribution } from '@/components/features/ratings/RatingDistribution'
+import { TrustLevelBadge } from '@/components/trust/TrustLevelBadge'
 import {
   IconStar,
   IconCircleCheck,
@@ -83,6 +84,9 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
   const memberSince = profile.created_at
     ? format(new Date(profile.created_at), 'MMMM yyyy', { locale: fr })
     : null
+  const trustScore = profile.trust_score ?? stats.averageRating
+  const completedCount = profile.completed_count ?? stats.completedServices
+  const disputedCount = profile.disputed_count ?? 0
 
   return (
     <div className="container mx-auto px-8 sm:px-16 lg:px-24 py-8 space-y-8">
@@ -122,6 +126,12 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                 <div className="flex-1 space-y-2">
                   <div className="space-y-1">
                     <h2 className="text-lg font-semibold">{displayName}</h2>
+                    <TrustLevelBadge
+                      trustScore={trustScore}
+                      completedCount={completedCount}
+                      disputedCount={disputedCount}
+                      className="w-fit"
+                    />
                     {profile.bio && (
                       <p className="text-sm text-muted-foreground">
                         {profile.bio}
@@ -159,7 +169,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                       {stats.totalRatings} avis
                     </span>
                     <span className="inline-flex items-center rounded-md border border-border/50 bg-background/60 px-2 py-1">
-                      {stats.completedServices} services
+                      {completedCount} services
                     </span>
                   </div>
                 </div>
@@ -183,6 +193,14 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-4">
+                  <span>Score de confiance</span>
+                  <span className="font-medium text-foreground">
+                    {trustScore > 0
+                      ? `${trustScore.toFixed(1)} / 5`
+                      : 'Nouveau'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
                   <span>Note moyenne</span>
                   <span className="font-medium text-foreground">
                     {stats.averageRating.toFixed(1)} / 5
@@ -191,7 +209,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                 <div className="flex items-center justify-between gap-4">
                   <span>Services complétés</span>
                   <span className="font-medium text-foreground">
-                    {stats.completedServices}
+                    {completedCount}
                   </span>
                 </div>
               </div>

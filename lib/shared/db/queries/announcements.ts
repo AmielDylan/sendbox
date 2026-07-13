@@ -44,6 +44,9 @@ export interface AnnouncementResult {
   traveler_avatar_url: string | null
   traveler_rating: number
   traveler_services_count: number
+  traveler_trust_score?: number | null
+  traveler_completed_count?: number | null
+  traveler_disputed_count?: number | null
   match_score: number
 }
 

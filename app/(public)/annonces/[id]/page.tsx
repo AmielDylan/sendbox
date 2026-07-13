@@ -244,6 +244,9 @@ export default async function PublicAnnouncementDetailPage({
                 avatarUrl={announcement.traveler_avatar_url}
                 rating={announcement.traveler_rating}
                 servicesCount={announcement.traveler_services_count}
+                trustScore={announcement.traveler_trust_score}
+                completedCount={announcement.traveler_completed_count}
+                disputedCount={announcement.traveler_disputed_count}
                 memberSince={announcement.traveler_member_since || undefined}
                 kycStatus={announcement.traveler_kyc_status || undefined}
               />

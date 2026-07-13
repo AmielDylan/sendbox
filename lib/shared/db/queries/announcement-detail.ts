@@ -28,6 +28,9 @@ export interface AnnouncementDetail {
   traveler_avatar_url: string | null
   traveler_rating: number
   traveler_services_count: number
+  traveler_trust_score: number | null
+  traveler_completed_count: number | null
+  traveler_disputed_count: number | null
   traveler_member_since: string | null
   traveler_kyc_status: 'pending' | 'approved' | 'rejected' | 'incomplete' | null
   reserved_weight: number
@@ -127,7 +130,10 @@ export async function getAnnouncementDetail(
       traveler_lastname: profile?.lastname || null,
       traveler_avatar_url: profile?.avatar_url || null,
       traveler_rating: travelerRating,
-      traveler_services_count: servicesCount || 0,
+      traveler_services_count: profile?.completed_count || servicesCount || 0,
+      traveler_trust_score: profile?.trust_score ?? null,
+      traveler_completed_count: profile?.completed_count ?? null,
+      traveler_disputed_count: profile?.disputed_count ?? null,
       traveler_member_since: profile?.created_at || null,
       traveler_kyc_status: profile?.kyc_status || null,
       reserved_weight: reservedWeight,
