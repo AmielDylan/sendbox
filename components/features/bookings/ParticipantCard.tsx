@@ -12,6 +12,7 @@ import {
   getShortDisplayName,
   getShortNameParts,
 } from '@/lib/core/profile/utils'
+import { TrustLevelBadge } from '@/components/trust/TrustLevelBadge'
 
 interface ParticipantCardProps {
   role: 'sender' | 'traveler'
@@ -23,6 +24,9 @@ interface ParticipantCardProps {
         avatar_url: string | null
         rating: number | null
         completed_services: number | null
+        trust_score?: number | null
+        completed_count?: number | null
+        disputed_count?: number | null
       }
     | null
     | undefined
@@ -49,6 +53,9 @@ export function ParticipantCard({
   const profileId = profile?.id
   const profileRating = typeof profile?.rating === 'number' ? profile.rating : 0
   const completedServices = profile?.completed_services ?? null
+  const trustScore = profile?.trust_score ?? profileRating
+  const completedCount = profile?.completed_count ?? completedServices ?? 0
+  const disputedCount = profile?.disputed_count ?? 0
   const avatarUrl = getAvatarUrl(
     profile?.avatar_url ?? null,
     profileId || displayName
@@ -80,6 +87,14 @@ export function ParticipantCard({
             <span className="font-medium">{displayName}</span>
           )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <TrustLevelBadge
+              trustScore={trustScore}
+              completedCount={completedCount}
+              disputedCount={disputedCount}
+              compact
+              showScore={false}
+              className="px-1.5 py-0.5 text-[10px]"
+            />
             <div className="flex items-center gap-1">
               <IconStar className="h-3 w-3 fill-yellow-400 text-yellow-400" />
               <span>{profileRating.toFixed(1)}</span>

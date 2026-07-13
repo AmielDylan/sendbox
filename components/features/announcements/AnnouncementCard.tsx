@@ -24,6 +24,7 @@ import {
   getShortDisplayName,
   getShortNameParts,
 } from '@/lib/core/profile/utils'
+import { TrustLevelBadge } from '@/components/trust/TrustLevelBadge'
 
 interface AnnouncementCardProps {
   announcement: AnnouncementResult & { is_sendbox?: boolean }
@@ -53,6 +54,13 @@ export function AnnouncementCard({
     announcement.traveler_avatar_url,
     announcement.traveler_id || travelerName
   )
+  const travelerTrustScore =
+    announcement.traveler_trust_score ?? announcement.traveler_rating
+  const travelerCompletedCount =
+    announcement.traveler_completed_count ??
+    announcement.traveler_services_count ??
+    0
+  const travelerDisputedCount = announcement.traveler_disputed_count ?? 0
 
   if (disabled) {
     return (
@@ -161,6 +169,14 @@ export function AnnouncementCard({
                   {travelerName}
                 </p>
                 <div className="flex items-center gap-2">
+                  <TrustLevelBadge
+                    trustScore={travelerTrustScore}
+                    completedCount={travelerCompletedCount}
+                    disputedCount={travelerDisputedCount}
+                    compact
+                    showScore={false}
+                    className="px-1.5 py-0.5 text-[10px]"
+                  />
                   <div className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
                     <IconStar className="h-3 w-3 fill-amber-500" />
                     {announcement.traveler_rating.toFixed(1)}
@@ -333,6 +349,14 @@ export function AnnouncementCard({
                   {travelerName}
                 </p>
                 <div className="flex items-center gap-2">
+                  <TrustLevelBadge
+                    trustScore={travelerTrustScore}
+                    completedCount={travelerCompletedCount}
+                    disputedCount={travelerDisputedCount}
+                    compact
+                    showScore={false}
+                    className="px-1.5 py-0.5 text-[10px]"
+                  />
                   <div className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
                     <IconStar className="h-3 w-3 fill-amber-500" />
                     {announcement.traveler_rating.toFixed(1)}

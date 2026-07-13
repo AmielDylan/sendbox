@@ -19,6 +19,7 @@ import {
   getShortDisplayName,
   getShortNameParts,
 } from '@/lib/core/profile/utils'
+import { TrustLevelBadge } from '@/components/trust/TrustLevelBadge'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -29,6 +30,9 @@ interface TravelerSectionProps {
   avatarUrl: string | null
   rating: number
   servicesCount: number
+  trustScore?: number | null
+  completedCount?: number | null
+  disputedCount?: number | null
   memberSince?: string
   kycStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete'
 }
@@ -40,6 +44,9 @@ export function TravelerSection({
   avatarUrl,
   rating,
   servicesCount,
+  trustScore,
+  completedCount,
+  disputedCount,
   memberSince,
   kycStatus,
 }: TravelerSectionProps) {
@@ -60,7 +67,13 @@ export function TravelerSection({
           <div className="flex-1 space-y-3">
             <div>
               <h3 className="font-semibold text-lg">{fullName}</h3>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <TrustLevelBadge
+                  trustScore={trustScore ?? rating}
+                  completedCount={completedCount ?? servicesCount}
+                  disputedCount={disputedCount}
+                  compact
+                />
                 <div className="flex items-center gap-1">
                   <IconStar className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="font-medium">{rating.toFixed(1)}</span>
