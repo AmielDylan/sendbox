@@ -458,10 +458,14 @@ export default function BookingDetailClient({
         result.status === 'PAYMENT_ALREADY_INITIATED'
       ) {
         if (!result.mustPay) {
-          toast.info("L'expéditeur doit régler les frais de mise en relation")
+          toast.info(
+            result.message ||
+              "L'expéditeur doit régler les frais de mise en relation"
+          )
           return
         }
 
+        toast.info(result.message || 'Paiement de mise en relation requis')
         setMatchingPayment({
           clientSecret: result.clientSecret,
           amountCents: result.amountCents,
@@ -470,12 +474,12 @@ export default function BookingDetailClient({
       }
 
       if (result.status === 'WAITING_OTHER_PARTY') {
-        toast.success('Votre confirmation est enregistrée')
+        toast.success(result.message || 'Votre confirmation est enregistrée')
         await loadBookingDetails()
         return
       }
 
-      toast.success('Mise en relation déjà confirmée')
+      toast.success(result.message || 'Mise en relation déjà confirmée')
       await loadBookingDetails()
     } catch (error) {
       console.error('Error starting matching payment:', error)
