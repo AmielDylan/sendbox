@@ -143,7 +143,8 @@ async function callReview(
   bookingId: string,
   cookies: Record<string, string>,
   rating: number,
-  comment: string
+  comment: string,
+  criteria: string[]
 ) {
   const cookieHeader = Object.entries(cookies)
     .map(([key, value]) => `${key}=${value}`)
@@ -155,7 +156,7 @@ async function callReview(
       'Content-Type': 'application/json',
       Cookie: cookieHeader,
     },
-    body: JSON.stringify({ rating, comment }),
+    body: JSON.stringify({ rating, comment, criteria }),
   })
 
   return { status: res.status, body: await res.json() }
@@ -259,7 +260,8 @@ async function run() {
       bookingId,
       senderCookies,
       5,
-      'Voyageur fiable et communication claire.'
+      'Voyageur fiable et communication claire pendant toute la remise.',
+      ['Communication claire', 'Voyageur recommande']
     )
     console.log(
       `   HTTP ${senderReview.status} -> ${JSON.stringify(senderReview.body)}`
@@ -283,7 +285,8 @@ async function run() {
       bookingId,
       travelerCookies,
       4,
-      'Expediteur ponctuel, colis conforme.'
+      'Expediteur ponctuel, colis conforme a la declaration fournie.',
+      ['Declaration colis claire', 'Colis conforme a la declaration']
     )
     console.log(
       `   HTTP ${travelerReview.status} -> ${JSON.stringify(travelerReview.body)}`
@@ -317,7 +320,8 @@ async function run() {
       bookingId,
       senderCookies,
       1,
-      'This edit must be rejected.'
+      'This edit must be rejected after both reviews have been published.',
+      ['Communication claire']
     )
     console.log(
       `   HTTP ${duplicateReview.status} -> ${JSON.stringify(duplicateReview.body)}`

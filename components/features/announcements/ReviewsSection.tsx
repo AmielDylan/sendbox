@@ -3,6 +3,7 @@
  */
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { IconStar } from '@tabler/icons-react'
 import { format } from 'date-fns'
@@ -13,6 +14,7 @@ import {
   getShortDisplayName,
   getShortNameParts,
 } from '@/lib/core/profile/utils'
+import { parseReviewComment } from '@/lib/core/ratings/display'
 
 interface Review {
   id: string
@@ -65,6 +67,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
             raterNameParts.lastName
           )
           const raterAvatar = getAvatarUrl(review.rater_avatar_url, raterName)
+          const parsedComment = parseReviewComment(review.comment)
 
           return (
             <div
@@ -92,9 +95,23 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
                   </div>
                 </div>
 
-                {review.comment && (
+                {parsedComment.criteria.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {parsedComment.criteria.map(criterion => (
+                      <Badge
+                        key={criterion}
+                        variant="outline"
+                        className="px-2 py-0.5 text-[10px] font-medium"
+                      >
+                        {criterion}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {parsedComment.comment && (
                   <p className="text-sm text-muted-foreground">
-                    {review.comment}
+                    {parsedComment.comment}
                   </p>
                 )}
               </div>

@@ -17,9 +17,10 @@ import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/ui/page-header'
 import { StarRating } from '@/components/features/ratings/StarRating'
 import {
+  getReviewCriteriaForRole,
   ratingSchema,
-  RATING_SUGGESTIONS,
   type RatingInput,
+  type ReviewRole,
 } from '@/lib/core/ratings/validations'
 import { submitRating, canRateBooking } from '@/lib/core/ratings/actions'
 
@@ -31,13 +32,12 @@ function RatingPageContent() {
   const [canRate, setCanRate] = useState<{
     canRate: boolean
     ratedUserName?: string
+    reviewerRole?: ReviewRole
     error?: string
     alreadyRated?: boolean
   } | null>(null)
   const [isPending, startTransition] = useTransition()
-  const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(
-    null
-  )
+  const [selectedCriteria, setSelectedCriteria] = useState<string[]>([])
 
   const form = useForm<RatingInput>({
     resolver: zodResolver(ratingSchema),
@@ -45,6 +45,7 @@ function RatingPageContent() {
       booking_id: bookingId,
       rating: 0,
       comment: '',
+      criteria: [],
     },
   })
 
@@ -56,6 +57,10 @@ function RatingPageContent() {
 
   const rating = useWatch({ control: form.control, name: 'rating' }) ?? 0
   const comment = useWatch({ control: form.control, name: 'comment' }) ?? ''
+  const criteria = useWatch({ control: form.control, name: 'criteria' }) ?? []
+  const availableCriteria = canRate?.reviewerRole
+    ? getReviewCriteriaForRole(canRate.reviewerRole)
+    : []
 
   useEffect(() => {
     const checkCanRate = async () => {
@@ -69,18 +74,27 @@ function RatingPageContent() {
     setValue('rating', value, { shouldValidate: true })
   }
 
-  const handleSuggestionClick = (suggestion: string) => {
-    const currentComment = comment || ''
-    const newComment = currentComment
-      ? `${currentComment} ${suggestion}`
-      : suggestion
-    setValue('comment', newComment, { shouldValidate: true })
-    setSelectedSuggestion(suggestion)
+  const handleCriterionToggle = (criterion: string) => {
+    const nextCriteria = selectedCriteria.includes(criterion)
+      ? selectedCriteria.filter(item => item !== criterion)
+      : selectedCriteria.length < 4
+        ? [...selectedCriteria, criterion]
+        : selectedCriteria
+
+    setSelectedCriteria(nextCriteria)
+    setValue('criteria', nextCriteria as RatingInput['criteria'], {
+      shouldValidate: true,
+    })
   }
 
   const onSubmit = async (data: RatingInput) => {
     if (data.rating === 0) {
       toast.error("Veuillez sélectionner un nombre d'étoiles")
+      return
+    }
+
+    if (data.criteria.length === 0) {
+      toast.error('Selectionnez au moins un critere')
       return
     }
 
@@ -168,29 +182,37 @@ function RatingPageContent() {
               )}
             </div>
 
-            {/* Suggestions rapides */}
+            {/* Criteres */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Suggestions rapides</label>
+              <label className="text-sm font-medium">Criteres observes</label>
               <div className="flex flex-wrap gap-2">
-                {RATING_SUGGESTIONS.map(suggestion => (
+                {availableCriteria.map(criterion => (
                   <Badge
-                    key={suggestion}
+                    key={criterion}
                     variant={
-                      selectedSuggestion === suggestion ? 'default' : 'outline'
+                      criteria.includes(criterion) ? 'default' : 'outline'
                     }
                     className="cursor-pointer"
-                    onClick={() => handleSuggestionClick(suggestion)}
+                    onClick={() => handleCriterionToggle(criterion)}
                   >
-                    {suggestion}
+                    {criterion}
                   </Badge>
                 ))}
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{criteria.length} / 4 criteres selectionnes</span>
+                {errors.criteria && (
+                  <span className="text-destructive">
+                    {errors.criteria.message}
+                  </span>
+                )}
               </div>
             </div>
 
             {/* Commentaire */}
             <div className="space-y-2">
               <label htmlFor="comment" className="text-sm font-medium">
-                Commentaire (optionnel)
+                Commentaire
               </label>
               <Textarea
                 id="comment"
@@ -212,7 +234,12 @@ function RatingPageContent() {
             {/* Bouton submit */}
             <Button
               type="submit"
-              disabled={isPending || rating === 0}
+              disabled={
+                isPending ||
+                rating === 0 ||
+                criteria.length === 0 ||
+                comment.trim().length < 20
+              }
               className="w-full"
               size="lg"
             >
