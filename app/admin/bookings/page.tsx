@@ -26,6 +26,12 @@ import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -41,6 +47,7 @@ import {
   IconCurrencyDollar,
   IconLockOpen,
   IconAlertTriangle,
+  IconDotsVertical,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -140,6 +147,45 @@ export default function AdminBookingsPage() {
     return 'unknown'
   }
 
+  const renderActionsMenu = (booking: any) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+          <IconDotsVertical className="h-4 w-4" />
+          <span className="sr-only">Actions</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          disabled={booking.status !== 'delivered'}
+          onClick={() => handleReleasePayment(booking.id)}
+        >
+          <IconLockOpen className="h-4 w-4" />
+          Debloquer le paiement
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            setSelectedBooking(booking)
+            setRefundDialogOpen(true)
+          }}
+        >
+          <IconCurrencyDollar className="h-4 w-4" />
+          Forcer remboursement
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive"
+          onClick={() => {
+            setSelectedBooking(booking)
+            setDisputeDialogOpen(true)
+          }}
+        >
+          <IconAlertTriangle className="h-4 w-4" />
+          Marquer comme litige
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -156,7 +202,71 @@ export default function AdminBookingsPage() {
           <CardTitle>Réservations ({bookings?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="grid gap-3 md:hidden">
+            {bookings?.map((booking: any) => {
+              const cancellationPolicy = getCancellationPolicy({
+                status: booking.status,
+                paidAt: booking.paid_at,
+                actorRole: 'admin',
+                cancelledByRole: getCancelledByRole(booking),
+              })
+
+              return (
+                <div
+                  key={booking.id}
+                  className="space-y-4 rounded-lg border p-4 text-sm"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <p className="font-mono text-xs text-muted-foreground">
+                        {booking.id.slice(0, 8)}...
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {getStatusBadge(booking.status)}
+                        <Badge
+                          variant={
+                            cancellationPolicy.requiresAdminReview
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                        >
+                          {cancellationPolicy.adminLabel}
+                        </Badge>
+                      </div>
+                    </div>
+                    {renderActionsMenu(booking)}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="rounded-md bg-muted/40 p-3">
+                      <p className="text-muted-foreground">Poids</p>
+                      <p className="mt-1 font-medium">{booking.weight_kg} kg</p>
+                    </div>
+                    <div className="rounded-md bg-muted/40 p-3">
+                      <p className="text-muted-foreground">Montant</p>
+                      <p className="mt-1 font-medium">
+                        {booking.total_price || 0} EUR
+                      </p>
+                    </div>
+                    <div className="col-span-2 rounded-md bg-muted/40 p-3">
+                      <p className="text-muted-foreground">Date</p>
+                      <p className="mt-1 font-medium">
+                        {format(new Date(booking.created_at), 'PP', {
+                          locale: fr,
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    {cancellationPolicy.adminDescription}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="hidden md:block overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -208,7 +318,10 @@ export default function AdminBookingsPage() {
                         })}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 lg:hidden">
+                          {renderActionsMenu(booking)}
+                        </div>
+                        <div className="hidden gap-2 lg:flex">
                           <Button
                             variant="outline"
                             size="sm"
