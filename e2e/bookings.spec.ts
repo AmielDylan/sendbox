@@ -67,9 +67,7 @@ test.describe('Création réservation — Sender', () => {
     await senderPage
       .locator('#package_description')
       .fill('Colis test E2E — contenu standard')
-    await senderPage
-      .getByLabel(/ne contient aucun objet interdit/i)
-      .check()
+    await senderPage.getByLabel(/ne contient aucun objet interdit/i).check()
     await senderPage
       .getByLabel(/description, la valeur et les dimensions/i)
       .check()

@@ -470,7 +470,7 @@ export default function BookingDetailClient({
       }
 
       if (result.status === 'WAITING_OTHER_PARTY') {
-        toast.success("Votre confirmation est enregistrée")
+        toast.success('Votre confirmation est enregistrée')
         await loadBookingDetails()
         return
       }
