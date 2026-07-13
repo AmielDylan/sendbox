@@ -252,11 +252,11 @@ export function HomePageContent() {
               <div className="flex items-center gap-2.5">
                 {activeCountries.map(country => (
                   <div key={country.label} className="group relative">
-                    <div className="rounded-lg border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 px-2.5 py-1.5 transition-all duration-300 hover:scale-105 hover:border-primary/40 hover:shadow-md">
+                    <div className="rounded-lg border border-border/60 bg-background px-2.5 py-1.5 transition-all duration-300 hover:scale-105 hover:border-border hover:shadow-sm">
                       <span
                         aria-label={country.label}
                         role="img"
-                        className="block h-4 w-6 rounded-[2px] border border-black/10 shadow-sm sm:h-5 sm:w-7"
+                        className="block h-4 w-6 rounded-[2px] shadow-sm ring-1 ring-black/15 sm:h-5 sm:w-7"
                         style={{ background: country.flagBackground }}
                       />
                     </div>
@@ -279,7 +279,7 @@ export function HomePageContent() {
                       <span
                         aria-label={country.label}
                         role="img"
-                        className="block h-4 w-6 rounded-[2px] border border-black/10 shadow-sm sm:h-5 sm:w-7"
+                        className="block h-4 w-6 rounded-[2px] shadow-sm ring-1 ring-black/15 sm:h-5 sm:w-7"
                         style={{ background: country.flagBackground }}
                       />
                     </div>
