@@ -8,6 +8,10 @@ export type PublicProfile = {
   avatar_url: string | null
   rating: number | null
   completed_services: number | null
+  trust_score: number | null
+  completed_count: number | null
+  disputed_count: number | null
+  verification_status: string | null
   created_at: string | null
   kyc_status: Database['public']['Enums']['kyc_status'] | null
   bio: string | null
