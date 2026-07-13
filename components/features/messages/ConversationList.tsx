@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   generateInitials,
   getAvatarUrl,
@@ -16,7 +17,7 @@ import {
 } from '@/lib/core/profile/utils'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { IconLoader2 } from '@tabler/icons-react'
+import { IconLoader2, IconMessageCircle } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 
 import { useAuth } from '@/hooks/use-auth'
@@ -80,8 +81,13 @@ export function ConversationList({
 
   if (conversations.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-        Aucune conversation
+      <div className="flex h-full items-center justify-center p-4">
+        <EmptyState
+          icon={<IconMessageCircle className="h-6 w-6" />}
+          title="Aucune conversation"
+          description="Les conversations s'ouvrent après une mise en relation ou une demande de colis active."
+          className="border-0 bg-transparent px-2 py-8"
+        />
       </div>
     )
   }

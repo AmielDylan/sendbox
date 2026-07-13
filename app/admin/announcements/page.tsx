@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { EmptyState } from '@/components/ui/empty-state'
 import { toast } from 'sonner'
 import {
   IconLoader2,
@@ -207,9 +208,12 @@ export default function AdminAnnouncementsPage() {
               </div>
             ))}
             {(announcements?.length ?? 0) === 0 && (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                Aucune annonce.
-              </p>
+              <EmptyState
+                icon={<IconLuggage className="h-7 w-7" />}
+                title="Aucune annonce à modérer"
+                description="Les trajets publiés apparaîtront ici pour contrôle et suivi administratif."
+                className="my-2"
+              />
             )}
           </div>
 
