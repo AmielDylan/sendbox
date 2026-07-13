@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RatingDistribution } from '@/components/features/ratings/RatingDistribution'
 import { TrustLevelBadge } from '@/components/trust/TrustLevelBadge'
+import { parseReviewComment } from '@/lib/core/ratings/display'
 import {
   IconStar,
   IconCircleCheck,
@@ -270,6 +271,7 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
               ) : (
                 <div className="space-y-4">
                   {ratingsData.ratings.map((rating: any) => {
+                    const parsedComment = parseReviewComment(rating.comment)
                     const raterName = getShortDisplayName(
                       rating.rater?.firstname || null,
                       rating.rater?.lastname || null,
@@ -315,9 +317,22 @@ async function ProfilePageContent({ params }: ProfilePageProps) {
                               {rating.rating}
                             </div>
                           </div>
-                          {rating.comment && (
+                          {parsedComment.criteria.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {parsedComment.criteria.map(criterion => (
+                                <Badge
+                                  key={criterion}
+                                  variant="outline"
+                                  className="px-2 py-0.5 text-[10px] font-medium"
+                                >
+                                  {criterion}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                          {parsedComment.comment && (
                             <p className="text-sm text-muted-foreground">
-                              {rating.comment}
+                              {parsedComment.comment}
                             </p>
                           )}
                         </div>

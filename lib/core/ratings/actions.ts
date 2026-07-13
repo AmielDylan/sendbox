@@ -7,7 +7,13 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
-import { ratingSchema, type RatingInput } from '@/lib/core/ratings/validations'
+import {
+  filterReviewCriteriaForRole,
+  formatReviewComment,
+  ratingSchema,
+  type RatingInput,
+  type ReviewRole,
+} from '@/lib/core/ratings/validations'
 import {
   getPublicProfiles,
   mapPublicProfilesById,
@@ -41,7 +47,7 @@ export async function submitRating(data: RatingInput) {
       }
     }
 
-    const { booking_id, rating, comment } = validation.data
+    const { booking_id, rating, comment, criteria } = validation.data
 
     // 1. Vérifier que le service est terminé
     const { data: booking, error: bookingError } = await supabase
@@ -75,6 +81,16 @@ export async function submitRating(data: RatingInput) {
     if (raterId !== booking.sender_id && raterId !== booking.traveler_id) {
       return {
         error: "Vous n'êtes pas autorisé à noter ce service",
+      }
+    }
+
+    const reviewerRole: ReviewRole =
+      raterId === booking.sender_id ? 'sender' : 'traveler'
+    const allowedCriteria = filterReviewCriteriaForRole(criteria, reviewerRole)
+
+    if (allowedCriteria.length === 0) {
+      return {
+        error: 'Selectionnez au moins un critere adapte a votre role',
       }
     }
 
@@ -117,7 +133,7 @@ export async function submitRating(data: RatingInput) {
     const now = new Date().toISOString()
     const payload = {
       rating,
-      comment: comment || null,
+      comment: formatReviewComment(comment, allowedCriteria),
       status: 'submitted' as const,
       submitted_at: now,
     }
@@ -382,6 +398,8 @@ export async function canRateBooking(bookingId: string) {
   // Déterminer qui note qui
   const ratedId =
     user.id === booking.sender_id ? booking.traveler_id : booking.sender_id
+  const reviewerRole: ReviewRole =
+    user.id === booking.sender_id ? 'sender' : 'traveler'
 
   // Récupérer le nom de la personne à noter
   const { data: ratedProfiles } = await getPublicProfiles(supabase, [ratedId])
@@ -389,6 +407,7 @@ export async function canRateBooking(bookingId: string) {
 
   return {
     canRate: true,
+    reviewerRole,
     ratedUserId: ratedId,
     ratedUserName: ratedUser
       ? `${ratedUser.firstname} ${ratedUser.lastname}`
