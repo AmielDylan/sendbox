@@ -7,6 +7,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getAdminDisputes } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -16,7 +17,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { IconLoader2, IconExternalLink } from '@tabler/icons-react'
+import {
+  IconExternalLink,
+  IconLoader2,
+  IconShieldCheck,
+} from '@tabler/icons-react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
@@ -67,9 +72,12 @@ export default function AdminDisputesPage() {
         </CardHeader>
         <CardContent>
           {disputes?.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Aucun litige pour le moment
-            </p>
+            <EmptyState
+              icon={<IconShieldCheck className="h-7 w-7" />}
+              title="Aucun litige ouvert"
+              description="Les dossiers signalés par les utilisateurs apparaîtront ici avec les informations utiles à l'instruction."
+              className="my-2"
+            />
           ) : (
             <div className="overflow-x-auto">
               <Table>

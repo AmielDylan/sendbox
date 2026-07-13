@@ -13,6 +13,7 @@ import {
   getUnreadNotificationsCount,
 } from '@/lib/shared/db/queries/notifications'
 import { PageHeader } from '@/components/ui/page-header'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ConversationList } from '@/components/features/messages/ConversationList'
@@ -21,7 +22,6 @@ import { ConnectionIndicator } from '@/components/features/messages/ConnectionIn
 import { BookingRequestCard } from '@/components/features/bookings/BookingRequestCard'
 import { getPendingBookingRequests } from '@/lib/core/bookings/requests'
 import { getPublicProfiles } from '@/lib/shared/db/queries/public-profiles'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   IconLoader2,
   IconBell,
@@ -604,13 +604,11 @@ function MessagesPageContent() {
               <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : bookings.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">
-                  Aucune demande active
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={<IconInbox className="h-7 w-7" />}
+              title="Aucune demande active"
+              description="Les demandes de colis reçues sur vos trajets apparaissent ici, avec la déclaration colis à relire avant acceptation."
+            />
           ) : (
             <div className="space-y-4">
               {bookings.map((booking: any) => (
@@ -635,13 +633,11 @@ function MessagesPageContent() {
               <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : notifications.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-center text-muted-foreground">
-                  Aucune notification
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={<IconBell className="h-7 w-7" />}
+              title="Aucune notification"
+              description="Vous serez prévenu ici lorsqu'une demande évolue, qu'un paiement est confirmé ou qu'une action est attendue."
+            />
           ) : (
             <div className="rounded-lg border divide-y overflow-hidden">
               {notifications.map(notification => (

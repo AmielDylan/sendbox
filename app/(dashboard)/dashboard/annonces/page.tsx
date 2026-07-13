@@ -14,6 +14,7 @@ import {
 } from '@/lib/core/announcements/management'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -223,28 +224,25 @@ export default function MyAnnouncementsPage() {
                 <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : announcements.length === 0 ? (
-              <Card className="border-2 border-dashed">
-                <CardContent className="pt-12 pb-12">
-                  <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
-                      <IconPackage className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-lg text-foreground">{emptyTitle}</p>
-                      <p className="text-sm text-muted-foreground max-w-sm">
-                        Publiez votre prochain trajet pour recevoir des demandes
-                        de transport d&apos;expéditeurs
-                      </p>
-                    </div>
-                    <Link href="/dashboard/annonces/new" className="mt-2">
-                      <Button className="shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5">
+              <EmptyState
+                icon={<IconPackage className="h-7 w-7" />}
+                title={emptyTitle}
+                description={
+                  activeTab === 'all'
+                    ? 'Publiez un trajet disponible pour recevoir des demandes de colis compatibles avec votre destination.'
+                    : 'Aucun voyage ne correspond à ce filtre pour le moment.'
+                }
+                action={
+                  activeTab === 'all' ? (
+                    <Button asChild>
+                      <Link href="/dashboard/annonces/new">
                         <IconPlus className="mr-2 h-4 w-4" />
-                        Enregistrer un voyage
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+                        Publier un trajet
+                      </Link>
+                    </Button>
+                  ) : null
+                }
+              />
             ) : (
               <div className="grid gap-4">
                 {announcements.map(announcement => (
