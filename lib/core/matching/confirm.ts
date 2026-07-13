@@ -6,14 +6,15 @@ import { getMatchingFeeConfig } from '@/lib/core/matching/fees'
 import { runAntiCollusionChecks } from '@/lib/trust/anti-collusion'
 
 type MatchingConfirmResult =
-  | { status: 'WAITING_OTHER_PARTY' }
+  | { status: 'WAITING_OTHER_PARTY'; message: string }
   | {
       status: 'PAYMENT_REQUIRED' | 'PAYMENT_ALREADY_INITIATED'
       clientSecret: string
       amountCents: number
       mustPay: boolean
+      message: string
     }
-  | { status: 'ALREADY_CONFIRMED' }
+  | { status: 'ALREADY_CONFIRMED'; message: string }
 
 const CONFIRMABLE_STATUSES = [
   'accepted',
@@ -27,7 +28,10 @@ function getStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY
 
   if (!secretKey) {
-    throw new Error('STRIPE_SECRET_KEY manquante')
+    throw Object.assign(
+      new Error('Configuration paiement indisponible. Réessayez plus tard.'),
+      { status: 503 }
+    )
   }
 
   return new Stripe(secretKey)
@@ -80,7 +84,10 @@ export async function confirmMatchingForBooking(
   } else if (isTraveler && !booking.traveler_confirmed_at) {
     updates.traveler_confirmed_at = now
   } else {
-    return { status: 'ALREADY_CONFIRMED' }
+    return {
+      status: 'ALREADY_CONFIRMED',
+      message: 'Votre confirmation est déjà enregistrée.',
+    }
   }
 
   await admin.from('bookings').update(updates).eq('id', bookingId)
@@ -102,7 +109,11 @@ export async function confirmMatchingForBooking(
     updated.traveler_confirmed_at !== null
 
   if (!bothConfirmed) {
-    return { status: 'WAITING_OTHER_PARTY' }
+    return {
+      status: 'WAITING_OTHER_PARTY',
+      message:
+        "Votre confirmation est enregistrée. L'autre partie doit encore confirmer.",
+    }
   }
 
   const { data: existingPayment } = await admin
@@ -113,11 +124,25 @@ export async function confirmMatchingForBooking(
     .maybeSingle()
 
   if (existingPayment) {
+    if (existingPayment.status === 'succeeded') {
+      await admin
+        .from('bookings')
+        .update({ status: 'confirmed' })
+        .eq('id', bookingId)
+        .in('status', ['payment_pending', 'accepted'])
+
+      return {
+        status: 'ALREADY_CONFIRMED',
+        message: 'La mise en relation est déjà confirmée.',
+      }
+    }
+
     return {
       status: 'PAYMENT_ALREADY_INITIATED',
       clientSecret: existingPayment.stripe_client_secret,
       amountCents: existingPayment.amount_cents,
       mustPay: userId === existingPayment.paid_by,
+      message: 'Un paiement de mise en relation est déjà en cours.',
     }
   }
 
@@ -135,10 +160,17 @@ export async function confirmMatchingForBooking(
     },
   })
 
+  if (!paymentIntent.client_secret) {
+    throw Object.assign(
+      new Error('Impossible de préparer le paiement de mise en relation.'),
+      { status: 502 }
+    )
+  }
+
   await admin.from('matching_payments').insert({
     booking_id: bookingId,
     stripe_payment_intent_id: paymentIntent.id,
-    stripe_client_secret: paymentIntent.client_secret!,
+    stripe_client_secret: paymentIntent.client_secret,
     amount_cents: paymentIntent.amount,
     currency: paymentIntent.currency,
     paid_by: updated.sender_id,
@@ -167,8 +199,9 @@ export async function confirmMatchingForBooking(
 
   return {
     status: 'PAYMENT_REQUIRED',
-    clientSecret: paymentIntent.client_secret!,
+    clientSecret: paymentIntent.client_secret,
     amountCents: paymentIntent.amount,
     mustPay: userId === updated.sender_id,
+    message: 'Paiement de mise en relation requis.',
   }
 }

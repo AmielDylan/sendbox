@@ -148,11 +148,13 @@ export async function acceptBooking(bookingId: string) {
 
   try {
     // Mettre à jour le booking
+    const acceptedAt = new Date().toISOString()
     const { error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'accepted',
-        accepted_at: new Date().toISOString(),
+        accepted_at: acceptedAt,
+        traveler_confirmed_at: acceptedAt,
       })
       .eq('id', bookingId)
 
@@ -193,7 +195,7 @@ export async function acceptBooking(bookingId: string) {
             title: 'Demande acceptée ✓',
             content: `Bonne nouvelle${sender.firstname ? ` ${sender.firstname}` : ''} ! Votre demande de transport a été acceptée par le voyageur. Procédez au paiement pour confirmer la réservation.`,
             ctaText: 'Payer maintenant',
-            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}/paiement`,
+            ctaUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${bookingId}`,
           },
         })
       }

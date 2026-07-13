@@ -41,9 +41,14 @@ export async function createTestBooking(
 
 export async function acceptTestBooking(bookingId: string): Promise<void> {
   const supabase = createE2EAdminClient()
+  const acceptedAt = new Date().toISOString()
   const { error } = await supabase
     .from('bookings')
-    .update({ status: 'accepted' })
+    .update({
+      status: 'accepted',
+      accepted_at: acceptedAt,
+      traveler_confirmed_at: acceptedAt,
+    })
     .eq('id', bookingId)
 
   if (error) throw new Error(`Failed to accept booking: ${error.message}`)
