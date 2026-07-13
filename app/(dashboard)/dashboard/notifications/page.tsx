@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/components/ui/page-header'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,7 +22,7 @@ import {
   markAllNotificationsAsRead,
   getNotifications,
 } from '@/lib/core/notifications/actions'
-import { IconLoader2, IconCheck } from '@tabler/icons-react'
+import { IconBell, IconCheck, IconLoader2 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useNotifications } from '@/hooks/use-notifications'
 
@@ -126,9 +127,16 @@ export default function NotificationsPage() {
               <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : notifications.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
-              Aucune notification
-            </div>
+            <EmptyState
+              icon={<IconBell className="h-7 w-7" />}
+              title="Aucune notification"
+              description={
+                selectedType === 'all'
+                  ? 'Les alertes importantes apparaissent ici : demande acceptée, frais confirmés, dépôt, livraison ou action à réaliser.'
+                  : 'Aucune notification ne correspond à ce filtre pour le moment.'
+              }
+              className="my-4"
+            />
           ) : (
             <>
               <div className="space-y-2">

@@ -5,6 +5,7 @@
 import { redirect } from 'next/navigation'
 import { isAdmin } from '@/lib/core/admin/actions'
 import { createAdminClient } from '@/lib/shared/db/admin'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IconMessageCircle } from '@tabler/icons-react'
@@ -71,14 +72,11 @@ export default async function AdminFeedbackPage() {
       />
 
       {(!feedbacks || feedbacks.length === 0) && (
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <IconMessageCircle className="h-5 w-5 text-muted-foreground" />
-            <CardTitle className="text-base">
-              Aucun feedback pour le moment
-            </CardTitle>
-          </CardHeader>
-        </Card>
+        <EmptyState
+          icon={<IconMessageCircle className="h-7 w-7" />}
+          title="Aucun feedback pour le moment"
+          description="Les retours beta apparaîtront ici dès qu'un utilisateur partagera une remarque depuis l'application."
+        />
       )}
 
       <div className="space-y-4">

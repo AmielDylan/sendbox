@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState, useTransition, memo } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { useMessages, type Message } from '@/hooks/use-messages'
@@ -15,7 +16,12 @@ import { sendMessage, markMessagesAsRead } from '@/lib/core/messages/actions'
 import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { IconSend, IconLoader2, IconArrowLeft } from '@tabler/icons-react'
+import {
+  IconArrowLeft,
+  IconLoader2,
+  IconMessageCircle,
+  IconSend,
+} from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/shared/db/client'
 import Image from 'next/image'
@@ -302,8 +308,13 @@ export function ChatWindow({
             <IconLoader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            Aucun message. Commencez la conversation !
+          <div className="flex h-full items-center justify-center">
+            <EmptyState
+              icon={<IconMessageCircle className="h-6 w-6" />}
+              title="Aucun message"
+              description="Écrivez un premier message pour organiser les détails pratiques de la remise."
+              className="border-0 bg-transparent"
+            />
           </div>
         ) : (
           <div className="space-y-4">

@@ -14,6 +14,7 @@ import { QUERY_CONFIG } from '@/lib/shared/query/config'
 import { createClient } from '@/lib/shared/db/client'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
@@ -353,32 +354,29 @@ export default function MyBookingsPage() {
 
       <div className="space-y-4 mt-6">
         {bookings.length === 0 ? (
-          <Card className="border-2 border-dashed">
-            <CardContent className="pt-12 pb-12">
-              <div className="flex flex-col items-center gap-4 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center">
-                  <IconPackage className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Aucun colis trouvé</h3>
-                  <p className="text-sm text-muted-foreground max-w-sm">
-                    {activeTab === 'all'
-                      ? "Vous n'avez pas encore de réservations."
-                      : `Vous n'avez pas de colis avec le statut "${activeTab}".`}
-                  </p>
-                </div>
-                <Button
-                  asChild
-                  className="mt-2 shadow-warm hover:shadow-xl transition-all hover:-translate-y-0.5"
-                >
-                  <Link href="/dashboard/colis/new">
+          <EmptyState
+            icon={<IconPackage className="h-7 w-7" />}
+            title={
+              activeTab === 'all'
+                ? 'Aucun colis pour le moment'
+                : 'Aucun colis dans ce statut'
+            }
+            description={
+              activeTab === 'all'
+                ? 'Quand vous envoyez une demande à un voyageur, elle apparaît ici avec son statut et les actions utiles.'
+                : 'Changez de filtre ou revenez plus tard quand une réservation aura avancé.'
+            }
+            action={
+              activeTab === 'all' ? (
+                <Button asChild>
+                  <Link href="/recherche">
                     <IconPlus className="mr-2 h-4 w-4" />
-                    Créer une réservation
+                    Trouver un voyageur
                   </Link>
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              ) : null
+            }
+          />
         ) : (
           <div className="grid gap-4">
             {bookings.map(booking => {

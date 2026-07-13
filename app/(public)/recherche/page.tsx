@@ -13,6 +13,7 @@ import {
 } from '@/lib/shared/db/queries/announcements'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -96,6 +97,19 @@ export default function SearchPage() {
   const handlePageChange = (newPage: number) => {
     setFilters(prev => ({ ...prev, page: newPage }))
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const resetFilters = () => {
+    setDepartureDate(undefined)
+    setFilters({
+      departureCountry: null,
+      arrivalCountry: null,
+      departureDate: null,
+      minKg: 1,
+      sortBy: 'date',
+      page: 1,
+    })
+    setHasSearched(true)
   }
 
   const activeFilters = [
@@ -393,13 +407,16 @@ export default function SearchPage() {
                 </CardContent>
               </Card>
             ) : announcements.length === 0 ? (
-              <Card className="rounded-xl border-dashed border-2 border-muted shadow-none bg-muted/5">
-                <CardContent className="py-16">
-                  <p className="text-center text-muted-foreground text-sm">
-                    Aucune annonce trouvée. Modifiez vos critères de recherche.
-                  </p>
-                </CardContent>
-              </Card>
+              <EmptyState
+                icon={<IconSearch className="h-7 w-7" />}
+                title="Aucun trajet trouvé"
+                description="Essayez une date plus large ou une destination voisine. Les recherches non couvertes nous aideront ensuite à prioriser les nouveaux trajets."
+                action={
+                  <Button variant="outline" onClick={resetFilters}>
+                    Réinitialiser les filtres
+                  </Button>
+                }
+              />
             ) : (
               <div className="space-y-4">
                 {announcements.map(announcement => {
