@@ -106,7 +106,9 @@ test.describe('Registration', () => {
     await page.fill('#confirmPassword', 'TestPass123!')
     // Do NOT check terms
     await page.click('button[type="submit"]')
-    await expect(page.locator('#terms-error')).toBeVisible()
+    await expect(
+      page.getByRole('alert').filter({ hasText: /accepter les cgu/i })
+    ).toBeVisible()
   })
 })
 
