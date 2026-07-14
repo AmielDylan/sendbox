@@ -5,8 +5,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { getUserAnnouncements } from '@/lib/shared/db/queries/announcements'
+import {
+  useAuthenticatedQuery,
+  queryWithAbort,
+} from '@/hooks/use-authenticated-query'
+import { QUERY_CONFIG } from '@/lib/shared/query/config'
+import { createClient } from '@/lib/shared/db/client'
 import {
   deleteAnnouncement,
   markAnnouncementAsCompleted,
@@ -42,8 +46,6 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/shared/db/client'
-import { useAuth } from '@/hooks/use-auth'
 import { ClientOnly } from '@/components/ui/client-only'
 import { getCountryName } from '@/lib/utils/countries'
 
@@ -51,7 +53,6 @@ type AnnouncementStatus = 'active' | 'draft' | 'completed' | 'cancelled'
 
 export default function MyAnnouncementsPage() {
   const router = useRouter()
-  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<AnnouncementStatus | 'all'>('all')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [announcementToDelete, setAnnouncementToDelete] = useState<
@@ -61,29 +62,43 @@ export default function MyAnnouncementsPage() {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<string | null>(null)
 
   // Query pour récupérer les annonces
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['user-announcements', activeTab],
-    queryFn: async () => {
+  const {
+    data: announcementsData,
+    isLoading: isAnnouncementsLoading,
+    refetch,
+  } = useAuthenticatedQuery<any[]>(
+    ['user-announcements', activeTab],
+    async (userId, signal) => {
       const supabase = createClient()
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      let effectiveUserId = user?.id || session?.user?.id
+      let query = supabase
+        .from('announcements')
+        .select('*')
+        .eq('traveler_id', userId)
+        .order('created_at', { ascending: false })
 
-      if (!effectiveUserId) {
-        const { data: refreshed } = await supabase.auth.refreshSession()
-        effectiveUserId = refreshed.session?.user?.id
+      if (activeTab !== 'all') {
+        if (activeTab === 'active') {
+          query = query.in('status', [
+            'active',
+            'partially_booked',
+            'fully_booked',
+          ])
+        } else {
+          query = query.eq('status', activeTab)
+        }
       }
 
-      if (!effectiveUserId) return { data: null, error: null }
-      return getUserAnnouncements(
-        effectiveUserId,
-        activeTab === 'all' ? undefined : activeTab
-      )
+      return queryWithAbort<any[]>(query, signal)
     },
-  })
+    {
+      timeout: 5000,
+      staleTime: QUERY_CONFIG.LISTS.staleTime,
+      gcTime: QUERY_CONFIG.LISTS.gcTime,
+      refetchOnWindowFocus: false,
+    }
+  )
 
-  const announcements = data?.data || []
+  const announcements = announcementsData || []
   const emptyTitle =
     activeTab === 'draft'
       ? 'Aucun voyage en attente'
@@ -103,12 +118,6 @@ export default function MyAnnouncementsPage() {
       }
     }
   }, [refetch])
-
-  useEffect(() => {
-    if (user?.id) {
-      refetch()
-    }
-  }, [user?.id, refetch])
 
   const handleDelete = async () => {
     if (!announcementToDelete) return
@@ -219,7 +228,7 @@ export default function MyAnnouncementsPage() {
           </TabsList>
 
           <TabsContent value={activeTab} className="space-y-4">
-            {isLoading ? (
+            {isAnnouncementsLoading ? (
               <div className="flex items-center justify-center min-h-[400px]">
                 <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
