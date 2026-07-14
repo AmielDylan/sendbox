@@ -153,6 +153,12 @@ test.describe('Decision reservation - Traveler', () => {
       })
       .toMatchObject({ user_id: senderId })
 
+    await senderPage.goto('/dashboard/notifications')
+    await expect(senderPage.getByText(/demande accept/i).first()).toBeVisible({
+      timeout: 20_000,
+    })
+    await expect(senderPage.getByText(/paiement/i).first()).toBeVisible()
+
     await senderPage.goto(`/dashboard/colis/${bookingId}`)
     await expect(senderPage.getByText(/payer maintenant/i).first()).toBeVisible(
       { timeout: 20_000 }
@@ -218,6 +224,14 @@ test.describe('Decision reservation - Traveler', () => {
         return data
       })
       .toMatchObject({ user_id: senderId })
+
+    await senderPage.goto('/dashboard/notifications')
+    await expect(senderPage.getByText(/demande refus/i).first()).toBeVisible({
+      timeout: 20_000,
+    })
+    await expect(
+      senderPage.getByText(/objet interdit ou a risque/i).first()
+    ).toBeVisible()
 
     await senderPage.goto(`/dashboard/colis/${bookingId}`)
     await expect(senderPage.getByText(/raison du refus/i)).toBeVisible({
