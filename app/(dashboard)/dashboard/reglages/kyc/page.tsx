@@ -34,13 +34,15 @@ import {
   IconShieldCheck,
   IconUpload,
 } from '@tabler/icons-react'
-import { createClient } from '@/lib/shared/db/client'
+import { useAuth } from '@/hooks/use-auth'
 import {
   KYCUploadDrawer,
   type UploadMode,
 } from '@/components/features/kyc/KYCUploadDrawer'
 
 type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected'
+
+const PROFILE_FALLBACK_DELAY_MS = 3_000
 
 type PageState =
   | { phase: 'loading' }
@@ -158,6 +160,7 @@ async function compressImage(file: File): Promise<File> {
 
 export default function KYCPage() {
   const router = useRouter()
+  const { user, loading } = useAuth()
   const [state, setState] = useState<PageState>({ phase: 'loading' })
   const [docType, setDocType] = useState<DocType>('')
   const [country, setCountry] = useState<CountryCode>('')
@@ -183,38 +186,82 @@ export default function KYCPage() {
   const selfieGalleryRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    async function load() {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-        return
-      }
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('verification_status, kyc_rejection_reason')
-        .eq('id', user.id)
-        .single()
+    let isActive = true
+    const abortController = new AbortController()
 
-      const status: VerificationStatus = (profile?.verification_status ??
-        'none') as VerificationStatus
-      if (status === 'verified') {
-        setState({ phase: 'verified' })
-      } else if (status === 'pending') {
-        setState({ phase: 'pending' })
-      } else if (status === 'rejected') {
-        setState({
-          phase: 'rejected',
-          reason: (profile as any)?.kyc_rejection_reason ?? null,
-        })
-      } else {
-        setState({ phase: 'form', step: 1 })
+    if (!loading && !user) {
+      router.push('/login')
+      return
+    }
+
+    if (user) {
+      const applyStatus = (
+        status: VerificationStatus,
+        rejectionReason: string | null
+      ) => {
+        if (!isActive) return
+
+        if (status === 'verified') {
+          setState({ phase: 'verified' })
+        } else if (status === 'pending') {
+          setState({ phase: 'pending' })
+        } else if (status === 'rejected') {
+          setState({ phase: 'rejected', reason: rejectionReason })
+        } else {
+          setState({ phase: 'form', step: 1 })
+        }
+      }
+
+      const timeoutId = window.setTimeout(() => {
+        if (isActive) {
+          setState({ phase: 'form', step: 1 })
+        }
+      }, PROFILE_FALLBACK_DELAY_MS)
+
+      async function loadStatus() {
+        try {
+          const response = await fetch('/api/kyc/status', {
+            cache: 'no-store',
+            signal: abortController.signal,
+          })
+
+          if (!isActive) return
+
+          if (response.status === 401) {
+            router.push('/login')
+            return
+          }
+
+          if (!response.ok) {
+            return
+          }
+
+          const payload = (await response.json()) as {
+            status?: VerificationStatus
+            rejectionReason?: string | null
+          }
+
+          window.clearTimeout(timeoutId)
+          applyStatus(payload.status || 'none', payload.rejectionReason ?? null)
+        } catch (err) {
+          if (err instanceof Error && err.name === 'AbortError') return
+        }
+      }
+
+      loadStatus()
+
+      return () => {
+        isActive = false
+        window.clearTimeout(timeoutId)
+        abortController.abort()
       }
     }
-    load()
-  }, [router])
+
+    return () => {
+      isActive = false
+      abortController.abort()
+    }
+  }, [loading, router, user])
 
   function handleFrontChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0] ?? null

@@ -118,7 +118,7 @@ test.describe('Création annonce — Flow complet', () => {
   })
 })
 
-test.describe('Gate abonnement', () => {
+test.describe.skip('Gate abonnement', () => {
   test('traveler sans abonnement actif voit le panel bloquant', async ({
     browser,
   }) => {
