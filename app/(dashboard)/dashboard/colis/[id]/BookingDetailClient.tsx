@@ -44,10 +44,12 @@ import { RefuseBookingDialog } from '@/components/features/bookings/RefuseBookin
 import { CancelBookingDialog } from '@/components/features/bookings/CancelBookingDialog'
 import { DeleteBookingDialog } from '@/components/features/bookings/DeleteBookingDialog'
 import { ConfirmDeliveryDialog } from '@/components/features/bookings/ConfirmDeliveryDialog'
+import { BookingReportDialog } from '@/components/features/bookings/BookingReportDialog'
 import { DisputeForm } from '@/components/trust/DisputeForm'
 import { MatchingFeeGate } from '@/components/trust/MatchingFeeGate'
 import { acceptBooking } from '@/lib/core/bookings/requests'
 import { getCancellationPolicy } from '@/lib/core/bookings/cancellation-policy'
+import { formatBookingReportReason } from '@/lib/core/bookings/report-policy'
 import {
   getPublicProfiles,
   mapPublicProfilesById,
@@ -96,6 +98,15 @@ export interface BookingDetail {
   traveler_id: string
   sender: PublicProfile | null
   traveler: PublicProfile | null
+  booking_reports?: Array<{
+    id: string
+    reason: string
+    message: string
+    status: string
+    suggested_new_date: string | null
+    reported_by: string
+    created_at: string
+  }> | null
   announcement: {
     departure_country: string
     departure_city: string
@@ -156,6 +167,15 @@ export default function BookingDetailClient({
         .select(
           `
           *,
+          booking_reports (
+            id,
+            reason,
+            message,
+            status,
+            suggested_new_date,
+            reported_by,
+            created_at
+          ),
           announcement:announcement_id (
             departure_country,
             departure_city,
@@ -419,6 +439,9 @@ export default function BookingDetailClient({
     ['paid', 'confirmed', 'deposited', 'in_transit', 'delivered'].includes(
       booking.status
     )
+  const openReports = (booking.booking_reports || []).filter(report =>
+    ['open', 'reviewing'].includes(report.status)
+  )
 
   const handleAcceptBooking = async () => {
     setIsAccepting(true)
@@ -602,6 +625,38 @@ export default function BookingDetailClient({
                   {cancellationPolicy.userNotice}
                 </p>
               </div>
+
+              {openReports.length > 0 && (
+                <div className="rounded border border-amber-500/30 bg-amber-500/10 p-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+                    <IconAlertTriangle className="h-4 w-4" />
+                    <span>Signalement en cours</span>
+                  </div>
+                  <div className="mt-2 space-y-2">
+                    {openReports.map(report => (
+                      <div
+                        key={report.id}
+                        className="text-sm leading-6 text-muted-foreground"
+                      >
+                        <p className="font-medium text-foreground">
+                          {formatBookingReportReason(report.reason)}
+                        </p>
+                        <p className="line-clamp-2">{report.message}</p>
+                        {report.suggested_new_date ? (
+                          <p>
+                            Nouvelle date proposée :{' '}
+                            {format(
+                              new Date(report.suggested_new_date),
+                              'dd MMMM yyyy',
+                              { locale: fr }
+                            )}
+                          </p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -739,6 +794,18 @@ export default function BookingDetailClient({
                     </Link>
                   </Button>
                 )}
+
+                {(isSender || isTraveler) &&
+                  booking.status !== 'cancelled' &&
+                  booking.status !== 'delivered' &&
+                  !booking.delivery_confirmed_at && (
+                    <BookingReportDialog
+                      bookingId={booking.id}
+                      onSuccess={() => {
+                        void loadBookingDetails()
+                      }}
+                    />
+                  )}
 
                 {(isSender || isTraveler) &&
                   canOpenDispute &&

@@ -49,6 +49,7 @@ import {
   IconAlertTriangle,
   IconDotsVertical,
 } from '@tabler/icons-react'
+import { formatBookingReportReason } from '@/lib/core/bookings/report-policy'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -147,6 +148,11 @@ export default function AdminBookingsPage() {
     return 'unknown'
   }
 
+  const getOpenReports = (booking: any) =>
+    (booking.booking_reports || []).filter((report: any) =>
+      ['open', 'reviewing'].includes(report.status)
+    )
+
   const renderActionsMenu = (booking: any) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -204,6 +210,7 @@ export default function AdminBookingsPage() {
         <CardContent>
           <div className="grid gap-3 md:hidden">
             {bookings?.map((booking: any) => {
+              const openReports = getOpenReports(booking)
               const cancellationPolicy = getCancellationPolicy({
                 status: booking.status,
                 paidAt: booking.paid_at,
@@ -223,6 +230,11 @@ export default function AdminBookingsPage() {
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
                         {getStatusBadge(booking.status)}
+                        {openReports.length > 0 && (
+                          <Badge variant="destructive">
+                            Signalement ouvert
+                          </Badge>
+                        )}
                         <Badge
                           variant={
                             cancellationPolicy.requiresAdminReview
@@ -261,6 +273,20 @@ export default function AdminBookingsPage() {
                   <p className="text-xs leading-5 text-muted-foreground">
                     {cancellationPolicy.adminDescription}
                   </p>
+
+                  {openReports.length > 0 && (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
+                      <p className="text-xs font-medium text-destructive">
+                        Dernier signalement
+                      </p>
+                      <p className="mt-1 text-sm font-medium">
+                        {formatBookingReportReason(openReports[0].reason)}
+                      </p>
+                      <p className="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">
+                        {openReports[0].message}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -281,6 +307,7 @@ export default function AdminBookingsPage() {
               </TableHeader>
               <TableBody>
                 {bookings?.map((booking: any) => {
+                  const openReports = getOpenReports(booking)
                   const cancellationPolicy = getCancellationPolicy({
                     status: booking.status,
                     paidAt: booking.paid_at,
@@ -307,9 +334,19 @@ export default function AdminBookingsPage() {
                           >
                             {cancellationPolicy.adminLabel}
                           </Badge>
+                          {openReports.length > 0 && (
+                            <Badge variant="destructive">
+                              Signalement ouvert
+                            </Badge>
+                          )}
                           <p className="text-xs leading-5 text-muted-foreground">
                             {cancellationPolicy.adminDescription}
                           </p>
+                          {openReports.length > 0 && (
+                            <p className="text-xs leading-5 text-destructive">
+                              {formatBookingReportReason(openReports[0].reason)}
+                            </p>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>

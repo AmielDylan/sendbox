@@ -29,6 +29,15 @@ export default async function BookingDetailPage({
     .select(
       `
       *,
+      booking_reports (
+        id,
+        reason,
+        message,
+        status,
+        suggested_new_date,
+        reported_by,
+        created_at
+      ),
       announcement:announcement_id (
         departure_country,
         departure_city,
