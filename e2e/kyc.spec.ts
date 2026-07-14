@@ -25,7 +25,10 @@ async function resetSenderKYC(
   const id = await getSenderId()
   if (!id) return
 
-  await supabase.from('profiles').update(patch as any).eq('id', id)
+  await supabase
+    .from('profiles')
+    .update(patch as any)
+    .eq('id', id)
 }
 
 async function waitForKYCForm(page: Page) {
@@ -71,11 +74,14 @@ test.describe('KYC V1', () => {
     await selectDocumentBasics(senderPage)
     await expect(continueButton).toBeDisabled()
 
-    await senderPage.locator('input[type="file"]').first().setInputFiles({
-      name: 'passport.jpg',
-      mimeType: 'image/jpeg',
-      buffer: Buffer.from('fake-e2e-image'),
-    })
+    await senderPage
+      .locator('input[type="file"]')
+      .first()
+      .setInputFiles({
+        name: 'passport.jpg',
+        mimeType: 'image/jpeg',
+        buffer: Buffer.from('fake-e2e-image'),
+      })
     await senderPage.getByRole('checkbox').check()
 
     await expect(continueButton).toBeEnabled()
