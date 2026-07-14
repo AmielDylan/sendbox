@@ -489,6 +489,83 @@ export type Database = {
           },
         ]
       }
+      booking_reports: {
+        Row: {
+          admin_note: string | null
+          booking_id: string
+          created_at: string
+          id: string
+          message: string
+          reason: string
+          reported_by: string
+          reported_user_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          suggested_new_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          booking_id: string
+          created_at?: string
+          id?: string
+          message: string
+          reason: string
+          reported_by: string
+          reported_user_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          suggested_new_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          booking_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          reason?: string
+          reported_by?: string
+          reported_user_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          suggested_new_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'booking_reports_booking_id_fkey'
+            columns: ['booking_id']
+            isOneToOne: false
+            referencedRelation: 'bookings'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'booking_reports_reported_by_fkey'
+            columns: ['reported_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'booking_reports_reported_user_id_fkey'
+            columns: ['reported_user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'booking_reports_resolved_by_fkey'
+            columns: ['resolved_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       cron_job_logs: {
         Row: {
           created_at: string

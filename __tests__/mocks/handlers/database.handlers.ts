@@ -11,6 +11,7 @@ const mockDatabase = {
   profiles: new Map<string, any>(),
   announcements: new Map<string, any>(),
   bookings: new Map<string, any>(),
+  booking_reports: new Map<string, any>(),
   messages: new Map<string, any>(),
   notifications: new Map<string, any>(),
   ratings: new Map<string, any>(),
