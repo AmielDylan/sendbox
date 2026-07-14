@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { test as base, type Page } from '@playwright/test'
 import * as path from 'path'
-import Stripe from 'stripe'
 import { createE2EAdminClient } from '../helpers/supabase-admin'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -12,7 +11,6 @@ interface E2EFixtures {
   travelerPage: Page
   adminPage: Page
   supabaseAdmin: SupabaseClient
-  stripe: Stripe
 }
 
 export const test = base.extend<E2EFixtures>({
@@ -45,12 +43,6 @@ export const test = base.extend<E2EFixtures>({
 
   supabaseAdmin: async ({}, use) => {
     await use(createE2EAdminClient())
-  },
-
-  stripe: async ({}, use) => {
-    const key = process.env.STRIPE_SECRET_KEY
-    if (!key) throw new Error('Missing STRIPE_SECRET_KEY for E2E fixture')
-    await use(new Stripe(key))
   },
 })
 
