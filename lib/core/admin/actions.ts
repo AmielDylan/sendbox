@@ -7,6 +7,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
+import { createSystemNotification } from '@/lib/core/notifications/system'
+import { formatBookingReportReason } from '@/lib/core/bookings/report-policy'
 import { headers } from 'next/headers'
 
 /**
@@ -303,6 +305,112 @@ export async function markAsDispute(bookingId: string, reason: string) {
   }
 }
 
+export async function updateBookingReportStatus(
+  reportId: string,
+  status: 'reviewing' | 'resolved' | 'dismissed',
+  adminNote?: string
+) {
+  if (!(await isAdmin())) {
+    return {
+      error: 'Non autorise',
+    }
+  }
+
+  const normalizedNote = adminNote?.trim() || ''
+
+  if (
+    (status === 'resolved' || status === 'dismissed') &&
+    normalizedNote.length < 10
+  ) {
+    return {
+      error: 'Ajoutez une note admin de 10 caracteres minimum pour cloturer.',
+    }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      error: 'Non authentifie',
+    }
+  }
+
+  const admin = createAdminClient()
+  const { data: report, error: reportError } = await admin
+    .from('booking_reports')
+    .select('id, booking_id, reported_by, reason, status, admin_note')
+    .eq('id', reportId)
+    .single()
+
+  if (reportError || !report) {
+    return {
+      error: 'Signalement introuvable',
+    }
+  }
+
+  if (['resolved', 'dismissed'].includes(report.status)) {
+    return {
+      error: 'Ce signalement est deja cloture',
+    }
+  }
+
+  const patch: Record<string, any> = {
+    status,
+    admin_note: normalizedNote || report.admin_note || null,
+  }
+
+  if (status === 'resolved' || status === 'dismissed') {
+    patch.resolved_at = new Date().toISOString()
+    patch.resolved_by = user.id
+  }
+
+  const { error } = await admin
+    .from('booking_reports')
+    .update(patch)
+    .eq('id', reportId)
+
+  if (error) {
+    console.error('Error updating booking report:', error)
+    return {
+      error: 'Erreur lors de la mise a jour du signalement',
+    }
+  }
+
+  if (status === 'resolved' || status === 'dismissed') {
+    const statusLabel = status === 'resolved' ? 'traite' : 'classe'
+    const { error: notifError } = await createSystemNotification({
+      userId: report.reported_by,
+      type: 'system_alert',
+      title: 'Signalement mis a jour',
+      content: `Votre signalement "${formatBookingReportReason(report.reason)}" a ete ${statusLabel} par Sendbox.${normalizedNote ? ` Note : ${normalizedNote}` : ''}`,
+      bookingId: report.booking_id,
+      link: `/dashboard/colis/${report.booking_id}`,
+    })
+
+    if (notifError) {
+      console.error('Notification creation failed (non-blocking):', notifError)
+    }
+  }
+
+  await createAuditLog('update_booking_report', 'booking_report', reportId, {
+    status,
+    bookingId: report.booking_id,
+    reason: report.reason,
+    adminNote: normalizedNote || null,
+  })
+
+  revalidatePath('/admin/bookings')
+  revalidatePath(`/dashboard/colis/${report.booking_id}`)
+  revalidatePath('/dashboard/notifications')
+
+  return {
+    success: true,
+  }
+}
+
 /**
  * Rejette une annonce
  */
@@ -524,6 +632,7 @@ export async function getAdminBookings() {
         reason,
         message,
         status,
+        admin_note,
         suggested_new_date,
         reported_by,
         created_at

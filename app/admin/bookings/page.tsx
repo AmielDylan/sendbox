@@ -10,6 +10,7 @@ import {
   forceRefund,
   releasePayment,
   markAsDispute,
+  updateBookingReportStatus,
   getAdminBookings,
 } from '@/lib/core/admin/actions'
 import { getCancellationPolicy } from '@/lib/core/bookings/cancellation-policy'
@@ -57,7 +58,13 @@ export default function AdminBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<any>(null)
   const [refundDialogOpen, setRefundDialogOpen] = useState(false)
   const [disputeDialogOpen, setDisputeDialogOpen] = useState(false)
+  const [reportDialogOpen, setReportDialogOpen] = useState(false)
+  const [selectedReport, setSelectedReport] = useState<any>(null)
+  const [reportTargetStatus, setReportTargetStatus] = useState<
+    'reviewing' | 'resolved' | 'dismissed'
+  >('reviewing')
   const [reason, setReason] = useState('')
+  const [reportAdminNote, setReportAdminNote] = useState('')
 
   const {
     data: bookings,
@@ -114,6 +121,27 @@ export default function AdminBookingsPage() {
     refetch()
   }
 
+  const handleReportStatus = async () => {
+    if (!selectedReport) return
+
+    const result = await updateBookingReportStatus(
+      selectedReport.id,
+      reportTargetStatus,
+      reportAdminNote
+    )
+
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+
+    toast.success('Signalement mis a jour')
+    setReportDialogOpen(false)
+    setSelectedReport(null)
+    setReportAdminNote('')
+    refetch()
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -152,6 +180,44 @@ export default function AdminBookingsPage() {
     (booking.booking_reports || []).filter((report: any) =>
       ['open', 'reviewing'].includes(report.status)
     )
+
+  const openReportDialog = (
+    report: any,
+    status: 'reviewing' | 'resolved' | 'dismissed'
+  ) => {
+    setSelectedReport(report)
+    setReportTargetStatus(status)
+    setReportAdminNote(report.admin_note || '')
+    setReportDialogOpen(true)
+  }
+
+  const renderReportActions = (report: any) => (
+    <div className="flex flex-wrap gap-2">
+      {report.status === 'open' && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => openReportDialog(report, 'reviewing')}
+        >
+          Examiner
+        </Button>
+      )}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => openReportDialog(report, 'resolved')}
+      >
+        Résoudre
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => openReportDialog(report, 'dismissed')}
+      >
+        Classer
+      </Button>
+    </div>
+  )
 
   const renderActionsMenu = (booking: any) => (
     <DropdownMenu>
@@ -285,6 +351,9 @@ export default function AdminBookingsPage() {
                       <p className="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">
                         {openReports[0].message}
                       </p>
+                      <div className="mt-3">
+                        {renderReportActions(openReports[0])}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -346,6 +415,11 @@ export default function AdminBookingsPage() {
                             <p className="text-xs leading-5 text-destructive">
                               {formatBookingReportReason(openReports[0].reason)}
                             </p>
+                          )}
+                          {openReports.length > 0 && (
+                            <div className="pt-1">
+                              {renderReportActions(openReports[0])}
+                            </div>
                           )}
                         </div>
                       </TableCell>
@@ -462,6 +536,59 @@ export default function AdminBookingsPage() {
               Annuler
             </Button>
             <Button variant="destructive" onClick={handleDispute}>
+              Confirmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {reportTargetStatus === 'reviewing'
+                ? 'Passer le signalement en examen'
+                : reportTargetStatus === 'resolved'
+                  ? 'Résoudre le signalement'
+                  : 'Classer le signalement'}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedReport
+                ? formatBookingReportReason(selectedReport.reason)
+                : 'Signalement réservation'}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedReport ? (
+            <div className="rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+              <p className="whitespace-pre-line">{selectedReport.message}</p>
+            </div>
+          ) : null}
+          <div className="space-y-2">
+            <Label htmlFor="report-admin-note">
+              Note admin
+              {reportTargetStatus !== 'reviewing' ? ' obligatoire' : ''}
+            </Label>
+            <Textarea
+              id="report-admin-note"
+              value={reportAdminNote}
+              onChange={e => setReportAdminNote(e.target.value)}
+              placeholder="Synthèse, décision ou prochaine action..."
+              className="mt-2"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setReportDialogOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant={
+                reportTargetStatus === 'dismissed' ? 'secondary' : 'default'
+              }
+              onClick={handleReportStatus}
+            >
               Confirmer
             </Button>
           </DialogFooter>
