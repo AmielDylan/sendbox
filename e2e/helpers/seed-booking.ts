@@ -83,6 +83,18 @@ export async function updateTestBookingStatus(
 
 export async function deleteTestBookings(senderId: string): Promise<void> {
   const supabase = createE2EAdminClient()
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('id')
+    .eq('sender_id', senderId)
+    .eq('package_description', 'Test booking created by E2E')
+
+  const bookingIds = bookings?.map(booking => booking.id) || []
+
+  if (bookingIds.length > 0) {
+    await supabase.from('notifications').delete().in('booking_id', bookingIds)
+  }
+
   await supabase
     .from('bookings')
     .delete()

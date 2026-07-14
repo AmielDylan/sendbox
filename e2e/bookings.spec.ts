@@ -1,14 +1,13 @@
 import { test, expect } from './fixtures'
 import { PERSONAS } from './globalSetup'
-import { createTestAnnouncement } from './helpers/seed-announcement'
 import {
-  createTestBooking,
-  acceptTestBooking,
-  deleteTestBookings,
-} from './helpers/seed-booking'
+  createTestAnnouncement,
+  deleteTestAnnouncements,
+} from './helpers/seed-announcement'
+import { createTestBooking, deleteTestBookings } from './helpers/seed-booking'
 import { createE2EAdminClient } from './helpers/supabase-admin'
 
-// Booking tests share the same DB users — run serially to avoid state collisions.
+// Booking tests share the same DB users, run serially to avoid state collisions.
 test.describe.configure({ mode: 'serial' })
 
 async function getUserId(email: string): Promise<string> {
@@ -22,11 +21,12 @@ async function getUserId(email: string): Promise<string> {
   return data.id
 }
 
-test.describe('Création réservation — Sender', () => {
+test.describe('Creation reservation - Sender', () => {
   let announcementId: string
+  let travelerId: string
 
   test.beforeEach(async () => {
-    const travelerId = await getUserId(PERSONAS.traveler.email)
+    travelerId = await getUserId(PERSONAS.traveler.email)
     const announcement = await createTestAnnouncement(travelerId)
     announcementId = announcement.id
   })
@@ -34,20 +34,20 @@ test.describe('Création réservation — Sender', () => {
   test.afterEach(async () => {
     const senderId = await getUserId(PERSONAS.sender.email)
     await deleteTestBookings(senderId)
+    await deleteTestAnnouncements(travelerId)
   })
 
-  test('page colis/new charge avec les détails annonce', async ({
+  test('page colis/new charge avec les details annonce', async ({
     senderPage,
   }) => {
     await senderPage.goto(`/dashboard/colis/new?announcement=${announcementId}`)
     await expect(senderPage).toHaveURL(/colis\/new/)
-    // Wait for announcement to load, then check route/city text
     await expect(senderPage.getByText(/paris|cotonou/i).first()).toBeVisible({
       timeout: 15_000,
     })
   })
 
-  test('submit crée un booking en status pending', async ({
+  test('submit cree un booking en status pending', async ({
     senderPage,
     supabaseAdmin,
   }) => {
@@ -55,32 +55,27 @@ test.describe('Création réservation — Sender', () => {
 
     await senderPage.goto(`/dashboard/colis/new?announcement=${announcementId}`)
 
-    // Wait for form to finish loading announcement
     await senderPage.waitForSelector('#package_description', {
       state: 'visible',
       timeout: 15_000,
     })
 
-    // Fill required description (min 10 chars)
     await senderPage.locator('#package_category').selectOption('documents')
     await senderPage.locator('#package_dimensions').fill('30 x 20 x 10 cm')
     await senderPage
       .locator('#package_description')
-      .fill('Colis test E2E — contenu standard')
+      .fill('Colis test E2E - contenu standard')
     await senderPage.getByLabel(/ne contient aucun objet interdit/i).check()
     await senderPage
       .getByLabel(/description, la valeur et les dimensions/i)
       .check()
 
-    const submitBtn = senderPage.getByRole('button', {
-      name: /envoyer la demande/i,
-    })
-    await submitBtn.click()
+    await senderPage
+      .getByRole('button', { name: /envoyer la demande/i })
+      .click()
 
-    // Should redirect to booking detail page (UUID, not "new")
     await senderPage.waitForURL(/colis\/[0-9a-f-]{36}/, { timeout: 15_000 })
 
-    // Assert in DB
     const { data } = await supabaseAdmin
       .from('bookings')
       .select('id, status')
@@ -92,46 +87,144 @@ test.describe('Création réservation — Sender', () => {
   })
 })
 
-test.describe('Acceptation réservation — Traveler', () => {
-  let announcementId: string
+test.describe('Decision reservation - Traveler', () => {
   let bookingId: string
+  let senderId: string
+  let travelerId: string
 
   test.beforeEach(async () => {
-    const travelerId = await getUserId(PERSONAS.traveler.email)
-    const senderId = await getUserId(PERSONAS.sender.email)
+    travelerId = await getUserId(PERSONAS.traveler.email)
+    senderId = await getUserId(PERSONAS.sender.email)
+    await deleteTestBookings(senderId)
+    await deleteTestAnnouncements(travelerId)
+
     const announcement = await createTestAnnouncement(travelerId)
-    announcementId = announcement.id
-    const booking = await createTestBooking(senderId, announcementId)
+    const booking = await createTestBooking(senderId, announcement.id)
     bookingId = booking.id
   })
 
   test.afterEach(async () => {
-    const senderId = await getUserId(PERSONAS.sender.email)
     await deleteTestBookings(senderId)
+    await deleteTestAnnouncements(travelerId)
   })
 
-  test('booking accepté via DB helper change le statut', async ({
+  test('voyageur accepte la demande apres relecture colis et notifie expediteur', async ({
+    travelerPage,
+    senderPage,
     supabaseAdmin,
   }) => {
-    await acceptTestBooking(bookingId)
+    await travelerPage.goto('/dashboard/messages?tab=requests')
+    await expect(
+      travelerPage.getByText('Test booking created by E2E')
+    ).toBeVisible({ timeout: 15_000 })
 
-    const { data } = await supabaseAdmin
-      .from('bookings')
-      .select('status')
-      .eq('id', bookingId)
-      .single()
-    expect(data?.status).toBe('accepted')
-  })
+    await travelerPage.getByRole('button', { name: /accepter/i }).click()
+    await expect(
+      travelerPage.getByText(/accepter cette demande/i)
+    ).toBeVisible()
+    await expect(
+      travelerPage.getByText('Declaration colis', { exact: true })
+    ).toBeVisible()
 
-  test('sender voit le bouton Payer sur booking accepté', async ({
-    senderPage,
-  }) => {
-    await acceptTestBooking(bookingId)
+    await travelerPage.getByLabel(/j'ai relu la declaration colis/i).check()
+    await travelerPage.getByRole('button', { name: /confirmer/i }).click()
+
+    await expect
+      .poll(async () => {
+        const { data } = await supabaseAdmin
+          .from('bookings')
+          .select('status')
+          .eq('id', bookingId)
+          .single()
+        return data?.status
+      })
+      .toBe('accepted')
+
+    await expect
+      .poll(async () => {
+        const { data } = await supabaseAdmin
+          .from('notifications')
+          .select('title, content, user_id')
+          .eq('booking_id', bookingId)
+          .eq('user_id', senderId)
+          .eq('type', 'booking_accepted')
+          .maybeSingle()
+        return data
+      })
+      .toMatchObject({ user_id: senderId })
 
     await senderPage.goto(`/dashboard/colis/${bookingId}`)
-    // "Payer maintenant" renders as <a> via Button asChild+Link
     await expect(senderPage.getByText(/payer maintenant/i).first()).toBeVisible(
       { timeout: 20_000 }
     )
+  })
+
+  test('voyageur refuse avec motif colis structure et notifie expediteur', async ({
+    travelerPage,
+    senderPage,
+    supabaseAdmin,
+  }) => {
+    await travelerPage.goto('/dashboard/messages?tab=requests')
+    await expect(
+      travelerPage.getByText('Test booking created by E2E')
+    ).toBeVisible({ timeout: 15_000 })
+
+    await travelerPage.getByRole('button', { name: /refuser/i }).click()
+    await expect(travelerPage.getByText(/refuser cette demande/i)).toBeVisible()
+    await expect(
+      travelerPage.getByText('Declaration colis', { exact: true })
+    ).toBeVisible()
+
+    await travelerPage
+      .getByRole('combobox', { name: /raison du refus/i })
+      .click()
+    await travelerPage
+      .getByRole('option', { name: /objet interdit ou a risque/i })
+      .click()
+    await travelerPage
+      .getByRole('button', { name: /confirmer le refus/i })
+      .click()
+
+    await expect
+      .poll(async () => {
+        const { data } = await supabaseAdmin
+          .from('bookings')
+          .select('status, refused_reason, refused_at')
+          .eq('id', bookingId)
+          .single()
+        return data
+      })
+      .toMatchObject({
+        status: 'cancelled',
+        refused_reason: 'Objet interdit ou a risque',
+      })
+
+    const { data: booking } = await supabaseAdmin
+      .from('bookings')
+      .select('refused_at')
+      .eq('id', bookingId)
+      .single()
+    expect(booking?.refused_at).toBeTruthy()
+
+    await expect
+      .poll(async () => {
+        const { data } = await supabaseAdmin
+          .from('notifications')
+          .select('title, content, user_id')
+          .eq('booking_id', bookingId)
+          .eq('user_id', senderId)
+          .eq('type', 'booking_refused')
+          .maybeSingle()
+        return data
+      })
+      .toMatchObject({ user_id: senderId })
+
+    await senderPage.goto(`/dashboard/colis/${bookingId}`)
+    await expect(senderPage.getByText(/raison du refus/i)).toBeVisible({
+      timeout: 20_000,
+    })
+    await expect(
+      senderPage.getByText(/objet interdit ou a risque/i)
+    ).toBeVisible()
   })
 })
