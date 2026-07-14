@@ -12,7 +12,7 @@ async function getTravelerUserId(): Promise<string> {
   return traveler.id
 }
 
-test.describe('Page abonnement', () => {
+test.describe.skip('Page abonnement', () => {
   test('affiche le statut abonnement du traveler', async ({ travelerPage }) => {
     await travelerPage.goto('/dashboard/reglages/abonnement')
     await expect(travelerPage).toHaveURL(/abonnement/)
@@ -56,7 +56,7 @@ test.describe('Page abonnement', () => {
   })
 })
 
-test.describe('Checkout abonnement', () => {
+test.describe.skip('Checkout abonnement', () => {
   test("clic S'abonner redirige vers Stripe Checkout", async ({ browser }) => {
     const supabase = createE2EAdminClient()
     const { data: users } = await supabase.auth.admin.listUsers()

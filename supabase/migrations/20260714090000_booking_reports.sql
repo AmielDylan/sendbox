@@ -65,7 +65,7 @@ CREATE POLICY "booking parties can view reports"
           OR public.bookings.traveler_id = auth.uid()
         )
     )
-    OR public.is_admin(auth.uid())
+    OR public.is_admin()
   );
 
 DROP POLICY IF EXISTS "booking parties can create reports" ON public.booking_reports;
@@ -90,5 +90,5 @@ DROP POLICY IF EXISTS "admins can update reports" ON public.booking_reports;
 CREATE POLICY "admins can update reports"
   ON public.booking_reports FOR UPDATE
   TO authenticated
-  USING (public.is_admin(auth.uid()))
-  WITH CHECK (public.is_admin(auth.uid()));
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
