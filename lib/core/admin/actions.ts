@@ -516,7 +516,20 @@ export async function getAdminBookings() {
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('bookings')
-    .select('*')
+    .select(
+      `
+      *,
+      booking_reports (
+        id,
+        reason,
+        message,
+        status,
+        suggested_new_date,
+        reported_by,
+        created_at
+      )
+    `
+    )
     .order('created_at', { ascending: false })
     .limit(100)
 
