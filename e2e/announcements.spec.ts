@@ -1,4 +1,3 @@
-import * as path from 'path'
 import { test, expect } from './fixtures'
 import { PERSONAS } from './globalSetup'
 import { createE2EAdminClient } from './helpers/supabase-admin'
@@ -50,10 +49,7 @@ test.describe('Création annonce — Flow complet', () => {
     ).toBeVisible()
   })
 
-  test('flow FR→BJ complet — publier une annonce', async ({
-    travelerPage,
-    supabaseAdmin,
-  }) => {
+  test('flow FR→BJ complet — publier une annonce', async ({ travelerPage }) => {
     await travelerPage.goto('/dashboard/annonces/new')
 
     // Mock the French address API to avoid network dependency
@@ -62,9 +58,6 @@ test.describe('Création annonce — Flow complet', () => {
     )
 
     // Step 1 — Trajet : select departure country FR
-    const departureTrigger = travelerPage
-      .locator('[data-testid="departure-country"], select, [role="combobox"]')
-      .first()
     // Try to find and set departure country to FR — use visible selects
     // Fill departure city
     const departureCityInput = travelerPage
@@ -114,41 +107,6 @@ test.describe('Création annonce — Flow complet', () => {
         .order('created_at', { ascending: false })
         .limit(1)
       expect(data?.length).toBeGreaterThan(0)
-    }
-  })
-})
-
-test.describe.skip('Gate abonnement', () => {
-  test('traveler sans abonnement actif voit le panel bloquant', async ({
-    browser,
-  }) => {
-    const supabase = createE2EAdminClient()
-    const { data: users } = await supabase.auth.admin.listUsers()
-    const traveler = users?.users.find(u => u.email === PERSONAS.traveler.email)
-    if (traveler) {
-      await supabase
-        .from('profiles')
-        .update({ subscription_status: 'expired' })
-        .eq('id', traveler.id)
-    }
-
-    const ctx = await browser.newContext({
-      storageState: path.join(__dirname, '../.playwright/state/traveler.json'),
-    })
-    const page = await ctx.newPage()
-    await page.goto('/dashboard/reglages/abonnement')
-    // Should show subscription panel
-    await expect(
-      page.getByText(/abonnement|subscription|s'abonner/i).first()
-    ).toBeVisible()
-    await ctx.close()
-
-    // Restore
-    if (traveler) {
-      await supabase
-        .from('profiles')
-        .update({ subscription_status: 'active' })
-        .eq('id', traveler.id)
     }
   })
 })
