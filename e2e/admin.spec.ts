@@ -1,5 +1,30 @@
 import { test, expect } from './fixtures'
 import { PERSONAS } from './globalSetup'
+import * as path from 'path'
+import {
+  createTestAnnouncement,
+  deleteTestAnnouncements,
+} from './helpers/seed-announcement'
+import { createTestBooking, deleteTestBookings } from './helpers/seed-booking'
+
+const STATE_DIR = path.resolve(__dirname, '../.playwright/state')
+
+async function getPersonaUserId(supabaseAdmin: any, email: string) {
+  const { data: users } = await supabaseAdmin.auth.admin.listUsers()
+  const user = users?.users.find((candidate: any) => candidate.email === email)
+  if (!user) throw new Error(`Utilisateur E2E introuvable: ${email}`)
+  return user.id
+}
+
+async function openMobileAdminPage(browser: any) {
+  const context = await browser.newContext({
+    storageState: path.join(STATE_DIR, 'admin.json'),
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+  })
+  const page = await context.newPage()
+  return { context, page }
+}
 
 test.describe('Guard — accès admin', () => {
   test('non-admin redirigé hors de /admin', async ({ senderPage }) => {
@@ -85,5 +110,81 @@ test.describe('Admin Bookings', () => {
     await adminPage.goto('/admin/bookings')
     await expect(adminPage).toHaveURL(/\/admin\/bookings/)
     await expect(adminPage.locator('body')).toBeVisible()
+  })
+})
+
+test.describe('Admin mobile responsive', () => {
+  test('la modération des annonces utilise un menu actions sur mobile', async ({
+    browser,
+    supabaseAdmin,
+  }) => {
+    const travelerId = await getPersonaUserId(
+      supabaseAdmin,
+      PERSONAS.traveler.email
+    )
+    await deleteTestAnnouncements(travelerId)
+    await createTestAnnouncement(travelerId)
+
+    const { context, page } = await openMobileAdminPage(browser)
+
+    try {
+      await page.goto('/admin/announcements')
+      await expect(page).toHaveURL(/\/admin\/announcements/)
+      await expect(page.locator('table')).toBeHidden()
+      await expect(page.getByText(/Paris/).first()).toBeVisible()
+      await expect(page.getByText(/Cotonou/).first()).toBeVisible()
+
+      await page.getByRole('button', { name: /actions annonce/i }).click()
+      await expect(
+        page.getByRole('menuitem', { name: /rejeter/i })
+      ).toBeVisible()
+    } finally {
+      await context.close()
+      await deleteTestAnnouncements(travelerId)
+    }
+  })
+
+  test('les réservations admin restent lisibles sans débordement horizontal sur mobile', async ({
+    browser,
+    supabaseAdmin,
+  }) => {
+    const senderId = await getPersonaUserId(
+      supabaseAdmin,
+      PERSONAS.sender.email
+    )
+    const travelerId = await getPersonaUserId(
+      supabaseAdmin,
+      PERSONAS.traveler.email
+    )
+
+    await deleteTestBookings(senderId)
+    await deleteTestAnnouncements(travelerId)
+    const announcement = await createTestAnnouncement(travelerId)
+    const booking = await createTestBooking(senderId, announcement.id)
+
+    const { context, page } = await openMobileAdminPage(browser)
+
+    try {
+      await page.goto('/admin/bookings')
+      await expect(page).toHaveURL(/\/admin\/bookings/)
+      await expect(page.locator('table')).toBeHidden()
+      await expect(
+        page.getByText(`${booking.id.slice(0, 8)}...`).first()
+      ).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: /^actions$/i }).first()
+      ).toBeVisible()
+
+      const hasHorizontalOverflow = await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth
+      )
+      expect(hasHorizontalOverflow).toBe(false)
+    } finally {
+      await context.close()
+      await deleteTestBookings(senderId)
+      await deleteTestAnnouncements(travelerId)
+    }
   })
 })
