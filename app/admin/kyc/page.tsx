@@ -38,8 +38,9 @@ export default async function AdminKYCPage() {
   const { data: profiles } = await admin
     .from('profiles')
     .select(
-      'id, firstname, lastname, email, verification_status, kyc_submitted_at, created_at'
+      'id, firstname, lastname, email, verification_status, kyc_submitted_at, created_at, role'
     )
+    .neq('role', 'admin')
     .order('kyc_submitted_at', { ascending: true })
 
   const allProfiles = profiles ?? []

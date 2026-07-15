@@ -472,6 +472,7 @@ export async function getAdminStats() {
     .from('profiles')
     .select('*', { count: 'exact', head: true })
     .eq('kyc_status', 'pending')
+    .neq('role', 'admin')
 
   // Réservations actives
   const { count: activeBookings } = await supabase
