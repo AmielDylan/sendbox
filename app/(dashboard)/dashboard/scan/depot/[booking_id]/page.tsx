@@ -19,7 +19,10 @@ import {
   SignatureCanvas,
   type SignatureCanvasRef,
 } from '@/components/features/bookings/SignatureCanvas'
-import { markAsInTransit } from '@/lib/core/bookings/workflow'
+import {
+  getBookingForScanStep,
+  markAsInTransit,
+} from '@/lib/core/bookings/workflow'
 import {
   IconLoader2,
   IconCamera,
@@ -51,48 +54,15 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
 
   const loadBooking = useCallback(async () => {
     try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const result = await getBookingForScanStep(booking_id, 'deposit')
 
-      if (!user) {
-        toast.error('Vous devez être connecté')
-        router.push('/login')
+      if (result.error || !result.booking) {
+        toast.error(result.error || 'Erreur lors du chargement')
+        router.push(result.redirectTo || `/dashboard/colis/${booking_id}`)
         return
       }
 
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('id', booking_id)
-        .single()
-
-      if (error || !data) {
-        toast.error('Réservation introuvable')
-        router.push('/dashboard/colis')
-        return
-      }
-
-      if (data.traveler_id !== user.id) {
-        toast.error('Accès non autorisé')
-        router.push('/dashboard/colis')
-        return
-      }
-
-      if (
-        data.status !== 'accepted' &&
-        data.status !== 'confirmed' &&
-        data.status !== 'paid'
-      ) {
-        toast.error(
-          'La réservation doit être acceptée et la mise en relation validée'
-        )
-        router.push(`/dashboard/colis/${booking_id}`)
-        return
-      }
-
-      setBooking(data)
+      setBooking(result.booking)
     } catch (error) {
       console.error('Error loading booking:', error)
       toast.error('Erreur lors du chargement')

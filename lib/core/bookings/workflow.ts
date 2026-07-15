@@ -12,6 +12,63 @@ import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { sendEmail } from '@/lib/shared/services/email/client'
 import { getCancellationPolicy } from '@/lib/core/bookings/cancellation-policy'
 
+type ScanStep = 'deposit' | 'delivery'
+
+export async function getBookingForScanStep(bookingId: string, step: ScanStep) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      error: 'Vous devez etre connecte',
+      redirectTo: '/login',
+    }
+  }
+
+  const admin = createAdminClient()
+  const { data: booking, error } = await admin
+    .from('bookings')
+    .select('*')
+    .eq('id', bookingId)
+    .single()
+
+  if (error || !booking) {
+    return {
+      error: 'Reservation introuvable',
+      redirectTo: '/dashboard/colis',
+    }
+  }
+
+  if (booking.traveler_id !== user.id) {
+    return {
+      error: 'Acces non autorise',
+      redirectTo: '/dashboard/colis',
+    }
+  }
+
+  const validDepositStatuses = ['accepted', 'confirmed', 'paid']
+  const isValidStatus =
+    step === 'deposit'
+      ? validDepositStatuses.includes(booking.status)
+      : booking.status === 'in_transit'
+
+  if (!isValidStatus) {
+    return {
+      error:
+        step === 'deposit'
+          ? 'La reservation doit etre acceptee et la mise en relation validee'
+          : 'Le colis doit etre en transit',
+      redirectTo: `/dashboard/colis/${bookingId}`,
+    }
+  }
+
+  return { booking }
+}
+
 /**
  * Annule une réservation avec raison.
  *
