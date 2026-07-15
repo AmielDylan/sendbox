@@ -71,6 +71,14 @@ export async function updateTestBookingStatus(
     patch.deposited_at = now
   }
 
+  if (status === 'delivered' || status === 'completed') {
+    patch.paid_at = now
+    patch.deposited_at = now
+    patch.delivered_at = now
+    patch.delivery_confirmed_at = now
+    patch.completed_at = now
+  }
+
   const { error } = await supabase
     .from('bookings')
     .update(patch)
