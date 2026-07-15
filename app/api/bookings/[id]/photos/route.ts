@@ -8,6 +8,18 @@ const MAX_PHOTO_SIZE_BYTES =
 
 const UPLOAD_SECRET = process.env.UPLOAD_SECRET
 
+function getPhotoStatusError(type: 'handoff' | 'delivery', status: string) {
+  if (type === 'handoff' && status !== 'confirmed') {
+    return 'La photo de remise est autorisee uniquement quand la mise en relation est confirmee'
+  }
+
+  if (type === 'delivery' && !['handed', 'in_transit'].includes(status)) {
+    return 'La photo de livraison est autorisee uniquement apres la remise du colis'
+  }
+
+  return null
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -63,16 +75,6 @@ export async function POST(
     )
   }
 
-  if (!['confirmed', 'handed', 'in_transit'].includes(booking.status)) {
-    return NextResponse.json(
-      {
-        error: 'Statut incompatible pour upload photo',
-        code: 'INVALID_STATUS',
-      },
-      { status: 422 }
-    )
-  }
-
   let body: {
     url: string
     type: 'handoff' | 'delivery'
@@ -99,6 +101,28 @@ export async function POST(
     return NextResponse.json(
       { error: 'Paramètres manquants ou invalides', code: 'BAD_REQUEST' },
       { status: 400 }
+    )
+  }
+
+  if (!isTraveler) {
+    return NextResponse.json(
+      {
+        error:
+          'Seul le voyageur peut ajouter une preuve photo de remise ou livraison',
+        code: 'FORBIDDEN',
+      },
+      { status: 403 }
+    )
+  }
+
+  const statusError = getPhotoStatusError(body.type, booking.status)
+  if (statusError) {
+    return NextResponse.json(
+      {
+        error: statusError,
+        code: 'INVALID_STATUS',
+      },
+      { status: 422 }
     )
   }
 
