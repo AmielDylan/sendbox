@@ -20,8 +20,12 @@ function validatePhotoType(type: string): type is PhotoType {
   return VALID_PHOTO_TYPES.includes(type as PhotoType)
 }
 
-function validateBookingStatusForPhoto(status: string): boolean {
-  return ['confirmed', 'handed', 'in_transit'].includes(status)
+function validateBookingStatusForPhoto(
+  type: PhotoType,
+  status: string
+): boolean {
+  if (type === 'handoff') return status === 'confirmed'
+  return ['handed', 'in_transit'].includes(status)
 }
 
 function generateCapturedAt(): string {
@@ -108,32 +112,40 @@ describe('Photo upload — security invariants', () => {
   })
 
   describe('Booking status gate for photos', () => {
-    it('allows photo upload when booking is confirmed', () => {
-      expect(validateBookingStatusForPhoto('confirmed')).toBe(true)
+    it('allows handoff photo upload when booking is confirmed', () => {
+      expect(validateBookingStatusForPhoto('handoff', 'confirmed')).toBe(true)
     })
 
-    it('allows photo upload when booking is handed', () => {
-      expect(validateBookingStatusForPhoto('handed')).toBe(true)
+    it('blocks delivery photo upload before handoff', () => {
+      expect(validateBookingStatusForPhoto('delivery', 'confirmed')).toBe(false)
     })
 
-    it('allows photo upload when booking is in_transit', () => {
-      expect(validateBookingStatusForPhoto('in_transit')).toBe(true)
+    it('allows delivery photo upload when booking is handed', () => {
+      expect(validateBookingStatusForPhoto('delivery', 'handed')).toBe(true)
+    })
+
+    it('allows delivery photo upload when booking is in_transit', () => {
+      expect(validateBookingStatusForPhoto('delivery', 'in_transit')).toBe(true)
     })
 
     it('blocks photo upload for pending bookings', () => {
-      expect(validateBookingStatusForPhoto('pending')).toBe(false)
+      expect(validateBookingStatusForPhoto('handoff', 'pending')).toBe(false)
+      expect(validateBookingStatusForPhoto('delivery', 'pending')).toBe(false)
     })
 
     it('blocks photo upload for completed bookings', () => {
-      expect(validateBookingStatusForPhoto('completed')).toBe(false)
+      expect(validateBookingStatusForPhoto('handoff', 'completed')).toBe(false)
+      expect(validateBookingStatusForPhoto('delivery', 'completed')).toBe(false)
     })
 
     it('blocks photo upload for cancelled bookings', () => {
-      expect(validateBookingStatusForPhoto('cancelled')).toBe(false)
+      expect(validateBookingStatusForPhoto('handoff', 'cancelled')).toBe(false)
+      expect(validateBookingStatusForPhoto('delivery', 'cancelled')).toBe(false)
     })
 
     it('blocks photo upload for disputed bookings', () => {
-      expect(validateBookingStatusForPhoto('disputed')).toBe(false)
+      expect(validateBookingStatusForPhoto('handoff', 'disputed')).toBe(false)
+      expect(validateBookingStatusForPhoto('delivery', 'disputed')).toBe(false)
     })
   })
 
