@@ -5,12 +5,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-  useAuthenticatedQuery,
-  queryWithAbort,
-} from '@/hooks/use-authenticated-query'
+import { useQuery } from '@tanstack/react-query'
 import { QUERY_CONFIG } from '@/lib/shared/query/config'
-import { createClient } from '@/lib/shared/db/client'
+import { getUserAnnouncements } from '@/lib/core/announcements/actions'
 import {
   deleteAnnouncement,
   markAnnouncementAsCompleted,
@@ -66,37 +63,21 @@ export default function MyAnnouncementsPage() {
     data: announcementsData,
     isLoading: isAnnouncementsLoading,
     refetch,
-  } = useAuthenticatedQuery<any[]>(
-    ['user-announcements', activeTab],
-    async (userId, signal) => {
-      const supabase = createClient()
-      let query = supabase
-        .from('announcements')
-        .select('*')
-        .eq('traveler_id', userId)
-        .order('created_at', { ascending: false })
+  } = useQuery<any[]>({
+    queryKey: ['user-announcements', activeTab],
+    queryFn: async () => {
+      const result = await getUserAnnouncements(activeTab)
 
-      if (activeTab !== 'all') {
-        if (activeTab === 'active') {
-          query = query.in('status', [
-            'active',
-            'partially_booked',
-            'fully_booked',
-          ])
-        } else {
-          query = query.eq('status', activeTab)
-        }
+      if (result.error) {
+        throw new Error(result.error)
       }
 
-      return queryWithAbort<any[]>(query, signal)
+      return result.announcements
     },
-    {
-      timeout: 5000,
-      staleTime: QUERY_CONFIG.LISTS.staleTime,
-      gcTime: QUERY_CONFIG.LISTS.gcTime,
-      refetchOnWindowFocus: false,
-    }
-  )
+    staleTime: QUERY_CONFIG.LISTS.staleTime,
+    gcTime: QUERY_CONFIG.LISTS.gcTime,
+    refetchOnWindowFocus: false,
+  })
 
   const announcements = announcementsData || []
   const emptyTitle =

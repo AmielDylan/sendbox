@@ -50,6 +50,7 @@ import { ClientOnly } from '@/components/ui/client-only'
 import {
   generateInitials,
   getAvatarUrl,
+  isProfileIdentityComplete,
   getShortDisplayName,
   getShortNameParts,
 } from '@/lib/core/profile/utils'
@@ -163,9 +164,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         pathname.startsWith('/dashboard')
       ) {
         router.replace('/admin/dashboard')
+      } else if (
+        profile &&
+        profile.role !== 'admin' &&
+        !isProfileIdentityComplete(profile.firstname, profile.lastname) &&
+        pathname !== '/dashboard/reglages/profil'
+      ) {
+        router.replace('/dashboard/reglages/profil')
       }
     }
-  }, [user, profile?.role, pathname, loading, router])
+  }, [user, profile, pathname, loading, router])
 
   // Spinner only when we have no user at all (not yet loaded from localStorage).
   // If user is persisted from localStorage, render immediately while auth validates in background.
@@ -425,7 +433,11 @@ function UserMenu() {
     (profile as any)?.firstname || null,
     (profile as any)?.lastname || null
   )
-  const initials = generateInitials(nameParts.firstName, nameParts.lastName)
+  const rawInitials = generateInitials(nameParts.firstName, nameParts.lastName)
+  const initials =
+    rawInitials !== 'U'
+      ? rawInitials
+      : user?.email?.[0]?.toUpperCase() || rawInitials
   const avatarUrl = getAvatarUrl(
     (profile as any)?.avatar_url || null,
     (profile as any)?.id || user?.id || displayName

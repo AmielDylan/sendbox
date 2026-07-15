@@ -96,7 +96,11 @@ export function PublicHeader() {
     (profile as any)?.firstname || null,
     (profile as any)?.lastname || null
   )
-  const initials = generateInitials(nameParts.firstName, nameParts.lastName)
+  const rawInitials = generateInitials(nameParts.firstName, nameParts.lastName)
+  const initials =
+    rawInitials !== 'U'
+      ? rawInitials
+      : user?.email?.[0]?.toUpperCase() || rawInitials
   const avatarUrl = getAvatarUrl(
     (profile as any)?.avatar_url || null,
     (profile as any)?.id || user?.id || displayName
