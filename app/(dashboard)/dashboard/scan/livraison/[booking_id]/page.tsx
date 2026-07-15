@@ -18,7 +18,10 @@ import {
   SignatureCanvas,
   type SignatureCanvasRef,
 } from '@/components/features/bookings/SignatureCanvas'
-import { markAsDelivered } from '@/lib/core/bookings/workflow'
+import {
+  getBookingForScanStep,
+  markAsDelivered,
+} from '@/lib/core/bookings/workflow'
 import { IconLoader2, IconMapPin, IconCircleCheck } from '@tabler/icons-react'
 import Link from 'next/link'
 
@@ -41,42 +44,15 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
 
   const loadBooking = useCallback(async () => {
     try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const result = await getBookingForScanStep(booking_id, 'delivery')
 
-      if (!user) {
-        toast.error('Vous devez être connecté')
-        router.push('/login')
+      if (result.error || !result.booking) {
+        toast.error(result.error || 'Erreur lors du chargement')
+        router.push(result.redirectTo || `/dashboard/colis/${booking_id}`)
         return
       }
 
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('id', booking_id)
-        .single()
-
-      if (error || !data) {
-        toast.error('Réservation introuvable')
-        router.push('/dashboard/colis')
-        return
-      }
-
-      if (data.traveler_id !== user.id) {
-        toast.error('Accès non autorisé')
-        router.push('/dashboard/colis')
-        return
-      }
-
-      if (data.status !== 'in_transit') {
-        toast.error('Le colis doit être en transit')
-        router.push(`/dashboard/colis/${booking_id}`)
-        return
-      }
-
-      setBooking(data)
+      setBooking(result.booking)
     } catch (error) {
       console.error('Error loading booking:', error)
       toast.error('Erreur lors du chargement')
