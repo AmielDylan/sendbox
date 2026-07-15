@@ -67,14 +67,21 @@ export async function proxy(request: NextRequest) {
 
   // Vérifier le role de l'utilisateur (admin ou non)
   let isAdmin = false
+  let hasCompleteIdentity = true
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, firstname, lastname')
       .eq('id', user.id)
       .single()
 
     isAdmin = profile?.role === 'admin'
+    hasCompleteIdentity =
+      isAdmin ||
+      (!!profile?.firstname?.trim() &&
+        profile.firstname.trim().length >= 2 &&
+        !!profile?.lastname?.trim() &&
+        profile.lastname.trim().length >= 2)
   }
 
   // Si l'utilisateur essaie d'accéder à une route protégée sans être authentifié
@@ -89,6 +96,18 @@ export async function proxy(request: NextRequest) {
   if (isProtectedRoute && user && isAdmin && !isAdminRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/admin/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  if (
+    isProtectedRoute &&
+    user &&
+    !isAdmin &&
+    !hasCompleteIdentity &&
+    pathname !== '/dashboard/reglages/profil'
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard/reglages/profil'
     return NextResponse.redirect(url)
   }
 

@@ -14,6 +14,58 @@ import { isFeatureEnabled } from '@/lib/shared/config/features'
 
 const MAX_ACTIVE_ANNOUNCEMENTS = 10
 
+type AnnouncementStatusFilter =
+  | 'all'
+  | 'active'
+  | 'draft'
+  | 'completed'
+  | 'cancelled'
+
+export async function getUserAnnouncements(
+  status: AnnouncementStatusFilter = 'all'
+) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return {
+      error: 'Vous devez etre connecte',
+      announcements: [],
+    }
+  }
+
+  let query = supabase
+    .from('announcements')
+    .select('*')
+    .eq('traveler_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (status !== 'all') {
+    if (status === 'active') {
+      query = query.in('status', ['active', 'partially_booked', 'fully_booked'])
+    } else {
+      query = query.eq('status', status)
+    }
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    return {
+      error: 'Erreur lors de la recuperation des annonces',
+      announcements: [],
+    }
+  }
+
+  return {
+    announcements: data || [],
+  }
+}
+
 /**
  * Crée une nouvelle annonce
  */
@@ -78,8 +130,6 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
       field: 'kyc',
     }
   }
-
-  const isAdmin = (profile as any).role === 'admin'
 
   // Vérifier le nombre d'annonces actives
   const { data: activeAnnouncements, error: countError } = await supabase
