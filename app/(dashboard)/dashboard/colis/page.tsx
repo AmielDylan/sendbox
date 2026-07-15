@@ -6,12 +6,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-  useAuthenticatedQuery,
-  queryWithAbort,
-} from '@/hooks/use-authenticated-query'
+import { useAuthenticatedQuery } from '@/hooks/use-authenticated-query'
 import { QUERY_CONFIG } from '@/lib/shared/query/config'
 import { createClient } from '@/lib/shared/db/client'
+import { getUserBookings } from '@/lib/core/bookings/actions'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -81,43 +79,12 @@ export default function MyBookingsPage() {
     Booking[]
   >(
     ['user-bookings', activeTab] as unknown[],
-    async (userId, signal) => {
-      const supabase = createClient()
-
-      // Construire la requête
-      let query = supabase
-        .from('bookings')
-        .select(
-          `
-          id,
-          status,
-          delivery_confirmed_at,
-          kilos_requested,
-          total_price,
-          created_at,
-          announcements:announcement_id (
-            departure_city,
-            arrival_city,
-            departure_country,
-            arrival_country,
-            departure_date
-          )
-        `
-        )
-        .or(`sender_id.eq.${userId},traveler_id.eq.${userId}`)
-        .order('created_at', { ascending: false })
-
-      // Filtrer par statut
-      if (activeTab !== 'all') {
-        if (activeTab === 'accepted') {
-          query = query.in('status', ['accepted', 'paid', 'deposited'])
-        } else {
-          query = query.eq('status', activeTab)
-        }
+    async () => {
+      const result = await getUserBookings(activeTab)
+      if (result.error) {
+        throw new Error(result.error)
       }
-
-      // Exécuter avec timeout via AbortSignal
-      return queryWithAbort<Booking[]>(query, signal)
+      return result.bookings as Booking[]
     },
     {
       // Timeout de 5 secondes (au lieu de 12)

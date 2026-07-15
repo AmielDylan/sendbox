@@ -63,7 +63,7 @@ export function useAuthenticatedQuery<TData = unknown, TError = Error>(
   queryFn: (userId: string, abortSignal: AbortSignal) => Promise<TData>,
   options: AuthenticatedQueryOptions<TData, TError> = {}
 ): UseQueryResult<TData, TError> {
-  const { user, isLoading: isAuthLoading, isAuthenticated } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const {
     timeout = 8000,
     requireAuth = true,
@@ -75,7 +75,7 @@ export function useAuthenticatedQuery<TData = unknown, TError = Error>(
     queryKey,
     queryFn: async () => {
       // Vérifier l'authentification
-      if (requireAuth && !isAuthenticated) {
+      if (requireAuth && !isAuthenticated && !user?.id) {
         throw new AuthenticationRequiredError()
       }
 
@@ -107,7 +107,7 @@ export function useAuthenticatedQuery<TData = unknown, TError = Error>(
       }
     },
     // Désactiver la requête si auth est en cours de chargement ou si requireAuth et pas authentifié
-    enabled: enabled && !isAuthLoading && (!requireAuth || isAuthenticated),
+    enabled: enabled && (!requireAuth || Boolean(user?.id)),
     ...restOptions,
   })
 }

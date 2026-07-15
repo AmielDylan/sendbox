@@ -221,7 +221,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 md:ml-64">
+        <main className="min-w-0 flex-1 md:ml-64">
           {/* Desktop Header */}
           <header className="sticky top-0 z-40 hidden h-16 items-center gap-4 border-b bg-background px-6 md:flex">
             <div className="flex flex-1 items-center gap-4" />
@@ -229,7 +229,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </header>
 
           {/* Page Content */}
-          <div className="p-6 md:p-8 lg:p-10">{children}</div>
+          <div className="max-w-full p-6 md:p-8 lg:p-10">{children}</div>
         </main>
       </div>
     </div>
