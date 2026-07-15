@@ -6,6 +6,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
+import { createAdminClient } from '@/lib/shared/db/admin'
 import { getPublicProfiles } from '@/lib/shared/db/queries/public-profiles'
 import {
   createBookingSchema,
@@ -50,6 +51,76 @@ async function processPackagePhoto(file: File): Promise<Buffer> {
 }
 
 const MAX_PENDING_BOOKINGS = 5
+
+export type UserBookingStatusFilter =
+  | 'all'
+  | 'pending'
+  | 'accepted'
+  | 'paid'
+  | 'deposited'
+  | 'in_transit'
+  | 'delivered'
+  | 'cancelled'
+
+/**
+ * Récupère les réservations visibles par l'utilisateur courant.
+ */
+export async function getUserBookings(status: UserBookingStatusFilter = 'all') {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return { error: 'Non authentifié', bookings: [] }
+  }
+
+  const admin = createAdminClient()
+
+  let query = admin
+    .from('bookings')
+    .select(
+      `
+      id,
+      status,
+      delivery_confirmed_at,
+      kilos_requested,
+      total_price,
+      created_at,
+      announcements:announcement_id (
+        departure_city,
+        arrival_city,
+        departure_country,
+        arrival_country,
+        departure_date
+      )
+    `
+    )
+    .or(`sender_id.eq.${user.id},traveler_id.eq.${user.id}`)
+    .order('created_at', { ascending: false })
+
+  if (status !== 'all') {
+    if (status === 'accepted') {
+      query = query.in('status', ['accepted', 'paid', 'deposited'])
+    } else {
+      query = query.eq('status', status)
+    }
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('[getUserBookings]', error)
+    return {
+      error: 'Erreur lors du chargement des réservations',
+      bookings: [],
+    }
+  }
+
+  return { bookings: data || [] }
+}
 
 /**
  * Crée une nouvelle réservation
