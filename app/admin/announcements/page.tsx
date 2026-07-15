@@ -22,6 +22,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -33,7 +39,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { EmptyState } from '@/components/ui/empty-state'
 import { toast } from 'sonner'
-import { IconLoader2, IconCircleX, IconLuggage } from '@tabler/icons-react'
+import {
+  IconLoader2,
+  IconCircleX,
+  IconDotsVertical,
+  IconLuggage,
+} from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { PageHeader } from '@/components/ui/page-header'
@@ -96,6 +107,31 @@ export default function AdminAnnouncementsPage() {
     return <Badge variant={variants[status] || 'secondary'}>{status}</Badge>
   }
 
+  const openRejectDialog = (announcement: any) => {
+    setSelectedAnnouncement(announcement)
+    setRejectDialogOpen(true)
+  }
+
+  const renderActionsMenu = (announcement: any) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+          <IconDotsVertical className="h-4 w-4" />
+          <span className="sr-only">Actions annonce</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive"
+          onClick={() => openRejectDialog(announcement)}
+        >
+          <IconCircleX className="h-4 w-4" />
+          Rejeter
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -120,7 +156,7 @@ export default function AdminAnnouncementsPage() {
                 className="rounded-lg border p-4 space-y-3 text-sm"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div>
+                  <div className="min-w-0">
                     <p className="font-medium">
                       {announcement.departure_city} →{' '}
                       {announcement.arrival_city}
@@ -131,24 +167,15 @@ export default function AdminAnnouncementsPage() {
                       })}
                     </p>
                   </div>
-                  {getStatusBadge(announcement.status)}
+                  <div className="flex shrink-0 items-center gap-2">
+                    {getStatusBadge(announcement.status)}
+                    {renderActionsMenu(announcement)}
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span>{announcement.price_per_kg} EUR/kg</span>
                   <span>{announcement.available_kg} kg dispo</span>
                 </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => {
-                    setSelectedAnnouncement(announcement)
-                    setRejectDialogOpen(true)
-                  }}
-                >
-                  <IconCircleX className="h-4 w-4 mr-1" />
-                  Rejeter
-                </Button>
               </div>
             ))}
             {(announcements?.length ?? 0) === 0 && (
@@ -189,18 +216,7 @@ export default function AdminAnnouncementsPage() {
                         locale: fr,
                       })}
                     </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedAnnouncement(announcement)
-                          setRejectDialogOpen(true)
-                        }}
-                      >
-                        <IconCircleX className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+                    <TableCell>{renderActionsMenu(announcement)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
