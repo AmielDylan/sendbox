@@ -66,6 +66,15 @@ export function generateInitials(
   return first + last || 'U'
 }
 
+export function isProfileIdentityComplete(
+  firstName: string | null | undefined,
+  lastName: string | null | undefined
+): boolean {
+  return (
+    (firstName || '').trim().length >= 2 && (lastName || '').trim().length >= 2
+  )
+}
+
 export function getShortNameParts(
   firstName: string | null,
   lastName: string | null
