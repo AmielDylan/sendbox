@@ -36,9 +36,7 @@ async function submitReview(page: Page, bookingId: string, criterion: RegExp) {
     page.getByRole('heading', { name: /noter le service/i })
   ).toBeVisible({ timeout: 15_000 })
 
-  await page
-    .getByRole('button', { name: /selectionner 5 etoiles/i })
-    .click()
+  await page.getByRole('button', { name: /selectionner 5 etoiles/i }).click()
   await page.getByText(criterion).click()
   await page
     .locator('#comment')
