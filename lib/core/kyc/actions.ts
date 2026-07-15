@@ -139,6 +139,20 @@ export async function reviewKYC(formData: KYCReviewInput) {
   try {
     const { profileId, action, rejectionReason } = validation.data
 
+    const { data: targetProfile, error: targetProfileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', profileId)
+      .single()
+
+    if (targetProfileError || !targetProfile) {
+      return { error: 'Profil introuvable' }
+    }
+
+    if (targetProfile.role === 'admin') {
+      return { error: 'Un compte admin ne requiert pas de vérification KYC' }
+    }
+
     const updateData: Record<string, unknown> = {
       kyc_status: action === 'approve' ? 'approved' : 'rejected',
       kyc_reviewed_at: new Date().toISOString(),
@@ -219,9 +233,10 @@ export async function getPendingKYC() {
   const { data, error } = await supabase
     .from('profiles')
     .select(
-      'id, firstname, lastname, kyc_status, kyc_submitted_at, kyc_document_type, kyc_nationality, kyc_rejection_reason'
+      'id, firstname, lastname, kyc_status, kyc_submitted_at, kyc_document_type, kyc_nationality, kyc_rejection_reason, role'
     )
     .eq('kyc_status', 'pending')
+    .neq('role', 'admin')
     .order('kyc_submitted_at', { ascending: true })
 
   if (error) {

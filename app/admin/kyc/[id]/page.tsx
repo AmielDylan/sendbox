@@ -25,12 +25,12 @@ export default async function AdminKYCDetailPage({
   const { data: profile } = await admin
     .from('profiles')
     .select(
-      'id, firstname, lastname, email, verification_status, kyc_document_front, kyc_document_back, kyc_selfie, kyc_submitted_at, kyc_rejection_reason'
+      'id, firstname, lastname, email, role, verification_status, kyc_document_front, kyc_document_back, kyc_selfie, kyc_submitted_at, kyc_rejection_reason'
     )
     .eq('id', id)
     .single()
 
-  if (!profile) redirect('/admin/kyc')
+  if (!profile || profile.role === 'admin') redirect('/admin/kyc')
 
   const { data: reviews } = await admin
     .from('kyc_reviews')
