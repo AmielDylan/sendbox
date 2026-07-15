@@ -1,6 +1,5 @@
 import { test, expect } from './fixtures'
 import { PERSONAS } from './globalSetup'
-import { createE2EAdminClient } from './helpers/supabase-admin'
 
 test.describe('Guard — accès admin', () => {
   test('non-admin redirigé hors de /admin', async ({ senderPage }) => {
@@ -34,7 +33,7 @@ test.describe('Admin KYC', () => {
     if (sender) {
       await supabaseAdmin
         .from('profiles')
-        .update({ kyc_status: 'pending' })
+        .update({ kyc_status: 'pending', verification_status: 'pending' })
         .eq('id', sender.id)
     }
 
@@ -48,8 +47,35 @@ test.describe('Admin KYC', () => {
     if (sender) {
       await supabaseAdmin
         .from('profiles')
-        .update({ kyc_status: 'approved' })
+        .update({ kyc_status: 'approved', verification_status: 'verified' })
         .eq('id', sender.id)
+    }
+  })
+
+  test("un admin n'apparait pas dans la file KYC meme si son statut est pending", async ({
+    adminPage,
+    supabaseAdmin,
+  }) => {
+    const { data: users } = await supabaseAdmin.auth.admin.listUsers()
+    const admin = users?.users.find(u => u.email === PERSONAS.admin.email)
+    if (!admin) throw new Error('Admin E2E introuvable')
+
+    await supabaseAdmin
+      .from('profiles')
+      .update({ kyc_status: 'pending', verification_status: 'pending' })
+      .eq('id', admin.id)
+
+    try {
+      await adminPage.goto('/admin/kyc')
+      await expect(adminPage).toHaveURL(/\/admin\/kyc/)
+      await expect(
+        adminPage.getByText(PERSONAS.admin.email, { exact: true })
+      ).toHaveCount(0)
+    } finally {
+      await supabaseAdmin
+        .from('profiles')
+        .update({ kyc_status: 'approved', verification_status: 'verified' })
+        .eq('id', admin.id)
     }
   })
 })

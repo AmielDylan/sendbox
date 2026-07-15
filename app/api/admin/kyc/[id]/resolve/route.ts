@@ -44,7 +44,7 @@ export async function POST(
   const { data: profile } = await admin
     .from('profiles')
     .select(
-      'email, firstname, kyc_document_front, kyc_document_back, kyc_selfie'
+      'email, firstname, role, kyc_document_front, kyc_document_back, kyc_selfie'
     )
     .eq('id', userId)
     .single()
@@ -53,6 +53,13 @@ export async function POST(
     return NextResponse.json(
       { error: 'Utilisateur introuvable' },
       { status: 404 }
+    )
+  }
+
+  if (profile.role === 'admin') {
+    return NextResponse.json(
+      { error: 'Un compte admin ne requiert pas de vérification KYC' },
+      { status: 400 }
     )
   }
 
