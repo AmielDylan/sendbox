@@ -45,6 +45,8 @@ export function StarRating({
           <button
             key={value}
             type="button"
+            aria-label={`Selectionner ${value} etoile${value > 1 ? 's' : ''}`}
+            aria-pressed={value <= rating}
             onClick={() => handleClick(value)}
             onMouseEnter={() => !disabled && setHoveredRating(value)}
             onMouseLeave={() => setHoveredRating(null)}
