@@ -2,6 +2,7 @@ import { setupServer } from 'msw/node'
 import { authHandlers } from './handlers/auth.handlers'
 import { databaseHandlers } from './handlers/database.handlers'
 import { resendHandlers } from './handlers/resend.handlers'
+import { storageHandlers } from './handlers/storage.handlers'
 import { stripeHandlers } from './handlers/stripe.handlers'
 
 /**
@@ -12,6 +13,7 @@ export const server = setupServer(
   ...authHandlers,
   ...databaseHandlers,
   ...resendHandlers,
+  ...storageHandlers,
   ...stripeHandlers
 )
 
@@ -26,4 +28,5 @@ export {
   seedMockStripeStore,
 } from './handlers/stripe.handlers'
 export { resetMockResendStore } from './handlers/resend.handlers'
+export { resetMockStorageStore } from './handlers/storage.handlers'
 export { setMockAuthUser, resetMockAuthUser } from './handlers/auth.handlers'
