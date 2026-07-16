@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   handleDepositScan,
   handleDeliveryScan,
@@ -9,21 +9,27 @@ import { createMockPublishedAnnouncement } from '../../factories/announcement.fa
 import { createMockBooking } from '../../factories/booking.factory'
 import {
   seedMockDatabase,
+  getMockDatabase,
   resetMockDatabase,
   setMockAuthUser,
 } from '../../mocks/server'
+
+vi.mock('@/lib/shared/services/pdf/generation', () => ({
+  generateDepositProof: vi.fn().mockResolvedValue({ success: true }),
+  generateDeliveryProof: vi.fn().mockResolvedValue({ success: true }),
+}))
 
 /**
  * Tests pour les scans QR code (dépôt et livraison)
  */
 describe('QR Scan Actions', () => {
   const mockSender = createMockUser({
-    id: 'sender-test-1',
+    id: '11111111-1111-4111-8111-111111111111',
     email: 'sender@test.com',
   })
 
   const mockTraveler = createMockUser({
-    id: 'traveler-test-1',
+    id: '22222222-2222-4222-8222-222222222222',
     email: 'traveler@test.com',
   })
 
@@ -113,11 +119,13 @@ describe('QR Scan Actions', () => {
           mockSignatureDataURL
         )
 
-        // Note: Le test échouera car on ne peut pas vraiment uploader les fichiers en tests
-        // Mais on vérifie qu'il ne rejette pas pour mauvaise autorisation
-        if (result.error) {
-          expect(result.error).not.toMatch(/autorisé/i)
-        }
+        expect(result.error).toBeUndefined()
+        expect(result.success).toBe(true)
+
+        const updated = getMockDatabase().bookings.get(mockBooking.id)
+        expect(updated.status).toBe('in_transit')
+        expect(updated.deposit_photo_url).toContain('/package-photos/')
+        expect(updated.deposit_signature_url).toContain('/signatures/')
       })
 
       it('accepte si utilisateur est le voyageur', async () => {
@@ -130,16 +138,18 @@ describe('QR Scan Actions', () => {
           mockSignatureDataURL
         )
 
-        // Note: Le test échouera car on ne peut pas vraiment uploader les fichiers en tests
-        // Mais on vérifie qu'il ne rejette pas pour mauvaise autorisation
-        if (result.error) {
-          expect(result.error).not.toMatch(/autorisé/i)
-        }
+        expect(result.error).toBeUndefined()
+        expect(result.success).toBe(true)
+
+        const updated = getMockDatabase().bookings.get(mockBooking.id)
+        expect(updated.status).toBe('in_transit')
+        expect(updated.deposit_photo_url).toContain('/package-photos/')
+        expect(updated.deposit_signature_url).toContain('/signatures/')
       })
 
       it("rejette si utilisateur n'est ni expéditeur ni voyageur", async () => {
         const thirdParty = createMockUser({
-          id: 'third-party-user',
+          id: '33333333-3333-4333-8333-333333333333',
           email: 'third@test.com',
         })
         seedMockDatabase('profiles', [thirdParty])
@@ -177,11 +187,13 @@ describe('QR Scan Actions', () => {
           mockSignatureDataURL
         )
 
-        // Note: Le test échouera car on ne peut pas vraiment uploader les fichiers
-        // Mais on vérifie qu'il ne rejette pas pour mauvais statut
-        if (result.error) {
-          expect(result.error).not.toMatch(/ne peut pas être déposé/i)
-        }
+        expect(result.error).toBeUndefined()
+        expect(result.success).toBe(true)
+
+        const updated = getMockDatabase().bookings.get(booking.id)
+        expect(updated.status).toBe('in_transit')
+        expect(updated.deposit_photo_url).toContain('/package-photos/')
+        expect(updated.deposit_signature_url).toContain('/signatures/')
       })
 
       it('rejette si statut est pending', async () => {
@@ -323,11 +335,13 @@ describe('QR Scan Actions', () => {
           mockSignatureDataURL
         )
 
-        // Note: Le test échouera car on ne peut pas vraiment uploader les fichiers
-        // Mais on vérifie qu'il ne rejette pas pour mauvaise autorisation
-        if (result.error) {
-          expect(result.error).not.toMatch(/autorisé/i)
-        }
+        expect(result.error).toBeUndefined()
+        expect(result.success).toBe(true)
+
+        const updated = getMockDatabase().bookings.get(mockBooking.id)
+        expect(updated.status).toBe('delivered')
+        expect(updated.delivery_photo_url).toContain('/package-photos/')
+        expect(updated.delivery_signature_url).toContain('/signatures/')
       })
 
       it('accepte si utilisateur est le voyageur', async () => {
@@ -340,16 +354,18 @@ describe('QR Scan Actions', () => {
           mockSignatureDataURL
         )
 
-        // Note: Le test échouera car on ne peut pas vraiment uploader les fichiers
-        // Mais on vérifie qu'il ne rejette pas pour mauvaise autorisation
-        if (result.error) {
-          expect(result.error).not.toMatch(/autorisé/i)
-        }
+        expect(result.error).toBeUndefined()
+        expect(result.success).toBe(true)
+
+        const updated = getMockDatabase().bookings.get(mockBooking.id)
+        expect(updated.status).toBe('delivered')
+        expect(updated.delivery_photo_url).toContain('/package-photos/')
+        expect(updated.delivery_signature_url).toContain('/signatures/')
       })
 
       it("rejette si utilisateur n'est ni expéditeur ni voyageur", async () => {
         const thirdParty = createMockUser({
-          id: 'third-party-user',
+          id: '33333333-3333-4333-8333-333333333333',
           email: 'third@test.com',
         })
         seedMockDatabase('profiles', [thirdParty])
@@ -387,11 +403,13 @@ describe('QR Scan Actions', () => {
           mockSignatureDataURL
         )
 
-        // Note: Le test échouera car on ne peut pas vraiment uploader les fichiers
-        // Mais on vérifie qu'il ne rejette pas pour mauvais statut
-        if (result.error) {
-          expect(result.error).not.toMatch(/ne peut pas être livré/i)
-        }
+        expect(result.error).toBeUndefined()
+        expect(result.success).toBe(true)
+
+        const updated = getMockDatabase().bookings.get(booking.id)
+        expect(updated.status).toBe('delivered')
+        expect(updated.delivery_photo_url).toContain('/package-photos/')
+        expect(updated.delivery_signature_url).toContain('/signatures/')
       })
 
       it('rejette si statut est pending', async () => {
@@ -519,7 +537,7 @@ describe('QR Scan Actions', () => {
 
       it("rejette si utilisateur n'est ni expéditeur ni voyageur", async () => {
         const thirdParty = createMockUser({
-          id: 'third-party-user',
+          id: '33333333-3333-4333-8333-333333333333',
           email: 'third@test.com',
         })
         seedMockDatabase('profiles', [thirdParty])
