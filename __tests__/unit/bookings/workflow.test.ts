@@ -1,10 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { deleteCancelledBooking } from '@/lib/core/bookings/workflow'
+import {
+  confirmDeliveryReceipt,
+  deleteCancelledBooking,
+  getBookingForScanStep,
+  markAsDelivered,
+  markAsInTransit,
+} from '@/lib/core/bookings/workflow'
 import { createMockUser } from '../../factories/user.factory'
 import { createMockPublishedAnnouncement } from '../../factories/announcement.factory'
 import { createMockBooking } from '../../factories/booking.factory'
 import {
   seedMockDatabase,
+  getMockDatabase,
   resetMockDatabase,
   setMockAuthUser,
 } from '../../mocks/server'
@@ -245,6 +252,300 @@ describe('Booking Workflow', () => {
         expect(result.error).toBeDefined()
         expect(result.error).toMatch(/ne peut pas être supprimée/i)
       })
+    })
+  })
+
+  describe('getBookingForScanStep', () => {
+    it('rejette un utilisateur non authentifie', async () => {
+      setMockAuthUser(null)
+
+      const result = await getBookingForScanStep('booking-id', 'deposit')
+
+      expect(result.error).toBeDefined()
+      expect(result.redirectTo).toBe('/login')
+    })
+
+    it('rejette un utilisateur qui n est pas le voyageur', async () => {
+      setMockAuthUser({ id: mockSender.id, email: mockSender.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'accepted',
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await getBookingForScanStep(booking.id, 'deposit')
+
+      expect(result.error).toMatch(/non autorise/i)
+      expect(result.redirectTo).toBe('/dashboard/colis')
+    })
+
+    it('autorise le scan depot pour une reservation acceptee', async () => {
+      setMockAuthUser({ id: mockTraveler.id, email: mockTraveler.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'accepted',
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await getBookingForScanStep(booking.id, 'deposit')
+
+      expect(result.error).toBeUndefined()
+      expect(result.booking?.id).toBe(booking.id)
+    })
+
+    it('rejette le scan livraison avant le statut in_transit', async () => {
+      setMockAuthUser({ id: mockTraveler.id, email: mockTraveler.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'accepted',
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await getBookingForScanStep(booking.id, 'delivery')
+
+      expect(result.error).toMatch(/colis doit etre en transit/i)
+      expect(result.redirectTo).toBe(`/dashboard/colis/${booking.id}`)
+    })
+  })
+
+  describe('markAsInTransit', () => {
+    const qrCode = 'SENDBOX-workflow-0001'
+    const location = { lat: 48.8566, lng: 2.3522 }
+
+    it('rejette si le voyageur tente de deposer avec le mauvais QR code', async () => {
+      setMockAuthUser({ id: mockTraveler.id, email: mockTraveler.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'accepted',
+        qr_code: qrCode,
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await markAsInTransit(
+        booking.id,
+        'SENDBOX-wrong-0000',
+        'https://storage.test/depot.jpg',
+        'https://storage.test/signature.png',
+        location
+      )
+
+      expect(result.error).toMatch(/QR code invalide/i)
+      expect(getMockDatabase().bookings.get(booking.id).status).toBe('accepted')
+    })
+
+    it('rejette si un tiers tente de deposer le colis', async () => {
+      const thirdParty = createMockUser({
+        id: 'third-party-user',
+        email: 'third@test.com',
+      })
+      seedMockDatabase('profiles', [thirdParty])
+      setMockAuthUser({ id: thirdParty.id, email: thirdParty.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'accepted',
+        qr_code: qrCode,
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await markAsInTransit(
+        booking.id,
+        qrCode,
+        'https://storage.test/depot.jpg',
+        'https://storage.test/signature.png',
+        location
+      )
+
+      expect(result.error).toMatch(/autor/i)
+      expect(getMockDatabase().bookings.get(booking.id).status).toBe('accepted')
+    })
+
+    it('passe une reservation acceptee en transit avec les preuves depot', async () => {
+      setMockAuthUser({ id: mockTraveler.id, email: mockTraveler.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'accepted',
+        qr_code: qrCode,
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await markAsInTransit(
+        booking.id,
+        qrCode,
+        'https://storage.test/depot.jpg',
+        'https://storage.test/signature.png',
+        location
+      )
+
+      const updated = getMockDatabase().bookings.get(booking.id)
+      expect(result.error).toBeUndefined()
+      expect(result.success).toBe(true)
+      expect(updated.status).toBe('in_transit')
+      expect(updated.deposit_photo_url).toBe('https://storage.test/depot.jpg')
+      expect(updated.deposit_signature_url).toBe(
+        'https://storage.test/signature.png'
+      )
+      expect(updated.deposit_location_lat).toBe(location.lat)
+      expect(updated.deposit_location_lng).toBe(location.lng)
+    })
+  })
+
+  describe('markAsDelivered', () => {
+    const location = { lat: 6.3703, lng: 2.3912 }
+
+    it('rejette la livraison avant le statut in_transit', async () => {
+      setMockAuthUser({ id: mockTraveler.id, email: mockTraveler.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'accepted',
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await markAsDelivered(
+        booking.id,
+        'https://storage.test/livraison.jpg',
+        'https://storage.test/signature-livraison.png',
+        location
+      )
+
+      expect(result.error).toMatch(/colis doit/i)
+      expect(result.error).toMatch(/transit/i)
+      expect(getMockDatabase().bookings.get(booking.id).status).toBe('accepted')
+    })
+
+    it('passe une reservation en transit en delivered avec les preuves livraison', async () => {
+      setMockAuthUser({ id: mockTraveler.id, email: mockTraveler.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'in_transit',
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await markAsDelivered(
+        booking.id,
+        'https://storage.test/livraison.jpg',
+        'https://storage.test/signature-livraison.png',
+        location
+      )
+
+      const updated = getMockDatabase().bookings.get(booking.id)
+      expect(result.error).toBeUndefined()
+      expect(result.success).toBe(true)
+      expect(updated.status).toBe('delivered')
+      expect(updated.delivery_photo_url).toBe(
+        'https://storage.test/livraison.jpg'
+      )
+      expect(updated.delivery_signature_url).toBe(
+        'https://storage.test/signature-livraison.png'
+      )
+      expect(updated.delivery_location_lat).toBe(location.lat)
+      expect(updated.delivery_location_lng).toBe(location.lng)
+    })
+  })
+
+  describe('confirmDeliveryReceipt', () => {
+    it('rejette si le voyageur tente de confirmer la reception', async () => {
+      setMockAuthUser({ id: mockTraveler.id, email: mockTraveler.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'delivered',
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await confirmDeliveryReceipt(booking.id)
+
+      expect(result.error).toMatch(/autor/i)
+      expect(
+        getMockDatabase().bookings.get(booking.id).delivery_confirmed_at
+      ).toBeFalsy()
+    })
+
+    it('rejette la confirmation avant le statut delivered', async () => {
+      setMockAuthUser({ id: mockSender.id, email: mockSender.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'in_transit',
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await confirmDeliveryReceipt(booking.id)
+
+      expect(result.error).toMatch(/livraison/i)
+      expect(result.error).toMatch(/confirmation/i)
+      expect(
+        getMockDatabase().bookings.get(booking.id).delivery_confirmed_at
+      ).toBeFalsy()
+    })
+
+    it('confirme la reception cote expediteur et cloture la mission', async () => {
+      setMockAuthUser({ id: mockSender.id, email: mockSender.email })
+
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'delivered',
+        delivery_confirmed_at: null,
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await confirmDeliveryReceipt(booking.id)
+
+      const updated = getMockDatabase().bookings.get(booking.id)
+      expect(result.error).toBeUndefined()
+      expect(result.success).toBe(true)
+      expect(updated.delivery_confirmed_at).toBeTruthy()
+      expect(updated.delivery_confirmed_by).toBe(mockSender.id)
+    })
+
+    it('rejette une confirmation deja effectuee', async () => {
+      setMockAuthUser({ id: mockSender.id, email: mockSender.email })
+
+      const confirmedAt = new Date().toISOString()
+      const booking = createMockBooking({
+        announcement_id: mockAnnouncement.id,
+        sender_id: mockSender.id,
+        traveler_id: mockTraveler.id,
+        status: 'delivered',
+        delivery_confirmed_at: confirmedAt,
+      })
+      seedMockDatabase('bookings', [booking])
+
+      const result = await confirmDeliveryReceipt(booking.id)
+
+      expect(result.error).toMatch(/confirm/i)
+      expect(
+        getMockDatabase().bookings.get(booking.id).delivery_confirmed_at
+      ).toBe(confirmedAt)
     })
   })
 
