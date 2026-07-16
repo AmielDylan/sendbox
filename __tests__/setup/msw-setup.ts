@@ -3,6 +3,7 @@ import {
   server,
   resetMockDatabase,
   resetMockResendStore,
+  resetMockStorageStore,
   resetMockStripeStore,
   resetMockAuthUser,
 } from '../mocks/server'
@@ -29,6 +30,7 @@ afterEach(() => {
   // Reset les stores en mémoire
   resetMockDatabase()
   resetMockResendStore()
+  resetMockStorageStore()
   resetMockStripeStore()
   resetMockAuthUser()
 })
