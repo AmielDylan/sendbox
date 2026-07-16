@@ -17,14 +17,14 @@ import {
  */
 describe('acceptBooking', () => {
   const mockSender = createMockUser({
-    id: 'sender-test-1',
+    id: '11111111-1111-4111-8111-111111111111',
     email: 'sender@test.com',
     role: 'sender',
     kyc_status: 'approved',
   })
 
   const mockTraveler = createMockUser({
-    id: 'traveler-test-1',
+    id: '22222222-2222-4222-8222-222222222222',
     email: 'traveler@test.com',
     role: 'traveler',
     kyc_status: 'approved',
@@ -94,10 +94,9 @@ describe('acceptBooking', () => {
     expect(result.error).toMatch(/demande introuvable/i)
   })
 
-  // KYC désactivé pour le MVP (KYC_ENABLED: false) — réactiver quand KYC est réactivé
-  it.skip('rejette si KYC non approuvé (pending)', async () => {
+  it('rejette si KYC non approuvé (pending)', async () => {
     const travelerPendingKYC = createMockUser({
-      id: 'traveler-pending-1',
+      id: '33333333-3333-4333-8333-333333333333',
       email: 'traveler-pending@test.com',
       kyc_status: 'pending',
     })
@@ -129,9 +128,9 @@ describe('acceptBooking', () => {
     expect(result.error).toMatch(/vérification en cours/i)
   })
 
-  it.skip('rejette si KYC non approuvé (incomplete)', async () => {
+  it('rejette si KYC non approuvé (incomplete)', async () => {
     const travelerIncompleteKYC = createMockUser({
-      id: 'traveler-incomplete-1',
+      id: '44444444-4444-4444-8444-444444444444',
       email: 'traveler-incomplete@test.com',
       kyc_status: 'incomplete',
     })
@@ -163,9 +162,9 @@ describe('acceptBooking', () => {
     expect(result.error).toMatch(/vérification d'identité incomplète/i)
   })
 
-  it.skip('rejette si KYC non approuvé (rejected)', async () => {
+  it('rejette si KYC non approuvé (rejected)', async () => {
     const travelerRejectedKYC = createMockUser({
-      id: 'traveler-rejected-1',
+      id: '55555555-5555-4555-8555-555555555555',
       email: 'traveler-rejected@test.com',
       kyc_status: 'rejected',
       kyc_rejection_reason: 'Documents invalides',

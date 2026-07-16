@@ -2,6 +2,7 @@ import { beforeAll, afterEach, afterAll } from 'vitest'
 import {
   server,
   resetMockDatabase,
+  resetMockResendStore,
   resetMockStripeStore,
   resetMockAuthUser,
 } from '../mocks/server'
@@ -27,6 +28,7 @@ afterEach(() => {
 
   // Reset les stores en mémoire
   resetMockDatabase()
+  resetMockResendStore()
   resetMockStripeStore()
   resetMockAuthUser()
 })
