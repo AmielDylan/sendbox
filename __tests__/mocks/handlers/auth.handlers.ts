@@ -4,6 +4,7 @@ import {
   setMockSessionCookies,
   resetMockSessionCookies,
 } from '../../setup/test-utils'
+import { getMockDatabase } from './database.handlers'
 
 /**
  * MSW Handlers pour mocker Supabase Auth
@@ -189,6 +190,41 @@ export const authHandlers = [
         identities: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+      },
+      { status: 200 }
+    )
+  }),
+
+  // Mock admin get user by id
+  http.get('*/auth/v1/admin/users/:id', async ({ params }) => {
+    const id = params.id as string
+    const profile = getMockDatabase().profiles.get(id)
+
+    if (!profile) {
+      return HttpResponse.json(
+        {
+          code: 'user_not_found',
+          message: 'User not found',
+        },
+        { status: 404 }
+      )
+    }
+
+    return HttpResponse.json(
+      {
+        id,
+        aud: 'authenticated',
+        role: 'authenticated',
+        email: profile.email || faker.internet.email(),
+        email_confirmed_at: new Date().toISOString(),
+        phone: profile.phone || '',
+        confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        app_metadata: {},
+        user_metadata: {},
+        identities: [],
+        created_at: profile.created_at || new Date().toISOString(),
+        updated_at: profile.updated_at || new Date().toISOString(),
       },
       { status: 200 }
     )
