@@ -6,6 +6,7 @@ import {
   createMockPublishedAnnouncement,
 } from '../../factories/announcement.factory'
 import {
+  getMockDatabase,
   seedMockDatabase,
   resetMockDatabase,
   setMockAuthUser,
@@ -69,6 +70,18 @@ describe('createBooking', () => {
     expect(result.error).toBeUndefined()
     expect(result.success).toBe(true)
     expect(result.bookingId).toBeDefined()
+
+    const notifications = Array.from(getMockDatabase().notifications.values())
+    expect(notifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          user_id: mockTraveler.id,
+          type: 'booking_request',
+          booking_id: result.bookingId,
+          announcement_id: mockAnnouncement.id,
+        }),
+      ])
+    )
   })
 
   it('rejette si KYC non approuvé (pending)', async () => {

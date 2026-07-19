@@ -67,6 +67,17 @@ describe('refuseBooking', () => {
 
     expect(result.error).toBeUndefined()
     expect(result.success).toBe(true)
+    const notifications = Array.from(getMockDatabase().notifications.values())
+    expect(notifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          user_id: mockSender.id,
+          type: 'booking_refused',
+          booking_id: mockBooking.id,
+          announcement_id: mockAnnouncement.id,
+        }),
+      ])
+    )
     expect(result.message).toMatch(/refusée/i)
   })
 
