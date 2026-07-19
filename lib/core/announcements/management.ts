@@ -406,8 +406,6 @@ export async function toggleAnnouncementStatus(announcementId: string) {
       return { error: 'Profil introuvable' }
     }
 
-    const isAdmin = (profile as any).role === 'admin'
-
     // Gate preuve de voyage
     if (isFeatureEnabled('TRAVEL_PROOF_REQUIRED')) {
       const { data: ann } = await supabase

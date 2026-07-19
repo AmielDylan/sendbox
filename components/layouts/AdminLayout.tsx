@@ -19,7 +19,6 @@ import {
   IconAlertTriangle,
   IconCreditCard,
   IconMenu2,
-  IconLoader2,
   IconLogout,
   IconUser,
   IconSettings,

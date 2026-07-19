@@ -430,10 +430,6 @@ function formatDate(value: string | null) {
   }).format(new Date(value))
 }
 
-function truncateId(value: string) {
-  return `${value.slice(0, 8)}...`
-}
-
 function formatProfileName(
   firstname: string | null,
   lastname: string | null,
