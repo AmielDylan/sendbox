@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createBookingReport } from '@/lib/core/bookings/reports'
-import { createMockUser } from '../../factories/user.factory'
+import { createMockAdmin, createMockUser } from '../../factories/user.factory'
 import { createMockPublishedAnnouncement } from '../../factories/announcement.factory'
 import { createMockBooking } from '../../factories/booking.factory'
 import {
@@ -32,6 +32,11 @@ describe('createBookingReport', () => {
     kyc_status: 'approved',
   })
 
+  const admin = createMockAdmin({
+    id: 'admin-report-1',
+    email: 'admin-report@test.com',
+  })
+
   let mockAnnouncement: ReturnType<typeof createMockPublishedAnnouncement>
   let booking: ReturnType<typeof createMockBooking>
 
@@ -52,7 +57,7 @@ describe('createBookingReport', () => {
       paid_at: new Date().toISOString(),
     })
 
-    seedMockDatabase('profiles', [mockSender, mockTraveler, thirdParty])
+    seedMockDatabase('profiles', [mockSender, mockTraveler, thirdParty, admin])
     seedMockDatabase('announcements', [mockAnnouncement])
     seedMockDatabase('bookings', [booking])
   })
@@ -79,6 +84,18 @@ describe('createBookingReport', () => {
       reason: 'traveler_unresponsive',
       status: 'open',
     })
+
+    const notifications = Array.from(getMockDatabase().notifications.values())
+    expect(notifications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          user_id: admin.id,
+          type: 'system_alert',
+          booking_id: booking.id,
+          announcement_id: mockAnnouncement.id,
+        }),
+      ])
+    )
   })
 
   it('rejette un utilisateur extérieur à la réservation', async () => {

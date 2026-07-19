@@ -404,6 +404,18 @@ describe('Booking Workflow', () => {
       )
       expect(updated.deposit_location_lat).toBe(location.lat)
       expect(updated.deposit_location_lng).toBe(location.lng)
+
+      const notifications = Array.from(getMockDatabase().notifications.values())
+      expect(notifications).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            user_id: mockSender.id,
+            type: 'transit_started',
+            booking_id: booking.id,
+            announcement_id: mockAnnouncement.id,
+          }),
+        ])
+      )
     })
   })
 
@@ -463,6 +475,18 @@ describe('Booking Workflow', () => {
       )
       expect(updated.delivery_location_lat).toBe(location.lat)
       expect(updated.delivery_location_lng).toBe(location.lng)
+
+      const notifications = Array.from(getMockDatabase().notifications.values())
+      expect(notifications).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            user_id: mockSender.id,
+            type: 'delivery_reminder',
+            booking_id: booking.id,
+            announcement_id: mockAnnouncement.id,
+          }),
+        ])
+      )
     })
   })
 
@@ -525,6 +549,18 @@ describe('Booking Workflow', () => {
       expect(result.success).toBe(true)
       expect(updated.delivery_confirmed_at).toBeTruthy()
       expect(updated.delivery_confirmed_by).toBe(mockSender.id)
+
+      const notifications = Array.from(getMockDatabase().notifications.values())
+      expect(notifications).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            user_id: mockTraveler.id,
+            type: 'delivery_confirmed',
+            booking_id: booking.id,
+            announcement_id: mockAnnouncement.id,
+          }),
+        ])
+      )
     })
 
     it('rejette une confirmation deja effectuee', async () => {
