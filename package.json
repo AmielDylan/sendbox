@@ -20,6 +20,7 @@
     "stripe:test": "tsx scripts/stripe-test-events.ts",
     "stripe:check": "tsx scripts/check-stripe-workflows.ts",
     "test:e2e": "playwright test",
+    "test:e2e:smoke": "npm run build && playwright test e2e/auth.spec.ts --workers=1",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
