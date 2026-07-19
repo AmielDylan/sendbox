@@ -21,6 +21,10 @@ import {
 } from '@/lib/core/auth/validations'
 import { authRateLimit } from '@/lib/shared/security/rate-limit'
 import { FEATURES } from '@/lib/shared/config/features'
+import {
+  isExpectedProfileFallbackError,
+  isExpectedProfileUpdateMiss,
+} from './profile-fallback'
 
 // Messages d'erreur génériques pour éviter l'énumération
 const GENERIC_ERROR_MESSAGE =
@@ -106,7 +110,7 @@ export async function signUp(formData: RegisterInput) {
 
       updatedProfiles = initialProfiles as Array<{ id: string }> | null
 
-      if (profileError) {
+      if (profileError && !isExpectedProfileUpdateMiss(profileError)) {
         console.error('Error updating profile:', profileError)
       }
 
@@ -120,7 +124,10 @@ export async function signUp(formData: RegisterInput) {
           .select('id')
 
         updatedProfiles = retryResult.data as Array<{ id: string }> | null
-        if (retryResult.error) {
+        if (
+          retryResult.error &&
+          !isExpectedProfileUpdateMiss(retryResult.error)
+        ) {
           console.error('Error retrying profile update:', retryResult.error)
         }
       }
@@ -135,9 +142,6 @@ export async function signUp(formData: RegisterInput) {
             const { data: adminUser, error: adminError } =
               await adminClient.auth.admin.getUserById(authData.user.id)
             if (adminError || !adminUser?.user) {
-              console.warn(
-                'Auth user not found yet, skipping profile fallback insert'
-              )
               canInsertProfile = false
             }
           }
@@ -155,17 +159,15 @@ export async function signUp(formData: RegisterInput) {
               })
 
             if (insertError) {
-              if ((insertError as any)?.code === '23503') {
-                console.warn(
-                  'Profile fallback insert skipped: auth user not present yet'
-                )
-              } else {
+              if (!isExpectedProfileFallbackError(insertError)) {
                 console.error('Error inserting profile fallback:', insertError)
               }
             }
           }
         } catch (insertError) {
-          console.error('Error inserting profile fallback:', insertError)
+          if (!isExpectedProfileFallbackError(insertError)) {
+            console.error('Error inserting profile fallback:', insertError)
+          }
         }
       }
     }
