@@ -102,7 +102,11 @@ async function generateStorageState(email: string, stateFile: string) {
   const context = await browser.newContext()
   const page = await context.newPage()
 
-  await page.goto(`${BASE_URL}/login`)
+  page.setDefaultTimeout(30_000)
+  await page.goto(`${BASE_URL}/login`, {
+    waitUntil: 'domcontentloaded',
+    timeout: 90_000,
+  })
   await page.fill('#email', email)
   await page.fill('#password', TEST_PASSWORD)
   await page.click('button[type="submit"]')
