@@ -5,8 +5,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/hooks/use-auth'
-import { createClient } from '@/lib/shared/db/client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -49,13 +47,11 @@ import {
   IconMail,
   IconTrash,
   IconAlertTriangle,
-  IconCheck,
 } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 
 export default function AccountPage() {
   const router = useRouter()
-  const { user } = useAuth()
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [isChangingEmail, setIsChangingEmail] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
