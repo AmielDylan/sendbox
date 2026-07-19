@@ -4,6 +4,7 @@ import { createMockUser } from '../../factories/user.factory'
 import { createMockPublishedAnnouncement } from '../../factories/announcement.factory'
 import { createMockBooking } from '../../factories/booking.factory'
 import {
+  getMockDatabase,
   seedMockDatabase,
   resetMockDatabase,
   setMockAuthUser,
@@ -64,6 +65,17 @@ describe('cancelBookingWithReason', () => {
 
       expect(result.error).toBeUndefined()
       expect(result.success).toBe(true)
+      const notifications = Array.from(getMockDatabase().notifications.values())
+      expect(notifications).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            user_id: mockTraveler.id,
+            type: 'system_alert',
+            booking_id: booking.id,
+            announcement_id: mockAnnouncement.id,
+          }),
+        ])
+      )
       expect(result.message).toMatch(/annulée/i)
     })
 
