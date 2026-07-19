@@ -453,7 +453,7 @@ export function OptimizedAuthProvider({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [user?.id, supabase, setStoreProfile, showKycStatusToast])
+  }, [user?.id, supabase, setStoreProfile, showKycStatusToast, fetchProfile])
 
   /**
    * Fallback polling in case realtime is unavailable.

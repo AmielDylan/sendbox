@@ -1,6 +1,6 @@
 'use client'
 
-import { useWatch, Control, Controller, FieldErrors } from 'react-hook-form'
+import { useWatch, Control, Controller } from 'react-hook-form'
 import { LOCATIONS } from '@/lib/shared/constants/locations'
 
 interface LocationSelectsProps {
