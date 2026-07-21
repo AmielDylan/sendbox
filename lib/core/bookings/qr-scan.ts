@@ -112,7 +112,7 @@ export async function handleDepositScan(
       .getPublicUrl(signatureFileName)
 
     // Mettre à jour le booking
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'in_transit',
@@ -123,8 +123,10 @@ export async function handleDepositScan(
         deposit_location_lng: location?.lng || null,
       })
       .eq('id', bookingId)
+      .eq('status', 'accepted')
+      .select('id')
 
-    if (updateError) {
+    if (updateError || !updatedRows?.length) {
       console.error('Error updating booking:', updateError)
       return {
         error: 'Erreur lors de la mise à jour de la réservation',
@@ -283,7 +285,7 @@ export async function handleDeliveryScan(
       .getPublicUrl(signatureFileName)
 
     // Mettre à jour le booking
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'delivered',
@@ -294,8 +296,10 @@ export async function handleDeliveryScan(
         delivery_location_lng: location?.lng || null,
       })
       .eq('id', bookingId)
+      .eq('status', 'in_transit')
+      .select('id')
 
-    if (updateError) {
+    if (updateError || !updatedRows?.length) {
       console.error('Error updating booking:', updateError)
       return {
         error: 'Erreur lors de la mise à jour de la réservation',

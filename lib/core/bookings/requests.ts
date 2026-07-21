@@ -149,7 +149,7 @@ export async function acceptBooking(bookingId: string) {
   try {
     // Mettre à jour le booking
     const acceptedAt = new Date().toISOString()
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'accepted',
@@ -157,8 +157,10 @@ export async function acceptBooking(bookingId: string) {
         traveler_confirmed_at: acceptedAt,
       })
       .eq('id', bookingId)
+      .eq('status', 'pending')
+      .select('id')
 
-    if (updateError) {
+    if (updateError || !updatedRows?.length) {
       console.error('Error accepting booking:', updateError)
       return {
         error: "Erreur lors de l'acceptation de la demande",
@@ -279,7 +281,7 @@ export async function refuseBooking(bookingId: string, reason: string) {
 
   try {
     // Mettre à jour le booking
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'cancelled',
@@ -287,8 +289,10 @@ export async function refuseBooking(bookingId: string, reason: string) {
         refused_at: new Date().toISOString(),
       })
       .eq('id', bookingId)
+      .eq('status', 'pending')
+      .select('id')
 
-    if (updateError) {
+    if (updateError || !updatedRows?.length) {
       console.error('Error refusing booking:', updateError)
       return {
         error: 'Erreur lors du refus de la demande',
