@@ -3,6 +3,10 @@ import { isAdmin } from '@/lib/core/admin/actions'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { computeAndSaveTrustScore } from '@/lib/trust/score'
+import {
+  OPEN_DISPUTE_STATUSES,
+  isOpenDisputeStatus,
+} from '@/lib/core/disputes/policy'
 
 const statusMap = {
   SENDER: 'RESOLVED_SENDER',
@@ -54,7 +58,9 @@ export async function PATCH(
   const admin = createAdminClient()
   const { data: dispute } = await admin
     .from('disputes')
-    .select('id, booking_id, bookings:booking_id(sender_id, traveler_id)')
+    .select(
+      'id, booking_id, status, bookings:booking_id(sender_id, traveler_id)'
+    )
     .eq('id', id)
     .single()
 
@@ -65,12 +71,19 @@ export async function PATCH(
     )
   }
 
+  if (!isOpenDisputeStatus(dispute.status)) {
+    return NextResponse.json(
+      { error: 'Ce litige est deja cloture', code: 'ALREADY_RESOLVED' },
+      { status: 409 }
+    )
+  }
+
   const status = statusMap[body.outcome]
   const booking = Array.isArray((dispute as any).bookings)
     ? (dispute as any).bookings[0]
     : (dispute as any).bookings
 
-  await admin
+  const { data: updatedRows, error: updateError } = await admin
     .from('disputes')
     .update({
       status,
@@ -80,6 +93,15 @@ export async function PATCH(
       is_public: body.outcome !== 'DISMISSED',
     })
     .eq('id', id)
+    .in('status', [...OPEN_DISPUTE_STATUSES])
+    .select('id')
+
+  if (updateError || !updatedRows?.length) {
+    return NextResponse.json(
+      { error: 'Ce litige est deja cloture', code: 'ALREADY_RESOLVED' },
+      { status: 409 }
+    )
+  }
 
   const loserId =
     status === 'RESOLVED_SENDER'

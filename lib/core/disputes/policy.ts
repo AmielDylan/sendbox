@@ -1,4 +1,5 @@
 export type DisputeReasonCode =
+  | 'travel_cancelled'
   | 'traveler_no_show'
   | 'sender_no_show'
   | 'package_not_handed_over'
@@ -6,6 +7,7 @@ export type DisputeReasonCode =
   | 'package_lost'
   | 'content_mismatch'
   | 'delivery_not_confirmed'
+  | 'suspicious_behavior'
   | 'other'
 
 export interface DisputeReason {
@@ -16,6 +18,17 @@ export interface DisputeReason {
 }
 
 export const DISPUTE_REASONS: DisputeReason[] = [
+  {
+    code: 'travel_cancelled',
+    label: 'Voyage annule ou impossible',
+    description:
+      "Le voyage prevu ne peut plus avoir lieu ou ne permet plus d'assurer la remise.",
+    evidenceChecklist: [
+      'Date prevue du voyage',
+      "Message d'annulation ou changement annonce",
+      'Impact sur la remise ou la livraison du colis',
+    ],
+  },
   {
     code: 'traveler_no_show',
     label: 'Voyageur absent au rendez-vous',
@@ -94,6 +107,17 @@ export const DISPUTE_REASONS: DisputeReason[] = [
     ],
   },
   {
+    code: 'suspicious_behavior',
+    label: 'Comportement suspect',
+    description:
+      'Un comportement inhabituel ou inquietant necessite une verification par Sendbox.',
+    evidenceChecklist: [
+      'Description factuelle du comportement',
+      'Captures ou messages concernes',
+      'Moment ou le comportement a ete constate',
+    ],
+  },
+  {
     code: 'other',
     label: 'Autre situation',
     description:
@@ -119,6 +143,12 @@ export function formatDisputeReason(codeOrLabel: string) {
   return getDisputeReason(codeOrLabel)?.label ?? codeOrLabel
 }
 
+export function isDisputeReason(value: string): value is DisputeReasonCode {
+  return DISPUTE_REASONS.some(
+    reason => reason.code === value || reason.label === value
+  )
+}
+
 export function getDisputeEvidenceChecklist(codeOrLabel: string) {
   return (
     getDisputeReason(codeOrLabel)?.evidenceChecklist ??
@@ -128,22 +158,35 @@ export function getDisputeEvidenceChecklist(codeOrLabel: string) {
 
 export function isDisputableBookingStatus(status: string | null | undefined) {
   if (!status) return false
-  return [
-    'accepted',
-    'confirmed',
-    'paid',
-    'deposited',
-    'handed',
-    'in_transit',
-    'delivered',
-    'completed',
-    'ACCEPTED',
-    'CONFIRMED',
-    'PAID',
-    'DEPOSITED',
-    'HANDED',
-    'IN_TRANSIT',
-    'DELIVERED',
-    'COMPLETED',
-  ].includes(status)
+  return (DISPUTABLE_BOOKING_STATUSES as readonly string[]).includes(
+    status.toLowerCase()
+  )
+}
+
+export const DISPUTABLE_BOOKING_STATUSES = [
+  'accepted',
+  'confirmed',
+  'paid',
+  'deposited',
+  'handed',
+  'in_transit',
+  'delivered',
+] as const
+
+export const OPEN_DISPUTE_STATUSES = [
+  'OPEN',
+  'UNDER_REVIEW',
+  'open',
+  'under_review',
+] as const
+
+export function isOpenDisputeStatus(status: string | null | undefined) {
+  if (!status) return false
+  return OPEN_DISPUTE_STATUSES.some(
+    openStatus => openStatus.toLowerCase() === status.toLowerCase()
+  )
+}
+
+export function normalizeDisputeDescription(description: string) {
+  return description.trim().replace(/\s+/g, ' ')
 }
