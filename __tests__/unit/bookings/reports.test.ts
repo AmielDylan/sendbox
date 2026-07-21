@@ -159,4 +159,25 @@ describe('createBookingReport', () => {
     expect(result.error).toMatch(/deja ouvert/i)
     expect(getMockDatabase().booking_reports.size).toBe(1)
   })
+  it('rejette les statuts non signalables en V1', async () => {
+    setMockAuthUser({ id: mockSender.id, email: mockSender.email })
+
+    const completedBooking = createMockBooking({
+      announcement_id: mockAnnouncement.id,
+      sender_id: mockSender.id,
+      traveler_id: mockTraveler.id,
+      status: 'completed',
+    })
+    seedMockDatabase('bookings', [completedBooking])
+
+    const result = await createBookingReport({
+      bookingId: completedBooking.id,
+      reason: 'traveler_unresponsive',
+      message:
+        'Je tente de signaler une reservation deja terminee alors que la V1 ne le permet pas.',
+    })
+
+    expect(result.error).toMatch(/ne peut pas etre signalee/i)
+    expect(getMockDatabase().booking_reports.size).toBe(0)
+  })
 })

@@ -5,15 +5,12 @@ import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 import {
+  OPEN_BOOKING_REPORT_STATUSES,
   formatBookingReportReason,
   isBookingReportReason,
+  isReportableBookingStatus,
+  normalizeBookingReportMessage,
 } from '@/lib/core/bookings/report-policy'
-
-const OPEN_REPORT_STATUSES = ['open', 'reviewing']
-
-function normalizeMessage(message: string) {
-  return message.trim().replace(/\s+/g, ' ')
-}
 
 export async function createBookingReport(input: {
   bookingId: string
@@ -23,7 +20,7 @@ export async function createBookingReport(input: {
 }) {
   const supabase = await createClient()
   const reason = input.reason.trim()
-  const message = normalizeMessage(input.message)
+  const message = normalizeBookingReportMessage(input.message)
   const suggestedNewDate = input.suggestedNewDate?.trim() || null
 
   if (!isBookingReportReason(reason)) {
@@ -76,9 +73,9 @@ export async function createBookingReport(input: {
     }
   }
 
-  if (booking.status === 'cancelled') {
+  if (!isReportableBookingStatus(booking.status)) {
     return {
-      error: 'Cette reservation est deja annulee.',
+      error: 'Cette reservation ne peut pas etre signalee a ce stade.',
     }
   }
 
@@ -87,7 +84,7 @@ export async function createBookingReport(input: {
     .select('id')
     .eq('booking_id', input.bookingId)
     .eq('reported_by', user.id)
-    .in('status', OPEN_REPORT_STATUSES)
+    .in('status', [...OPEN_BOOKING_REPORT_STATUSES])
     .maybeSingle()
 
   if (existingError) {
