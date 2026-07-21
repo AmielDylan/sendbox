@@ -81,3 +81,33 @@ export function isBookingReportReason(
 ): value is BookingReportReasonCode {
   return BOOKING_REPORT_REASONS.some(reason => reason.code === value)
 }
+
+export const REPORTABLE_BOOKING_STATUSES = [
+  'accepted',
+  'confirmed',
+  'paid',
+  'deposited',
+  'handed',
+  'in_transit',
+  'delivered',
+] as const
+
+export const OPEN_BOOKING_REPORT_STATUSES = ['open', 'reviewing'] as const
+
+export function isReportableBookingStatus(status: string | null | undefined) {
+  if (!status) return false
+  return (REPORTABLE_BOOKING_STATUSES as readonly string[]).includes(
+    status.toLowerCase()
+  )
+}
+
+export function isOpenBookingReportStatus(status: string | null | undefined) {
+  if (!status) return false
+  return (OPEN_BOOKING_REPORT_STATUSES as readonly string[]).includes(
+    status.toLowerCase()
+  )
+}
+
+export function normalizeBookingReportMessage(message: string) {
+  return message.trim().replace(/\s+/g, ' ')
+}
