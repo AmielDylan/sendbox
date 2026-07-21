@@ -74,7 +74,7 @@ export async function POST(
     ? booking.status_history
     : []
 
-  await admin
+  const { data: updatedRows, error: updateError } = await admin
     .from('bookings')
     .update({
       status: 'handed',
@@ -82,6 +82,18 @@ export async function POST(
       status_history: [...history, historyEntry],
     })
     .eq('id', id)
+    .eq('status', 'confirmed')
+    .select('id')
+
+  if (updateError || !updatedRows?.length) {
+    return NextResponse.json(
+      {
+        error: 'Statut incompatible (attendu: confirmed)',
+        code: 'INVALID_STATUS',
+      },
+      { status: 422 }
+    )
+  }
 
   return NextResponse.json({ success: true })
 }
