@@ -248,11 +248,15 @@ export const databaseHandlers = [
         }
 
         if (value === 'is.null') {
-          return existingRecord[key] === null || existingRecord[key] === undefined
+          return (
+            existingRecord[key] === null || existingRecord[key] === undefined
+          )
         }
 
         if (value === 'not.is.null') {
-          return existingRecord[key] !== null && existingRecord[key] !== undefined
+          return (
+            existingRecord[key] !== null && existingRecord[key] !== undefined
+          )
         }
 
         return true
