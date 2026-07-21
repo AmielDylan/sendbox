@@ -4,9 +4,13 @@ import { createAdminClient } from '@/lib/shared/db/admin'
 import { createSystemNotification } from '@/lib/core/notifications/system'
 import { sendEmail } from '@/lib/shared/services/email/client'
 import {
+  DISPUTABLE_BOOKING_STATUSES,
+  OPEN_DISPUTE_STATUSES,
   formatDisputeReason,
   getDisputeEvidenceChecklist,
+  isDisputeReason,
   isDisputableBookingStatus,
+  normalizeDisputeDescription,
 } from '@/lib/core/disputes/policy'
 
 export async function POST(req: NextRequest) {
@@ -31,11 +35,30 @@ export async function POST(req: NextRequest) {
 
   const bookingId = body?.bookingId ?? body?.transactionId
   const reason = body?.reason?.trim()
-  const description = body?.description?.trim()
+  const description = body?.description
+    ? normalizeDisputeDescription(body.description)
+    : null
 
   if (!bookingId || !reason || !description || description.length < 30) {
     return NextResponse.json(
       { error: 'Données de litige invalides', code: 'INVALID_BODY' },
+      { status: 422 }
+    )
+  }
+
+  if (description.length > 1200) {
+    return NextResponse.json(
+      { error: 'Description trop longue', code: 'DESCRIPTION_TOO_LONG' },
+      { status: 422 }
+    )
+  }
+
+  if (!isDisputeReason(reason)) {
+    return NextResponse.json(
+      {
+        error: 'Motif de litige invalide. Choisissez un motif propose.',
+        code: 'INVALID_REASON',
+      },
       { status: 422 }
     )
   }
@@ -84,7 +107,7 @@ export async function POST(req: NextRequest) {
     .from('disputes')
     .select('id')
     .eq('booking_id', bookingId)
-    .in('status', ['OPEN', 'UNDER_REVIEW', 'open', 'under_review'])
+    .in('status', [...OPEN_DISPUTE_STATUSES])
     .maybeSingle()
 
   if (existing) {
@@ -117,7 +140,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  await admin
+  const { data: updatedRows, error: bookingUpdateError } = await admin
     .from('bookings')
     .update({
       status: 'disputed',
@@ -125,6 +148,26 @@ export async function POST(req: NextRequest) {
       disputed_reason: reasonLabel,
     })
     .eq('id', bookingId)
+    .in('status', DISPUTABLE_BOOKING_STATUSES)
+    .select('id')
+
+  if (bookingUpdateError || !updatedRows?.length) {
+    await admin
+      .from('disputes')
+      .update({
+        status: 'DISMISSED',
+        resolution:
+          'Litige classe automatiquement : la reservation a change de statut avant ouverture.',
+        resolved_at: new Date().toISOString(),
+        is_public: false,
+      })
+      .eq('id', dispute.id)
+
+    return NextResponse.json(
+      { error: 'Statut incompatible', code: 'INVALID_STATUS' },
+      { status: 422 }
+    )
+  }
 
   await notifyAdmin({
     disputeId: dispute.id,
