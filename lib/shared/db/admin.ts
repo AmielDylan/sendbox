@@ -3,7 +3,14 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { randomUUID } from 'crypto'
 import type { Database } from '@/types/database.types'
+
+const noopAuthStorage = {
+  getItem: () => null,
+  setItem: () => undefined,
+  removeItem: () => undefined,
+}
 
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -17,6 +24,9 @@ export function createAdminClient() {
     auth: {
       persistSession: false,
       autoRefreshToken: false,
+      detectSessionInUrl: false,
+      storageKey: `sendbox-admin-${randomUUID()}`,
+      storage: noopAuthStorage,
     },
   })
 }

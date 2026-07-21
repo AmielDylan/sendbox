@@ -8,6 +8,12 @@ import type { Database } from '@/types/supabase'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
+const noopAuthStorage = {
+  getItem: () => null,
+  setItem: () => undefined,
+  removeItem: () => undefined,
+}
+
 export const supabaseAdmin = createClient<Database>(
   supabaseUrl,
   supabaseServiceKey,
@@ -15,6 +21,9 @@ export const supabaseAdmin = createClient<Database>(
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+      detectSessionInUrl: false,
+      storageKey: 'sendbox-test-admin',
+      storage: noopAuthStorage,
     },
   }
 )
@@ -102,6 +111,9 @@ export async function getSupabaseClientForUser(userId: string) {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
+        detectSessionInUrl: false,
+        storageKey: `sendbox-test-user-${userId}`,
+        storage: noopAuthStorage,
       },
     }
   )
