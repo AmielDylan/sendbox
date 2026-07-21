@@ -136,7 +136,7 @@ export async function cancelBookingWithReason(
   const cancelledAt = new Date().toISOString()
 
   try {
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'cancelled',
@@ -147,8 +147,10 @@ export async function cancelBookingWithReason(
         cancelled_by: user.id,
       })
       .eq('id', bookingId)
+      .in('status', ['pending', 'accepted', 'paid', 'confirmed'])
+      .select('id')
 
-    if (updateError) {
+    if (updateError || !updatedRows?.length) {
       console.error('Error cancelling booking:', updateError)
       return {
         error: "Erreur lors de l'annulation",
@@ -430,7 +432,7 @@ export async function markAsInTransit(
 
   try {
     // Mettre à jour le booking
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'in_transit',
@@ -441,8 +443,10 @@ export async function markAsInTransit(
         deposit_location_lng: location.lng,
       })
       .eq('id', bookingId)
+      .in('status', ['accepted', 'confirmed', 'paid'])
+      .select('id')
 
-    if (updateError) {
+    if (updateError || !updatedRows?.length) {
       console.error('Error marking as in transit:', updateError)
       return {
         error: 'Erreur lors de la mise à jour',
@@ -592,7 +596,7 @@ export async function markAsDelivered(
 
   try {
     // Mettre à jour le booking
-    const { error: updateError } = await supabase
+    const { data: updatedRows, error: updateError } = await supabase
       .from('bookings')
       .update({
         status: 'delivered',
@@ -603,8 +607,10 @@ export async function markAsDelivered(
         delivery_location_lng: location.lng,
       })
       .eq('id', bookingId)
+      .eq('status', 'in_transit')
+      .select('id')
 
-    if (updateError) {
+    if (updateError || !updatedRows?.length) {
       console.error('Error marking as delivered:', updateError)
       return {
         error: 'Erreur lors de la mise à jour',
@@ -759,15 +765,18 @@ export async function confirmDeliveryReceipt(bookingId: string) {
 
   const confirmedAt = new Date().toISOString()
 
-  const { error: updateError } = await supabase
+  const { data: updatedRows, error: updateError } = await supabase
     .from('bookings')
     .update({
       delivery_confirmed_at: confirmedAt,
       delivery_confirmed_by: user.id,
     })
     .eq('id', bookingId)
+    .eq('status', 'delivered')
+    .is('delivery_confirmed_at', null)
+    .select('id')
 
-  if (updateError) {
+  if (updateError || !updatedRows?.length) {
     console.error('Error confirming delivery:', updateError)
     return {
       error: 'Erreur lors de la confirmation',

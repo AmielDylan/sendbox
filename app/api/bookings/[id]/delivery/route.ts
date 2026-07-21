@@ -88,7 +88,7 @@ export async function POST(
     ? booking.status_history
     : []
 
-  await admin
+  const { data: updatedRows, error: updateError } = await admin
     .from('bookings')
     .update({
       status: 'delivered',
@@ -97,6 +97,18 @@ export async function POST(
       status_history: [...history, historyEntry],
     })
     .eq('id', id)
+    .eq('status', 'handed')
+    .select('id')
+
+  if (updateError || !updatedRows?.length) {
+    return NextResponse.json(
+      {
+        error: 'Statut incompatible (attendu: handed)',
+        code: 'INVALID_STATUS',
+      },
+      { status: 422 }
+    )
+  }
 
   // Ouvrir la fenêtre d'avis : créer les entrées pending pour les deux parties
   await admin.from('ratings').upsert(

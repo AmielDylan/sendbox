@@ -227,6 +227,47 @@ export const databaseHandlers = [
       return HttpResponse.json({ error: 'Record not found' }, { status: 404 })
     }
 
+    const matchesFilters = Array.from(url.searchParams.entries()).every(
+      ([key, value]) => {
+        if (key === 'select' || key === 'id') return true
+
+        if (value.startsWith('eq.')) {
+          return String(existingRecord[key]) === value.substring(3)
+        }
+
+        if (value.startsWith('in.')) {
+          const inValues = value
+            .substring(4, value.length - 1)
+            .split(',')
+            .map((v: string) => v.trim())
+          return inValues.includes(String(existingRecord[key]))
+        }
+
+        if (value.startsWith('neq.')) {
+          return String(existingRecord[key]) !== value.substring(4)
+        }
+
+        if (value === 'is.null') {
+          return existingRecord[key] === null || existingRecord[key] === undefined
+        }
+
+        if (value === 'not.is.null') {
+          return existingRecord[key] !== null && existingRecord[key] !== undefined
+        }
+
+        return true
+      }
+    )
+
+    if (!matchesFilters) {
+      return HttpResponse.json([], {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
     const updatedRecord = {
       ...existingRecord,
       ...body,
