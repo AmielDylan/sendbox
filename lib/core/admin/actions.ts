@@ -8,7 +8,10 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/shared/db/server'
 import { createAdminClient } from '@/lib/shared/db/admin'
 import { createSystemNotification } from '@/lib/core/notifications/system'
-import { formatBookingReportReason } from '@/lib/core/bookings/report-policy'
+import {
+  OPEN_BOOKING_REPORT_STATUSES,
+  formatBookingReportReason,
+} from '@/lib/core/bookings/report-policy'
 import { headers } from 'next/headers'
 
 /**
@@ -373,12 +376,14 @@ export async function updateBookingReportStatus(
     patch.resolved_by = user.id
   }
 
-  const { error } = await admin
+  const { data: updatedRows, error } = await admin
     .from('booking_reports')
     .update(patch)
     .eq('id', reportId)
+    .in('status', [...OPEN_BOOKING_REPORT_STATUSES])
+    .select('id')
 
-  if (error) {
+  if (error || !updatedRows?.length) {
     console.error('Error updating booking report:', error)
     return {
       error: 'Erreur lors de la mise a jour du signalement',

@@ -129,4 +129,22 @@ describe('updateBookingReportStatus', () => {
     expect(result.error).toMatch(/non autorise/i)
     expect(getMockDatabase().booking_reports.get(reportId).status).toBe('open')
   })
+
+  it('rejette la mise a jour d un signalement deja cloture', async () => {
+    const report = getMockDatabase().booking_reports.get(reportId)
+    report.status = 'resolved'
+    report.resolved_at = new Date().toISOString()
+    report.resolved_by = admin.id
+
+    const result = await updateBookingReportStatus(
+      reportId,
+      'dismissed',
+      'ok ok ok ok'
+    )
+
+    expect(result.error).toMatch(/deja cloture/i)
+    expect(getMockDatabase().booking_reports.get(reportId).status).toBe(
+      'resolved'
+    )
+  })
 })
