@@ -36,6 +36,12 @@ export async function isAdmin(): Promise<boolean> {
   return (profile as any)?.role === 'admin'
 }
 
+async function requireAdminAccess() {
+  if (!(await isAdmin())) {
+    throw new Error('Non autorise')
+  }
+}
+
 /**
  * Crée un log d'audit
  */
@@ -605,6 +611,8 @@ export async function approveCustomKYCCountry(
 export async function getAdminAnnouncements(
   filter?: 'sendbox' | 'sendbox_available'
 ) {
+  await requireAdminAccess()
+
   const supabase = createAdminClient()
   let query = supabase
     .from('announcements')
@@ -622,6 +630,8 @@ export async function getAdminAnnouncements(
 }
 
 export async function getAdminBookings() {
+  await requireAdminAccess()
+
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('bookings')
@@ -648,6 +658,8 @@ export async function getAdminBookings() {
 }
 
 export async function getAdminDisputes() {
+  await requireAdminAccess()
+
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('disputes')
@@ -679,6 +691,8 @@ export async function getAdminDisputes() {
 }
 
 export async function getAdminTransactions() {
+  await requireAdminAccess()
+
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('transactions')
