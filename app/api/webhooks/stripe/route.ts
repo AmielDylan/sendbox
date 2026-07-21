@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
       .from('matching_payments')
       .update({ status: 'failed' })
       .eq('stripe_payment_intent_id', paymentIntent.id)
+      .in('status', ['pending'])
   }
 
   return NextResponse.json({ ok: true })
