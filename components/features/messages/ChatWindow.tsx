@@ -16,6 +16,7 @@ import { sendMessage, markMessagesAsRead } from '@/lib/core/messages/actions'
 import { generateInitials, getAvatarUrl } from '@/lib/core/profile/utils'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { useAuth } from '@/hooks/use-auth'
 import {
   IconArrowLeft,
   IconLoader2,
@@ -23,7 +24,6 @@ import {
   IconSend,
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
-import { createClient } from '@/lib/shared/db/client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -122,7 +122,8 @@ export function ChatWindow({
   const [isPending, startTransition] = useTransition()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const { user } = useAuth()
+  const currentUserId = user?.id ?? null
   const otherAvatar = getAvatarUrl(
     otherUserAvatar,
     otherUserId || otherUserName
@@ -234,17 +235,6 @@ export function ChatWindow({
     }
   }
 
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setCurrentUserId(user?.id || null)
-    }
-    getCurrentUser()
-  }, [])
-
   if (!bookingId) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -346,7 +336,13 @@ export function ChatWindow({
           />
           <Button
             onClick={handleSendMessage}
-            disabled={!messageContent.trim() || isPending}
+            disabled={
+              !bookingId ||
+              !otherUserId ||
+              !currentUserId ||
+              !messageContent.trim() ||
+              isPending
+            }
             size="icon"
             className="h-10 w-10 shrink-0"
             aria-label="Envoyer le message"
