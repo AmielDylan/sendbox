@@ -13,7 +13,6 @@ import Image from 'next/image'
 import {
   createBookingSchema,
   type CreateBookingInput,
-  MAX_INSURANCE_COVERAGE,
 } from '@/lib/core/bookings/validations'
 import {
   FORBIDDEN_PACKAGE_ITEMS,
@@ -46,13 +45,7 @@ import { Badge } from '@/components/ui/badge'
 import { PriceCalculation } from '@/components/features/bookings/PriceCalculation'
 import { TripTimeline } from '@/components/features/announcements/TripTimeline'
 import { toast } from 'sonner'
-import {
-  IconLoader2,
-  IconX,
-  IconStar,
-  IconLock,
-  IconInfoCircle,
-} from '@tabler/icons-react'
+import { IconLoader2, IconX, IconStar } from '@tabler/icons-react'
 import {
   generateInitials,
   getAvatarUrl,
@@ -80,8 +73,6 @@ function NewBookingPageContent() {
   const [announcement, setAnnouncement] = useState<any>(null)
   const [photos, setPhotos] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
-  const protectionTooltip =
-    "Cette option ne constitue pas un contrat d'assurance et n'implique aucune indemnisation automatique."
 
   const {
     register,
@@ -105,7 +96,6 @@ function NewBookingPageContent() {
 
   const weightKg = watch('kilos_requested') || 0
   const packageValue = watch('package_value') || 0
-  const insuranceOpted = watch('insurance_opted') || false
   const forbiddenItemsAcknowledged =
     watch('forbidden_items_acknowledged') || false
   const contentTruthAttested = watch('content_truth_attested') || false
@@ -116,7 +106,7 @@ function NewBookingPageContent() {
     weightKg,
     pricePerKg,
     packageValue,
-    insuranceOpted
+    false
   )
 
   const loadAnnouncement = useCallback(async () => {
@@ -555,61 +545,6 @@ function NewBookingPageContent() {
                     Maximum {MAX_PHOTOS} photos, {MAX_FILE_SIZE / 1_000_000} MB
                     chacune
                   </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Protection du colis */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <IconLock className="h-5 w-5" />
-                  Protection du colis
-                </CardTitle>
-                <CardDescription>
-                  Assistance limitée en cas de litige
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="insurance_opted"
-                    checked={insuranceOpted}
-                    onCheckedChange={checked =>
-                      setValue('insurance_opted', checked === true)
-                    }
-                  />
-                  <div className="flex-1 space-y-2">
-                    <Label
-                      htmlFor="insurance_opted"
-                      className="flex items-center gap-1 font-medium cursor-pointer"
-                    >
-                      Activer la protection du colis
-                      <IconInfoCircle
-                        className="h-3.5 w-3.5 text-muted-foreground"
-                        title={protectionTooltip}
-                        aria-label="Conditions de protection du colis"
-                      />
-                    </Label>
-                    {insuranceOpted && (
-                      <div className="p-4 bg-muted rounded-lg space-y-2">
-                        <p className="text-sm">
-                          Frais :{' '}
-                          {formatPrice(calculation.insurancePremium || 0)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Plafond :{' '}
-                          {formatPrice(calculation.insuranceCoverage || 0)}
-                          {packageValue < MAX_INSURANCE_COVERAGE &&
-                            ` (valeur déclarée : ${formatPrice(packageValue)})`}
-                        </p>
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      Option sans assurance automatique. Consultez l'info-bulle
-                      pour les conditions.
-                    </p>
-                  </div>
                 </div>
               </CardContent>
             </Card>

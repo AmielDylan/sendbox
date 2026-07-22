@@ -1,31 +1,31 @@
 import { Badge } from '@/components/ui/badge'
 import {
   IconCircleCheck,
-  IconQrcode,
-  IconClock,
+  IconPackage,
+  IconCamera,
   IconCurrencyEuro,
 } from '@tabler/icons-react'
 
 const stats = [
   {
     icon: IconCircleCheck,
-    value: '100%',
-    label: 'Voyageurs vérifiés',
+    value: 'Identité',
+    label: 'Vérification requise',
   },
   {
-    icon: IconQrcode,
-    value: 'QR Code',
-    label: 'Suivi en temps réel',
+    icon: IconPackage,
+    value: 'Colis',
+    label: 'Déclaration avant accord',
   },
   {
-    icon: IconClock,
-    value: 'Sous 48h',
-    label: 'Délai moyen garanti',
+    icon: IconCamera,
+    value: 'Photos',
+    label: 'Preuves horodatées',
   },
   {
     icon: IconCurrencyEuro,
-    value: '0 surprise',
-    label: 'Tarif fixe, aucune négociation',
+    value: '2,90 €',
+    label: 'Frais de mise en relation',
   },
 ]
 
@@ -45,8 +45,9 @@ export function TrustStatsBlock() {
               Les signaux qui rassurent avant même de réserver.
             </h3>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Chaque publication est lue à travers des preuves simples:
-              vérification, suivi, cadre tarifaire et vitesse de traitement.
+              Chaque publication s'appuie sur des preuves simples: identité
+              vérifiée, contenu déclaré, photos horodatées et avis après
+              livraison.
             </p>
           </div>
 

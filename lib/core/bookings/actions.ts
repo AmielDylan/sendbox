@@ -278,7 +278,7 @@ export async function createBooking(
     validation.data.kilos_requested,
     announcement.price_per_kg || 0,
     validation.data.package_value || 0,
-    validation.data.insurance_opted
+    false
   )
 
   if (FEATURES.BETA_MODE && breakdown.total > FEATURES.MAX_BOOKING_AMOUNT) {
@@ -305,7 +305,7 @@ export async function createBooking(
         package_value: validation.data.package_value,
         price_per_kg: announcement.price_per_kg,
         qr_code: '', // Sera remplacé automatiquement par le trigger
-        insurance_opted: validation.data.insurance_opted,
+        insurance_opted: false,
         status: 'pending',
       })
       .select('id')

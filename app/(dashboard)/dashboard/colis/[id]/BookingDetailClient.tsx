@@ -27,7 +27,6 @@ import {
   IconCurrencyEuro,
   IconCalendar,
   IconWeight,
-  IconLock,
   IconFileText,
   IconQrcode,
   IconCircleCheck,
@@ -591,18 +590,6 @@ export default function BookingDetailClient({
                     })}
                   </p>
                 </div>
-
-                {booking.insurance_opted && (
-                  <div className="rounded border border-border/60 bg-muted/30 p-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <IconLock className="h-4 w-4" />
-                      <span>Protection du colis</span>
-                    </div>
-                    <p className="mt-1 font-semibold">
-                      Souscrite ({booking.package_value}€)
-                    </p>
-                  </div>
-                )}
               </div>
 
               {booking.package_description && (
