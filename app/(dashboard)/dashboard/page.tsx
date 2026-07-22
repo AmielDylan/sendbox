@@ -35,6 +35,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import type { KYCStatus } from '@/types'
 import type { Database } from '@/types/database.types'
+import { resolveKycStatus } from '@/lib/core/kyc/status'
 import { Bar, BarChart, XAxis } from 'recharts'
 import {
   ChartConfig,
@@ -147,13 +148,7 @@ export default function DashboardPage() {
   // Synchronise kycStatus depuis le store Zustand — OptimizedAuthProvider le met à jour via realtime
   useEffect(() => {
     if (profile) {
-      const verificationStatus = (profile as any).verification_status
-      const rawKycStatus = (profile as any).kyc_status as KYCStatus
-      // verification_status est la source de vérité — kyc_status peut être désynchronisé
-      // pour les comptes vérifiés avant qu'on ajoute la mise à jour de kyc_status dans resolve
-      setKycStatus(
-        verificationStatus === 'verified' ? 'approved' : (rawKycStatus ?? null)
-      )
+      setKycStatus(resolveKycStatus(profile as any))
       setKycRejectionReason((profile as any).kyc_rejection_reason || null)
     }
   }, [profile])

@@ -42,6 +42,7 @@ import {
   getShortNameParts,
 } from '@/lib/core/profile/utils'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
+import { resolveKycStatus } from '@/lib/core/kyc/status'
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -109,9 +110,9 @@ export function PublicHeader() {
   const profileLink = profileId
     ? `/profil/${profileId}`
     : '/dashboard/reglages/profil'
+  const kycStatus = resolveKycStatus(profile as any)
   const showKycLink =
-    isFeatureEnabled('KYC_ENABLED') &&
-    (profile as any)?.kyc_status !== 'approved'
+    isFeatureEnabled('KYC_ENABLED') && kycStatus !== 'approved'
 
   const handleLogout = async () => {
     try {

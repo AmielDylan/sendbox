@@ -1,20 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/shared/db/server'
-
-function resolveVerificationStatus(profile: {
-  verification_status?: string | null
-  kyc_status?: string | null
-}) {
-  if (profile.verification_status === 'verified') return 'verified'
-  if (profile.verification_status === 'pending') return 'pending'
-  if (profile.verification_status === 'rejected') return 'rejected'
-
-  if (profile.kyc_status === 'approved') return 'verified'
-  if (profile.kyc_status === 'pending') return 'pending'
-  if (profile.kyc_status === 'rejected') return 'rejected'
-
-  return 'none'
-}
+import { resolveKycApiStatus } from '@/lib/core/kyc/status'
 
 export async function GET() {
   const supabase = await createClient()
@@ -41,7 +27,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
-    status: resolveVerificationStatus(profile || {}),
+    status: resolveKycApiStatus(profile || {}),
     rejectionReason: profile?.kyc_rejection_reason ?? null,
   })
 }
