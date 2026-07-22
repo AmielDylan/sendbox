@@ -17,6 +17,8 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const APP_URL = process.env.APP_URL || 'http://localhost:3000'
+const VERCEL_AUTOMATION_BYPASS_SECRET =
+  process.env.VERCEL_AUTOMATION_BYPASS_SECRET
 const MATCHING_FEE = getMatchingFeeConfig()
 
 const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
@@ -27,6 +29,14 @@ const TEST_SUFFIX = Date.now()
 const SENDER_EMAIL = `test-sender-${TEST_SUFFIX}@sendbox-test.com`
 const TRAVELER_EMAIL = `test-traveler-${TEST_SUFFIX}@sendbox-test.com`
 const TEST_PASSWORD = 'TestPass123!'
+
+function getVercelBypassHeaders(): Record<string, string> {
+  if (!VERCEL_AUTOMATION_BYPASS_SECRET) return {}
+
+  return {
+    'x-vercel-protection-bypass': VERCEL_AUTOMATION_BYPASS_SECRET,
+  }
+}
 
 async function cleanup(
   senderUid?: string,
@@ -130,6 +140,7 @@ async function callConfirm(bookingId: string, cookies: Record<string, string>) {
   const res = await fetch(`${APP_URL}/api/bookings/${bookingId}/confirm`, {
     method: 'POST',
     headers: {
+      ...getVercelBypassHeaders(),
       'Content-Type': 'application/json',
       Cookie: cookieHeader,
     },
@@ -369,6 +380,7 @@ async function run() {
     const webhookRes = await fetch(`${APP_URL}/api/webhooks/stripe`, {
       method: 'POST',
       headers: {
+        ...getVercelBypassHeaders(),
         'Content-Type': 'application/json',
         'stripe-signature': stripeSignature,
       },
