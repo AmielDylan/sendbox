@@ -212,7 +212,7 @@ describe('POST /api/webhooks/stripe', () => {
     expect(mocks.state.bookingUpdates).toEqual([])
   })
 
-  it('marque uniquement un paiement pending en failed', async () => {
+  it('marque un paiement pending en failed et rouvre le booking accepte', async () => {
     mocks.constructEvent.mockReturnValue(
       createPaymentIntentEvent('payment_intent.payment_failed')
     )
@@ -230,6 +230,25 @@ describe('POST /api/webhooks/stripe', () => {
       'status',
       ['pending'],
     ])
+    expect(mocks.state.bookingUpdates).toEqual([{ status: 'accepted' }])
+    expect(mocks.state.bookingFilters).toContainEqual(['id', 'booking-1'])
+    expect(mocks.state.bookingFilters).toContainEqual([
+      'status',
+      'payment_pending',
+    ])
+  })
+
+  it('ignore un echec de paiement inconnu sans rouvrir de booking', async () => {
+    mocks.state.payment = null
+    mocks.constructEvent.mockReturnValue(
+      createPaymentIntentEvent('payment_intent.payment_failed', 'pi_unknown')
+    )
+
+    const response = await POST(createRequest())
+
+    await expect(response.json()).resolves.toEqual({ ok: true })
+    expect(response.status).toBe(200)
+    expect(mocks.state.matchingPaymentUpdates).toEqual([{ status: 'failed' }])
     expect(mocks.state.bookingUpdates).toEqual([])
   })
 })

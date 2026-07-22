@@ -58,11 +58,23 @@ export async function POST(req: NextRequest) {
   if (event.type === 'payment_intent.payment_failed') {
     const paymentIntent = event.data.object as Stripe.PaymentIntent
 
-    await admin
+    const { data: payment } = await admin
       .from('matching_payments')
       .update({ status: 'failed' })
       .eq('stripe_payment_intent_id', paymentIntent.id)
       .in('status', ['pending'])
+      .select('booking_id')
+      .single()
+
+    if (!payment) {
+      return NextResponse.json({ ok: true })
+    }
+
+    await admin
+      .from('bookings')
+      .update({ status: 'accepted' })
+      .eq('id', payment.booking_id)
+      .eq('status', 'payment_pending')
   }
 
   return NextResponse.json({ ok: true })

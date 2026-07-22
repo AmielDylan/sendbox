@@ -228,6 +228,7 @@ export default function DashboardPage() {
 
   const receivedAcceptedTotal =
     stats.receivedStatus.accepted +
+    stats.receivedStatus.payment_pending +
     stats.receivedStatus.paid +
     stats.receivedStatus.deposited +
     stats.receivedStatus.in_transit +
@@ -267,39 +268,48 @@ export default function DashboardPage() {
 
   const packagesChartData = [
     {
-      status: 'À payer',
+      status: 'Acceptés',
       value: stats.packagesStatus.accepted,
       fill: 'var(--chart-1)',
     },
     {
+      status: 'Paiement',
+      value: stats.packagesStatus.payment_pending,
+      fill: 'var(--chart-2)',
+    },
+    {
       status: 'Envoyés',
       value: stats.packagesStatus.paid + stats.packagesStatus.deposited,
-      fill: 'var(--chart-2)',
+      fill: 'var(--chart-3)',
     },
     {
       status: 'En transit',
       value: stats.packagesStatus.in_transit,
-      fill: 'var(--chart-3)',
+      fill: 'var(--chart-4)',
     },
     {
       status: 'Livrés',
       value: stats.packagesStatus.delivered,
-      fill: 'var(--chart-4)',
+      fill: 'var(--chart-5)',
     },
     {
       status: 'Annulés',
       value: stats.packagesStatus.cancelled,
-      fill: 'var(--chart-5)',
+      fill: 'var(--chart-1)',
     },
   ]
 
   const packagesChartConfig = {
     value: { label: 'Colis' },
-    accepted: { label: 'À payer', color: 'var(--chart-1)' },
-    sent: { label: 'Envoyés', color: 'var(--chart-2)' },
-    in_transit: { label: 'En transit', color: 'var(--chart-3)' },
-    delivered: { label: 'Livrés', color: 'var(--chart-4)' },
-    cancelled: { label: 'Annulés', color: 'var(--chart-5)' },
+    accepted: { label: 'Acceptés', color: 'var(--chart-1)' },
+    payment_pending: {
+      label: 'Paiement à finaliser',
+      color: 'var(--chart-2)',
+    },
+    sent: { label: 'Envoyés', color: 'var(--chart-3)' },
+    in_transit: { label: 'En transit', color: 'var(--chart-4)' },
+    delivered: { label: 'Livrés', color: 'var(--chart-5)' },
+    cancelled: { label: 'Annulés', color: 'var(--chart-1)' },
   } satisfies ChartConfig
 
   return (

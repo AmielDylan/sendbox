@@ -14,6 +14,7 @@ import {
 type BookingStatus =
   | 'pending'
   | 'accepted'
+  | 'payment_pending'
   | 'refused'
   | 'paid'
   | 'deposited'
@@ -52,6 +53,12 @@ export function BookingStatusBadge({
       variant: 'default',
       icon: IconCircleCheck,
       className: 'bg-blue-100 text-blue-800 hover:bg-blue-100',
+    },
+    payment_pending: {
+      label: 'Paiement à finaliser',
+      variant: 'default',
+      icon: IconClock,
+      className: 'bg-amber-100 text-amber-800 hover:bg-amber-100',
     },
     refused: {
       label: 'Refusé',
