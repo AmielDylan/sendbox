@@ -204,11 +204,9 @@ export default async function PublicAnnouncementDetailPage({
                     />
                   </div>
                   <div>
-                    <p className="font-semibold text-primary">
-                      Transport vérifié
-                    </p>
+                    <p className="font-semibold text-primary">Cadre vérifié</p>
                     <p className="text-xs text-muted-foreground">
-                      Voyageur vérifié par Sendbox
+                      Mise en relation encadrée par Sendbox
                     </p>
                   </div>
                 </div>
@@ -218,21 +216,21 @@ export default async function PublicAnnouncementDetailPage({
                       className="h-4 w-4 text-primary shrink-0"
                       stroke={1.5}
                     />
-                    <span>Voyageur vérifié par Sendbox</span>
+                    <span>Identité vérifiée avant mise en relation</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <IconMapPin
                       className="h-4 w-4 text-primary shrink-0"
                       stroke={1.5}
                     />
-                    <span>Livraison directe à destination</span>
+                    <span>Trajet déclaré par le voyageur</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <IconPackage
                       className="h-4 w-4 text-primary shrink-0"
                       stroke={1.5}
                     />
-                    <span>Suivi QR code inclus</span>
+                    <span>Preuves photo prévues à la remise et livraison</span>
                   </div>
                 </div>
               </div>

@@ -4,7 +4,6 @@
 
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { getCountryName } from '@/lib/utils/countries'
-import { MAX_INSURANCE_COVERAGE } from '@/lib/core/bookings/validations'
 
 interface BookingWithRelations {
   id: string
@@ -63,15 +62,6 @@ export function TransportContract({ booking }: TransportContractProps) {
   const senderName = getDisplayName(booking.sender, 'Expéditeur')
   const travelerName = getDisplayName(booking.traveler, 'Voyageur')
 
-  const totalAmount =
-    (booking.total_price || 0) +
-    (booking.commission_amount || 0) +
-    (booking.insurance_opted ? booking.insurance_premium || 0 : 0)
-
-  const insuranceCoverage = booking.insurance_opted
-    ? Math.min(booking.package_value || 0, MAX_INSURANCE_COVERAGE)
-    : 0
-
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -128,25 +118,18 @@ export function TransportContract({ booking }: TransportContractProps) {
           )}
         </View>
 
-        {/* Tarification */}
+        {/* Accord financier */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>TARIFICATION</Text>
+          <Text style={styles.sectionTitle}>ACCORD FINANCIER</Text>
           <Text style={styles.text}>
-            Prix transport : {booking.total_price || 0} EUR
+            Prix transport indiqué : {booking.total_price || 0} EUR
           </Text>
           <Text style={styles.text}>
-            Commission Sendbox : {booking.commission_amount || 0} EUR
+            Frais Sendbox : réglés séparément lors de la confirmation de mise en
+            relation
           </Text>
-          {booking.insurance_opted && (
-            <>
-              <Text style={styles.text}>
-                Protection du colis : {booking.insurance_premium || 0} EUR
-              </Text>
-              <Text style={styles.text}>Plafond : {insuranceCoverage} EUR</Text>
-            </>
-          )}
           <Text style={styles.total}>
-            TOTAL PAYÉ : {totalAmount.toFixed(2)} EUR
+            Montant transport convenu : {booking.total_price || 0} EUR
           </Text>
         </View>
 
@@ -155,9 +138,10 @@ export function TransportContract({ booking }: TransportContractProps) {
           <Text style={styles.sectionTitle}>CONDITIONS</Text>
           <Text style={styles.small}>
             - Le voyageur s'engage à transporter le colis avec soin{'\n'}-
-            L'expéditeur garantit la conformité du contenu{'\n'}- Le paiement
-            est bloqué jusqu'à livraison confirmée{'\n'}- En cas de litige,
-            contacter support@sendbox.io
+            L'expéditeur garantit la conformité du contenu déclaré{'\n'}- Le
+            transport se règle directement entre l'expéditeur et le voyageur,
+            hors plateforme{'\n'}- Sendbox ne conserve pas les fonds du
+            transport{'\n'}- En cas de litige, contacter contact@gosendbox.com
           </Text>
         </View>
 

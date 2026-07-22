@@ -215,9 +215,9 @@ export async function forceRefund(bookingId: string, reason: string) {
 }
 
 /**
- * Débloque le paiement pour un voyageur
+ * Marque une réservation comme livrée côté administration.
  */
-export async function releasePayment(bookingId: string) {
+export async function markBookingAsDelivered(bookingId: string) {
   if (!(await isAdmin())) {
     return {
       error: 'Non autorisé',
@@ -231,13 +231,13 @@ export async function releasePayment(bookingId: string) {
   }).eq('id', bookingId)
 
   if (error) {
-    console.error('Error releasing payment:', error)
+    console.error('Error marking booking as delivered:', error)
     return {
-      error: 'Erreur lors du déblocage du paiement',
+      error: 'Erreur lors de la mise à jour de la réservation',
     }
   }
 
-  await createAuditLog('release_payment', 'booking', bookingId)
+  await createAuditLog('mark_booking_delivered', 'booking', bookingId)
 
   revalidatePath('/admin/bookings')
   return {

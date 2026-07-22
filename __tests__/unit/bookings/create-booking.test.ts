@@ -84,6 +84,16 @@ describe('createBooking', () => {
     )
   })
 
+  it('rejette l assurance colis car elle n est pas disponible en V1', async () => {
+    const result = await createBooking({
+      ...validBookingData,
+      insurance_opted: true,
+    })
+
+    expect(result.error).toMatch(/assurance colis n'est pas disponible en V1/i)
+    expect(result.field).toBe('insurance_opted')
+  })
+
   it('rejette si KYC non approuvé (pending)', async () => {
     const senderPendingKYC = createMockUser({
       id: '33333333-3333-4333-8333-333333333333',

@@ -66,21 +66,22 @@ export default async function SendboxPage() {
             Envoi Sendbox : Prochains départs
           </h1>
           <p className="text-base text-muted-foreground max-w-2xl">
-            Un voyageur vérifié transporte vos effets directement jusqu&apos;à
-            destination. Chaque trajet est suivi et sécurisé.
+            Des disponibilités publiées dans un cadre de confiance, avec
+            identité vérifiée, trajet déclaré et preuves photo prévues à la
+            remise comme à la livraison.
           </p>
           <div className="flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <IconShieldCheck className="h-4 w-4 text-primary" stroke={1.5} />
-              Contenu vérifié par Sendbox
+              Identité vérifiée
             </span>
             <span className="flex items-center gap-1.5">
               <IconMapPin className="h-4 w-4 text-primary" stroke={1.5} />
-              Livraison à domicile
+              Trajet déclaré
             </span>
             <span className="flex items-center gap-1.5">
               <IconPackage className="h-4 w-4 text-primary" stroke={1.5} />
-              Suivi QR code inclus
+              Preuves photo prévues
             </span>
           </div>
         </div>
