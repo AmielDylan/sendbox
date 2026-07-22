@@ -140,24 +140,11 @@ export function useMessages(bookingId: string | null) {
       return `messages:${id}:realtime:${suffix}`
     }
 
-    const setup = async () => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        // IMPORTANT: ensure the auth session is loaded before subscribing
-        // Otherwise realtime may connect as anon and not receive any row due to RLS.
-        await supabase.auth.getSession()
-
-        if (!isActive) {
-          return
-        }
-
-        // Charger les messages existants
-        const { data, error: fetchError } = await (supabase as any)
-          .from('messages')
-          .select(
-            `
+    const loadMessages = async () => {
+      const { data, error: fetchError } = await (supabase as any)
+        .from('messages')
+        .select(
+          `
             *,
             sender:profiles!messages_sender_id_fkey (
               firstname,
@@ -170,19 +157,42 @@ export function useMessages(bookingId: string | null) {
               avatar_url
             )
           `
-          )
-          .eq('booking_id', bookingId)
-          .order('created_at', { ascending: true })
+        )
+        .eq('booking_id', bookingId)
+        .order('created_at', { ascending: true })
 
-        if (fetchError) {
-          console.error('Error loading messages:', fetchError)
-          setError('Erreur lors du chargement des messages')
+      if (fetchError) {
+        console.error('Error loading messages:', fetchError)
+        setError('Erreur lors du chargement des messages')
+        return
+      }
+
+      if (isActive) {
+        setMessages((data as unknown as Message[]) || [])
+      }
+    }
+
+    const setup = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        // IMPORTANT: ensure the auth session is loaded before subscribing
+        // Otherwise realtime may connect as anon and not receive any row due to RLS.
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
+
+        if (session?.access_token) {
+          await supabase.realtime.setAuth(session.access_token)
+        }
+
+        if (!isActive) {
           return
         }
 
-        if (isActive) {
-          setMessages((data as unknown as Message[]) || [])
-        }
+        // Charger les messages existants
+        await loadMessages()
 
         // Cleanup du channel précédent si existant
         if (channelRef.current) {
@@ -378,9 +388,13 @@ export function useMessages(bookingId: string | null) {
     }
 
     void setup()
+    const fallbackInterval = window.setInterval(() => {
+      void loadMessages()
+    }, 5000)
 
     return () => {
       isActive = false
+      window.clearInterval(fallbackInterval)
       // Cleanup proper avec removeChannel (recommandé par Supabase)
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)

@@ -35,6 +35,7 @@ import {
   IconUpload,
 } from '@tabler/icons-react'
 import { useAuth } from '@/hooks/use-auth'
+import { useAuthStore } from '@/lib/stores/auth-store'
 import {
   KYCUploadDrawer,
   type UploadMode,
@@ -160,7 +161,8 @@ async function compressImage(file: File): Promise<File> {
 
 export default function KYCPage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user, loading, profile, refetch } = useAuth()
+  const setProfile = useAuthStore(state => state.setProfile)
   const [state, setState] = useState<PageState>({ phase: 'loading' })
   const [docType, setDocType] = useState<DocType>('')
   const [country, setCountry] = useState<CountryCode>('')
@@ -333,6 +335,18 @@ export default function KYCPage() {
         console.error('[kyc/submit]', res.status, raw.slice(0, 500))
         throw new Error(message)
       }
+      if (profile) {
+        setProfile({
+          ...profile,
+          kyc_status: 'pending',
+          verification_status: 'pending',
+          kyc_submitted_at: new Date().toISOString(),
+          kyc_rejection_reason: null,
+        } as any)
+      }
+      void refetch().catch(error => {
+        console.warn('[kyc/submit] Profile refetch after submit failed:', error)
+      })
       setState({ phase: 'success' })
     } catch (err) {
       setState({

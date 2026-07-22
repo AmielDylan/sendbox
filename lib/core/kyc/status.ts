@@ -2,10 +2,17 @@ import type { KYCStatus } from '@/types'
 
 type VerificationStatus = 'verified' | 'pending' | 'rejected' | string | null
 
-export function resolveKycStatus(profile: {
-  verification_status?: VerificationStatus
-  kyc_status?: KYCStatus | string | null
-}): KYCStatus | null {
+export function resolveKycStatus(
+  profile:
+    | {
+        verification_status?: VerificationStatus
+        kyc_status?: KYCStatus | string | null
+      }
+    | null
+    | undefined
+): KYCStatus | null {
+  if (!profile) return null
+
   if (profile.verification_status === 'verified') return 'approved'
   if (profile.verification_status === 'pending') return 'pending'
   if (profile.verification_status === 'rejected') return 'rejected'
@@ -22,10 +29,15 @@ export function resolveKycStatus(profile: {
   return null
 }
 
-export function resolveKycApiStatus(profile: {
-  verification_status?: VerificationStatus
-  kyc_status?: KYCStatus | string | null
-}) {
+export function resolveKycApiStatus(
+  profile:
+    | {
+        verification_status?: VerificationStatus
+        kyc_status?: KYCStatus | string | null
+      }
+    | null
+    | undefined
+) {
   const status = resolveKycStatus(profile)
 
   if (status === 'approved') return 'verified'

@@ -154,6 +154,43 @@ export default function DashboardPage() {
   }, [profile])
 
   useEffect(() => {
+    if (!user?.id || !isFeatureEnabled('KYC_ENABLED')) {
+      return
+    }
+
+    let isActive = true
+
+    const loadKycStatus = async () => {
+      try {
+        const response = await fetch('/api/kyc/status', { cache: 'no-store' })
+        if (!response.ok || !isActive) return
+
+        const payload = (await response.json()) as {
+          status?: 'verified' | 'pending' | 'rejected' | 'none'
+          rejectionReason?: string | null
+        }
+
+        if (!isActive) return
+
+        if (payload.status === 'verified') setKycStatus('approved')
+        else if (payload.status === 'pending') setKycStatus('pending')
+        else if (payload.status === 'rejected') setKycStatus('rejected')
+        else setKycStatus(null)
+
+        setKycRejectionReason(payload.rejectionReason ?? null)
+      } catch (error) {
+        console.warn('[Dashboard] KYC status refresh failed:', error)
+      }
+    }
+
+    void loadKycStatus()
+
+    return () => {
+      isActive = false
+    }
+  }, [user?.id])
+
+  useEffect(() => {
     const loadDashboardData = async () => {
       if (!user?.id) {
         return

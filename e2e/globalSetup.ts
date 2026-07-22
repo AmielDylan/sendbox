@@ -88,6 +88,14 @@ async function ensureTestUser(
       lastname: persona.lastname,
       role: persona.role,
       kyc_status: persona.kyc_status,
+      verification_status:
+        persona.kyc_status === 'approved' ? 'verified' : persona.kyc_status,
+      verified_at:
+        persona.kyc_status === 'approved' ? new Date().toISOString() : null,
+      verified_name:
+        persona.kyc_status === 'approved'
+          ? `${persona.firstname} ${persona.lastname}`
+          : null,
       ...(persona.subscription_status
         ? { subscription_status: persona.subscription_status }
         : {}),
