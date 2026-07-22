@@ -37,12 +37,9 @@ export const createBookingSchema = z.object({
     .array(z.instanceof(File))
     .max(5, 'Maximum 5 photos')
     .optional(),
-  insurance_opted: z.boolean(),
+  insurance_opted: z.boolean().refine(value => value === false, {
+    message: "L'assurance colis n'est pas disponible en V1",
+  }),
 })
 
 export type CreateBookingInput = z.infer<typeof createBookingSchema>
-
-export const COMMISSION_RATE = 0.03
-export const INSURANCE_RATE = 0.03
-export const INSURANCE_BASE_FEE = 0
-export const MAX_INSURANCE_COVERAGE = 500

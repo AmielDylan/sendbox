@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   forceRefund,
-  releasePayment,
+  markBookingAsDelivered,
   markAsDispute,
   updateBookingReportStatus,
   getAdminBookings,
@@ -46,7 +46,7 @@ import { toast } from 'sonner'
 import {
   IconLoader2,
   IconCurrencyDollar,
-  IconLockOpen,
+  IconCircleCheck,
   IconAlertTriangle,
   IconDotsVertical,
 } from '@tabler/icons-react'
@@ -93,15 +93,15 @@ export default function AdminBookingsPage() {
     refetch()
   }
 
-  const handleReleasePayment = async (bookingId: string) => {
-    const result = await releasePayment(bookingId)
+  const handleMarkDelivered = async (bookingId: string) => {
+    const result = await markBookingAsDelivered(bookingId)
 
     if (result.error) {
       toast.error(result.error)
       return
     }
 
-    toast.success('Paiement débloqué')
+    toast.success('Réservation marquée comme livrée')
     refetch()
   }
 
@@ -229,11 +229,11 @@ export default function AdminBookingsPage() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          disabled={booking.status !== 'delivered'}
-          onClick={() => handleReleasePayment(booking.id)}
+          disabled={booking.status === 'delivered'}
+          onClick={() => handleMarkDelivered(booking.id)}
         >
-          <IconLockOpen className="h-4 w-4" />
-          Debloquer le paiement
+          <IconCircleCheck className="h-4 w-4" />
+          Marquer comme livrée
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
@@ -436,10 +436,10 @@ export default function AdminBookingsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleReleasePayment(booking.id)}
-                            disabled={booking.status !== 'delivered'}
+                            onClick={() => handleMarkDelivered(booking.id)}
+                            disabled={booking.status === 'delivered'}
                           >
-                            <IconLockOpen className="h-4 w-4" />
+                            <IconCircleCheck className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"

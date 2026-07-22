@@ -247,7 +247,7 @@ export function AnnouncementCard({
               <div className="leading-none sm:text-right sm:shrink-0">
                 {isSendbox ? (
                   <span className="text-[10px] text-primary/70 font-semibold uppercase tracking-wide">
-                    Tarif fixe
+                    Profil vérifié
                   </span>
                 ) : (
                   <>
@@ -336,10 +336,10 @@ export function AnnouncementCard({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-primary truncate leading-none mb-1">
-                  Transport vérifié
+                  Cadre vérifié
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  Voyageur vérifié · Suivi inclus
+                  Identité vérifiée · preuves photo
                 </p>
               </div>
               <IconArrowRight className="h-4 w-4 text-primary/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
