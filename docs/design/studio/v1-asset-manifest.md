@@ -19,18 +19,18 @@ Utiliser des noms lisibles :
 
 ## Assets prioritaires V1
 
-| Priorité | Asset | Usage | Format cible |
-| --- | --- | --- | --- |
-| P0 | Hero remise colis | Landing | 16:9 ou 21:9 |
-| P0 | Empty aucun colis | Dashboard colis | 4:3 ou 1:1 |
-| P0 | Empty aucun trajet | Dashboard annonces | 4:3 ou 1:1 |
-| P0 | Empty aucune demande | Messages demandes | 4:3 ou 1:1 |
-| P0 | KYC en attente | Réglages KYC | 4:3 |
-| P1 | Déclaration colis | Section confiance | 3:2 |
-| P1 | Preuve photo remise | Section fonctionnement | 3:2 |
-| P1 | Livraison confirmée | Section fonctionnement | 3:2 |
-| P1 | Avis réputation | Profil public | 3:2 |
-| P2 | Litige/signalement | Aide/admin | 3:2 |
+| Priorité | Asset                | Usage                  | Format cible |
+| -------- | -------------------- | ---------------------- | ------------ |
+| P0       | Hero remise colis    | Landing                | 16:9 ou 21:9 |
+| P0       | Empty aucun colis    | Dashboard colis        | 4:3 ou 1:1   |
+| P0       | Empty aucun trajet   | Dashboard annonces     | 4:3 ou 1:1   |
+| P0       | Empty aucune demande | Messages demandes      | 4:3 ou 1:1   |
+| P0       | KYC en attente       | Réglages KYC           | 4:3          |
+| P1       | Déclaration colis    | Section confiance      | 3:2          |
+| P1       | Preuve photo remise  | Section fonctionnement | 3:2          |
+| P1       | Livraison confirmée  | Section fonctionnement | 3:2          |
+| P1       | Avis réputation      | Profil public          | 3:2          |
+| P2       | Litige/signalement   | Aide/admin             | 3:2          |
 
 ## Critères d'acceptation
 
@@ -48,9 +48,9 @@ Un asset est candidat à l'intégration si :
 
 Pour chaque image candidate, ajouter une ligne :
 
-| Fichier | Prompt source | Usage recommandé | Points forts | Risques / limites | Statut |
-| --- | --- | --- | --- | --- | --- |
-| `hero-handoff-airport-01.png` | Voir `v1-image-prompts.md` | Hero landing | À compléter | À compléter | candidate |
+| Fichier                       | Prompt source              | Usage recommandé | Points forts | Risques / limites | Statut    |
+| ----------------------------- | -------------------------- | ---------------- | ------------ | ----------------- | --------- |
+| `hero-handoff-airport-01.png` | Voir `v1-image-prompts.md` | Hero landing     | À compléter  | À compléter       | candidate |
 
 Statuts possibles :
 

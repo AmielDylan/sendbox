@@ -25,6 +25,8 @@ Les intégrations dans l'application se font ensuite depuis le cockpit projet, d
 
 Faire passer Sendbox d'une interface fonctionnelle mais encore moyenne à une expérience plus professionnelle, rassurante et engageante, sans alourdir la V1.
 
+France-Bénin est le premier corridor de lancement. La direction visuelle doit toutefois rester pensée pour une plateforme multi-pays à terme, capable d'ouvrir d'autres corridors dans les deux sens.
+
 Le rendu attendu doit être :
 
 - épuré, mais pas pauvre ;

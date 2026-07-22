@@ -10,6 +10,8 @@ L'objectif n'est pas de faire une refonte lourde. L'objectif est de donner à l'
 
 Sendbox aide une personne à confier un colis à un voyageur qui effectue déjà un trajet.
 
+France-Bénin est le corridor de départ, utile pour rendre la V1 concrète et testable. L'ambition de marque est plus large : Sendbox doit pouvoir s'ouvrir progressivement à d'autres pays et corridors, dans les deux sens. La direction visuelle ne doit donc pas enfermer le produit dans une identité uniquement France-Bénin.
+
 La V1 repose sur :
 
 - un profil vérifié ;
@@ -35,6 +37,8 @@ Faire ressentir :
 - rigueur ;
 - sérieux administratif léger ;
 - simplicité d'usage.
+
+La marque doit pouvoir rester crédible si demain les corridors incluent aussi Togo, Côte d'Ivoire, Sénégal, Cameroun, Canada, Belgique ou d'autres routes diaspora. Les visuels peuvent évoquer le premier corridor, mais le système graphique doit rester extensible.
 
 Éviter :
 
