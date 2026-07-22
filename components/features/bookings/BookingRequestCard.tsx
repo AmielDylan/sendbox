@@ -164,12 +164,18 @@ export function BookingRequestCard({
       }
 
       if (result.success) {
-        toast.success(result.message)
+        toast.success(result.message || 'Demande acceptée', {
+          description:
+            "L'expéditeur est prévenu. La mise en relation sera finalisée après sa confirmation et le paiement des frais Sendbox.",
+        })
         setShowAcceptModal(false)
         onUpdate?.()
       }
     } catch {
-      toast.error('Une erreur est survenue')
+      toast.error("Impossible d'accepter la demande", {
+        description:
+          'Vérifiez votre connexion puis réessayez depuis cette carte.',
+      })
     } finally {
       setIsProcessing(false)
     }
@@ -201,14 +207,20 @@ export function BookingRequestCard({
       }
 
       if (result.success) {
-        toast.success(result.message)
+        toast.success(result.message || 'Demande refusée', {
+          description:
+            "L'expéditeur est informé du motif. La demande ne pourra plus être acceptée.",
+        })
         setShowRefuseModal(false)
         setRefusalReason(null)
         setRefusalReasonOther('')
         onUpdate?.()
       }
     } catch {
-      toast.error('Une erreur est survenue')
+      toast.error('Impossible de refuser la demande', {
+        description:
+          'Vérifiez votre connexion puis réessayez depuis cette carte.',
+      })
     } finally {
       setIsProcessing(false)
     }
@@ -350,8 +362,8 @@ export function BookingRequestCard({
             <div className="space-y-2 pt-2">
               <div className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                 {booking.status === 'accepted'
-                  ? "Demande acceptée. En attente du paiement des frais Sendbox par l'expéditeur."
-                  : 'Mise en relation confirmée. Vous pouvez organiser la prise en charge.'}
+                  ? "Demande acceptée. L'expéditeur doit confirmer et régler les frais Sendbox pour finaliser la mise en relation."
+                  : 'Mise en relation confirmée. Ouvrez la réservation pour préparer la prise en charge.'}
               </div>
               <div className="flex gap-2">
                 <Button

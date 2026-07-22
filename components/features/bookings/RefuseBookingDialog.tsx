@@ -75,14 +75,20 @@ export function RefuseBookingDialog({
         return
       }
 
-      toast.success('Réservation refusée')
+      toast.success('Réservation refusée', {
+        description:
+          "L'expéditeur est informé du motif. Cette demande ne pourra plus être acceptée.",
+      })
       setIsOpen(false)
       setReason(null)
       setDetails('')
       router.refresh()
     } catch (error) {
       console.error('Error refusing booking:', error)
-      toast.error('Une erreur est survenue')
+      toast.error('Impossible de refuser la réservation', {
+        description:
+          'Vérifiez votre connexion puis réessayez depuis le détail de la réservation.',
+      })
     } finally {
       setIsSubmitting(false)
     }

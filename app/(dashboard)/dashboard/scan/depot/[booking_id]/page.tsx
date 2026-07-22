@@ -265,11 +265,17 @@ export default function ScanDepositPage({ params }: ScanDepositPageProps) {
         return
       }
 
-      toast.success('Colis pris en charge !')
+      toast.success('Colis pris en charge', {
+        description:
+          'La photo, la signature et la position ont été enregistrées dans le dossier de suivi.',
+      })
       router.push(`/dashboard/colis/${booking_id}`)
     } catch (error) {
       console.error('Error submitting deposit:', error)
-      toast.error('Une erreur est survenue')
+      toast.error('Impossible de confirmer le dépôt', {
+        description:
+          'Vérifiez la photo, la signature, la géolocalisation et votre connexion.',
+      })
     } finally {
       setIsSubmitting(false)
     }
