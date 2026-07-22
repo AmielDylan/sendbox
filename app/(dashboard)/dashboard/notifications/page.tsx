@@ -99,7 +99,7 @@ export default function NotificationsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Mes notifications</CardTitle>
             <Select
               value={selectedType}
@@ -108,7 +108,7 @@ export default function NotificationsPage() {
                 setPage(1)
               }}
             >
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-full sm:w-[220px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

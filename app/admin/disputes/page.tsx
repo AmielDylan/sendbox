@@ -79,88 +79,163 @@ export default function AdminDisputesPage() {
               className="my-2"
             />
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Litige</TableHead>
-                    <TableHead>Réservation</TableHead>
-                    <TableHead>Motif</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {disputes?.map((dispute: any) => {
-                    const booking = Array.isArray(dispute.bookings)
-                      ? dispute.bookings[0]
-                      : dispute.bookings
+            <>
+              <div className="grid gap-3 md:hidden">
+                {disputes?.map((dispute: any) => {
+                  const booking = Array.isArray(dispute.bookings)
+                    ? dispute.bookings[0]
+                    : dispute.bookings
 
-                    return (
-                      <TableRow key={dispute.id}>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <p className="font-mono text-xs">
-                              {dispute.id.slice(0, 8)}...
-                            </p>
-                            <Badge variant="destructive">
-                              {dispute.status || 'OPEN'}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1 text-sm">
-                            <p className="font-mono text-xs">
-                              {dispute.booking_id?.slice(0, 8)}...
-                            </p>
-                            <p className="text-muted-foreground">
-                              {booking?.total_price || 0} EUR
-                              {booking?.kilos_requested
-                                ? ` · ${booking.kilos_requested} kg`
-                                : ''}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="max-w-[180px]">
-                          <p className="text-sm font-medium">
-                            {dispute.reason || 'N/A'}
+                  return (
+                    <div
+                      key={dispute.id}
+                      className="space-y-4 rounded-lg border p-4 text-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 space-y-1">
+                          <p className="font-mono text-xs text-muted-foreground">
+                            Litige {dispute.id.slice(0, 8)}...
                           </p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Ouvert par {dispute.opened_by_id?.slice(0, 8)}...
+                          <p className="break-words font-medium">
+                            {dispute.reason || 'Motif non renseigné'}
                           </p>
-                        </TableCell>
-                        <TableCell className="max-w-[340px]">
-                          <p className="line-clamp-5 whitespace-pre-line text-sm text-muted-foreground">
-                            {dispute.description || 'Aucune description'}
+                        </div>
+                        <Badge variant="destructive">
+                          {dispute.status || 'OPEN'}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="rounded-md bg-muted/40 p-3">
+                          <p className="text-muted-foreground">Réservation</p>
+                          <p className="mt-1 font-mono font-medium">
+                            {dispute.booking_id?.slice(0, 8) || 'N/A'}...
                           </p>
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(dispute.opened_at), 'PP', {
-                            locale: fr,
-                          })}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-2">
-                            <Badge variant="destructive">À traiter</Badge>
-                            {dispute.booking_id ? (
-                              <Button asChild variant="outline" size="sm">
-                                <Link
-                                  href={`/dashboard/colis/${dispute.booking_id}`}
-                                >
-                                  <IconExternalLink className="mr-2 h-4 w-4" />
-                                  Dossier
-                                </Link>
-                              </Button>
-                            ) : null}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                        </div>
+                        <div className="rounded-md bg-muted/40 p-3">
+                          <p className="text-muted-foreground">Montant</p>
+                          <p className="mt-1 font-medium">
+                            {booking?.total_price || 0} EUR
+                            {booking?.kilos_requested
+                              ? ` · ${booking.kilos_requested} kg`
+                              : ''}
+                          </p>
+                        </div>
+                        <div className="col-span-2 rounded-md bg-muted/40 p-3">
+                          <p className="text-muted-foreground">Ouvert le</p>
+                          <p className="mt-1 font-medium">
+                            {format(new Date(dispute.opened_at), 'PP', {
+                              locale: fr,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <p className="line-clamp-5 whitespace-pre-line text-sm text-muted-foreground">
+                        {dispute.description || 'Aucune description'}
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="destructive">À traiter</Badge>
+                        {dispute.booking_id ? (
+                          <Button asChild variant="outline" size="sm">
+                            <Link
+                              href={`/dashboard/colis/${dispute.booking_id}`}
+                            >
+                              <IconExternalLink className="mr-2 h-4 w-4" />
+                              Dossier
+                            </Link>
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Litige</TableHead>
+                      <TableHead>Réservation</TableHead>
+                      <TableHead>Motif</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {disputes?.map((dispute: any) => {
+                      const booking = Array.isArray(dispute.bookings)
+                        ? dispute.bookings[0]
+                        : dispute.bookings
+
+                      return (
+                        <TableRow key={dispute.id}>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <p className="font-mono text-xs">
+                                {dispute.id.slice(0, 8)}...
+                              </p>
+                              <Badge variant="destructive">
+                                {dispute.status || 'OPEN'}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1 text-sm">
+                              <p className="font-mono text-xs">
+                                {dispute.booking_id?.slice(0, 8)}...
+                              </p>
+                              <p className="text-muted-foreground">
+                                {booking?.total_price || 0} EUR
+                                {booking?.kilos_requested
+                                  ? ` · ${booking.kilos_requested} kg`
+                                  : ''}
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-[180px]">
+                            <p className="text-sm font-medium">
+                              {dispute.reason || 'N/A'}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Ouvert par {dispute.opened_by_id?.slice(0, 8)}...
+                            </p>
+                          </TableCell>
+                          <TableCell className="max-w-[340px]">
+                            <p className="line-clamp-5 whitespace-pre-line text-sm text-muted-foreground">
+                              {dispute.description || 'Aucune description'}
+                            </p>
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(dispute.opened_at), 'PP', {
+                              locale: fr,
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-2">
+                              <Badge variant="destructive">À traiter</Badge>
+                              {dispute.booking_id ? (
+                                <Button asChild variant="outline" size="sm">
+                                  <Link
+                                    href={`/dashboard/colis/${dispute.booking_id}`}
+                                  >
+                                    <IconExternalLink className="mr-2 h-4 w-4" />
+                                    Dossier
+                                  </Link>
+                                </Button>
+                              ) : null}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

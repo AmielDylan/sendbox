@@ -65,11 +65,11 @@ export function PageHeader({
       )}
 
       {/* Title and Description */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="flex-1 min-w-0 space-y-1">
           <h1
             className={cn(
-              'truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl',
+              'break-words text-xl font-semibold tracking-tight text-foreground sm:text-2xl',
               titleClassName
             )}
           >
@@ -87,7 +87,7 @@ export function PageHeader({
           )}
         </div>
         {actions && (
-          <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+          <div className="flex w-full flex-shrink-0 flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
             {actions}
           </div>
         )}
