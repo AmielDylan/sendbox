@@ -54,6 +54,7 @@ import {
   getShortDisplayName,
   getShortNameParts,
 } from '@/lib/core/profile/utils'
+import { resolveKycStatus } from '@/lib/core/kyc/status'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -447,9 +448,8 @@ function UserMenu() {
     ? `/profil/${profileId}`
     : '/dashboard/reglages/profil'
 
-  const isVerified =
-    isFeatureEnabled('KYC_ENABLED') &&
-    (profile as any)?.kyc_status === 'approved'
+  const kycStatus = resolveKycStatus(profile as any)
+  const isVerified = isFeatureEnabled('KYC_ENABLED') && kycStatus === 'approved'
 
   return (
     <DropdownMenu>
@@ -492,30 +492,28 @@ function UserMenu() {
               {user?.email || 'email@example.com'}
             </p>
             {/* Badge statut KYC - SEULEMENT si feature activée */}
+            {isFeatureEnabled('KYC_ENABLED') && kycStatus === 'approved' && (
+              <Badge
+                variant="outline"
+                className="w-fit text-xs text-green-600 border-green-600 mt-2"
+              >
+                <IconCheck className="mr-1 h-3 w-3" />
+                Vérifié
+              </Badge>
+            )}
+            {isFeatureEnabled('KYC_ENABLED') && kycStatus === 'pending' && (
+              <Badge
+                variant="outline"
+                className="w-fit text-xs text-yellow-600 border-yellow-600 mt-2"
+              >
+                <IconClock className="mr-1 h-3 w-3" />
+                En cours
+              </Badge>
+            )}
             {isFeatureEnabled('KYC_ENABLED') &&
-              (profile as any)?.kyc_status === 'approved' && (
-                <Badge
-                  variant="outline"
-                  className="w-fit text-xs text-green-600 border-green-600 mt-2"
-                >
-                  <IconCheck className="mr-1 h-3 w-3" />
-                  Vérifié
-                </Badge>
-              )}
-            {isFeatureEnabled('KYC_ENABLED') &&
-              (profile as any)?.kyc_status === 'pending' && (
-                <Badge
-                  variant="outline"
-                  className="w-fit text-xs text-yellow-600 border-yellow-600 mt-2"
-                >
-                  <IconClock className="mr-1 h-3 w-3" />
-                  En cours
-                </Badge>
-              )}
-            {isFeatureEnabled('KYC_ENABLED') &&
-              (!(profile as any)?.kyc_status ||
-                (profile as any).kyc_status === 'rejected' ||
-                (profile as any).kyc_status === 'incomplete') && (
+              (!kycStatus ||
+                kycStatus === 'rejected' ||
+                kycStatus === 'incomplete') && (
                 <Badge
                   variant="outline"
                   className="w-fit text-xs text-muted-foreground mt-2"
@@ -541,18 +539,17 @@ function UserMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {/* Lien rapide vers KYC si non approuvé - SEULEMENT si feature activée */}
-        {isFeatureEnabled('KYC_ENABLED') &&
-          (profile as any)?.kyc_status !== 'approved' && (
-            <>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
-                  <IconUserShield className="mr-2 h-4 w-4" />
-                  <span>Vérifier mon identité</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
-          )}
+        {isFeatureEnabled('KYC_ENABLED') && kycStatus !== 'approved' && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/reglages/kyc" className="cursor-pointer">
+                <IconUserShield className="mr-2 h-4 w-4" />
+                <span>Vérifier mon identité</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/dashboard/reglages/compte" className="cursor-pointer">
             <IconSettings className="mr-2 h-4 w-4" />
