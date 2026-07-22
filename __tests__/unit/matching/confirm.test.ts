@@ -212,6 +212,33 @@ describe('confirmMatchingForBooking', () => {
     expect(mocks.paymentIntentsCreate).not.toHaveBeenCalled()
   })
 
+  it('permet au payeur de reprendre un paiement pending après rechargement', async () => {
+    seedBooking({
+      status: 'payment_pending',
+      sender_confirmed_at: '2026-07-13T10:00:00.000Z',
+      traveler_confirmed_at: '2026-07-13T10:05:00.000Z',
+    })
+    mocks.state.existingPayment = {
+      id: 'matching-payment-1',
+      status: 'pending',
+      stripe_client_secret: 'existing_secret',
+      amount_cents: 290,
+      paid_by: 'sender-1',
+    }
+
+    await expect(
+      confirmMatchingForBooking('booking-1', 'sender-1')
+    ).resolves.toMatchObject({
+      status: 'PAYMENT_ALREADY_INITIATED',
+      clientSecret: 'existing_secret',
+      amountCents: 290,
+      mustPay: true,
+    })
+
+    expect(mocks.state.bookingUpdates).toHaveLength(0)
+    expect(mocks.paymentIntentsCreate).not.toHaveBeenCalled()
+  })
+
   it('confirme le booking si le paiement existant a déjà réussi', async () => {
     seedBooking({
       sender_confirmed_at: '2026-07-13T10:00:00.000Z',
