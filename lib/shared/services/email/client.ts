@@ -365,7 +365,7 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
                   ${data.booking_id ? `<p><strong>Réservation:</strong> ${data.booking_id}</p>` : ''}
                 </div>
 
-                ${data.receiptUrl ? `<p><a href="${data.receiptUrl}" class="button">📄 Télécharger le reçu Stripe</a></p>` : ''}
+                ${data.receiptUrl ? `<p><a href="${data.receiptUrl}" class="button">📄 Télécharger le reçu</a></p>` : ''}
                 ${data.booking_id ? `<a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/colis/${data.booking_id}" class="button">Voir la réservation</a>` : ''}
               </div>
               <div class="footer">
@@ -397,8 +397,8 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
 
                 <div style="margin: 30px 0; padding: 20px; background: white; border-radius: 8px;">
                   <h3>Informations importantes</h3>
-                  <p>✅ Le paiement a été sécurisé par Stripe</p>
-                  <p>⏳ Les fonds seront versés après la livraison confirmée</p>
+                  <p>✅ Le paiement a été sécurisé</p>
+                  <p>⏳ La mise en relation est confirmée dans Sendbox</p>
                   <p>📦 L'expéditeur peut maintenant déposer son colis</p>
                 </div>
 
@@ -406,7 +406,7 @@ function getEmailTemplate(template: string, data: Record<string, any>): string {
               </div>
               <div class="footer">
                 <p>Sendbox - Covoiturage France ↔ Bénin</p>
-                <p>Les fonds seront automatiquement versés sur votre compte après confirmation de la livraison.</p>
+                <p>Le paiement du transport reste organisé directement entre les participants selon les conditions convenues.</p>
               </div>
             </div>
           </body>

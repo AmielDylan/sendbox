@@ -88,6 +88,14 @@ export default function MyAnnouncementsPage() {
         : activeTab === 'active'
           ? 'Aucun voyage en cours'
           : 'Aucun voyage enregistré'
+  const emptyDescription =
+    activeTab === 'all'
+      ? 'Ajoutez votre prochain trajet pour recevoir des demandes compatibles avec votre destination, votre date et votre capacité disponible.'
+      : activeTab === 'draft'
+        ? 'Les trajets à vérifier ou à compléter apparaîtront ici avant publication.'
+        : activeTab === 'completed'
+          ? 'Les trajets clôturés resteront disponibles ici pour garder une trace de votre activité.'
+          : 'Aucun trajet publié n’est disponible pour recevoir des demandes en ce moment.'
 
   // Gérer le rafraîchissement après création (Safari)
   useEffect(() => {
@@ -217,11 +225,7 @@ export default function MyAnnouncementsPage() {
               <EmptyState
                 icon={<IconPackage className="h-7 w-7" />}
                 title={emptyTitle}
-                description={
-                  activeTab === 'all'
-                    ? 'Publiez un trajet disponible pour recevoir des demandes de colis compatibles avec votre destination.'
-                    : 'Aucun voyage ne correspond à ce filtre pour le moment.'
-                }
+                description={emptyDescription}
                 action={
                   activeTab === 'all' ? (
                     <Button asChild>

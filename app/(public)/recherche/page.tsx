@@ -410,7 +410,7 @@ export default function SearchPage() {
               <EmptyState
                 icon={<IconSearch className="h-7 w-7" />}
                 title="Aucun trajet trouvé"
-                description="Essayez une date plus large ou une destination voisine. Les recherches non couvertes nous aideront ensuite à prioriser les nouveaux trajets."
+                description="Élargissez la date ou essayez une ville proche. Les recherches sans résultat nous aident à identifier les destinations à ouvrir ensuite."
                 action={
                   <Button variant="outline" onClick={resetFilters}>
                     Réinitialiser les filtres

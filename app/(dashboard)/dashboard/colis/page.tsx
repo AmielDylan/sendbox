@@ -305,8 +305,8 @@ export default function MyBookingsPage() {
             }
             description={
               activeTab === 'all'
-                ? 'Quand vous envoyez une demande à un voyageur, elle apparaît ici avec son statut et les actions utiles.'
-                : 'Changez de filtre ou revenez plus tard quand une réservation aura avancé.'
+                ? 'Recherchez un trajet, envoyez une demande avec une déclaration colis claire, puis suivez ici chaque étape : acceptation, paiement, dépôt et livraison.'
+                : 'Aucun colis ne correspond à ce filtre. Les réservations changent de statut au fil des confirmations, paiements et preuves.'
             }
             action={
               activeTab === 'all' ? (
