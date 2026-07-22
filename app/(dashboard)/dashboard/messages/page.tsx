@@ -6,6 +6,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { getUserConversations } from '@/lib/core/messages/actions'
 import {
@@ -13,6 +14,7 @@ import {
   getUnreadNotificationsCount,
 } from '@/lib/shared/db/queries/notifications'
 import { PageHeader } from '@/components/ui/page-header'
+import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +29,7 @@ import {
   IconBell,
   IconInbox,
   IconMessageCircle,
+  IconSearch,
 } from '@tabler/icons-react'
 import { createClient } from '@/lib/shared/db/client'
 import { NotificationItem } from '@/components/features/notifications/NotificationItem'
@@ -607,7 +610,15 @@ function MessagesPageContent() {
             <EmptyState
               icon={<IconInbox className="h-7 w-7" />}
               title="Aucune demande active"
-              description="Les demandes de colis reçues sur vos trajets apparaissent ici, avec la déclaration colis à relire avant acceptation."
+              description="Les demandes reçues sur vos trajets apparaissent ici. Pour envoyer un colis, recherchez d’abord un voyageur disponible."
+              action={
+                <Button asChild variant="outline">
+                  <Link href="/recherche">
+                    <IconSearch className="mr-2 h-4 w-4" />
+                    Trouver un trajet
+                  </Link>
+                </Button>
+              }
             />
           ) : (
             <div className="space-y-4">
@@ -636,7 +647,7 @@ function MessagesPageContent() {
             <EmptyState
               icon={<IconBell className="h-7 w-7" />}
               title="Aucune notification"
-              description="Vous serez prévenu ici lorsqu'une demande évolue, qu'un paiement est confirmé ou qu'une action est attendue."
+              description="Vous serez prévenu ici lorsqu’une demande évolue, qu’un paiement est confirmé ou qu’une action est attendue."
             />
           ) : (
             <div className="rounded-lg border divide-y overflow-hidden">

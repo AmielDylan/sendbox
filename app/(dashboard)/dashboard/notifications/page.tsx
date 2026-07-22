@@ -132,8 +132,8 @@ export default function NotificationsPage() {
               title="Aucune notification"
               description={
                 selectedType === 'all'
-                  ? 'Les alertes importantes apparaissent ici : demande acceptée, frais confirmés, dépôt, livraison ou action à réaliser.'
-                  : 'Aucune notification ne correspond à ce filtre pour le moment.'
+                  ? 'Les alertes importantes apparaissent ici : nouvelle demande, acceptation, paiement confirmé, dépôt, livraison ou action à réaliser.'
+                  : 'Aucune notification ne correspond à ce filtre. Revenez sur “Toutes” pour vérifier l’ensemble de votre activité.'
               }
               className="my-4"
             />
