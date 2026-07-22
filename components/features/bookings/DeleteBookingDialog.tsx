@@ -50,7 +50,10 @@ export function DeleteBookingDialog({
         return
       }
 
-      toast.success(result.message || 'Réservation supprimée')
+      toast.success(result.message || 'Réservation supprimée', {
+        description:
+          'La réservation annulée ne sera plus affichée dans la liste.',
+      })
       setIsOpen(false)
 
       // Appeler le callback si fourni
@@ -65,7 +68,9 @@ export function DeleteBookingDialog({
       }
     } catch (error) {
       console.error('Error deleting booking:', error)
-      toast.error('Une erreur est survenue')
+      toast.error('Impossible de supprimer la réservation', {
+        description: 'Vérifiez votre connexion puis réessayez.',
+      })
     } finally {
       setIsSubmitting(false)
     }

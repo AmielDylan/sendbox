@@ -49,12 +49,18 @@ export function ConfirmDeliveryDialog({
         return
       }
 
-      toast.success(result.message || 'Livraison confirmée')
+      toast.success(result.message || 'Livraison confirmée', {
+        description:
+          'La réservation est clôturée côté expéditeur. Vous pouvez maintenant laisser une évaluation.',
+      })
       setIsOpen(false)
       router.refresh()
     } catch (error) {
       console.error('Error confirming delivery:', error)
-      toast.error('Une erreur est survenue')
+      toast.error('Impossible de confirmer la réception', {
+        description:
+          'Vérifiez votre connexion puis réessayez depuis la réservation.',
+      })
     } finally {
       setIsSubmitting(false)
     }

@@ -186,11 +186,17 @@ export default function ScanDeliveryPage({ params }: ScanDeliveryPageProps) {
         return
       }
 
-      toast.success('Colis livré avec succès !')
+      toast.success('Livraison enregistrée', {
+        description:
+          'La photo, la signature et la position ont été ajoutées au dossier de livraison.',
+      })
       router.push(`/dashboard/colis/${booking_id}`)
     } catch (error) {
       console.error('Error submitting delivery:', error)
-      toast.error('Une erreur est survenue')
+      toast.error('Impossible de confirmer la livraison', {
+        description:
+          'Vérifiez la photo, la signature, la géolocalisation et votre connexion.',
+      })
     } finally {
       setIsSubmitting(false)
     }

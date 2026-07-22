@@ -224,7 +224,10 @@ function NewBookingPageContent() {
       }
 
       if (result.success && result.bookingId) {
-        toast.success(result.message)
+        toast.success(result.message || 'Demande envoyée', {
+          description:
+            'Le voyageur peut maintenant examiner la déclaration colis et accepter ou refuser la demande.',
+        })
 
         // Invalider les queries pour forcer le rafraîchissement
         queryClient.invalidateQueries({ queryKey: ['user-bookings'] })
@@ -233,7 +236,10 @@ function NewBookingPageContent() {
         router.push(`/dashboard/colis/${result.bookingId}`)
       }
     } catch {
-      toast.error('Une erreur est survenue. Veuillez réessayer.')
+      toast.error("Impossible d'envoyer la demande", {
+        description:
+          'Vos informations restent sur cette page. Vérifiez votre connexion puis réessayez.',
+      })
     } finally {
       setIsSubmitting(false)
     }
