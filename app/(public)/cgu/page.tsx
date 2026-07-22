@@ -265,9 +265,9 @@ export default function CGUPage() {
             responsable de tout litige relatif à ce paiement.
           </p>
           <p>
-            Sendbox ne prélève pas de commission sur le prix du transport en
-            V1. Toute évolution vers un paiement du transport sur la plateforme,
-            une commission ou un reversement voyageur fera l&apos;objet de
+            Sendbox ne prélève pas de commission sur le prix du transport en V1.
+            Toute évolution vers un paiement du transport sur la plateforme, une
+            commission ou un reversement voyageur fera l&apos;objet de
             conditions distinctes.
           </p>
         </section>
