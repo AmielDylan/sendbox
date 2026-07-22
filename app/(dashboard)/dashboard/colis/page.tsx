@@ -22,7 +22,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
 import {
   IconLoader2,
   IconPlus,
@@ -39,10 +38,12 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { getCountryName } from '@/lib/utils/countries'
 import { DeleteBookingDialog } from '@/components/features/bookings/DeleteBookingDialog'
+import { BookingStatusBadge } from '@/components/features/bookings/BookingStatusBadge'
 
 type BookingStatus =
   | 'pending'
   | 'accepted'
+  | 'payment_pending'
   | 'paid'
   | 'deposited'
   | 'in_transit'
@@ -163,35 +164,9 @@ export default function MyBookingsPage() {
     const status: BookingDisplayStatus = booking.delivery_confirmed_at
       ? 'confirmed'
       : booking.status
-    const variants: Record<
-      BookingDisplayStatus,
-      'default' | 'secondary' | 'destructive' | 'outline'
-    > = {
-      pending: 'secondary',
-      accepted: 'default',
-      paid: 'default',
-      deposited: 'default',
-      in_transit: 'default',
-      delivered: 'default',
-      confirmed: 'default',
-      cancelled: 'destructive',
-    }
-
-    const labels: Record<BookingDisplayStatus, string> = {
-      pending: 'En attente',
-      accepted: 'Accepté',
-      paid: 'Payé',
-      deposited: 'Déposé',
-      in_transit: 'En transit',
-      delivered: 'Livré',
-      confirmed: 'Confirmé',
-      cancelled: 'Annulé',
-    }
 
     return (
-      <Badge variant={variants[status]} className="w-fit whitespace-nowrap">
-        {labels[status]}
-      </Badge>
+      <BookingStatusBadge status={status} className="w-fit whitespace-nowrap" />
     )
   }
 
@@ -294,7 +269,7 @@ export default function MyBookingsPage() {
             <SelectContent>
               <SelectItem value="all">Tous</SelectItem>
               <SelectItem value="pending">En attente</SelectItem>
-              <SelectItem value="accepted">Confirmés</SelectItem>
+              <SelectItem value="accepted">Acceptés / à payer</SelectItem>
               <SelectItem value="in_transit">En transit</SelectItem>
               <SelectItem value="delivered">Livrés</SelectItem>
               <SelectItem value="cancelled">Annulés</SelectItem>
@@ -312,7 +287,7 @@ export default function MyBookingsPage() {
         <TabsList className="flex w-full flex-wrap justify-start gap-2 md:inline-flex md:w-auto md:flex-nowrap">
           <TabsTrigger value="all">Tous</TabsTrigger>
           <TabsTrigger value="pending">En attente</TabsTrigger>
-          <TabsTrigger value="accepted">Confirmés</TabsTrigger>
+          <TabsTrigger value="accepted">Acceptés / à payer</TabsTrigger>
           <TabsTrigger value="in_transit">En transit</TabsTrigger>
           <TabsTrigger value="delivered">Livrés</TabsTrigger>
           <TabsTrigger value="cancelled">Annulés</TabsTrigger>

@@ -56,6 +56,7 @@ export type UserBookingStatusFilter =
   | 'all'
   | 'pending'
   | 'accepted'
+  | 'payment_pending'
   | 'paid'
   | 'deposited'
   | 'in_transit'
@@ -103,7 +104,12 @@ export async function getUserBookings(status: UserBookingStatusFilter = 'all') {
 
   if (status !== 'all') {
     if (status === 'accepted') {
-      query = query.in('status', ['accepted', 'paid', 'deposited'])
+      query = query.in('status', [
+        'accepted',
+        'payment_pending',
+        'paid',
+        'deposited',
+      ])
     } else {
       query = query.eq('status', status)
     }
