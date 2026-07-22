@@ -454,11 +454,16 @@ export default function BookingDetailClient({
         return
       }
 
-      toast.success('Réservation acceptée')
+      toast.success('Réservation acceptée', {
+        description:
+          "L'expéditeur peut maintenant confirmer la mise en relation et régler les frais Sendbox.",
+      })
       router.refresh()
     } catch (error) {
       console.error('Error accepting booking:', error)
-      toast.error('Une erreur est survenue')
+      toast.error("Impossible d'accepter la réservation", {
+        description: 'Vérifiez votre connexion puis réessayez.',
+      })
     } finally {
       setIsAccepting(false)
     }
@@ -507,7 +512,10 @@ export default function BookingDetailClient({
       await loadBookingDetails()
     } catch (error) {
       console.error('Error starting matching payment:', error)
-      toast.error('Une erreur est survenue')
+      toast.error('Impossible de préparer le paiement', {
+        description:
+          'Vérifiez votre connexion puis réessayez. Aucun frais ne sera prélevé tant que le paiement Stripe n’est pas validé.',
+      })
     } finally {
       setIsStartingPayment(false)
     }
@@ -863,7 +871,10 @@ export default function BookingDetailClient({
                           transactionId={booking.id}
                           context={cancellationPolicy.userNotice}
                           onSuccess={() => {
-                            toast.success('Litige ouvert')
+                            toast.success('Litige ouvert', {
+                              description:
+                                "Le dossier est transmis à l'admin Sendbox avec les éléments disponibles.",
+                            })
                             router.refresh()
                           }}
                         />

@@ -63,7 +63,10 @@ export function BookingReportDialog({
         return
       }
 
-      toast.success(result.message || 'Signalement envoyé')
+      toast.success(result.message || 'Signalement envoyé', {
+        description:
+          'Le dossier reste visible sur la réservation. Sendbox pourra s’en servir si la situation évolue en litige.',
+      })
       setOpen(false)
       setReason('')
       setMessage('')
@@ -71,7 +74,10 @@ export function BookingReportDialog({
       onSuccess?.()
     } catch (error) {
       console.error('Error creating booking report:', error)
-      toast.error('Une erreur est survenue')
+      toast.error("Impossible d'envoyer le signalement", {
+        description:
+          'Vérifiez le motif, la description et votre connexion avant de réessayer.',
+      })
     } finally {
       setIsSubmitting(false)
     }

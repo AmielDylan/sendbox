@@ -65,13 +65,19 @@ export function CancelBookingDialog({
         return
       }
 
-      toast.success('Réservation annulée')
+      toast.success('Réservation annulée', {
+        description:
+          "L'autre partie est notifiée et le motif reste visible dans le dossier.",
+      })
       setIsOpen(false)
       setReason('')
       router.refresh()
     } catch (error) {
       console.error('Error cancelling booking:', error)
-      toast.error('Une erreur est survenue')
+      toast.error("Impossible d'annuler la réservation", {
+        description:
+          'Vérifiez votre connexion et conservez un motif clair avant de réessayer.',
+      })
     } finally {
       setIsSubmitting(false)
     }
