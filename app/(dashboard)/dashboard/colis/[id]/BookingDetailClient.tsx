@@ -62,6 +62,7 @@ type BookingStatus =
   | 'pending'
   | 'accepted'
   | 'paid'
+  | 'payment_pending'
   | 'deposited'
   | 'in_transit'
   | 'delivered'
@@ -725,12 +726,45 @@ export default function BookingDetailClient({
                 <MatchingFeeGate
                   clientSecret={matchingPayment.clientSecret}
                   amountCents={matchingPayment.amountCents}
-                  onSuccess={() => {
-                    toast.success('Mise en relation confirmée')
+                  onSuccess={async () => {
+                    toast.success('Paiement accepté. Confirmation en cours...')
                     setMatchingPayment(null)
-                    void loadBookingDetails()
+                    await loadBookingDetails()
+                    window.setTimeout(() => {
+                      void loadBookingDetails()
+                    }, 2500)
                   }}
                 />
+              )}
+
+              {!matchingPayment && booking.status === 'payment_pending' && (
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
+                  <div className="flex items-center gap-2 font-medium text-amber-900 dark:text-amber-100">
+                    <IconInfoCircle className="h-4 w-4" />
+                    <span>Paiement de mise en relation en attente</span>
+                  </div>
+                  <p className="mt-2 leading-6 text-muted-foreground">
+                    {isSender
+                      ? 'Le paiement a été préparé. Vous pouvez le reprendre pour finaliser la mise en relation.'
+                      : "L'expéditeur doit finaliser les frais Sendbox avant que la mise en relation soit confirmée."}
+                  </p>
+                  {isSender && (
+                    <Button
+                      className="mt-3 w-full"
+                      onClick={handleStartMatchingPayment}
+                      disabled={isStartingPayment}
+                    >
+                      {isStartingPayment ? (
+                        <>
+                          <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Préparation...
+                        </>
+                      ) : (
+                        'Reprendre le paiement'
+                      )}
+                    </Button>
+                  )}
+                </div>
               )}
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">

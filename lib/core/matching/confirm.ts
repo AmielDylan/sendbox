@@ -78,19 +78,19 @@ export async function confirmMatchingForBooking(
 
   const now = new Date().toISOString()
   const updates: Record<string, unknown> = {}
+  let confirmationWasAlreadyRecorded = false
 
   if (isSender && !booking.sender_confirmed_at) {
     updates.sender_confirmed_at = now
   } else if (isTraveler && !booking.traveler_confirmed_at) {
     updates.traveler_confirmed_at = now
   } else {
-    return {
-      status: 'ALREADY_CONFIRMED',
-      message: 'Votre confirmation est déjà enregistrée.',
-    }
+    confirmationWasAlreadyRecorded = true
   }
 
-  await admin.from('bookings').update(updates).eq('id', bookingId)
+  if (Object.keys(updates).length > 0) {
+    await admin.from('bookings').update(updates).eq('id', bookingId)
+  }
 
   const { data: updated } = await admin
     .from('bookings')
@@ -110,9 +110,12 @@ export async function confirmMatchingForBooking(
 
   if (!bothConfirmed) {
     return {
-      status: 'WAITING_OTHER_PARTY',
-      message:
-        "Votre confirmation est enregistrée. L'autre partie doit encore confirmer.",
+      status: confirmationWasAlreadyRecorded
+        ? 'ALREADY_CONFIRMED'
+        : 'WAITING_OTHER_PARTY',
+      message: confirmationWasAlreadyRecorded
+        ? 'Votre confirmation est déjà enregistrée.'
+        : "Votre confirmation est enregistrée. L'autre partie doit encore confirmer.",
     }
   }
 
