@@ -35,6 +35,8 @@ describe('kyc status helpers', () => {
   })
 
   it('retourne null si aucun statut exploitable nest disponible', () => {
+    expect(resolveKycStatus(null)).toBeNull()
+    expect(resolveKycStatus(undefined)).toBeNull()
     expect(resolveKycStatus({})).toBeNull()
     expect(resolveKycStatus({ verification_status: 'none' })).toBeNull()
   })
