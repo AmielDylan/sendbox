@@ -1,6 +1,6 @@
 # Conditions Générales d'Utilisation — Sendbox
 
-Dernière mise à jour : 15 mai 2026
+Dernière mise à jour : 22 juillet 2026
 
 ## 1. Nature du service
 
@@ -11,7 +11,7 @@ gestion de réputation entre utilisateurs.
 
 ## 2. Frais de mise en relation
 
-L'expéditeur règle des frais de mise en relation de 1,50 € au moment de la
+L'expéditeur règle des frais de mise en relation de 2,90 € TTC au moment de la
 confirmation mutuelle. Ces frais rémunèrent le service fourni par Sendbox et ne
 constituent pas un paiement pour le transport du colis. Ces frais sont non
 remboursables une fois la mise en relation confirmée.
@@ -21,6 +21,15 @@ remboursables une fois la mise en relation confirmée.
 Le paiement du service de transport entre expéditeur et voyageur est réalisé
 directement entre les parties, hors plateforme. Sendbox n'est pas partie à cet
 accord et ne peut être tenu responsable de tout litige financier entre utilisateurs.
+Sendbox ne prélève pas de commission sur ce montant en V1 et ne fournit pas de
+mécanisme d'escrow ou de reversement voyageur.
+
+## 3 bis. Assurance colis
+
+Sendbox ne vend pas d'assurance colis en V1 et ne promet aucune indemnisation
+automatique. Les photos horodatées, confirmations, déclarations colis et
+historiques disponibles servent à documenter les faits en cas de litige, sans
+constituer une garantie financière ou une couverture d'assurance.
 
 ## 4. Contenu des colis
 

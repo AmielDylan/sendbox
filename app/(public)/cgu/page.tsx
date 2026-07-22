@@ -10,7 +10,7 @@ export default function CGUPage() {
           Conditions générales d&apos;utilisation
         </h1>
         <p className="text-sm text-muted-foreground">
-          Dernière mise à jour : 17 mai 2026, version 1.0
+          Dernière mise à jour : 22 juillet 2026, version 1.1
         </p>
       </header>
 
@@ -210,7 +210,7 @@ export default function CGUPage() {
 
           <h3 className="font-semibold">5.1 Montant</h3>
           <p>
-            Des frais de mise en relation d&apos;un montant beta de{' '}
+            Des frais de mise en relation de{' '}
             <strong>2,90&nbsp;€&nbsp;TTC</strong> sont facturés à
             l&apos;expéditeur au moment de la confirmation mutuelle entre les
             deux parties.
@@ -219,6 +219,11 @@ export default function CGUPage() {
             Ces frais rémunèrent le service de mise en relation fourni par
             Sendbox et sont distincts du prix du transport convenu entre
             expéditeur et voyageur.
+          </p>
+          <p>
+            En V1, Sendbox n&apos;encaisse pas le prix du transport, ne conserve
+            pas de fonds en attente et ne fournit pas de mécanisme
+            d&apos;escrow.
           </p>
 
           <h3 className="font-semibold">5.2 Facturation</h3>
@@ -258,6 +263,12 @@ export default function CGUPage() {
             Sendbox n&apos;est pas partie à cet accord financier,
             n&apos;encaisse pas les sommes correspondantes, et ne peut être tenu
             responsable de tout litige relatif à ce paiement.
+          </p>
+          <p>
+            Sendbox ne prélève pas de commission sur le prix du transport en
+            V1. Toute évolution vers un paiement du transport sur la plateforme,
+            une commission ou un reversement voyageur fera l&apos;objet de
+            conditions distinctes.
           </p>
         </section>
 
@@ -305,6 +316,24 @@ export default function CGUPage() {
             l&apos;exposer à des risques légaux. Ce refus ne peut donner lieu à
             aucun remboursement des frais de mise en relation par
             l&apos;expéditeur.
+          </p>
+        </section>
+
+        {/* Article 7 bis */}
+        <section className="flex flex-col gap-3">
+          <h2 className="text-xl font-semibold">
+            Article 7 bis : Assurance et garantie colis
+          </h2>
+          <p>
+            Sendbox ne vend pas d&apos;assurance colis en V1 et ne promet aucune
+            indemnisation automatique en cas de perte, vol, retard ou
+            endommagement.
+          </p>
+          <p>
+            Les photos horodatées, confirmations, déclarations colis et
+            historiques disponibles dans l&apos;application servent à documenter
+            les faits en cas de litige, sans constituer une garantie financière
+            ou une couverture d&apos;assurance.
           </p>
         </section>
 
