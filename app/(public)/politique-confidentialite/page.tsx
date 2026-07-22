@@ -10,9 +10,7 @@ export default function PolitiqueConfidentialitePage() {
           de mise en relation.
         </p>
         <div className="bg-muted/50 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-3">
-            Données collectées
-          </h2>
+          <h2 className="text-xl font-semibold mb-3">Données collectées</h2>
           <p className="text-muted-foreground">
             Sendbox traite les données de compte, les informations de profil,
             les données de vérification d&apos;identité, les annonces, les
@@ -26,9 +24,9 @@ export default function PolitiqueConfidentialitePage() {
           </h2>
           <p className="text-muted-foreground">
             En V1, Sendbox encaisse uniquement les frais de mise en relation
-            réglés par carte bancaire via Stripe. Le prix du transport est
-            réglé directement entre utilisateurs, hors plateforme. Sendbox ne
-            stocke pas les données complètes de carte bancaire.
+            réglés par carte bancaire via Stripe. Le prix du transport est réglé
+            directement entre utilisateurs, hors plateforme. Sendbox ne stocke
+            pas les données complètes de carte bancaire.
           </p>
         </div>
         <div className="bg-muted/50 p-6 rounded-lg">
