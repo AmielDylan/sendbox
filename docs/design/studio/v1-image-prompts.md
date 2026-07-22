@@ -6,7 +6,7 @@ Ces prompts servent de base. Le studio peut les améliorer, mais doit garder la 
 
 Photographie réaliste, naturelle, professionnelle, lumineuse, composition claire, sujets nets, rendu premium accessible, pas de mise en scène trop publicitaire, pas de flou artificiel, pas de filtre dramatique, pas de texte incrusté.
 
-Personnes : adultes, diversité diaspora France-Bénin, tenue soignée mais naturelle, gestes lisibles, expressions confiantes.
+Personnes : adultes, diversité diaspora et voyageurs internationaux, tenue soignée mais naturelle, gestes lisibles, expressions confiantes. France-Bénin est le corridor de départ, mais l'imaginaire doit rester extensible à d'autres pays et trajets.
 
 Format recommandé :
 
