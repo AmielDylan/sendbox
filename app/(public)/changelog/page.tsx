@@ -67,13 +67,13 @@ const entries: ChangelogEntry[] = [
   {
     version: '1.0',
     date: 'Janvier 2026',
-    label: 'Lancement beta',
+    label: 'Lancement V1',
     type: 'major',
     highlights: [
       "Publication d'annonces de trajets : corridor, dates, capacité disponible, prix indicatif.",
       "Profils utilisateurs avec vérification d'identité manuelle (KYC v1).",
       'Système de mise en relation : recherche de voyageurs par corridor et date, demande et acceptation.',
-      'Frais de mise en relation beta de 2,90 € TTC prélevés à la confirmation mutuelle.',
+      'Frais de mise en relation de 2,90 € TTC prélevés à la confirmation mutuelle.',
       'Lancement du corridor France-Bénin.',
     ],
   },
