@@ -514,7 +514,7 @@ export default function BookingDetailClient({
       console.error('Error starting matching payment:', error)
       toast.error('Impossible de préparer le paiement', {
         description:
-          'Vérifiez votre connexion puis réessayez. Aucun frais ne sera prélevé tant que le paiement Stripe n’est pas validé.',
+          'Vérifiez votre connexion puis réessayez. Aucun frais ne sera prélevé tant que le paiement sécurisé n’est pas validé.',
       })
     } finally {
       setIsStartingPayment(false)
