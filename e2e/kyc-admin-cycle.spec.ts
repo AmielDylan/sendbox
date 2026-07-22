@@ -188,14 +188,14 @@ test('KYC: soumission utilisateur, validation admin, interface utilisateur netto
     await expect(
       senderPage.getByRole('link', { name: /commencer/i })
     ).toHaveCount(0)
-    await expect(
-      senderPage.getByText(/v.rification sous 24-48h/i)
-    ).toHaveCount(0)
+    await expect(senderPage.getByText(/v.rification sous 24-48h/i)).toHaveCount(
+      0
+    )
 
     await senderPage.goto('/dashboard/reglages/kyc')
-    await expect(
-      senderPage.getByText(/identit. v.rifi.e/i)
-    ).toBeVisible({ timeout: 20_000 })
+    await expect(senderPage.getByText(/identit. v.rifi.e/i)).toBeVisible({
+      timeout: 20_000,
+    })
   } finally {
     await restoreApprovedKyc(senderId)
   }
