@@ -72,18 +72,22 @@ export function AnnouncementCard({
           <CardContent className="p-4 sm:p-5 flex-1">
             {/* Main Row: Cities & Badges */}
             <div className="space-y-4">
-              <div className="flex justify-between items-start gap-4">
-                <h3 className="font-bold text-lg sm:text-2xl text-foreground leading-tight flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <span className="flex items-center gap-2">
-                    {announcement.origin_city}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <h3 className="min-w-0 font-bold text-lg sm:text-2xl text-foreground leading-tight flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span className="break-words">
+                      {announcement.origin_city}
+                    </span>
                     <IconArrowNarrowRight
-                      className="h-6 w-6 text-muted-foreground/50"
+                      className="h-6 w-6 shrink-0 text-muted-foreground/50"
                       stroke={1}
                     />
-                    {announcement.destination_city}
+                    <span className="break-words">
+                      {announcement.destination_city}
+                    </span>
                   </span>
                 </h3>
-                <div className="text-right leading-none shrink-0">
+                <div className="leading-none sm:text-right sm:shrink-0">
                   <span className="font-bold text-xl text-primary">
                     {announcement.price_per_kg} €
                   </span>
@@ -96,12 +100,12 @@ export function AnnouncementCard({
               <div className="flex flex-col sm:flex-row gap-2 w-full">
                 <Badge
                   variant="secondary"
-                  className="flex-1 justify-start items-start flex-col bg-muted/50 text-foreground border-0 font-sans px-3 py-2 h-auto whitespace-nowrap"
+                  className="flex-1 justify-start items-start flex-col bg-muted/50 text-foreground border-0 font-sans px-3 py-2 h-auto whitespace-normal sm:whitespace-nowrap"
                 >
                   <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-1">
                     Dates du voyage
                   </span>
-                  <div className="flex items-center font-bold text-sm">
+                  <div className="flex flex-wrap items-center font-bold text-sm">
                     <IconCalendar
                       className="h-3.5 w-3.5 mr-1.5 opacity-70"
                       stroke={1.5}
@@ -124,7 +128,7 @@ export function AnnouncementCard({
                 <div className="flex gap-2 flex-1 sm:flex-none">
                   <Badge
                     variant="secondary"
-                    className="flex-1 sm:flex-none justify-start items-start flex-col bg-primary/5 text-primary border-0 font-sans px-3 py-2 h-auto whitespace-nowrap min-w-[100px]"
+                    className="flex-1 sm:flex-none justify-start items-start flex-col bg-primary/5 text-primary border-0 font-sans px-3 py-2 h-auto whitespace-normal sm:whitespace-nowrap sm:min-w-[100px]"
                   >
                     <span className="text-[10px] text-primary/70 font-medium uppercase tracking-wider mb-1">
                       Disponible
@@ -212,7 +216,7 @@ export function AnnouncementCard({
         <CardContent className="p-4 sm:p-5 flex-1">
           {/* Main Row: Cities & Badges */}
           <div className="space-y-4">
-            <div className="flex justify-between items-start gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <div className="flex-1 min-w-0">
                 {isSendbox && (
                   <div className="flex items-center gap-1.5 mb-1.5">
@@ -226,17 +230,21 @@ export function AnnouncementCard({
                   </div>
                 )}
                 <h3 className="font-bold text-lg sm:text-2xl text-foreground leading-tight group-hover:text-primary transition-colors flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <span className="flex items-center gap-2">
-                    {announcement.origin_city}
+                  <span className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span className="break-words">
+                      {announcement.origin_city}
+                    </span>
                     <IconArrowNarrowRight
-                      className="h-6 w-6 text-muted-foreground/50"
+                      className="h-6 w-6 shrink-0 text-muted-foreground/50"
                       stroke={1}
                     />
-                    {announcement.destination_city}
+                    <span className="break-words">
+                      {announcement.destination_city}
+                    </span>
                   </span>
                 </h3>
               </div>
-              <div className="text-right leading-none shrink-0">
+              <div className="leading-none sm:text-right sm:shrink-0">
                 {isSendbox ? (
                   <span className="text-[10px] text-primary/70 font-semibold uppercase tracking-wide">
                     Tarif fixe
@@ -258,12 +266,12 @@ export function AnnouncementCard({
             <div className="flex flex-col sm:flex-row gap-2 w-full">
               <Badge
                 variant="secondary"
-                className="flex-1 justify-start items-start flex-col bg-muted/50 text-foreground hover:bg-muted border-0 font-sans px-3 py-2 h-auto whitespace-nowrap"
+                className="flex-1 justify-start items-start flex-col bg-muted/50 text-foreground hover:bg-muted border-0 font-sans px-3 py-2 h-auto whitespace-normal sm:whitespace-nowrap"
               >
                 <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider mb-1">
                   Dates du voyage
                 </span>
-                <div className="flex items-center font-bold text-sm">
+                <div className="flex flex-wrap items-center font-bold text-sm">
                   <IconCalendar
                     className="h-3.5 w-3.5 mr-1.5 opacity-70"
                     stroke={1.5}
@@ -286,7 +294,7 @@ export function AnnouncementCard({
               <div className="flex gap-2 flex-1 sm:flex-none">
                 <Badge
                   variant="secondary"
-                  className="flex-1 sm:flex-none justify-start items-start flex-col bg-primary/5 text-primary hover:bg-primary/10 border-0 font-sans px-3 py-2 h-auto whitespace-nowrap min-w-[100px]"
+                  className="flex-1 sm:flex-none justify-start items-start flex-col bg-primary/5 text-primary hover:bg-primary/10 border-0 font-sans px-3 py-2 h-auto whitespace-normal sm:whitespace-nowrap sm:min-w-[100px]"
                 >
                   <span className="text-[10px] text-primary/70 font-medium uppercase tracking-wider mb-1">
                     Disponible
