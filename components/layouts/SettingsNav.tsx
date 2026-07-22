@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { isFeatureEnabled } from '@/lib/shared/config/features'
 import { createClient } from '@/lib/shared/db/client'
 import { useAuth } from '@/hooks/use-auth'
+import { resolveKycStatus } from '@/lib/core/kyc/status'
 
 interface SettingsNavProps {
   kycStatus?: 'pending' | 'approved' | 'rejected' | 'incomplete' | null
@@ -41,12 +42,12 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
     const loadKycStatus = async () => {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('kyc_status')
+        .select('verification_status, kyc_status')
         .eq('id', user.id)
         .single()
 
       if (profile) {
-        setKycStatus(profile.kyc_status as any)
+        setKycStatus(resolveKycStatus(profile))
       }
     }
 
@@ -75,6 +76,7 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
         payload => {
           console.log('🔔 [SettingsNav] Realtime UPDATE received:', payload)
           const nextProfile = payload.new as {
+            verification_status?: string | null
             kyc_status?:
               | 'pending'
               | 'approved'
@@ -86,7 +88,7 @@ export function SettingsNav({ kycStatus: initialKycStatus }: SettingsNavProps) {
             '📊 [SettingsNav] New KYC status:',
             nextProfile.kyc_status
           )
-          setKycStatus(nextProfile.kyc_status ?? null)
+          setKycStatus(resolveKycStatus(nextProfile))
         }
       )
       .subscribe(status => {

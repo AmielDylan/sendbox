@@ -174,6 +174,7 @@ async function handleKYCSubmit(req: NextRequest) {
     .update({
       kyc_submitted_at: new Date().toISOString(),
       verification_status: 'pending',
+      kyc_status: 'pending',
       kyc_document_front: frontPath,
       kyc_document_back: backUploaded ? backPath : null,
       kyc_selfie: selfiePath,
