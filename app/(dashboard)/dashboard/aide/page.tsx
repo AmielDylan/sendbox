@@ -23,7 +23,7 @@ const faqCategories = [
     questions: [
       {
         q: 'Comment fonctionne Sendbox ?',
-        a: 'Sendbox met en relation des expéditeurs et des voyageurs. Un expéditeur dépose un colis, un voyageur qui effectue le trajet correspondant accepte de le transporter contre rémunération. Une fois la livraison confirmée, le paiement est libéré automatiquement.',
+        a: "Sendbox met en relation des expéditeurs et des voyageurs vérifiés. L'expéditeur décrit son colis, le voyageur accepte ou refuse la demande, puis les deux parties confirment la mise en relation. En V1, Sendbox encaisse uniquement les frais de mise en relation ; le transport se règle directement entre les parties, hors plateforme.",
       },
       {
         q: 'Comment créer un compte ?',
@@ -31,11 +31,11 @@ const faqCategories = [
       },
       {
         q: 'Comment vérifier mon identité ?',
-        a: "La vérification d'identité (KYC) se fait depuis la section Réglages > Vérification d'identité. Vous devrez fournir une pièce d'identité valide. La vérification est généralement traitée sous 24 à 48 heures.",
+        a: "La vérification d'identité se fait depuis Réglages > Vérification d'identité. Vous devez fournir une pièce d'identité valide et un selfie de vérification. Votre dossier passe ensuite en revue admin avant validation ou refus.",
       },
       {
         q: 'Puis-je utiliser Sendbox sans vérifier mon identité ?',
-        a: "Vous pouvez consulter les annonces sans vérification. Cependant, pour envoyer ou transporter un colis et recevoir des paiements, la vérification d'identité est requise.",
+        a: 'Vous pouvez consulter certaines pages sans vérification. En revanche, publier un trajet, envoyer une demande de colis ou finaliser une mise en relation nécessite un profil vérifié.',
       },
     ],
   },
@@ -48,15 +48,15 @@ const faqCategories = [
       },
       {
         q: 'Comment préparer mon colis ?',
-        a: 'Votre colis doit être correctement emballé, étanche si nécessaire, et ne pas dépasser le poids et les dimensions convenus avec le voyageur. Joignez une description claire du contenu.',
+        a: "Votre colis doit être correctement emballé, facile à identifier et conforme à la déclaration faite dans Sendbox. Indiquez clairement le contenu, la catégorie, le poids, les dimensions et la valeur estimée afin que le voyageur sache ce qu'il accepte.",
       },
       {
         q: 'Quels articles sont interdits ?',
-        a: 'Sont interdits : les produits illicites, les médicaments sur ordonnance, les liquides en grande quantité, les matières dangereuses ou inflammables, les objets de valeur non déclarés, ainsi que tout article soumis à des restrictions douanières.',
+        a: 'Sont interdits : produits illicites, armes, munitions, explosifs, contrefaçons, espèces, documents falsifiés, matières dangereuses, inflammables ou radioactives, ainsi que tout objet interdit ou soumis à restriction par les lois du pays de départ ou d’arrivée.',
       },
       {
         q: 'Que faire si mon colis est endommagé ou perdu ?',
-        a: "Contactez immédiatement le voyageur via la messagerie. Si aucune solution n'est trouvée, ouvrez une demande d'assistance depuis cet espace. Notre équipe examinera la situation et vous guidera.",
+        a: "Contactez immédiatement le voyageur via la messagerie et rassemblez les preuves disponibles : déclaration colis, échanges, photos de remise ou de livraison. Si aucune solution n'est trouvée, ouvrez un litige depuis le détail du colis ou une demande d'assistance. En V1, Sendbox ne vend pas d'assurance et ne promet pas d'indemnisation automatique.",
       },
     ],
   },
@@ -65,15 +65,15 @@ const faqCategories = [
     questions: [
       {
         q: 'Comment accepter une demande de transport ?',
-        a: 'Publiez votre trajet dans la section Voyages en indiquant votre destination, vos dates et la capacité disponible. Les expéditeurs peuvent alors vous contacter. Vous pouvez accepter ou refuser chaque demande.',
+        a: 'Publiez votre trajet dans la section Annonces en indiquant votre destination, vos dates, votre capacité disponible et votre prix indicatif. Les expéditeurs peuvent vous envoyer une demande. Avant acceptation, relisez la déclaration colis et refusez si le contenu est flou, risqué ou incompatible avec votre trajet.',
       },
       {
         q: 'Quelles règles dois-je respecter en tant que voyageur ?',
-        a: "En acceptant de transporter un colis, vous vous engagez à respecter les lois douanières du pays de destination, à ne transporter que des articles légaux et déclarés, et à remettre le colis dans l'état convenu.",
+        a: 'En acceptant de transporter un colis, vous vous engagez à transporter uniquement des articles légaux et déclarés, à respecter les règles douanières applicables et à refuser tout colis suspect ou différent de sa déclaration.',
       },
       {
         q: 'Comment confirmer une livraison ?',
-        a: 'Une fois le colis remis au destinataire, marquez la livraison comme effectuée depuis votre espace Colis. Le destinataire devra confirmer la réception pour déclencher le paiement.',
+        a: 'Une fois le colis remis au destinataire, utilisez le parcours prévu dans le détail du colis pour ajouter les preuves attendues et confirmer la livraison. Cette confirmation sert à tracer la transaction et à permettre les avis, pas à déclencher un reversement voyageur par Sendbox en V1.',
       },
     ],
   },
@@ -82,15 +82,19 @@ const faqCategories = [
     questions: [
       {
         q: 'Comment fonctionnent les paiements ?',
-        a: "L'expéditeur règle le montant convenu au moment de la confirmation de la demande. Les fonds sont conservés en séquestre par Sendbox jusqu'à la confirmation de livraison par le destinataire.",
+        a: "En V1, l'expéditeur paie uniquement les frais Sendbox de mise en relation, fixés à 2,90 € et facturés en EUR après confirmation mutuelle. Le prix du transport se négocie et se règle directement entre l'expéditeur et le voyageur, hors plateforme.",
       },
       {
         q: 'Quand est-ce que je suis payé en tant que voyageur ?',
-        a: 'Le paiement est libéré dès que le destinataire confirme la réception du colis. Les fonds sont ensuite virés sur votre compte bancaire sous 3 à 5 jours ouvrés.',
+        a: "Sendbox ne reverse pas le prix du transport au voyageur en V1. Le voyageur et l'expéditeur conviennent directement du montant et du moyen de règlement du transport, hors plateforme.",
       },
       {
         q: 'Que faire en cas de problème de paiement ?',
-        a: "Si vous rencontrez un problème avec un paiement (retard, montant incorrect, etc.), utilisez l'onglet Demande d'assistance ci-dessus en sélectionnant le type « Problème de paiement ». Notre équipe vous répondra dans les plus brefs délais.",
+        a: "Si le problème concerne les frais Sendbox de mise en relation, utilisez l'onglet Demande d'assistance en sélectionnant le type « Problème de paiement ». Si le problème concerne le règlement du transport entre utilisateurs, ouvrez un litige ou contactez l'autre partie via la messagerie : Sendbox ne détient pas ces fonds en V1.",
+      },
+      {
+        q: 'Les frais sont-ils affichés en FCFA ou XOF ?',
+        a: 'Non. La V1 garde un tarif simple en EUR : 2,90 € par mise en relation. Si votre carte est rattachée à une autre devise, votre banque peut appliquer sa conversion et ses frais éventuels.',
       },
     ],
   },
@@ -99,15 +103,15 @@ const faqCategories = [
     questions: [
       {
         q: 'Comment les utilisateurs sont-ils vérifiés ?',
-        a: "Chaque utilisateur peut effectuer une vérification d'identité (KYC) en soumettant une pièce d'identité officielle. Les profils vérifiés affichent un badge de confiance visible par tous les membres.",
+        a: "Chaque utilisateur doit effectuer une vérification d'identité pour accéder aux mises en relation. Les profils vérifiés peuvent ensuite publier, demander ou accepter une mise en relation selon leur rôle.",
       },
       {
         q: 'Comment signaler un comportement suspect ?',
-        a: "Utilisez l'onglet Demande d'assistance ci-dessus en sélectionnant le type « Signalement ». Décrivez la situation de manière détaillée. Toutes les signalements sont traités de façon confidentielle.",
+        a: "Utilisez l'onglet Demande d'assistance en sélectionnant « Signalement », ou ouvrez un litige depuis le détail du colis si une réservation est concernée. Décrivez les faits précisément et ajoutez les preuves disponibles.",
       },
       {
         q: 'Mes données personnelles sont-elles protégées ?',
-        a: 'Oui. Sendbox traite vos données conformément au RGPD. Vos coordonnées ne sont jamais partagées publiquement. Pour en savoir plus, consultez notre Politique de confidentialité.',
+        a: 'Sendbox traite vos données conformément au RGPD. Vos coordonnées ne sont jamais affichées publiquement. Pour en savoir plus, consultez notre Politique de confidentialité.',
       },
     ],
   },
@@ -122,7 +126,7 @@ const supportTypes = [
   },
   {
     value: 'paiement',
-    label: 'Problème de paiement',
+    label: 'Problème de frais Sendbox',
     feedbackType: 'bug' as const,
   },
   {
@@ -137,7 +141,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false)
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm font-medium hover:bg-muted/60 transition-colors">
+      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-muted/60">
         <span>{q}</span>
         <IconChevronDown
           className={cn(
@@ -147,7 +151,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         />
       </CollapsibleTrigger>
       <CollapsibleContent className="px-4 pb-4 pt-1">
-        <p className="text-sm text-muted-foreground leading-relaxed">{a}</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">{a}</p>
       </CollapsibleContent>
     </Collapsible>
   )
@@ -159,7 +163,7 @@ function FaqTab() {
       {faqCategories.map(category => (
         <div
           key={category.title}
-          className="rounded-xl border bg-card overflow-hidden"
+          className="overflow-hidden rounded-xl border bg-card"
         >
           <div className="border-b bg-primary/8 px-4 py-3">
             <h2 className="text-sm font-semibold text-primary">
@@ -235,7 +239,7 @@ function AssistanceTab() {
               <div
                 key={t.value}
                 className={cn(
-                  'flex items-center gap-2.5 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors',
+                  'flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2.5 transition-colors',
                   type === t.value
                     ? 'border-primary bg-primary/5'
                     : 'hover:bg-muted/40'
