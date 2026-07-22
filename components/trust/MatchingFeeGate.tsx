@@ -21,7 +21,7 @@ export function MatchingFeeGate({
 }: {
   clientSecret: string
   amountCents: number
-  onSuccess: () => void
+  onSuccess: () => void | Promise<void>
 }) {
   return (
     <Elements stripe={stripePromise} options={{ clientSecret, locale: 'fr' }}>
@@ -35,11 +35,12 @@ function FeeForm({
   onSuccess,
 }: {
   amountCents: number
-  onSuccess: () => void
+  onSuccess: () => void | Promise<void>
 }) {
   const stripe = useStripe()
   const elements = useElements()
   const [loading, setLoading] = useState(false)
+  const [isFinalizing, setIsFinalizing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handlePay = async () => {
@@ -60,7 +61,13 @@ function FeeForm({
       return
     }
 
-    onSuccess()
+    setIsFinalizing(true)
+    try {
+      await onSuccess()
+    } finally {
+      setIsFinalizing(false)
+      setLoading(false)
+    }
   }
 
   const euros = (amountCents / 100).toFixed(2).replace('.', ',')
@@ -87,10 +94,14 @@ function FeeForm({
       <Button
         type="button"
         onClick={handlePay}
-        disabled={loading || !stripe}
-        aria-busy={loading}
+        disabled={loading || isFinalizing || !stripe}
+        aria-busy={loading || isFinalizing}
       >
-        {loading ? 'Paiement en cours...' : `Payer ${euros} € et confirmer`}
+        {isFinalizing
+          ? 'Validation de la mise en relation...'
+          : loading
+            ? 'Paiement en cours...'
+            : `Payer ${euros} € et confirmer`}
       </Button>
 
       <p className="text-center text-xs text-muted-foreground">
