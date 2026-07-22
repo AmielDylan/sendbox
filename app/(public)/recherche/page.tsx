@@ -140,9 +140,9 @@ export default function SearchPage() {
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-8 sm:px-16 lg:px-24 space-y-8 py-10 sm:py-12">
+      <div className="container mx-auto space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-10 lg:px-24">
         {/* Simplified Header Section */}
-        <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-background via-muted/30 to-primary/5 px-6 py-8 sm:px-10">
+        <section className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-background via-muted/30 to-primary/5 px-4 py-6 sm:rounded-2xl sm:px-10 sm:py-8">
           <div className="absolute inset-0 bg-map-grid opacity-[0.03]" />
           <div className="absolute -top-20 -right-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
 
@@ -168,7 +168,7 @@ export default function SearchPage() {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
+        <div className="grid grid-cols-1 gap-5 sm:gap-8 lg:grid-cols-[280px_1fr]">
           <aside className="space-y-6 lg:sticky lg:top-24 h-fit">
             <Card className="rounded-xl border-border/60 shadow-none">
               <CardHeader className="pb-4">
@@ -351,7 +351,7 @@ export default function SearchPage() {
           </aside>
 
           <section className="space-y-6">
-            <div className="rounded-xl border bg-card/40 p-5 px-6">
+            <div className="rounded-xl border bg-card/40 p-4 sm:p-5 sm:px-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <h2 className="text-lg font-semibold tracking-tight">
@@ -362,14 +362,14 @@ export default function SearchPage() {
                   </p>
                 </div>
                 {hasSearched && activeFilters.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     {activeFilters.map(item => (
                       <Badge
                         key={item}
                         variant="secondary"
-                        className="rounded-md border border-border/50 bg-background/50 px-2 py-0.5 text-xs font-normal text-muted-foreground"
+                        className="max-w-full rounded-md border border-border/50 bg-background/50 px-2 py-0.5 text-xs font-normal text-muted-foreground"
                       >
-                        {item}
+                        <span className="min-w-0 break-words">{item}</span>
                       </Badge>
                     ))}
                   </div>

@@ -7,6 +7,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getAdminTransactions } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -17,7 +18,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { IconLoader2, IconDownload } from '@tabler/icons-react'
+import { IconLoader2, IconDownload, IconReceipt } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { PageHeader } from '@/components/ui/page-header'
@@ -111,22 +112,41 @@ export default function AdminTransactionsPage() {
           <CardTitle>Transactions ({transactions?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          {transactions?.length === 0 ? (
+            <EmptyState
+              icon={<IconReceipt className="h-7 w-7" />}
+              title="Aucune transaction"
+              description="Les frais de mise en relation confirmés apparaîtront ici pour le suivi financier V1."
+              className="my-2"
+            />
+          ) : (
+            <>
+              <div className="grid gap-3 md:hidden">
                 {transactions?.map((transaction: any) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>{getTypeBadge(transaction.type)}</TableCell>
-                    <TableCell>{transaction.amount || 0} EUR</TableCell>
-                    <TableCell>
+                  <div
+                    key={transaction.id}
+                    className="space-y-3 rounded-lg border p-4 text-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium">
+                          {(transaction.amount || 0).toFixed
+                            ? transaction.amount.toFixed(2)
+                            : transaction.amount || 0}{' '}
+                          EUR
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {format(new Date(transaction.created_at), 'PP', {
+                            locale: fr,
+                          })}
+                        </p>
+                      </div>
+                      {getTypeBadge(transaction.type)}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        Statut
+                      </span>
                       <Badge
                         variant={
                           transaction.status === 'completed'
@@ -136,17 +156,49 @@ export default function AdminTransactionsPage() {
                       >
                         {transaction.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(transaction.created_at), 'PP', {
-                        locale: fr,
-                      })}
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Montant</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Date</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions?.map((transaction: any) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>{getTypeBadge(transaction.type)}</TableCell>
+                        <TableCell>{transaction.amount || 0} EUR</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              transaction.status === 'completed'
+                                ? 'default'
+                                : 'secondary'
+                            }
+                          >
+                            {transaction.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(transaction.created_at), 'PP', {
+                            locale: fr,
+                          })}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
