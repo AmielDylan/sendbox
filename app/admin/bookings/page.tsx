@@ -270,8 +270,11 @@ export default function AdminBookingsPage() {
       />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Réservations ({bookings?.length || 0})</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <CardTitle>Réservations</CardTitle>
+          <Badge variant="outline" className="font-normal">
+            {bookings?.length || 0}
+          </Badge>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:hidden">

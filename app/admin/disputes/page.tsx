@@ -67,8 +67,11 @@ export default function AdminDisputesPage() {
       />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Litiges ({disputes?.length || 0})</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <CardTitle>Litiges</CardTitle>
+          <Badge variant="outline" className="font-normal">
+            {disputes?.length || 0}
+          </Badge>
         </CardHeader>
         <CardContent>
           {disputes?.length === 0 ? (

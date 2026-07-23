@@ -108,8 +108,11 @@ export default function AdminTransactionsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Transactions ({transactions?.length || 0})</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <CardTitle>Transactions</CardTitle>
+          <Badge variant="outline" className="font-normal">
+            {transactions?.length || 0}
+          </Badge>
         </CardHeader>
         <CardContent>
           {transactions?.length === 0 ? (
