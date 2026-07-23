@@ -144,8 +144,11 @@ export default function AdminAnnouncementsPage() {
       />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Annonces ({announcements?.length || 0})</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <CardTitle>Annonces</CardTitle>
+          <Badge variant="outline" className="font-normal">
+            {announcements?.length || 0}
+          </Badge>
         </CardHeader>
         <CardContent>
           {/* Mobile — cards */}
