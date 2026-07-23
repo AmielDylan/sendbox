@@ -170,7 +170,7 @@ export function HomePageContent() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[86%_top] sm:object-top"
+          className="translate-y-5 object-cover object-[86%_top] sm:translate-y-0 sm:object-top"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/42 to-black/12 sm:from-black/80 sm:via-black/48 sm:to-black/10" />
 
