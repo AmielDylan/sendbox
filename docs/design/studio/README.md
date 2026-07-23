@@ -59,6 +59,7 @@ Toute proposition visuelle doit éviter de promettre :
 - `v1-creative-brief.md` : contexte et direction créative.
 - `v1-ui-audit.md` : audit de l'interface actuelle et corrections prioritaires.
 - `v1-visual-direction.md` : direction artistique, tokens et règles de composants.
+- `v1-landing-visual-proposals.md` : propositions d'images pour les sections de landing.
 - `v1-image-prompts.md` : prompts de génération image.
 - `v1-asset-manifest.md` : inventaire des assets attendus.
 - `v1-ui-review-template.md` : grille d'audit UI pour les propositions.

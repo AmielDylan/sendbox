@@ -13,13 +13,6 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -194,48 +187,66 @@ export function HomePageContent() {
         </div>
       </section>
       {/* Features */}
-      <section className="relative bg-muted/30 py-24 sm:py-32">
+      <section className="relative bg-muted/30 py-20 sm:py-28">
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
 
         <div className="container-wide relative">
-          <div className="mb-14 text-center space-y-4 animate-fade-in-up">
-            <Badge
-              variant="outline"
-              className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
-            >
-              Nos engagements
-            </Badge>
-            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-              Pourquoi <span className="text-primary">Sendbox</span> ?
-            </h2>
-            <p className="mx-auto max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-              Une solution simple, sûre et lisible pour organiser une mise en
-              relation claire entre expéditeurs et voyageurs.
-            </p>
-          </div>
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] lg:gap-16">
+            <div className="animate-fade-in-up">
+              <div className="relative mx-auto aspect-[4/3] max-w-xl overflow-hidden rounded-lg border border-border/60 bg-background lg:mx-0">
+                <Image
+                  src="/images/landing/commitments-evidence.webp"
+                  alt="Colis déclaré, identité, trajet, preuve photo et avis"
+                  fill
+                  sizes="(min-width: 1024px) 52vw, 92vw"
+                  className="object-cover"
+                />
+              </div>
+            </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {features.map((feature, i) => {
-              const Icon = feature.icon
-
-              return (
-                <Card
-                  key={feature.title}
-                  className="bg-background transition-colors hover:border-border animate-fade-in-up"
-                  style={{ animationDelay: `${i * 100}ms` }}
+            <div className="space-y-8 animate-fade-in-up">
+              <div className="space-y-4">
+                <Badge
+                  variant="outline"
+                  className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
                 >
-                  <div className="space-y-4 p-6">
-                    <Icon className="h-4 w-4 text-primary/70" />
-                    <div className="space-y-2">
-                      <h3 className="font-semibold">{feature.title}</h3>
-                      <p className="text-sm leading-6 text-muted-foreground">
-                        {feature.description}
-                      </p>
+                  Nos engagements
+                </Badge>
+                <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+                  La confiance repose sur des faits.
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+                  Chaque mise en relation s’appuie sur des informations
+                  vérifiables, partagées clairement entre expéditeur et
+                  voyageur.
+                </p>
+              </div>
+
+              <div className="divide-y divide-border/70 border-y border-border/70">
+                {features.map((feature, i) => {
+                  const Icon = feature.icon
+
+                  return (
+                    <div
+                      key={feature.title}
+                      className="grid grid-cols-[1.5rem_1fr] gap-4 py-5 animate-fade-in-up"
+                      style={{ animationDelay: `${i * 100}ms` }}
+                    >
+                      <Icon
+                        aria-hidden="true"
+                        className="mt-0.5 h-5 w-5 text-primary"
+                      />
+                      <div className="space-y-1.5">
+                        <h3 className="font-semibold">{feature.title}</h3>
+                        <p className="text-sm leading-6 text-muted-foreground">
+                          {feature.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              )
-            })}
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -334,43 +345,59 @@ export function HomePageContent() {
       </section>
 
       {/* Pour qui */}
-      <section className="bg-muted/30 py-24 sm:py-32">
-        <div className="container-wide space-y-12">
-          <div className="space-y-4 animate-fade-in-up">
-            <Badge
-              variant="outline"
-              className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
-            >
-              Utilisateurs
-            </Badge>
-            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-              Pour qui ?
-            </h2>
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-              Sendbox accompagne les expéditeurs et les voyageurs qui veulent
-              organiser une mise en relation claire.
-            </p>
-          </div>
+      <section className="bg-muted/30 py-20 sm:py-28">
+        <div className="container-wide">
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(22rem,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
+            <div className="space-y-8 animate-fade-in-up">
+              <div className="space-y-4">
+                <Badge
+                  variant="outline"
+                  className="px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                >
+                  Utilisateurs
+                </Badge>
+                <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+                  Un cadre commun pour avancer ensemble.
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+                  Expéditeurs et voyageurs disposent des mêmes informations pour
+                  organiser une mise en relation claire.
+                </p>
+              </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <AudienceCard
-              title="Expéditeurs"
-              benefits={senderBenefits}
-              cta="Chercher un voyageur"
-              href="/recherche"
-            />
-            <AudienceCard
-              title="Voyageurs"
-              benefits={travelerBenefits}
-              cta="Publier mon trajet"
-              href="/dashboard/annonces/new"
-            />
-          </div>
+              <div className="divide-y divide-border/70 border-y border-border/70">
+                <AudienceSection
+                  title="Expéditeurs"
+                  benefits={senderBenefits}
+                  cta="Chercher un voyageur"
+                  href="/recherche"
+                />
+                <AudienceSection
+                  title="Voyageurs"
+                  benefits={travelerBenefits}
+                  cta="Publier mon trajet"
+                  href="/dashboard/annonces/new"
+                />
+              </div>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Le règlement du transport se fait directement entre expéditeur et
-            voyageur, hors plateforme.
-          </p>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Le règlement du transport se fait directement entre expéditeur
+                et voyageur, hors plateforme.
+              </p>
+            </div>
+
+            <div className="animate-fade-in-up">
+              <div className="relative mx-auto aspect-[8/5] max-w-2xl overflow-hidden rounded-lg border border-border/60 bg-background lg:mx-0">
+                <Image
+                  src="/images/landing/trust-human.webp"
+                  alt="Deux utilisateurs consultent ensemble les informations d’un colis"
+                  fill
+                  sizes="(min-width: 1024px) 56vw, 92vw"
+                  className="object-cover object-center"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -455,7 +482,7 @@ export function HomePageContent() {
   )
 }
 
-function AudienceCard({
+function AudienceSection({
   title,
   benefits,
   cta,
@@ -467,12 +494,10 @@ function AudienceCard({
   href: string
 }) {
   return (
-    <Card className="bg-background transition-colors hover:border-border">
-      <CardHeader>
-        <CardTitle className="text-xl">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ul className="flex flex-col gap-3">
+    <div className="space-y-4 py-6">
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:gap-8">
+        <ul className="flex flex-1 flex-col gap-2.5">
           {benefits.map((benefit, i) => (
             <li key={i} className="flex gap-3 text-sm leading-6">
               <IconCheck
@@ -483,12 +508,10 @@ function AudienceCard({
             </li>
           ))}
         </ul>
-      </CardContent>
-      <CardFooter>
-        <Button asChild variant="outline" size="sm">
+        <Button asChild variant="outline" className="shrink-0">
           <Link href={href}>{cta}</Link>
         </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   )
 }
