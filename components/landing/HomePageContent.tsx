@@ -192,7 +192,7 @@ export function HomePageContent() {
 
         <div className="container-wide relative">
           <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] lg:gap-16">
-            <div className="animate-fade-in-up">
+            <div className="hidden animate-fade-in-up lg:block">
               <div className="relative mx-auto aspect-[4/3] max-w-xl overflow-hidden rounded-lg border border-border/60 bg-background lg:mx-0">
                 <Image
                   src="/images/landing/commitments-evidence.webp"
