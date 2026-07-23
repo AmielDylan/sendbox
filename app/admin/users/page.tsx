@@ -137,8 +137,11 @@ export default function AdminUsersPage() {
       />
 
       <Card>
-        <CardHeader>
-          <CardTitle>Utilisateurs ({users?.length || 0})</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <CardTitle>Utilisateurs</CardTitle>
+          <Badge variant="outline" className="font-normal">
+            {users?.length || 0}
+          </Badge>
         </CardHeader>
         <CardContent>
           {/* Mobile — cards */}

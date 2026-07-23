@@ -298,6 +298,12 @@ export default function MyBookingsPage() {
         {bookings.length === 0 ? (
           <EmptyState
             icon={<IconPackage className="h-7 w-7" />}
+            imageSrc={
+              activeTab === 'all'
+                ? '/images/studio/v1/empty-packages-01.png'
+                : undefined
+            }
+            imageAlt=""
             title={
               activeTab === 'all'
                 ? 'Aucun colis pour le moment'

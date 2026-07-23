@@ -100,7 +100,12 @@ export default async function AdminKYCPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Utilisateurs ({allProfiles.length})</CardTitle>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle>Utilisateurs</CardTitle>
+            <Badge variant="outline" className="font-normal">
+              {allProfiles.length}
+            </Badge>
+          </div>
           <CardDescription>
             Liste des utilisateurs avec leur statut de vérification KYC
           </CardDescription>

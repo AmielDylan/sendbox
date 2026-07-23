@@ -224,6 +224,12 @@ export default function MyAnnouncementsPage() {
             ) : announcements.length === 0 ? (
               <EmptyState
                 icon={<IconPackage className="h-7 w-7" />}
+                imageSrc={
+                  activeTab === 'all'
+                    ? '/images/studio/v1/empty-trips-01.png'
+                    : undefined
+                }
+                imageAlt=""
                 title={emptyTitle}
                 description={emptyDescription}
                 action={
