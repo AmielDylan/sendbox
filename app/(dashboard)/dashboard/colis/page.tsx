@@ -298,12 +298,6 @@ export default function MyBookingsPage() {
         {bookings.length === 0 ? (
           <EmptyState
             icon={<IconPackage className="h-7 w-7" />}
-            imageSrc={
-              activeTab === 'all'
-                ? '/images/studio/v1/empty-packages-01.png'
-                : undefined
-            }
-            imageAlt=""
             title={
               activeTab === 'all'
                 ? 'Aucun colis pour le moment'
@@ -311,8 +305,8 @@ export default function MyBookingsPage() {
             }
             description={
               activeTab === 'all'
-                ? 'Recherchez un trajet, envoyez une demande avec une déclaration colis claire, puis suivez ici chaque étape : acceptation, paiement, dépôt et livraison.'
-                : 'Aucun colis ne correspond à ce filtre. Les réservations changent de statut au fil des confirmations, paiements et preuves.'
+                ? 'Trouvez un trajet, décrivez clairement votre colis, puis suivez ici chaque étape jusqu’à la livraison.'
+                : 'Aucun colis ne correspond à ce filtre. Essayez un autre statut pour retrouver vos demandes en cours ou terminées.'
             }
             action={
               activeTab === 'all' ? (

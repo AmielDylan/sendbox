@@ -90,12 +90,12 @@ export default function MyAnnouncementsPage() {
           : 'Aucun voyage enregistré'
   const emptyDescription =
     activeTab === 'all'
-      ? 'Ajoutez votre prochain trajet pour recevoir des demandes compatibles avec votre destination, votre date et votre capacité disponible.'
+      ? 'Indiquez votre destination, votre date et la place disponible. Les expéditeurs pourront ensuite vous contacter avec une déclaration colis claire.'
       : activeTab === 'draft'
-        ? 'Les trajets à vérifier ou à compléter apparaîtront ici avant publication.'
+        ? 'Les trajets à compléter apparaîtront ici avant publication.'
         : activeTab === 'completed'
           ? 'Les trajets clôturés resteront disponibles ici pour garder une trace de votre activité.'
-          : 'Aucun trajet publié n’est disponible pour recevoir des demandes en ce moment.'
+          : 'Aucun trajet publié ne reçoit de demandes en ce moment.'
 
   // Gérer le rafraîchissement après création (Safari)
   useEffect(() => {
@@ -224,12 +224,6 @@ export default function MyAnnouncementsPage() {
             ) : announcements.length === 0 ? (
               <EmptyState
                 icon={<IconPackage className="h-7 w-7" />}
-                imageSrc={
-                  activeTab === 'all'
-                    ? '/images/studio/v1/empty-trips-01.png'
-                    : undefined
-                }
-                imageAlt=""
                 title={emptyTitle}
                 description={emptyDescription}
                 action={
