@@ -531,7 +531,10 @@ function MessagesPageContent() {
         <TabsContent value="chat">
           <div
             className="w-full border flex flex-col overflow-hidden bg-background"
-            style={{ height: 'calc(100dvh - 280px)', minHeight: '500px' }}
+            style={{
+              height: 'min(680px, calc(100dvh - 220px))',
+              minHeight: '420px',
+            }}
           >
             {/* Indicateur de connexion */}
             <div className="border-b px-4 py-2">
@@ -581,18 +584,13 @@ function MessagesPageContent() {
                     }}
                   />
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                    <div className="text-center p-6">
-                      <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <IconMessageCircle className="h-8 w-8 text-muted-foreground/50" />
-                      </div>
-                      <h3 className="font-semibold text-lg mb-1">
-                        Vos messages
-                      </h3>
-                      <p className="max-w-xs text-sm">
-                        Sélectionnez une conversation pour commencer
-                      </p>
-                    </div>
+                  <div className="flex flex-1 items-center justify-center p-4">
+                    <EmptyState
+                      icon={<IconMessageCircle className="h-7 w-7" />}
+                      title="Vos messages"
+                      description="Sélectionnez une conversation pour échanger autour d’un colis, d’un trajet ou d’une remise."
+                      className="w-full max-w-md border-0 bg-transparent"
+                    />
                   </div>
                 )}
               </div>
