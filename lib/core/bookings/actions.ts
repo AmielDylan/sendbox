@@ -172,7 +172,7 @@ export async function createBooking(
     if (profile.kyc_status === 'pending') {
       errorMessage = 'Vérification en cours'
       errorDetails =
-        "Votre vérification d'identité est en cours d'examen. Vous pourrez créer des réservations une fois celle-ci approuvée."
+        "Votre vérification d'identité est en cours d'examen. Vous pourrez créer des réservations une fois celle-ci approuvée. Délai indicatif : 24 à 48 h."
     } else if (profile.kyc_status === 'rejected') {
       errorMessage = 'Vérification refusée'
       errorDetails = profile.kyc_rejection_reason
