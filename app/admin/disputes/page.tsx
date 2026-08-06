@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { SectionCount } from '@/components/ui/section-count'
 import {
   IconExternalLink,
   IconLoader2,
@@ -55,6 +56,8 @@ export default function AdminDisputesPage() {
     )
   }
 
+  const disputeCount = disputes?.length ?? 0
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -69,12 +72,10 @@ export default function AdminDisputesPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Litiges</CardTitle>
-          <Badge variant="outline" className="font-normal">
-            {disputes?.length || 0}
-          </Badge>
+          <SectionCount count={disputeCount} singular="litige" />
         </CardHeader>
         <CardContent>
-          {disputes?.length === 0 ? (
+          {disputeCount === 0 ? (
             <EmptyState
               icon={<IconShieldCheck className="h-7 w-7" />}
               title="Aucun litige ouvert"

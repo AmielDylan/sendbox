@@ -8,6 +8,8 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { banUser, updateUserRole } from '@/lib/core/admin/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
+import { SectionCount } from '@/components/ui/section-count'
 import {
   Table,
   TableBody,
@@ -41,6 +43,7 @@ import {
   IconBan,
   IconLockOpen,
   IconLoader2,
+  IconUsers,
 } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -125,6 +128,8 @@ export default function AdminUsersPage() {
     )
   }
 
+  const userCount = users?.length ?? 0
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -139,209 +144,223 @@ export default function AdminUsersPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Utilisateurs</CardTitle>
-          <Badge variant="outline" className="font-normal">
-            {users?.length || 0}
-          </Badge>
+          <SectionCount count={userCount} singular="utilisateur" />
         </CardHeader>
         <CardContent>
-          {/* Mobile — cards */}
-          <div className="grid gap-3 md:hidden">
-            {users?.map((user: any) => {
-              const isCurrentUser = currentUser?.id === user.id
-              return (
-                <div
-                  key={user.id}
-                  className="rounded-lg border p-4 space-y-3 text-sm"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium">
-                        {user.firstname} {user.lastname}
-                        {isCurrentUser && (
-                          <span className="ml-1 text-xs text-muted-foreground">
-                            (vous)
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {user.email || 'N/A'}
-                      </p>
-                    </div>
-                    <div className="flex gap-1 flex-wrap justify-end">
-                      <Badge
-                        variant={user.role === 'admin' ? 'default' : 'outline'}
-                      >
-                        {user.role}
-                      </Badge>
-                      {user.is_banned ? (
-                        <Badge variant="destructive">Banni</Badge>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="border-green-400 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600"
-                        >
-                          Actif
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Inscrit le{' '}
-                    {format(new Date(user.created_at), 'PP', { locale: fr })}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isCurrentUser}
-                      className="flex-1"
-                      onClick={() => {
-                        setSelectedUser(user)
-                        setNewRole(user.role)
-                        setRoleDialogOpen(true)
-                      }}
-                    >
-                      <IconUserShield className="h-4 w-4 mr-1" />
-                      Rôle
-                    </Button>
-                    {user.is_banned ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleBan(user.id, false)}
-                      >
-                        <IconLockOpen className="h-4 w-4 mr-1" />
-                        Débannir
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1"
-                        disabled={isCurrentUser}
-                        onClick={() => {
-                          setSelectedUser(user)
-                          setBanDialogOpen(true)
-                        }}
-                      >
-                        <IconBan className="h-4 w-4 mr-1" />
-                        Bannir
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Desktop — table */}
-          <div className="hidden md:block overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Inscription</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          {userCount === 0 && (
+            <EmptyState
+              icon={<IconUsers className="h-7 w-7" />}
+              title="Aucun utilisateur"
+              description="Les comptes inscrits apparaîtront ici avec leurs rôles et statuts de modération."
+              className="my-2"
+            />
+          )}
+          {userCount > 0 && (
+            <>
+              {/* Mobile — cards */}
+              <div className="grid gap-3 md:hidden">
                 {users?.map((user: any) => {
                   const isCurrentUser = currentUser?.id === user.id
-
                   return (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        {user.firstname} {user.lastname}
-                        {isCurrentUser && (
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            Vous
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{user.email || 'N/A'}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            user.role === 'admin' ? 'default' : 'outline'
-                          }
-                        >
-                          {user.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {user.is_banned ? (
-                          <Badge variant="destructive">Banni</Badge>
-                        ) : (
+                    <div
+                      key={user.id}
+                      className="rounded-lg border p-4 space-y-3 text-sm"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-medium">
+                            {user.firstname} {user.lastname}
+                            {isCurrentUser && (
+                              <span className="ml-1 text-xs text-muted-foreground">
+                                (vous)
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.email || 'N/A'}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 flex-wrap justify-end">
                           <Badge
-                            variant="outline"
-                            className="border-green-400 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600"
+                            variant={
+                              user.role === 'admin' ? 'default' : 'outline'
+                            }
                           >
-                            Actif
+                            {user.role}
                           </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
+                          {user.is_banned ? (
+                            <Badge variant="destructive">Banni</Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="border-green-400 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600"
+                            >
+                              Actif
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Inscrit le{' '}
                         {format(new Date(user.created_at), 'PP', {
                           locale: fr,
                         })}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isCurrentUser}
+                          className="flex-1"
+                          onClick={() => {
+                            setSelectedUser(user)
+                            setNewRole(user.role)
+                            setRoleDialogOpen(true)
+                          }}
+                        >
+                          <IconUserShield className="h-4 w-4 mr-1" />
+                          Rôle
+                        </Button>
+                        {user.is_banned ? (
                           <Button
                             variant="outline"
                             size="sm"
+                            className="flex-1"
+                            onClick={() => handleBan(user.id, false)}
+                          >
+                            <IconLockOpen className="h-4 w-4 mr-1" />
+                            Débannir
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="flex-1"
                             disabled={isCurrentUser}
                             onClick={() => {
                               setSelectedUser(user)
-                              setNewRole(user.role)
-                              setRoleDialogOpen(true)
+                              setBanDialogOpen(true)
                             }}
-                            title={
-                              isCurrentUser
-                                ? 'Vous ne pouvez pas modifier votre propre rôle'
-                                : 'Modifier le rôle'
-                            }
                           >
-                            <IconUserShield className="h-4 w-4" />
+                            <IconBan className="h-4 w-4 mr-1" />
+                            Bannir
                           </Button>
-                          {user.is_banned ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleBan(user.id, false)}
-                            >
-                              <IconLockOpen className="h-4 w-4" />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              disabled={isCurrentUser}
-                              onClick={() => {
-                                setSelectedUser(user)
-                                setBanDialogOpen(true)
-                              }}
-                              title={
-                                isCurrentUser
-                                  ? 'Vous ne pouvez pas vous bannir vous-même'
-                                  : "Bannir l'utilisateur"
-                              }
-                            >
-                              <IconBan className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                        )}
+                      </div>
+                    </div>
                   )
                 })}
-              </TableBody>
-            </Table>
-          </div>
+              </div>
+
+              {/* Desktop — table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nom</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Rôle</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Inscription</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users?.map((user: any) => {
+                      const isCurrentUser = currentUser?.id === user.id
+
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            {user.firstname} {user.lastname}
+                            {isCurrentUser && (
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                Vous
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>{user.email || 'N/A'}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                user.role === 'admin' ? 'default' : 'outline'
+                              }
+                            >
+                              {user.role}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {user.is_banned ? (
+                              <Badge variant="destructive">Banni</Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="border-green-400 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 dark:border-green-600"
+                              >
+                                Actif
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(user.created_at), 'PP', {
+                              locale: fr,
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={isCurrentUser}
+                                onClick={() => {
+                                  setSelectedUser(user)
+                                  setNewRole(user.role)
+                                  setRoleDialogOpen(true)
+                                }}
+                                title={
+                                  isCurrentUser
+                                    ? 'Vous ne pouvez pas modifier votre propre rôle'
+                                    : 'Modifier le rôle'
+                                }
+                              >
+                                <IconUserShield className="h-4 w-4" />
+                              </Button>
+                              {user.is_banned ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleBan(user.id, false)}
+                                >
+                                  <IconLockOpen className="h-4 w-4" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={isCurrentUser}
+                                  onClick={() => {
+                                    setSelectedUser(user)
+                                    setBanDialogOpen(true)
+                                  }}
+                                  title={
+                                    isCurrentUser
+                                      ? 'Vous ne pouvez pas vous bannir vous-même'
+                                      : "Bannir l'utilisateur"
+                                  }
+                                >
+                                  <IconBan className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
