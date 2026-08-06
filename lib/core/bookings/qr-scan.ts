@@ -333,7 +333,7 @@ export async function handleDeliveryScan(
       type: 'system_alert',
       title: 'Livraison confirmée',
       content:
-        'La livraison a été confirmée. Votre paiement sera traité prochainement.',
+        'La livraison a été confirmée. Le dossier de suivi est mis à jour.',
       booking_id: bookingId,
     })
 
@@ -341,9 +341,6 @@ export async function handleDeliveryScan(
 
     // Générer PDF preuve de livraison
     await generateDeliveryProof(bookingId)
-
-    // TODO: Déclencher paiement voyageur (Stripe Transfer)
-    // await processPayoutToTraveler(bookingId)
 
     revalidatePath(`/dashboard/colis/${bookingId}`)
     revalidatePath('/dashboard/colis')

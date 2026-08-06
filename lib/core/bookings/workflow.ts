@@ -392,7 +392,7 @@ export async function markAsInTransit(
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
         errorDetails =
-          "Votre vérification d'identité est en cours d'examen. Vous pourrez déposer des colis une fois celle-ci approuvée (24-48h)."
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez déposer des colis une fois celle-ci approuvée."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason
@@ -567,7 +567,7 @@ export async function markAsDelivered(
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
         errorDetails =
-          "Votre vérification d'identité est en cours d'examen. Vous pourrez livrer des colis une fois celle-ci approuvée (24-48h)."
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez livrer des colis une fois celle-ci approuvée."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason
@@ -731,7 +731,7 @@ export async function confirmDeliveryReceipt(bookingId: string) {
       if (profile.kyc_status === 'pending') {
         errorMessage = 'Vérification en cours'
         errorDetails =
-          "Votre vérification d'identité est en cours d'examen. Vous pourrez confirmer la réception une fois celle-ci approuvée (24-48h)."
+          "Votre vérification d'identité est en cours d'examen. Vous pourrez confirmer la réception une fois celle-ci approuvée."
       } else if (profile.kyc_status === 'rejected') {
         errorMessage = 'Vérification refusée'
         errorDetails = profile.kyc_rejection_reason

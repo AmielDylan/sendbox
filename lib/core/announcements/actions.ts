@@ -112,7 +112,7 @@ export async function createAnnouncement(formData: CreateAnnouncementInput) {
     if (profile.kyc_status === 'pending') {
       errorMessage = 'Vérification en cours'
       errorDetails =
-        "Votre vérification d'identité est en cours d'examen. Vous pourrez publier vos annonces une fois celle-ci approuvée (24-48h)."
+        "Votre vérification d'identité est en cours d'examen. Vous pourrez publier vos annonces une fois celle-ci approuvée."
     } else if (profile.kyc_status === 'rejected') {
       errorMessage = 'Vérification refusée'
       errorDetails = profile.kyc_rejection_reason
