@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/hooks/use-auth'
 import { IconArrowRight, IconCalendar, IconMapPin } from '@tabler/icons-react'
@@ -122,8 +123,8 @@ export function LatestAnnouncementsCarousel() {
 
   const title = useMemo(() => {
     return items.length > 0
-      ? 'Dernières annonces publiées'
-      : 'Aucune annonce pour le moment'
+      ? 'Trajets récemment publiés'
+      : 'Aucun trajet disponible pour le moment'
   }, [items.length])
 
   return (
@@ -131,31 +132,50 @@ export function LatestAnnouncementsCarousel() {
       <div className="container-wide space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="space-y-2">
-            <Badge
-              variant="outline"
-              className="text-xs uppercase tracking-widest font-semibold px-4 py-2"
-            >
-              Nouveautés
-            </Badge>
             <h3 className="font-display text-3xl sm:text-4xl font-bold">
               {title}
             </h3>
             <p className="text-sm text-muted-foreground max-w-2xl">
-              Explorez les trajets les plus récents et réservez en un clic.
+              Consultez les dates, la capacité disponible et le profil du
+              voyageur.
             </p>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground" aria-live="polite">
             {loading ? 'Chargement...' : `${items.length} annonces`}
           </div>
         </div>
 
-        <div
-          className="relative"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-          onFocus={() => setPaused(true)}
-          onBlur={() => setPaused(false)}
-        >
+        {!loading && items.length === 0 && (
+          <div className="flex min-h-[13rem] flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-background px-5 py-8 text-center">
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <IconMapPin className="h-5 w-5" />
+            </div>
+            <h4 className="text-lg font-semibold">
+              Aucun trajet disponible pour le moment.
+            </h4>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+              France-Bénin est le premier corridor actif. Revenez bientôt ou
+              publiez votre trajet pour recevoir des demandes.
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Button asChild>
+                <Link href="/dashboard/annonces/new">Publier un trajet</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/recherche">Explorer les trajets</Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {(loading || items.length > 0) && (
+          <div
+            className="relative"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onFocus={() => setPaused(true)}
+            onBlur={() => setPaused(false)}
+          >
           <div
             ref={containerRef}
             className={cn(
@@ -212,7 +232,7 @@ export function LatestAnnouncementsCarousel() {
 
                 return (
                   <Link key={item.id} href={href} className="snap-start">
-                    <Card className="group min-w-[240px] sm:min-w-[280px] border-2 border-border bg-background p-3 transition-all duration-300 hover:border-primary/60 hover:shadow-xl">
+                    <Card className="group min-w-[240px] sm:min-w-[280px] border border-border bg-background p-3 transition-colors duration-300 hover:border-primary/60">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Avatar className="h-7 w-7 text-xs">
                           <AvatarImage
@@ -264,7 +284,8 @@ export function LatestAnnouncementsCarousel() {
                 )
               })}
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </section>
   )
