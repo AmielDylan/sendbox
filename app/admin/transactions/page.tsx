@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { SectionCount } from '@/components/ui/section-count'
 import { IconLoader2, IconDownload, IconReceipt } from '@tabler/icons-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -36,6 +37,7 @@ export default function AdminTransactionsPage() {
 
   const totalRevenue =
     transactions?.reduce((sum: number, t: any) => sum + (t.amount || 0), 0) || 0
+  const transactionCount = transactions?.length ?? 0
 
   const handleExportCSV = () => {
     // TODO: Implémenter export CSV
@@ -100,9 +102,7 @@ export default function AdminTransactionsPage() {
             <CardTitle className="text-sm font-medium">Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {transactions?.length || 0}
-            </div>
+            <div className="text-2xl font-bold">{transactionCount}</div>
           </CardContent>
         </Card>
       </div>
@@ -110,12 +110,10 @@ export default function AdminTransactionsPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Transactions</CardTitle>
-          <Badge variant="outline" className="font-normal">
-            {transactions?.length || 0}
-          </Badge>
+          <SectionCount count={transactionCount} singular="transaction" />
         </CardHeader>
         <CardContent>
-          {transactions?.length === 0 ? (
+          {transactionCount === 0 ? (
             <EmptyState
               icon={<IconReceipt className="h-7 w-7" />}
               title="Aucune transaction"

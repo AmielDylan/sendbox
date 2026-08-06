@@ -21,10 +21,13 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { SectionCount } from '@/components/ui/section-count'
 import {
   IconAlertCircle,
   IconClock,
   IconShieldCheck,
+  IconUsers,
 } from '@tabler/icons-react'
 import { PageHeader } from '@/components/ui/page-header'
 
@@ -102,160 +105,167 @@ export default async function AdminKYCPage() {
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <CardTitle>Utilisateurs</CardTitle>
-            <Badge variant="outline" className="font-normal">
-              {allProfiles.length}
-            </Badge>
+            <SectionCount count={allProfiles.length} singular="utilisateur" />
           </div>
           <CardDescription>
             Liste des utilisateurs avec leur statut de vérification KYC
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Mobile — cards */}
-          <div className="grid gap-3 md:hidden">
-            {allProfiles.map(user => {
-              const kycStatus = user.verification_status
-              return (
-                <div
-                  key={user.id}
-                  className="rounded-lg border p-4 space-y-3 text-sm"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium">
-                        {user.firstname} {user.lastname}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {user.email || 'N/A'}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={
-                        kycStatus === 'verified'
-                          ? 'default'
-                          : kycStatus === 'rejected'
-                            ? 'destructive'
-                            : 'outline'
-                      }
-                      className={
-                        kycStatus === 'pending'
-                          ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-600'
-                          : undefined
-                      }
-                    >
-                      {kycStatus === 'verified'
-                        ? 'Vérifié'
-                        : kycStatus === 'pending'
-                          ? 'En attente'
-                          : kycStatus === 'rejected'
-                            ? 'Rejeté'
-                            : 'Non soumis'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-end text-xs text-muted-foreground">
-                    <span>
-                      {user.kyc_submitted_at
-                        ? format(new Date(user.kyc_submitted_at), 'PP', {
-                            locale: fr,
-                          })
-                        : '-'}
-                    </span>
-                  </div>
-                  {kycStatus === 'pending' && (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <Link href={`/admin/kyc/${user.id}`}>
-                        Vérifier le dossier
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              )
-            })}
-            {allProfiles.length === 0 && (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                Aucun utilisateur.
-              </p>
-            )}
-          </div>
-
-          {/* Desktop — table */}
-          <div className="hidden md:block overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Utilisateur</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Statut KYC</TableHead>
-                  <TableHead>Soumis le</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          {allProfiles.length === 0 && (
+            <EmptyState
+              icon={<IconUsers className="h-7 w-7" />}
+              title="Aucun dossier utilisateur"
+              description="Les comptes non administrateurs apparaîtront ici avec leur statut de vérification."
+              className="my-2"
+            />
+          )}
+          {allProfiles.length > 0 && (
+            <>
+              {/* Mobile — cards */}
+              <div className="grid gap-3 md:hidden">
                 {allProfiles.map(user => {
+                  const kycStatus = user.verification_status
                   return (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        {user.firstname} {user.lastname}
-                      </TableCell>
-                      <TableCell>{user.email || 'N/A'}</TableCell>
-                      <TableCell>
+                    <div
+                      key={user.id}
+                      className="rounded-lg border p-4 space-y-3 text-sm"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-medium">
+                            {user.firstname} {user.lastname}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.email || 'N/A'}
+                          </p>
+                        </div>
                         <Badge
                           variant={
-                            user.verification_status === 'verified'
+                            kycStatus === 'verified'
                               ? 'default'
-                              : user.verification_status === 'rejected'
+                              : kycStatus === 'rejected'
                                 ? 'destructive'
                                 : 'outline'
                           }
                           className={
-                            user.verification_status === 'pending'
+                            kycStatus === 'pending'
                               ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-600'
                               : undefined
                           }
                         >
-                          {user.verification_status === 'verified' && (
-                            <IconShieldCheck className="mr-1 h-3 w-3" />
-                          )}
-                          {user.verification_status === 'pending' && (
-                            <IconClock className="mr-1 h-3 w-3" />
-                          )}
-                          {user.verification_status === 'rejected' && (
-                            <IconAlertCircle className="mr-1 h-3 w-3" />
-                          )}
-                          {user.verification_status === 'verified'
+                          {kycStatus === 'verified'
                             ? 'Vérifié'
-                            : user.verification_status === 'pending'
+                            : kycStatus === 'pending'
                               ? 'En attente'
-                              : user.verification_status === 'rejected'
+                              : kycStatus === 'rejected'
                                 ? 'Rejeté'
                                 : 'Non soumis'}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {user.kyc_submitted_at
-                          ? format(new Date(user.kyc_submitted_at), 'PP', {
-                              locale: fr,
-                            })
-                          : '-'}
-                      </TableCell>
-                      <TableCell>
-                        {user.verification_status === 'pending' && (
-                          <Button asChild size="sm" variant="outline">
-                            <Link href={`/admin/kyc/${user.id}`}>Vérifier</Link>
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                      <div className="flex items-center justify-end text-xs text-muted-foreground">
+                        <span>
+                          {user.kyc_submitted_at
+                            ? format(new Date(user.kyc_submitted_at), 'PP', {
+                                locale: fr,
+                              })
+                            : '-'}
+                        </span>
+                      </div>
+                      {kycStatus === 'pending' && (
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <Link href={`/admin/kyc/${user.id}`}>
+                            Vérifier le dossier
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   )
                 })}
-              </TableBody>
-            </Table>
-          </div>
+              </div>
+
+              {/* Desktop — table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Utilisateur</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Statut KYC</TableHead>
+                      <TableHead>Soumis le</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allProfiles.map(user => {
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            {user.firstname} {user.lastname}
+                          </TableCell>
+                          <TableCell>{user.email || 'N/A'}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                user.verification_status === 'verified'
+                                  ? 'default'
+                                  : user.verification_status === 'rejected'
+                                    ? 'destructive'
+                                    : 'outline'
+                              }
+                              className={
+                                user.verification_status === 'pending'
+                                  ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-600'
+                                  : undefined
+                              }
+                            >
+                              {user.verification_status === 'verified' && (
+                                <IconShieldCheck className="mr-1 h-3 w-3" />
+                              )}
+                              {user.verification_status === 'pending' && (
+                                <IconClock className="mr-1 h-3 w-3" />
+                              )}
+                              {user.verification_status === 'rejected' && (
+                                <IconAlertCircle className="mr-1 h-3 w-3" />
+                              )}
+                              {user.verification_status === 'verified'
+                                ? 'Vérifié'
+                                : user.verification_status === 'pending'
+                                  ? 'En attente'
+                                  : user.verification_status === 'rejected'
+                                    ? 'Rejeté'
+                                    : 'Non soumis'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {user.kyc_submitted_at
+                              ? format(new Date(user.kyc_submitted_at), 'PP', {
+                                  locale: fr,
+                                })
+                              : '-'}
+                          </TableCell>
+                          <TableCell>
+                            {user.verification_status === 'pending' && (
+                              <Button asChild size="sm" variant="outline">
+                                <Link href={`/admin/kyc/${user.id}`}>
+                                  Vérifier
+                                </Link>
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
