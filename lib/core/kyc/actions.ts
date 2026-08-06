@@ -80,7 +80,7 @@ export async function startKYCVerification(input: StripeIdentityInput) {
   return {
     success: true,
     message:
-      'Vérification soumise. Vous serez notifié dès qu’une décision sera prise.',
+      'Vérification soumise. Délai indicatif de traitement : 24 à 48 h.',
   }
 }
 

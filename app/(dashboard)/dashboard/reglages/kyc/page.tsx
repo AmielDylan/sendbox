@@ -420,8 +420,8 @@ export default function KYCPage() {
               <CardTitle>Dossier en cours d&apos;examen</CardTitle>
             </div>
             <CardDescription>
-              Votre dossier est en file d’examen. Vous serez prévenu dès qu’une
-              décision est prise.
+              Votre dossier est en file d’examen. Le délai indicatif est de 24
+              à 48 h.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -790,8 +790,8 @@ export default function KYCPage() {
               <CardTitle>Dossier soumis avec succès</CardTitle>
             </div>
             <CardDescription>
-              Votre dossier est en cours d&apos;examen. Vous recevrez une
-              notification dès qu&apos;une décision est prise.
+              Votre dossier est en cours d&apos;examen. Le délai indicatif est de
+              24 à 48 h.
             </CardDescription>
           </CardHeader>
         </Card>
