@@ -124,16 +124,9 @@ function NewBookingPageContent() {
         setAnnouncement(result.announcement)
         setValue('announcement_id', result.announcement.id)
 
-        console.log('Initial weight from URL:', initialWeight)
-        console.log(
-          'Available weight from announcement:',
-          result.announcement.available_weight
-        )
-
         if (initialWeight) {
           const maxWeight = result.announcement.available_weight || 999
           const weightToSet = Math.min(initialWeight, maxWeight)
-          console.log('Setting weight to:', weightToSet)
           setValue('kilos_requested', weightToSet)
         }
       }
@@ -264,8 +257,8 @@ function NewBookingPageContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Créer une réservation"
-        description="Remplissez les informations de votre colis"
+        title="Créer une demande d’envoi"
+        description="Décrivez votre colis avec assez de précision pour que le voyageur puisse décider sereinement."
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Mes colis', href: '/dashboard/colis' },
@@ -279,7 +272,7 @@ function NewBookingPageContent() {
           {/* Informations annonce */}
           <Card>
             <CardHeader>
-              <CardTitle>Annonce sélectionnée</CardTitle>
+              <CardTitle>Trajet sélectionné</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <TripTimeline
@@ -320,7 +313,7 @@ function NewBookingPageContent() {
               <CardHeader>
                 <CardTitle>Informations du colis</CardTitle>
                 <CardDescription>
-                  Renseignez les détails de votre colis
+                  Plus votre déclaration est claire, plus le voyageur peut répondre vite et en confiance.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -349,14 +342,14 @@ function NewBookingPageContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="package_category">Categorie du colis</Label>
+                  <Label htmlFor="package_category">Catégorie du colis</Label>
                   <select
                     id="package_category"
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     {...register('package_category')}
                     aria-invalid={errors.package_category ? 'true' : 'false'}
                   >
-                    <option value="">Selectionner une categorie</option>
+                    <option value="">Sélectionner une catégorie</option>
                     {PACKAGE_CATEGORIES.map(category => (
                       <option key={category} value={category}>
                         {PACKAGE_CATEGORY_LABELS[category]}
@@ -386,8 +379,8 @@ function NewBookingPageContent() {
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Indiquez une estimation simple pour aider le voyageur a
-                    evaluer l'encombrement.
+                    Une estimation suffit pour aider le voyageur à évaluer
+                    l’encombrement.
                   </p>
                 </div>
 
@@ -398,7 +391,7 @@ function NewBookingPageContent() {
                   </Label>
                   <Textarea
                     id="package_description"
-                    placeholder="Décrivez votre colis en détail..."
+                    placeholder="Ex. Une boîte fermée contenant deux vêtements et un livre, photos jointes."
                     rows={4}
                     {...register('package_description')}
                     aria-invalid={errors.package_description ? 'true' : 'false'}
@@ -415,7 +408,7 @@ function NewBookingPageContent() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/30 p-4">
                   <p className="text-sm font-medium">
-                    Objets interdits ou a risque
+                    Objets interdits ou à risque
                   </p>
                   <ul className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
                     {FORBIDDEN_PACKAGE_ITEMS.map(item => (
@@ -472,7 +465,7 @@ function NewBookingPageContent() {
                         className="cursor-pointer text-sm font-medium"
                       >
                         J'atteste que la description, la valeur et les
-                        dimensions declarees sont exactes.
+                        dimensions déclarées sont exactes.
                       </Label>
                       {errors.content_truth_attested && (
                         <p className="text-sm text-destructive" role="alert">

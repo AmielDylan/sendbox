@@ -374,7 +374,7 @@ export default function KYCPage() {
     <div className="space-y-6">
       <PageHeader
         title="Vérification d'identité"
-        description="Soumettez votre pièce d'identité pour accéder à toutes les fonctionnalités"
+        description="Ajoutez une pièce d’identité et un selfie pour renforcer la confiance avant les échanges."
         breadcrumbs={[
           { label: 'Réglages', href: '/dashboard/reglages' },
           { label: 'Vérification KYC' },
@@ -420,8 +420,8 @@ export default function KYCPage() {
               <CardTitle>Dossier en cours d&apos;examen</CardTitle>
             </div>
             <CardDescription>
-              Notre équipe examine votre dossier. Ce processus prend
-              généralement 24 à 48 heures.
+              Votre dossier est en file d’examen. Vous serez prévenu dès qu’une
+              décision est prise.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -666,14 +666,15 @@ export default function KYCPage() {
                   par Sendbox dans le cadre de la vérification KYC, conformément
                   à la{' '}
                   <a
-                    href="/legal/privacy"
+                    href="/politique-confidentialite"
                     className="underline hover:text-foreground"
                     target="_blank"
                     rel="noreferrer"
                   >
                     politique de confidentialité
                   </a>
-                  . Les documents seront supprimés après vérification.
+                  . Les documents sont utilisés uniquement pour traiter votre
+                  demande de vérification.
                 </span>
               </label>
 
@@ -789,8 +790,8 @@ export default function KYCPage() {
               <CardTitle>Dossier soumis avec succès</CardTitle>
             </div>
             <CardDescription>
-              Votre dossier est en cours d&apos;examen. Notre équipe vous
-              contactera dans les 24 à 48 heures.
+              Votre dossier est en cours d&apos;examen. Vous recevrez une
+              notification dès qu&apos;une décision est prise.
             </CardDescription>
           </CardHeader>
         </Card>

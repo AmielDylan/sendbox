@@ -83,11 +83,6 @@ export default function NewAnnouncementPage() {
   const arrivalCountry = watch('arrival_country')
 
   const handleNext = async () => {
-    console.log(
-      '[NewAnnouncement] handleNext called - currentStep:',
-      currentStep
-    )
-
     let fieldsToValidate: (keyof CreateAnnouncementInput)[] = []
 
     if (currentStep === 1) {
@@ -104,10 +99,8 @@ export default function NewAnnouncementPage() {
     }
 
     const isValid = await trigger(fieldsToValidate)
-    console.log('[NewAnnouncement] Validation result:', isValid)
     if (isValid) {
       const newStep = Math.min(currentStep + 1, 3)
-      console.log('[NewAnnouncement] Moving to step:', newStep)
       setCurrentStep(newStep)
     }
   }
@@ -117,17 +110,12 @@ export default function NewAnnouncementPage() {
   }
 
   const onSubmit = async (data: CreateAnnouncementInput) => {
-    console.log('[NewAnnouncement] onSubmit called - currentStep:', currentStep)
-    console.log('[NewAnnouncement] Form data:', data)
-
     // Protection : ne soumettre que si on est à l'étape 3
     if (currentStep !== 3) {
-      console.log('[NewAnnouncement] Submit blocked - not on step 3')
       return
     }
 
     if (!submitIntentRef.current) {
-      console.log('[NewAnnouncement] Submit blocked - no explicit confirmation')
       return
     }
 
@@ -175,7 +163,7 @@ export default function NewAnnouncementPage() {
     <div className="space-y-6">
       <PageHeader
         title="Enregistrer mon voyage"
-        description="Publiez votre trajet et recevez des demandes de transport"
+        description="Indiquez où vous allez, quand vous partez et la place que vous pouvez proposer."
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Voyages', href: '/dashboard/annonces' },
@@ -237,9 +225,6 @@ export default function NewAnnouncementPage() {
           // Bloquer Enter sauf si on est à l'étape 3 et qu'on est sur le bouton submit
           if (e.key === 'Enter' && currentStep !== 3) {
             e.preventDefault()
-            console.log(
-              '[NewAnnouncement] Enter key blocked - not on final step'
-            )
           }
         }}
       >
@@ -251,11 +236,12 @@ export default function NewAnnouncementPage() {
               {currentStep === 3 && 'Récapitulatif'}
             </CardTitle>
             <CardDescription>
-              {currentStep === 1 && 'Renseignez les détails de votre trajet'}
+              {currentStep === 1 &&
+                'Ces informations permettent aux expéditeurs de trouver un trajet compatible.'}
               {currentStep === 2 &&
-                'Indiquez votre capacité disponible et votre tarif au kilo'}
+                'Indiquez simplement ce que vous pouvez transporter. Le tarif au kilo reste défini par votre annonce.'}
               {currentStep === 3 &&
-                'Vérifiez vos informations avant de soumettre votre voyage à Sendbox'}
+                'Relisez votre trajet avant publication. Vous pourrez examiner chaque demande avant de l’accepter.'}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -421,7 +407,7 @@ export default function NewAnnouncementPage() {
                   <Label htmlFor="description">Description (optionnel)</Label>
                   <Textarea
                     id="description"
-                    placeholder="Ajoutez des détails sur votre trajet..."
+                    placeholder="Ex. Je peux récupérer le colis à Paris la veille du départ et le remettre à Cotonou après l’arrivée."
                     rows={4}
                     {...register('description')}
                     aria-invalid={errors.description ? 'true' : 'false'}
