@@ -1,6 +1,6 @@
 /**
  * Pays couverts par Sendbox V1 :
- * - Départ : pays européens couverts par Stripe Connect
+ * - Départ : premiers pays européens activés
  * - Arrivée : Bénin (BJ)
  */
 

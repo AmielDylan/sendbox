@@ -148,8 +148,8 @@ export function DeliveryProof({ booking }: DeliveryProofProps) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>CONFIRMATION</Text>
           <Text style={styles.text}>
-            Le colis a été livré avec succès et en bon état. Le paiement au
-            voyageur sera effectué sous 24-48h.
+            Le colis a été livré avec succès et en bon état selon les
+            informations confirmées dans ce dossier.
           </Text>
         </View>
 

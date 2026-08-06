@@ -38,7 +38,7 @@ export const createBookingSchema = z.object({
     .max(5, 'Maximum 5 photos')
     .optional(),
   insurance_opted: z.boolean().refine(value => value === false, {
-    message: "L'assurance colis n'est pas disponible en V1",
+    message: "L'assurance colis n'est pas encore disponible.",
   }),
 })
 

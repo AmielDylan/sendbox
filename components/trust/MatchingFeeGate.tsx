@@ -56,7 +56,9 @@ function FeeForm({
     })
 
     if (stripeError) {
-      setError(stripeError.message ?? 'Paiement échoué.')
+      setError(
+        'Le paiement n’a pas pu être confirmé. Vérifiez vos informations ou réessayez dans quelques instants.'
+      )
       setLoading(false)
       return
     }
