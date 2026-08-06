@@ -361,7 +361,7 @@ export default function DashboardPage() {
                     En cours
                   </Badge>
                   <p className="text-xs text-muted-foreground">
-                    Examen en cours
+                    Délai indicatif : 24 à 48 h
                   </p>
                 </div>
               )}
