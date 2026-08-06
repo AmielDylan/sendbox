@@ -26,6 +26,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
 import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/empty-state'
+import { SectionCount } from '@/components/ui/section-count'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +50,7 @@ import {
   IconCurrencyDollar,
   IconCircleCheck,
   IconAlertTriangle,
+  IconClipboardList,
   IconDotsVertical,
 } from '@tabler/icons-react'
 import { formatBookingReportReason } from '@/lib/core/bookings/report-policy'
@@ -180,6 +183,7 @@ export default function AdminBookingsPage() {
     (booking.booking_reports || []).filter((report: any) =>
       ['open', 'reviewing'].includes(report.status)
     )
+  const bookingCount = bookings?.length ?? 0
 
   const openReportDialog = (
     report: any,
@@ -272,112 +276,24 @@ export default function AdminBookingsPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Réservations</CardTitle>
-          <Badge variant="outline" className="font-normal">
-            {bookings?.length || 0}
-          </Badge>
+          <SectionCount
+            count={bookingCount}
+            singular="réservation"
+            plural="réservations"
+          />
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 md:hidden">
-            {bookings?.map((booking: any) => {
-              const openReports = getOpenReports(booking)
-              const cancellationPolicy = getCancellationPolicy({
-                status: booking.status,
-                paidAt: booking.paid_at,
-                actorRole: 'admin',
-                cancelledByRole: getCancelledByRole(booking),
-              })
-
-              return (
-                <div
-                  key={booking.id}
-                  className="space-y-4 rounded-lg border p-4 text-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-1">
-                      <p className="font-mono text-xs text-muted-foreground">
-                        {booking.id.slice(0, 8)}...
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {getStatusBadge(booking.status)}
-                        {openReports.length > 0 && (
-                          <Badge variant="destructive">
-                            Signalement ouvert
-                          </Badge>
-                        )}
-                        <Badge
-                          variant={
-                            cancellationPolicy.requiresAdminReview
-                              ? 'destructive'
-                              : 'secondary'
-                          }
-                        >
-                          {cancellationPolicy.adminLabel}
-                        </Badge>
-                      </div>
-                    </div>
-                    {renderActionsMenu(booking)}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="rounded-md bg-muted/40 p-3">
-                      <p className="text-muted-foreground">Poids</p>
-                      <p className="mt-1 font-medium">{booking.weight_kg} kg</p>
-                    </div>
-                    <div className="rounded-md bg-muted/40 p-3">
-                      <p className="text-muted-foreground">Montant</p>
-                      <p className="mt-1 font-medium">
-                        {booking.total_price || 0} EUR
-                      </p>
-                    </div>
-                    <div className="col-span-2 rounded-md bg-muted/40 p-3">
-                      <p className="text-muted-foreground">Date</p>
-                      <p className="mt-1 font-medium">
-                        {format(new Date(booking.created_at), 'PP', {
-                          locale: fr,
-                        })}
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="text-xs leading-5 text-muted-foreground">
-                    {cancellationPolicy.adminDescription}
-                  </p>
-
-                  {openReports.length > 0 && (
-                    <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
-                      <p className="text-xs font-medium text-destructive">
-                        Dernier signalement
-                      </p>
-                      <p className="mt-1 text-sm font-medium">
-                        {formatBookingReportReason(openReports[0].reason)}
-                      </p>
-                      <p className="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">
-                        {openReports[0].message}
-                      </p>
-                      <div className="mt-3">
-                        {renderReportActions(openReports[0])}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          <div className="hidden md:block overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Poids</TableHead>
-                  <TableHead>Montant</TableHead>
-                  <TableHead>Traitement V1</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          {bookingCount === 0 && (
+            <EmptyState
+              icon={<IconClipboardList className="h-7 w-7" />}
+              title="Aucune réservation"
+              description="Les demandes acceptées, paiements et dossiers à suivre apparaîtront ici."
+              className="my-2"
+            />
+          )}
+          {bookingCount > 0 && (
+            <>
+              <div className="grid gap-3 md:hidden">
                 {bookings?.map((booking: any) => {
                   const openReports = getOpenReports(booking)
                   const cancellationPolicy = getCancellationPolicy({
@@ -388,90 +304,198 @@ export default function AdminBookingsPage() {
                   })
 
                   return (
-                    <TableRow key={booking.id}>
-                      <TableCell className="font-mono text-xs">
-                        {booking.id.slice(0, 8)}...
-                      </TableCell>
-                      <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                      <TableCell>{booking.weight_kg} kg</TableCell>
-                      <TableCell>{booking.total_price || 0} EUR</TableCell>
-                      <TableCell className="max-w-[220px]">
-                        <div className="space-y-1">
-                          <Badge
-                            variant={
-                              cancellationPolicy.requiresAdminReview
-                                ? 'destructive'
-                                : 'secondary'
-                            }
-                          >
-                            {cancellationPolicy.adminLabel}
-                          </Badge>
-                          {openReports.length > 0 && (
-                            <Badge variant="destructive">
-                              Signalement ouvert
-                            </Badge>
-                          )}
-                          <p className="text-xs leading-5 text-muted-foreground">
-                            {cancellationPolicy.adminDescription}
+                    <div
+                      key={booking.id}
+                      className="space-y-4 rounded-lg border p-4 text-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 space-y-1">
+                          <p className="font-mono text-xs text-muted-foreground">
+                            {booking.id.slice(0, 8)}...
                           </p>
-                          {openReports.length > 0 && (
-                            <p className="text-xs leading-5 text-destructive">
-                              {formatBookingReportReason(openReports[0].reason)}
-                            </p>
-                          )}
-                          {openReports.length > 0 && (
-                            <div className="pt-1">
-                              {renderReportActions(openReports[0])}
-                            </div>
-                          )}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {getStatusBadge(booking.status)}
+                            {openReports.length > 0 && (
+                              <Badge variant="destructive">
+                                Signalement ouvert
+                              </Badge>
+                            )}
+                            <Badge
+                              variant={
+                                cancellationPolicy.requiresAdminReview
+                                  ? 'destructive'
+                                  : 'secondary'
+                              }
+                            >
+                              {cancellationPolicy.adminLabel}
+                            </Badge>
+                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(booking.created_at), 'PP', {
-                          locale: fr,
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2 lg:hidden">
-                          {renderActionsMenu(booking)}
+                        {renderActionsMenu(booking)}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="rounded-md bg-muted/40 p-3">
+                          <p className="text-muted-foreground">Poids</p>
+                          <p className="mt-1 font-medium">
+                            {booking.weight_kg} kg
+                          </p>
                         </div>
-                        <div className="hidden gap-2 lg:flex">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleMarkDelivered(booking.id)}
-                            disabled={booking.status === 'delivered'}
-                          >
-                            <IconCircleCheck className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBooking(booking)
-                              setRefundDialogOpen(true)
-                            }}
-                          >
-                            <IconCurrencyDollar className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBooking(booking)
-                              setDisputeDialogOpen(true)
-                            }}
-                          >
-                            <IconAlertTriangle className="h-4 w-4" />
-                          </Button>
+                        <div className="rounded-md bg-muted/40 p-3">
+                          <p className="text-muted-foreground">Montant</p>
+                          <p className="mt-1 font-medium">
+                            {booking.total_price || 0} EUR
+                          </p>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                        <div className="col-span-2 rounded-md bg-muted/40 p-3">
+                          <p className="text-muted-foreground">Date</p>
+                          <p className="mt-1 font-medium">
+                            {format(new Date(booking.created_at), 'PP', {
+                              locale: fr,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <p className="text-xs leading-5 text-muted-foreground">
+                        {cancellationPolicy.adminDescription}
+                      </p>
+
+                      {openReports.length > 0 && (
+                        <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3">
+                          <p className="text-xs font-medium text-destructive">
+                            Dernier signalement
+                          </p>
+                          <p className="mt-1 text-sm font-medium">
+                            {formatBookingReportReason(openReports[0].reason)}
+                          </p>
+                          <p className="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">
+                            {openReports[0].message}
+                          </p>
+                          <div className="mt-3">
+                            {renderReportActions(openReports[0])}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )
                 })}
-              </TableBody>
-            </Table>
-          </div>
+              </div>
+
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Poids</TableHead>
+                      <TableHead>Montant</TableHead>
+                      <TableHead>Traitement V1</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {bookings?.map((booking: any) => {
+                      const openReports = getOpenReports(booking)
+                      const cancellationPolicy = getCancellationPolicy({
+                        status: booking.status,
+                        paidAt: booking.paid_at,
+                        actorRole: 'admin',
+                        cancelledByRole: getCancelledByRole(booking),
+                      })
+
+                      return (
+                        <TableRow key={booking.id}>
+                          <TableCell className="font-mono text-xs">
+                            {booking.id.slice(0, 8)}...
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(booking.status)}
+                          </TableCell>
+                          <TableCell>{booking.weight_kg} kg</TableCell>
+                          <TableCell>{booking.total_price || 0} EUR</TableCell>
+                          <TableCell className="max-w-[220px]">
+                            <div className="space-y-1">
+                              <Badge
+                                variant={
+                                  cancellationPolicy.requiresAdminReview
+                                    ? 'destructive'
+                                    : 'secondary'
+                                }
+                              >
+                                {cancellationPolicy.adminLabel}
+                              </Badge>
+                              {openReports.length > 0 && (
+                                <Badge variant="destructive">
+                                  Signalement ouvert
+                                </Badge>
+                              )}
+                              <p className="text-xs leading-5 text-muted-foreground">
+                                {cancellationPolicy.adminDescription}
+                              </p>
+                              {openReports.length > 0 && (
+                                <p className="text-xs leading-5 text-destructive">
+                                  {formatBookingReportReason(
+                                    openReports[0].reason
+                                  )}
+                                </p>
+                              )}
+                              {openReports.length > 0 && (
+                                <div className="pt-1">
+                                  {renderReportActions(openReports[0])}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(booking.created_at), 'PP', {
+                              locale: fr,
+                            })}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2 lg:hidden">
+                              {renderActionsMenu(booking)}
+                            </div>
+                            <div className="hidden gap-2 lg:flex">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleMarkDelivered(booking.id)}
+                                disabled={booking.status === 'delivered'}
+                              >
+                                <IconCircleCheck className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedBooking(booking)
+                                  setRefundDialogOpen(true)
+                                }}
+                              >
+                                <IconCurrencyDollar className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedBooking(booking)
+                                  setDisputeDialogOpen(true)
+                                }}
+                              >
+                                <IconAlertTriangle className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

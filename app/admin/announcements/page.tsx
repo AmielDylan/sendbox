@@ -38,6 +38,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { EmptyState } from '@/components/ui/empty-state'
+import { SectionCount } from '@/components/ui/section-count'
 import { toast } from 'sonner'
 import {
   IconLoader2,
@@ -111,6 +112,7 @@ export default function AdminAnnouncementsPage() {
     setSelectedAnnouncement(announcement)
     setRejectDialogOpen(true)
   }
+  const announcementCount = announcements?.length ?? 0
 
   const renderActionsMenu = (announcement: any) => (
     <DropdownMenu>
@@ -146,85 +148,91 @@ export default function AdminAnnouncementsPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Annonces</CardTitle>
-          <Badge variant="outline" className="font-normal">
-            {announcements?.length || 0}
-          </Badge>
+          <SectionCount count={announcementCount} singular="annonce" />
         </CardHeader>
         <CardContent>
-          {/* Mobile — cards */}
-          <div className="grid gap-3 md:hidden">
-            {announcements?.map((announcement: any) => (
-              <div
-                key={announcement.id}
-                className="rounded-lg border p-4 space-y-3 text-sm"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-medium">
-                      {announcement.departure_city} →{' '}
-                      {announcement.arrival_city}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(announcement.created_at), 'PP', {
-                        locale: fr,
-                      })}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    {getStatusBadge(announcement.status)}
-                    {renderActionsMenu(announcement)}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>{announcement.price_per_kg} EUR/kg</span>
-                  <span>{announcement.available_kg} kg dispo</span>
-                </div>
-              </div>
-            ))}
-            {(announcements?.length ?? 0) === 0 && (
-              <EmptyState
-                icon={<IconLuggage className="h-7 w-7" />}
-                title="Aucune annonce à modérer"
-                description="Les trajets publiés apparaîtront ici pour contrôle et suivi administratif."
-                className="my-2"
-              />
-            )}
-          </div>
-
-          {/* Desktop — table */}
-          <div className="hidden md:block overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Trajet</TableHead>
-                  <TableHead>Prix/kg</TableHead>
-                  <TableHead>Poids max</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          {announcementCount === 0 && (
+            <EmptyState
+              icon={<IconLuggage className="h-7 w-7" />}
+              title="Aucune annonce à modérer"
+              description="Les trajets publiés apparaîtront ici pour contrôle et suivi administratif."
+              className="my-2"
+            />
+          )}
+          {announcementCount > 0 && (
+            <>
+              {/* Mobile — cards */}
+              <div className="grid gap-3 md:hidden">
                 {announcements?.map((announcement: any) => (
-                  <TableRow key={announcement.id}>
-                    <TableCell>
-                      {announcement.departure_city} →{' '}
-                      {announcement.arrival_city}
-                    </TableCell>
-                    <TableCell>{announcement.price_per_kg} EUR/kg</TableCell>
-                    <TableCell>{announcement.available_kg} kg</TableCell>
-                    <TableCell>{getStatusBadge(announcement.status)}</TableCell>
-                    <TableCell>
-                      {format(new Date(announcement.created_at), 'PP', {
-                        locale: fr,
-                      })}
-                    </TableCell>
-                    <TableCell>{renderActionsMenu(announcement)}</TableCell>
-                  </TableRow>
+                  <div
+                    key={announcement.id}
+                    className="rounded-lg border p-4 space-y-3 text-sm"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium">
+                          {announcement.departure_city} →{' '}
+                          {announcement.arrival_city}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(announcement.created_at), 'PP', {
+                            locale: fr,
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {getStatusBadge(announcement.status)}
+                        {renderActionsMenu(announcement)}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{announcement.price_per_kg} EUR/kg</span>
+                      <span>{announcement.available_kg} kg dispo</span>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
-          </div>
+              </div>
+
+              {/* Desktop — table */}
+              <div className="hidden md:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Trajet</TableHead>
+                      <TableHead>Prix/kg</TableHead>
+                      <TableHead>Poids max</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {announcements?.map((announcement: any) => (
+                      <TableRow key={announcement.id}>
+                        <TableCell>
+                          {announcement.departure_city} →{' '}
+                          {announcement.arrival_city}
+                        </TableCell>
+                        <TableCell>
+                          {announcement.price_per_kg} EUR/kg
+                        </TableCell>
+                        <TableCell>{announcement.available_kg} kg</TableCell>
+                        <TableCell>
+                          {getStatusBadge(announcement.status)}
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(announcement.created_at), 'PP', {
+                            locale: fr,
+                          })}
+                        </TableCell>
+                        <TableCell>{renderActionsMenu(announcement)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
