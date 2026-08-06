@@ -59,7 +59,8 @@ export function KYCAlertBanner({
           Vérification en cours
         </AlertTitle>
         <AlertDescription className="text-xs text-yellow-800">
-          Vos documents sont en cours d'examen. Vous serez notifié sous 24-48h.
+          Vos documents sont en cours d'examen. Vous serez notifié dès qu'une
+          décision sera prise.
         </AlertDescription>
       </Alert>
     )

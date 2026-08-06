@@ -361,7 +361,7 @@ export default function DashboardPage() {
                     En cours
                   </Badge>
                   <p className="text-xs text-muted-foreground">
-                    Vérification sous 24-48h
+                    Examen en cours
                   </p>
                 </div>
               )}
