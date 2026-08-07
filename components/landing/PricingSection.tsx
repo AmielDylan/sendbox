@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 
 const perks = [
-  'Ce montant couvre uniquement les frais Sendbox.',
-  'Le transport est convenu et réglé directement entre les parties.',
-  'Le montant Sendbox est visible avant paiement.',
+  'Ces frais couvrent uniquement la mise en relation Sendbox.',
+  'Le montant du transport est convenu et réglé directement entre les parties.',
+  'Le prix total est visible avant tout engagement.',
 ]
 
 export function PricingSection() {
@@ -20,32 +20,26 @@ export function PricingSection() {
     <section className="py-16 sm:py-24">
       <div className="container-wide">
         <div className="mb-10 max-w-2xl space-y-4 animate-fade-in-up">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-            Tarif V1
-          </p>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            Un prix simple pour confirmer la mise en relation.
+            Un seul frais, affiché avant de confirmer.
           </h2>
           <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-            Sendbox facture uniquement les frais de mise en relation entre
-            expéditeur et voyageur.
+            Sendbox perçoit 2,90&nbsp;€ par mise en relation confirmée, réglés
+            par l'expéditeur. Le reste se passe directement entre vous.
           </p>
         </div>
 
-        <div className="grid gap-6 rounded-lg border border-border/80 bg-background p-6 lg:grid-cols-[0.7fr_1.2fr_auto] lg:items-center lg:p-8">
+        <div className="grid gap-6 rounded-xl border border-border/80 bg-background p-6 lg:grid-cols-[0.7fr_1.2fr_auto] lg:items-center lg:p-8">
           <div className="space-y-3">
-            <div>
-              <div className="mt-3 flex items-end gap-3">
-                <p className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  2,90 €
-                </p>
-              </div>
+            <div className="mt-3 flex items-end gap-3">
+              <p className="text-3xl font-bold tracking-tight sm:text-4xl">
+                2,90 €
+              </p>
             </div>
-
             <p className="text-sm leading-6 text-muted-foreground">
               {user
-                ? "Payés par l'expéditeur uniquement, après accord mutuel avec le voyageur."
-                : "Payés par l'expéditeur après accord mutuel. Inscription gratuite pour tous."}
+                ? "Prélevé auprès de l'expéditeur après confirmation mutuelle."
+                : 'Réglés par l’expéditeur. Inscription gratuite pour les deux parties.'}
             </p>
           </div>
 

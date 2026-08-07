@@ -152,9 +152,13 @@ export function PublicHeader() {
           overHero ? 'via-white/20' : 'via-primary/20'
         )}
       />
-      <div className="container-wide flex h-16 items-center justify-between relative">
+      <div className="container-wide flex h-16 items-center relative">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="relative flex items-center gap-2 group overflow-hidden rounded-sm">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -translate-x-full -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-[200%]"
+          />
           <Image
             src="/images/branding/logo.svg"
             alt="Sendbox - Covalisage international Europe-Afrique"
@@ -162,7 +166,7 @@ export function PublicHeader() {
             height={29}
             priority
             className={cn(
-              'h-6 w-auto transition-all duration-300 group-hover:scale-105 sm:h-7',
+              'h-6 w-auto sm:h-7',
               overHero ? 'hidden' : 'dark:hidden'
             )}
             style={{ maxWidth: '130px' }}
@@ -174,7 +178,7 @@ export function PublicHeader() {
             height={29}
             priority
             className={cn(
-              'h-6 w-auto transition-all duration-300 group-hover:scale-105 sm:h-7',
+              'h-6 w-auto sm:h-7',
               overHero ? 'block' : 'hidden dark:block'
             )}
             style={{ maxWidth: '130px' }}
@@ -182,7 +186,7 @@ export function PublicHeader() {
         </Link>
 
         {/* Desktop Navigation & Actions */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-8 ml-auto">
           <nav className="flex items-center gap-8">
             {navItems.map(item => (
               <Link
@@ -343,7 +347,7 @@ export function PublicHeader() {
         </div>
 
         {/* Mobile Menu */}
-        <div className="md:hidden flex items-center gap-2">
+        <div className="md:hidden flex items-center gap-2 ml-auto">
           <ThemeToggle
             className={
               overHero
