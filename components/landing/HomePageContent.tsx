@@ -26,19 +26,19 @@ import { PricingSection } from '@/components/landing/PricingSection'
 
 const features = [
   {
-    title: ‘Profils 100% vérifiés’,
+    title: 'Profils 100% vérifiés',
     description:
       "Identité contrôlée, avis de la communauté et score de confiance : vous savez exactement à qui vous confiez vos affaires.",
     icon: IconUserCheck,
   },
   {
-    title: ‘Preuves photo certifiées’,
+    title: 'Preuves photo certifiées',
     description:
       "Des photos prises au départ et à la réception pour valider chaque étape de la livraison en toute clarté.",
     icon: IconCamera,
   },
   {
-    title: ‘Tarifs simples et directs’,
+    title: 'Tarifs simples et directs',
     description:
       "Une mise en relation fluide. Vous définissez le prix du transport directement entre vous, sans intermédiaires.",
     icon: IconCoins,
