@@ -8,6 +8,7 @@ import {
   IconCheck,
   IconCircleCheck,
   IconUserCheck,
+  IconArrowRight,
 } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,25 +25,25 @@ const features = [
   {
     title: 'Identité vérifiée avant publication',
     description:
-      'Vous savez avec qui vous échangez avant d’aller plus loin.',
+      'Vous savez avec qui vous échangez avant d’aller plus loin. Aucun profil anonyme.',
     icon: IconUserCheck,
   },
   {
     title: 'Colis déclaré avant accord',
     description:
-      'Le voyageur consulte le contenu annoncé avant d’accepter.',
+      'Le voyageur consulte le contenu annoncé et décide librement avant d’accepter.',
     icon: IconCircleCheck,
   },
   {
     title: 'Photos à la remise et à la livraison',
     description:
-      'Des preuves simples complètent les échanges entre les parties.',
+      'Des preuves horodatées accompagnent chaque étape, consultables par les deux parties.',
     icon: IconCamera,
   },
   {
     title: 'Avis partagés après l’envoi',
     description:
-      'La réputation se construit à partir des expériences réalisées.',
+      'La réputation se construit sur les expériences réelles, pas sur des déclarations.',
     icon: IconCheck,
   },
 ]
@@ -62,79 +63,80 @@ const activeCountries = [
 
 const steps = [
   {
-    title: 'Profil et trajet',
+    title: 'Profil et identité',
     description:
-      'Vérifiez votre identité, puis trouvez un voyageur ou publiez vos dates.',
+      'Vérifiez votre identité une fois pour toutes. Puis parcourez les trajets disponibles ou publiez vos propres dates.',
   },
   {
-    title: 'Demande et déclaration',
-    description: 'Partagez le contenu du colis avant que chacun décide.',
+    title: 'Déclaration du colis',
+    description:
+      "L'expéditeur décrit le contenu en détail. Le voyageur consulte et décide librement, sans pression.",
   },
   {
     title: 'Accord mutuel',
     description:
-      'Chacun confirme. L’expéditeur règle uniquement les frais Sendbox.',
+      'Les deux parties confirment ensemble. Les frais Sendbox (2,90 €) sont prélevés à ce moment.',
   },
   {
-    title: 'Preuves et avis',
+    title: 'Remise et traçabilité',
     description:
-      'Ajoutez les photos utiles, puis laissez un avis après l’envoi.',
+      "Photos horodatées à la remise et à la livraison. Un avis de part et d'autre vient clôre l'envoi.",
   },
 ]
 
 const faqs: { question: string; answer: string }[] = [
   {
-    question: 'Combien coûte Sendbox ?',
+    question: 'Combien coûte Sendbox ?',
     answer:
-      "Des frais de mise en relation sont réglés par l'expéditeur après confirmation mutuelle. L'utilisation est gratuite pour les voyageurs. Le montant du transport se négocie directement entre les parties, hors plateforme.",
+      "Des frais de mise en relation de 2,90 € sont réglés par l'expéditeur après confirmation mutuelle. L'utilisation est gratuite pour les voyageurs. Le montant du transport se négocie directement entre les parties, hors plateforme.",
   },
   {
-    question: 'Comment sont vérifiés les profils ?',
+    question: 'Comment sont vérifiés les profils ?',
     answer:
       "Chaque utilisateur passe par une vérification d'identité. Les profils non vérifiés ne peuvent pas publier d'annonces ni finaliser de mise en relation.",
   },
   {
-    question: 'Que se passe-t-il si mon colis est endommagé ou perdu ?',
+    question: 'Que se passe-t-il si mon colis est endommagé ou perdu ?',
     answer:
       "Sendbox est une plateforme de mise en relation et n'assure pas le transport. Des photos horodatées sont prises à la remise et à la livraison pour garder une trace utile en cas de désaccord.",
   },
   {
-    question: 'Comment fonctionne le paiement du transport ?',
+    question: 'Comment fonctionne le paiement du transport ?',
     answer:
-      "Le montant du transport se règle directement entre l'expéditeur et le voyageur, selon les modalités que vous convenez ensemble. Sendbox facture uniquement les frais de mise en relation confirmée.",
+      "Le montant du transport se règle directement entre l'expéditeur et le voyageur, selon les modalités convenues ensemble. Sendbox facture uniquement les frais de mise en relation confirmée.",
   },
   {
-    question: 'Puis-je annuler une mise en relation ?',
+    question: 'Puis-je annuler une mise en relation ?',
     answer:
       'Avant la confirmation mutuelle des deux parties, la mise en relation peut être annulée sans frais. Une fois les deux parties confirmées, les frais de mise en relation sont prélevés et la mise en relation est effective.',
   },
   {
-    question: 'Dans quels pays Sendbox est-il disponible ?',
+    question: 'Dans quels pays Sendbox est-il disponible ?',
     answer:
       "Sendbox est actuellement actif sur le premier corridor France-Bénin. L'objectif est d'ouvrir progressivement d'autres corridors après les premiers retours utilisateurs.",
   },
   {
-    question: 'Comment fonctionnent les avis ?',
+    question: 'Comment fonctionnent les avis ?',
     answer:
       'Les avis sont laissés par les deux parties après la livraison. Ils deviennent visibles ensemble et aident les prochains utilisateurs à se faire une idée plus juste.',
   },
   {
-    question: 'Mes données personnelles sont-elles protégées ?',
+    question: 'Mes données personnelles sont-elles protégées ?',
     answer:
       "Vos données sont hébergées en Europe. Les documents de vérification sont protégés et accessibles uniquement à l'équipe chargée des contrôles. Consultez notre politique de confidentialité pour les détails.",
   },
 ]
 
 const senderBenefits: React.ReactNode[] = [
-  'Trajet et dates visibles avant échange',
-  'Contenu déclaré avant acceptation',
-  'Preuves de remise et de livraison',
+  'Profil et trajet du voyageur visibles avant tout échange',
+  'Contenu du colis déclaré avant accord',
+  'Preuves à la remise et à la livraison',
 ]
 
 const travelerBenefits = [
-  'Dates et capacité maîtrisées',
-  'Demandes détaillées avant accord',
-  'Utilisation gratuite pour le voyageur',
+  'Vous contrôlez vos dates et votre capacité',
+  'Demandes détaillées avant tout engagement',
+  'Gratuit pour les voyageurs, sans surprise',
 ]
 
 export function HomePageContent() {
@@ -155,7 +157,7 @@ export function HomePageContent() {
         <div className="relative z-10 w-full px-6 pt-16 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
           <div className="max-w-xl space-y-6 text-left animate-fade-in-up">
             <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
-              Transformez chaque voyage en solution d’envoi sécurisée.
+              Transformez chaque voyage en solution d'envoi sécurisée.
             </h1>
 
             <p className="max-w-xl text-sm leading-6 text-white/82 sm:text-base sm:leading-7">
@@ -171,98 +173,93 @@ export function HomePageContent() {
           </div>
         </div>
       </section>
-      {/* Features */}
-      <section className="relative bg-muted/30 py-16 sm:py-24">
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]" />
-
-        <div className="container-wide relative">
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)] lg:gap-16">
-            <div className="hidden animate-fade-in-up lg:block">
-              <div className="relative mx-auto aspect-[4/3] max-w-xl overflow-hidden rounded-lg border border-border/60 bg-background lg:mx-0">
-                <Image
-                  src="/images/landing/commitments-evidence.webp"
-                  alt="Colis déclaré, identité, trajet, preuve photo et avis"
-                  fill
-                  sizes="(min-width: 1024px) 52vw, 92vw"
-                  className="object-cover"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-8 animate-fade-in-up">
-              <div className="space-y-4">
-                <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-                  Ce qui rend l’échange plus sûr.
-                </h2>
-                <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-                  Avant d’accepter, chacun voit l’essentiel : le profil, le
-                  contenu déclaré et les informations du trajet.
-                </p>
-              </div>
-
-              <div className="divide-y divide-border/70 border-y border-border/70">
-                {features.map((feature, i) => {
-                  const Icon = feature.icon
-
-                  return (
-                    <div
-                      key={feature.title}
-                      className="grid grid-cols-[1.5rem_1fr] gap-4 py-5 animate-fade-in-up"
-                      style={{ animationDelay: `${i * 100}ms` }}
-                    >
-                      <Icon
-                        aria-hidden="true"
-                        className="mt-0.5 h-5 w-5 text-primary"
-                      />
-                      <div className="space-y-1.5">
-                        <h3 className="font-semibold">{feature.title}</h3>
-                        <p className="text-sm leading-6 text-muted-foreground">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Corridor */}
-      <section className="border-y bg-background py-4">
+      <section className="border-b bg-muted/40 py-10 sm:py-14">
         <div className="container-wide">
-          <div className="flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground sm:flex-row sm:gap-4">
-            <span className="font-semibold text-foreground">
+          <div className="flex flex-col items-center gap-5 text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+              Disponible maintenant
+            </p>
+            <h3 className="text-lg font-bold sm:text-xl text-foreground">
               Premier corridor actif
-            </span>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              {activeCountries.map(country => (
-                <span key={country.label} className="flex items-center gap-2">
-                  <span
-                    aria-label={country.label}
-                    role="img"
-                    className="block h-4 w-6 rounded-[2px] ring-1 ring-black/15"
-                    style={{ background: country.flagBackground }}
-                  />
-                  <span>{country.label}</span>
-                </span>
+            </h3>
+            <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14">
+              {activeCountries.map((country, i) => (
+                <React.Fragment key={country.label}>
+                  <div className="flex flex-col items-center gap-2.5">
+                    <span
+                      aria-label={country.label}
+                      role="img"
+                      className="block h-9 w-14 rounded-md ring-1 ring-black/15 shadow-sm"
+                      style={{ background: country.flagBackground }}
+                    />
+                    <span className="text-sm font-semibold text-foreground">
+                      {country.label}
+                    </span>
+                  </div>
+                  {i < activeCountries.length - 1 && (
+                    <IconArrowRight
+                      className="h-5 w-5 text-muted-foreground/60"
+                      aria-hidden="true"
+                    />
+                  )}
+                </React.Fragment>
               ))}
             </div>
-            <span className="hidden h-4 w-px bg-border sm:block" />
-            <span>D’autres corridors ouvriront progressivement.</span>
+            <p className="text-sm text-muted-foreground max-w-sm">
+              D'autres corridors ouvriront progressivement.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Comment ça marche */}
+      {/* Features */}
+      <section className="relative py-20 sm:py-28 bg-background border-b">
+        <div className="container-wide space-y-12">
+          <div className="max-w-2xl space-y-4 animate-fade-in-up">
+            <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+              Ce qui rend l'échange plus sûr.
+            </h2>
+            <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+              Avant d'accepter, chacun voit l'essentiel : le profil, le contenu
+              déclaré et les informations du trajet.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {features.map((feature, i) => {
+              const Icon = feature.icon
+              return (
+                <div
+                  key={feature.title}
+                  className="flex flex-col gap-5 rounded-xl border border-border/70 bg-muted/20 p-6 transition-colors hover:border-primary/25 hover:bg-primary/[0.03] animate-fade-in-up"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-base">{feature.title}</h3>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Comment ca marche */}
       <section className="py-24 sm:py-32">
         <div className="container-wide space-y-12">
           <div className="space-y-4 animate-fade-in-up">
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Un envoi clair, étape par étape.
             </h2>
-            <p className="max-w-2xl text-sm leading-6 sm:text-base sm:leading-7 text-[oklch(0.35_0.01_286)] dark:text-[oklch(0.72_0.01_286)]">
+            <p className="max-w-2xl text-sm leading-6 sm:text-base sm:leading-7 text-muted-foreground">
               Vous gardez la main à chaque étape. Sendbox cadre la mise en
               relation et conserve les preuves utiles.
             </p>
@@ -272,32 +269,18 @@ export function HomePageContent() {
             {steps.map((step, index) => (
               <div
                 key={step.title}
-                className={`group flex min-h-[14rem] flex-col justify-between rounded-lg border p-5 transition-colors animate-fade-in-up ${
-                  index === 2
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border/70 bg-background hover:border-border'
-                }`}
+                className="flex min-h-[14rem] flex-col justify-between rounded-xl border border-border/70 bg-background p-6 transition-colors hover:border-primary/20 hover:shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.08)] animate-fade-in-up"
                 style={{ animationDelay: `${index * 80}ms` }}
               >
-                <div className="space-y-4">
-                  <span
-                    className={`font-display text-4xl font-bold leading-none ${
-                      index === 2 ? 'text-white/45' : 'text-primary/45'
-                    }`}
-                  >
+                <div className="space-y-5">
+                  <span className="font-display text-5xl font-bold leading-none text-primary/18 select-none">
                     {String(index + 1).padStart(2, '0')}
                   </span>
                   <div className="space-y-2">
-                    <h3 className="text-lg font-semibold leading-snug">
+                    <h3 className="text-base font-semibold leading-snug">
                       {step.title}
                     </h3>
-                    <p
-                      className={`text-sm leading-6 ${
-                        index === 2
-                          ? 'text-primary-foreground/82'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
+                    <p className="text-sm leading-6 text-muted-foreground">
                       {step.description}
                     </p>
                   </div>
@@ -305,8 +288,9 @@ export function HomePageContent() {
               </div>
             ))}
           </div>
+
           <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-            Le transport est convenu et réglé directement entre l’expéditeur et
+            Le transport est convenu et réglé directement entre l'expéditeur et
             le voyageur, hors Sendbox.
           </p>
         </div>
@@ -318,11 +302,11 @@ export function HomePageContent() {
           <div className="space-y-10">
             <div className="max-w-2xl space-y-4 animate-fade-in-up">
               <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-                Deux façons d’utiliser Sendbox.
+                Une plateforme, deux rôles.
               </h2>
               <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-                Même cadre, actions différentes : chacun avance avec les
-                informations utiles avant de confirmer.
+                Expéditeur ou voyageur, le cadre est le même : chacun dispose
+                des informations utiles avant de confirmer.
               </p>
             </div>
 
@@ -330,17 +314,17 @@ export function HomePageContent() {
               <AudienceSection
                 eyebrow="Pour les expéditeurs"
                 title="Envoyer sans confier son colis au hasard."
-                description="Consultez les trajets, choisissez un profil vérifié et partagez les détails du colis avant accord."
+                description="Parcourez les trajets vérifiés, déclarez votre contenu en amont et convenez du transport directement avec le voyageur."
                 benefits={senderBenefits}
-                cta="Chercher un voyageur"
+                cta="Trouver un voyageur"
                 href="/recherche"
               />
               <AudienceSection
                 eyebrow="Pour les voyageurs"
-                title="Voyager avec une demande claire."
-                description="Publiez vos disponibilités, consultez le contenu et acceptez seulement ce que vous pouvez transporter sereinement."
+                title="Voyager avec une demande claire dès le départ."
+                description="Publiez vos disponibilités, consultez ce qu'on vous demande d'emporter et acceptez seulement ce qui vous convient."
                 benefits={travelerBenefits}
-                cta="Publier mon trajet"
+                cta="Publier un trajet"
                 href="/dashboard/annonces/new"
                 dark
               />
@@ -388,33 +372,58 @@ export function HomePageContent() {
       {/* CTA final */}
       <section className="py-20 sm:py-24">
         <div className="container-wide">
-          <div className="grid gap-8 rounded-lg bg-primary p-6 text-primary-foreground animate-fade-in-up sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="max-w-2xl space-y-3">
+          <div className="relative grid gap-8 overflow-hidden rounded-2xl bg-neutral-950 p-8 text-white animate-fade-in-up sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
+            {/*
+              Image de fond : déposer l'image dans /public/images/landing/cta-bg.jpg
+              puis décommenter les deux éléments ci-dessous.
+
+              <Image
+                src="/images/landing/cta-bg.jpg"
+                alt=""
+                fill
+                className="object-cover opacity-25 mix-blend-luminosity"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-neutral-950/85 via-neutral-950/60 to-neutral-950/40" />
+            */}
+
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -bottom-10 left-1/3 h-40 w-40 rounded-full bg-primary/8 blur-2xl"
+            />
+
+            <div className="relative max-w-2xl space-y-3">
               <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
                 Prêt à organiser un premier envoi ?
               </h2>
-
-              <p className="text-sm leading-6 text-primary-foreground/82 sm:text-base sm:leading-7">
-                Créez votre profil, vérifiez votre identité et commencez sur le
+              <p className="text-sm leading-6 text-white/68 sm:text-base sm:leading-7">
+                Créez votre profil, vérifiez votre identité et rejoignez le
                 premier corridor France-Bénin.
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
-              <Button asChild size="default" className="transition-colors">
+            <div className="relative flex flex-col gap-3 sm:flex-row lg:justify-end">
+              <Button
+                asChild
+                size="default"
+                className="bg-white text-black transition-colors hover:bg-white/90"
+              >
                 <Link href="/register">Envoyer un colis</Link>
               </Button>
-
               <Button
                 asChild
                 size="default"
                 variant="outline"
-                className="border-primary-foreground/60 bg-transparent text-primary-foreground transition-colors hover:bg-primary-foreground hover:text-primary"
+                className="border-white/25 bg-transparent text-white transition-colors hover:bg-white/8 hover:border-white/40 hover:text-white"
               >
                 <Link href="/dashboard/annonces/new">Publier un trajet</Link>
               </Button>
             </div>
-            <p className="text-xs text-primary-foreground/70 lg:col-start-2 lg:text-right">
+            <p className="relative text-xs text-white/40 lg:col-start-2 lg:text-right">
               Transport réglé directement entre particuliers.
             </p>
           </div>
@@ -443,7 +452,7 @@ function AudienceSection({
 }) {
   return (
     <div
-      className={`flex min-h-[20rem] flex-col justify-between rounded-lg border p-6 animate-fade-in-up sm:p-7 ${
+      className={`flex min-h-[20rem] flex-col justify-between rounded-xl border p-6 animate-fade-in-up sm:p-7 ${
         dark
           ? 'border-primary bg-primary text-primary-foreground'
           : 'border-border/70 bg-background'
