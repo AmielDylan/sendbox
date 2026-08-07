@@ -7,7 +7,7 @@ import {
   IconCamera,
   IconCheck,
   IconUserCheck,
-  IconHandshake,
+  IconUsers,
   IconMapPin,
   IconCoins,
   IconStar,
@@ -60,7 +60,7 @@ const steps = [
   },
   {
     title: "Confirmez l'accord ensemble",
-    icon: IconHandshake,
+    icon: IconUsers,
     description:
       "Les deux parties valident le contenu et les modalités. Les frais Sendbox sont réglés à ce moment.",
   },
