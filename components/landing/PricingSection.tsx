@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 
 const perks = [
-  "Frais facturés uniquement à l'expéditeur, après accord des deux parties.",
-  "Le tarif du transport est défini librement entre vous deux.",
-  "Aucun frais caché. Aucun abonnement. Gratuit pour les voyageurs.",
+  "Inscription et recherche gratuites",
+  "Profils voyageurs et expéditeurs vérifiés",
+  "Confirmation de livraison par preuve photo",
+  "Avis certifiés et communauté de confiance",
 ]
 
 export function PricingSection() {
@@ -21,27 +22,29 @@ export function PricingSection() {
       <div className="container-wide">
         <div className="mb-10 max-w-2xl space-y-4 animate-fade-in-up">
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            Simple et transparent.
+            Tarifs transparents et sans surprise
           </h2>
           <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-            Un seul frais de mise en relation. Le reste se règle directement entre vous.
+            Sendbox facture uniquement la mise en relation. Le prix du transport se règle directement de main à main.
           </p>
         </div>
 
         <div className="grid gap-6 rounded-lg border border-border/80 bg-background p-6 lg:grid-cols-[0.7fr_1.2fr_auto] lg:items-center lg:p-8">
           <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+              Frais de mise en relation
+            </p>
             <div>
               <div className="mt-3 flex items-end gap-3">
                 <p className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  2,90 €
+                  2,90 EUR
                 </p>
               </div>
             </div>
-
             <p className="text-sm leading-6 text-muted-foreground">
               {user
-                ? "Payés par l'expéditeur uniquement, après accord mutuel avec le voyageur."
-                : "Payés par l'expéditeur après accord mutuel. Inscription gratuite pour tous."}
+                ? "Tarif de lancement réglé par l'expéditeur après accord mutuel."
+                : "Tarif de lancement réglé par l'expéditeur après accord mutuel. Inscription gratuite pour tous."}
             </p>
           </div>
 
@@ -64,6 +67,10 @@ export function PricingSection() {
             <Link href={ctaHref}>{ctaLabel}</Link>
           </Button>
         </div>
+
+        <p className="mt-6 max-w-2xl text-xs leading-5 text-muted-foreground/70">
+          Le prix du transport par kilo est convenu entre l'expéditeur et le voyageur avant la confirmation, puis réglé directement de main à main. Sendbox met en relation les utilisateurs dans un cadre sécurisé.
+        </p>
       </div>
     </section>
   )
