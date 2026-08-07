@@ -20,9 +20,6 @@ export function PricingSection() {
     <section className="py-16 sm:py-24">
       <div className="container-wide">
         <div className="mb-10 max-w-2xl space-y-4 animate-fade-in-up">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
-            Tarif V1
-          </p>
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
             Un prix simple pour confirmer la mise en relation.
           </h2>

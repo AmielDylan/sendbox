@@ -8,7 +8,6 @@ import {
   IconCheck,
   IconCircleCheck,
   IconUserCheck,
-  IconArrowRight,
 } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -45,19 +44,6 @@ const features = [
     description:
       'La réputation se construit sur les expériences réelles, pas sur des déclarations.',
     icon: IconCheck,
-  },
-]
-
-const activeCountries = [
-  {
-    label: 'France',
-    flagBackground:
-      'linear-gradient(90deg, #002395 0 33.33%, #ffffff 33.33% 66.66%, #ed2939 66.66% 100%)',
-  },
-  {
-    label: 'Bénin',
-    flagBackground:
-      'linear-gradient(90deg, #008751 0 40%, transparent 40% 100%), linear-gradient(180deg, #fcd116 0 50%, #e8112d 50% 100%)',
   },
 ]
 
@@ -113,7 +99,7 @@ const faqs: { question: string; answer: string }[] = [
   {
     question: 'Dans quels pays Sendbox est-il disponible ?',
     answer:
-      "Sendbox est actuellement actif sur le premier corridor France-Bénin. L'objectif est d'ouvrir progressivement d'autres corridors après les premiers retours utilisateurs.",
+      "Sendbox est actuellement actif sur la route France-Bénin. L'objectif est d'ouvrir progressivement d'autres destinations après les premiers retours de la communauté.",
   },
   {
     question: 'Comment fonctionnent les avis ?',
@@ -174,41 +160,71 @@ export function HomePageContent() {
         </div>
       </section>
 
-      {/* Corridor */}
-      <section className="border-b bg-muted/40 py-10 sm:py-14">
-        <div className="container-wide">
-          <div className="flex flex-col items-center gap-5 text-center">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-              Disponible maintenant
-            </p>
-            <h3 className="text-lg font-bold sm:text-xl text-foreground">
-              Premier corridor actif
-            </h3>
-            <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14">
-              {activeCountries.map((country, i) => (
-                <React.Fragment key={country.label}>
-                  <div className="flex flex-col items-center gap-2.5">
-                    <span
-                      aria-label={country.label}
-                      role="img"
-                      className="block h-9 w-14 rounded-md ring-1 ring-black/15 shadow-sm"
-                      style={{ background: country.flagBackground }}
-                    />
-                    <span className="text-sm font-semibold text-foreground">
-                      {country.label}
-                    </span>
-                  </div>
-                  {i < activeCountries.length - 1 && (
-                    <IconArrowRight
-                      className="h-5 w-5 text-muted-foreground/60"
-                      aria-hidden="true"
-                    />
-                  )}
-                </React.Fragment>
-              ))}
+      {/* Routes actives */}
+      <section className="relative overflow-hidden border-b bg-muted/40 py-14 sm:py-20">
+        {/* Dotted map background */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle, hsl(var(--foreground) / 0.10) 1.5px, transparent 1.5px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+
+        <div className="container-wide relative z-10">
+          <div className="flex flex-col items-center gap-8 text-center">
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                Disponible maintenant
+              </p>
+              <h3 className="text-xl font-bold sm:text-2xl">
+                Votre colis voyage avec quelqu'un qui y va.
+              </h3>
             </div>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              D'autres corridors ouvriront progressivement.
+
+            {/* Route map visual */}
+            <div className="flex w-full max-w-sm items-center gap-6">
+              {/* France */}
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl shadow-lg ring-2 ring-primary/20 dark:bg-neutral-900 dark:ring-primary/30">
+                  🇫🇷
+                  <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-primary ring-2 ring-white dark:ring-neutral-900" />
+                </div>
+                <span className="text-sm font-semibold">France</span>
+              </div>
+
+              {/* Route line */}
+              <div className="flex flex-1 flex-col items-center gap-2">
+                <svg viewBox="0 0 120 8" className="w-full" fill="none" aria-hidden="true">
+                  <path
+                    d="M 4 4 L 116 4"
+                    stroke="hsl(var(--primary) / 0.35)"
+                    strokeWidth="1.5"
+                    strokeDasharray="7 5"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="4" cy="4" r="2.5" fill="hsl(var(--primary))" opacity="0.45" />
+                  <circle cx="116" cy="4" r="2.5" fill="hsl(var(--primary))" opacity="0.45" />
+                </svg>
+                <span className="rounded-full bg-primary/8 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">
+                  Europe - Afrique
+                </span>
+              </div>
+
+              {/* Bénin */}
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl shadow-lg ring-2 ring-primary/20 dark:bg-neutral-900 dark:ring-primary/30">
+                  🇧🇯
+                  <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-primary ring-2 ring-white dark:ring-neutral-900" />
+                </div>
+                <span className="text-sm font-semibold">Bénin</span>
+              </div>
+            </div>
+
+            <p className="max-w-xs text-sm text-muted-foreground">
+              D'autres destinations ouvriront progressivement.
             </p>
           </div>
         </div>
@@ -396,8 +412,8 @@ export function HomePageContent() {
                 Prêt à organiser un premier envoi ?
               </h2>
               <p className="text-sm leading-6 text-white/68 sm:text-base sm:leading-7">
-                Créez votre profil, vérifiez votre identité et rejoignez le
-                premier corridor France-Bénin.
+                Créez votre profil, vérifiez votre identité et envoyez sur la
+                route France-Bénin.
               </p>
             </div>
 
