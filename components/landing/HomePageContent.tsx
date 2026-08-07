@@ -8,6 +8,8 @@ import {
   IconCheck,
   IconCircleCheck,
   IconUserCheck,
+  IconPackage,
+  IconHandshake,
 } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -52,19 +54,23 @@ const steps = [
     title: 'Profil et identité',
     description:
       'Vérifiez votre identité une fois pour toutes. Puis parcourez les trajets disponibles ou publiez vos propres dates.',
+    icon: IconUserCheck,
   },
   {
     title: 'Déclaration du colis',
     description:
       "L'expéditeur décrit le contenu en détail. Le voyageur consulte et décide librement, sans pression.",
+    icon: IconPackage,
   },
   {
     title: 'Accord mutuel',
+    icon: IconHandshake,
     description:
       'Les deux parties confirment ensemble. Les frais Sendbox (2,90 €) sont prélevés à ce moment.',
   },
   {
     title: 'Remise et traçabilité',
+    icon: IconCamera,
     description:
       "Photos horodatées à la remise et à la livraison. Un avis de part et d'autre vient clôre l'envoi.",
   },
@@ -249,17 +255,26 @@ export function HomePageContent() {
               return (
                 <div
                   key={feature.title}
-                  className="flex flex-col gap-5 rounded-xl border border-border/70 bg-muted/20 p-6 transition-colors hover:border-primary/25 hover:bg-primary/[0.03] animate-fade-in-up"
+                  className="relative flex min-h-[11rem] flex-col justify-between overflow-hidden rounded-xl border border-border/70 bg-muted/20 p-6 transition-colors hover:border-primary/25 hover:bg-primary/[0.03] animate-fade-in-up"
                   style={{ animationDelay: `${i * 80}ms` }}
                 >
-                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
+                  <div className="space-y-3">
+                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Icon className="h-4.5 w-4.5" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="font-semibold text-base">{feature.title}</h3>
+                      <p className="text-sm leading-6 text-muted-foreground">
+                        {feature.description}
+                      </p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-base">{feature.title}</h3>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      {feature.description}
-                    </p>
+                  {/* Placeholder illustration - replace with asset */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute bottom-5 right-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5"
+                  >
+                    <Icon className="h-7 w-7 text-primary/20" />
                   </div>
                 </div>
               )
@@ -282,27 +297,37 @@ export function HomePageContent() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            {steps.map((step, index) => (
-              <div
-                key={step.title}
-                className="flex min-h-[14rem] flex-col justify-between rounded-xl border border-border/70 bg-background p-6 transition-colors hover:border-primary/20 hover:shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.08)] animate-fade-in-up"
-                style={{ animationDelay: `${index * 80}ms` }}
-              >
-                <div className="space-y-5">
-                  <span className="font-display text-5xl font-bold leading-none text-primary/18 select-none">
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <div className="space-y-2">
-                    <h3 className="text-base font-semibold leading-snug">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      {step.description}
-                    </p>
+            {steps.map((step, index) => {
+              const StepIcon = step.icon
+              return (
+                <div
+                  key={step.title}
+                  className="relative flex min-h-[14rem] flex-col justify-between overflow-hidden rounded-xl border border-border/70 bg-background p-6 transition-colors hover:border-primary/20 hover:shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.08)] animate-fade-in-up"
+                  style={{ animationDelay: `${index * 80}ms` }}
+                >
+                  <div className="space-y-5">
+                    <span className="font-display text-5xl font-bold leading-none text-primary/18 select-none">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div className="space-y-2">
+                      <h3 className="text-base font-semibold leading-snug">
+                        {step.title}
+                      </h3>
+                      <p className="text-sm leading-6 text-muted-foreground">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Placeholder illustration - replace with asset */}
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute bottom-5 right-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/5"
+                  >
+                    <StepIcon className="h-8 w-8 text-primary/20" />
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -393,7 +418,7 @@ export function HomePageContent() {
               src="/images/landing/cta-bg.jpg"
               alt=""
               fill
-              className="object-cover opacity-25 mix-blend-luminosity"
+              className="object-cover opacity-[0.18]"
               sizes="100vw"
             />
             <div className="absolute inset-0 bg-gradient-to-br from-neutral-950/85 via-neutral-950/60 to-neutral-950/40" />
