@@ -10,6 +10,7 @@ import {
   IconUserCheck,
   IconPackage,
   IconHandshake,
+  IconMapPin,
 } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -146,7 +147,7 @@ export function HomePageContent() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/42 to-black/12 sm:from-black/80 sm:via-black/48 sm:to-black/10" />
 
-        <div className="relative z-10 w-full px-6 pt-16 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
+        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 pt-16 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
           <div className="max-w-xl space-y-6 text-left animate-fade-in-up">
             <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
               Transformez chaque voyage en solution d'envoi sécurisée.
@@ -167,71 +168,116 @@ export function HomePageContent() {
       </section>
 
       {/* Routes actives */}
-      <section className="relative overflow-hidden border-b bg-muted/40 py-14 sm:py-20">
-        {/* Dotted map background */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle, hsl(var(--foreground) / 0.10) 1.5px, transparent 1.5px)',
-            backgroundSize: '24px 24px',
-          }}
-        />
-
-        <div className="container-wide relative z-10">
-          <div className="flex flex-col items-center gap-8 text-center">
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-                Disponible maintenant
-              </p>
-              <h3 className="text-xl font-bold sm:text-2xl">
-                Votre colis voyage avec quelqu'un qui y va.
-              </h3>
-            </div>
-
-            {/* Route map visual */}
-            <div className="flex w-full max-w-sm items-center gap-6">
-              {/* France */}
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl shadow-lg ring-2 ring-primary/20 dark:bg-neutral-900 dark:ring-primary/30">
-                  🇫🇷
-                  <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-primary ring-2 ring-white dark:ring-neutral-900" />
-                </div>
-                <span className="text-sm font-semibold">France</span>
-              </div>
-
-              {/* Route line */}
-              <div className="flex flex-1 flex-col items-center gap-2">
-                <svg viewBox="0 0 120 8" className="w-full" fill="none" aria-hidden="true">
-                  <path
-                    d="M 4 4 L 116 4"
-                    stroke="hsl(var(--primary) / 0.35)"
-                    strokeWidth="1.5"
-                    strokeDasharray="7 5"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="4" cy="4" r="2.5" fill="hsl(var(--primary))" opacity="0.45" />
-                  <circle cx="116" cy="4" r="2.5" fill="hsl(var(--primary))" opacity="0.45" />
-                </svg>
-                <span className="rounded-full bg-primary/8 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                  Europe - Afrique
-                </span>
-              </div>
-
-              {/* Bénin */}
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white text-3xl shadow-lg ring-2 ring-primary/20 dark:bg-neutral-900 dark:ring-primary/30">
-                  🇧🇯
-                  <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-primary ring-2 ring-white dark:ring-neutral-900" />
-                </div>
-                <span className="text-sm font-semibold">Bénin</span>
-              </div>
-            </div>
-
-            <p className="max-w-xs text-sm text-muted-foreground">
-              D'autres destinations ouvriront progressivement.
+      <section className="relative overflow-hidden border-b bg-background py-16 sm:py-24">
+        <div className="container-wide">
+          {/* Header */}
+          <div className="mb-10 space-y-3 text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+              Disponible maintenant
             </p>
+            <h3 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+              Sendbox couvre actuellement la France et le Bénin
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              D'autres destinations arrivent bientôt.
+            </p>
+          </div>
+
+          {/* Carte mondiale */}
+          <div className="relative mx-auto w-full max-w-4xl select-none">
+            <svg
+              viewBox="0 0 1000 500"
+              aria-hidden="true"
+              className="w-full text-foreground"
+            >
+              <defs>
+                <pattern id="wdots" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
+                  <circle cx="7" cy="7" r="1.8" fill="currentColor" opacity="0.14" />
+                </pattern>
+                {/* Continent shapes (simplified ellipses for clip) */}
+                <clipPath id="lands">
+                  <ellipse cx="165" cy="158" rx="126" ry="108" /> {/* Amérique du Nord */}
+                  <ellipse cx="338" cy="52" rx="54" ry="37" />    {/* Groenland */}
+                  <ellipse cx="234" cy="348" rx="72" ry="96" />   {/* Amérique du Sud */}
+                  <ellipse cx="492" cy="112" rx="56" ry="64" />   {/* Europe */}
+                  <ellipse cx="500" cy="305" rx="78" ry="130" />  {/* Afrique */}
+                  <ellipse cx="744" cy="152" rx="214" ry="118" /> {/* Asie */}
+                  <ellipse cx="712" cy="228" rx="36" ry="46" />   {/* Sous-continent indien */}
+                  <ellipse cx="878" cy="150" rx="14" ry="30" />   {/* Japon */}
+                  <ellipse cx="843" cy="362" rx="70" ry="47" />   {/* Australie */}
+                </clipPath>
+                {/* Fade edges */}
+                <radialGradient id="mfade" cx="50%" cy="50%" r="55%">
+                  <stop offset="25%" stopColor="white" stopOpacity="0" />
+                  <stop offset="100%" stopColor="white" stopOpacity="1" />
+                </radialGradient>
+                <mask id="mmask">
+                  <rect width="1000" height="500" fill="white" />
+                  <rect width="1000" height="500" fill="url(#mfade)" />
+                </mask>
+              </defs>
+
+              {/* Dot continents */}
+              <rect width="1000" height="500" fill="url(#wdots)" clipPath="url(#lands)" mask="url(#mmask)" />
+
+              {/* Route France -> Bénin */}
+              <line
+                x1="506" y1="132"
+                x2="506" y2="218"
+                stroke="hsl(var(--primary))"
+                strokeWidth="1.5"
+                strokeDasharray="5 4"
+                opacity="0.4"
+              />
+
+              {/* Future destination pins */}
+              {([[280, 150], [222, 118], [302, 328], [720, 212], [820, 222], [462, 238]] as [number, number][]).map(([cx, cy], i) => (
+                <circle
+                  key={i}
+                  cx={cx} cy={cy} r="6.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  opacity="0.22"
+                />
+              ))}
+            </svg>
+
+            {/* France — pin HTML overlay */}
+            <div
+              aria-label="France"
+              className="pointer-events-none absolute flex flex-col items-center"
+              style={{ left: '50.6%', top: '22.8%', transform: 'translate(-50%, -100%)' }}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[22px] shadow-md ring-1 ring-black/10 dark:ring-white/15 sm:h-12 sm:w-12 sm:text-2xl">
+                🇫🇷
+              </div>
+              <div className="h-0 w-0" style={{ borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '9px solid white' }} />
+            </div>
+            <span className="pointer-events-none absolute whitespace-nowrap text-center text-xs font-semibold text-foreground" style={{ left: '50.6%', top: '22.8%', transform: 'translate(-50%, 4px)' }}>
+              France
+            </span>
+
+            {/* Bénin — pin HTML overlay */}
+            <div
+              aria-label="Bénin"
+              className="pointer-events-none absolute flex flex-col items-center"
+              style={{ left: '50.6%', top: '45.6%', transform: 'translate(-50%, -100%)' }}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[22px] shadow-md ring-1 ring-black/10 dark:ring-white/15 sm:h-12 sm:w-12 sm:text-2xl">
+                🇧🇯
+              </div>
+              <div className="h-0 w-0" style={{ borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '9px solid white' }} />
+            </div>
+            <span className="pointer-events-none absolute whitespace-nowrap text-center text-xs font-semibold text-foreground" style={{ left: '50.6%', top: '45.6%', transform: 'translate(-50%, 4px)' }}>
+              Bénin
+            </span>
+          </div>
+
+          {/* Légende */}
+          <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground/55">
+            <IconMapPin className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>Pays en préparation</span>
           </div>
         </div>
       </section>
