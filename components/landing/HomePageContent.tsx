@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import React from 'react'
 import Image from 'next/image'
@@ -6,11 +6,12 @@ import Link from 'next/link'
 import {
   IconCamera,
   IconCheck,
-  IconCircleCheck,
   IconUserCheck,
-  IconPackage,
   IconHandshake,
   IconMapPin,
+  IconCoins,
+  IconStar,
+  IconSearch,
 } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,55 +26,55 @@ import { PricingSection } from '@/components/landing/PricingSection'
 
 const features = [
   {
-    title: 'Identité vérifiée avant publication',
+    title: ‘Profils 100% vérifiés’,
     description:
-      'Vous savez avec qui vous échangez avant d’aller plus loin. Aucun profil anonyme.',
+      "Identité contrôlée, avis de la communauté et score de confiance : vous savez exactement à qui vous confiez vos affaires.",
     icon: IconUserCheck,
   },
   {
-    title: 'Colis déclaré avant accord',
+    title: ‘Preuves photo certifiées’,
     description:
-      'Le voyageur consulte le contenu annoncé et décide librement avant d’accepter.',
-    icon: IconCircleCheck,
-  },
-  {
-    title: 'Photos à la remise et à la livraison',
-    description:
-      'Des preuves horodatées accompagnent chaque étape, consultables par les deux parties.',
+      "Des photos prises au départ et à la réception pour valider chaque étape de la livraison en toute clarté.",
     icon: IconCamera,
   },
   {
-    title: 'Avis partagés après l’envoi',
+    title: ‘Tarifs simples et directs’,
     description:
-      'La réputation se construit sur les expériences réelles, pas sur des déclarations.',
-    icon: IconCheck,
+      "Une mise en relation fluide. Vous définissez le prix du transport directement entre vous, sans intermédiaires.",
+    icon: IconCoins,
   },
 ]
 
 const steps = [
   {
-    title: 'Profil et identité',
+    title: 'Créez votre profil',
     description:
-      'Vérifiez votre identité une fois pour toutes. Puis parcourez les trajets disponibles ou publiez vos propres dates.',
+      "Vérifiez votre identité une fois pour toutes. Vous accédez ensuite à toutes les annonces de la plateforme.",
     icon: IconUserCheck,
   },
   {
-    title: 'Déclaration du colis',
+    title: 'Trouvez ou publiez une annonce',
     description:
-      "L'expéditeur décrit le contenu en détail. Le voyageur consulte et décide librement, sans pression.",
-    icon: IconPackage,
+      "Expéditeur, cherchez un voyageur sur votre route. Voyageur, publiez vos dates et votre disponibilité.",
+    icon: IconSearch,
   },
   {
-    title: 'Accord mutuel',
+    title: "Confirmez l'accord ensemble",
     icon: IconHandshake,
     description:
-      'Les deux parties confirment ensemble. Les frais Sendbox (2,90 €) sont prélevés à ce moment.',
+      "Les deux parties valident le contenu et les modalités. Les frais Sendbox sont réglés à ce moment.",
   },
   {
-    title: 'Remise et traçabilité',
+    title: 'Remise du colis avec photos',
     icon: IconCamera,
     description:
-      "Photos horodatées à la remise et à la livraison. Un avis de part et d'autre vient clôre l'envoi.",
+      "Des photos horodatées au départ et à l'arrivée. Chacun dispose d'une preuve consultable à tout moment.",
+  },
+  {
+    title: 'Évaluez votre expérience',
+    icon: IconStar,
+    description:
+      "Un avis de chaque côté après la livraison. La réputation se bâtit sur le vécu, pas sur des promesses.",
   },
 ]
 
@@ -121,15 +122,15 @@ const faqs: { question: string; answer: string }[] = [
 ]
 
 const senderBenefits: React.ReactNode[] = [
-  'Profil et trajet du voyageur visibles avant tout échange',
-  'Contenu du colis déclaré avant accord',
-  'Preuves à la remise et à la livraison',
+  "Identité du voyageur vérifiée avant tout contact",
+  "Contenu du colis déclaré et validé avant accord",
+  "Photos certifiées au départ et à la réception",
 ]
 
 const travelerBenefits = [
-  'Vous contrôlez vos dates et votre capacité',
-  'Demandes détaillées avant tout engagement',
-  'Gratuit pour les voyageurs, sans surprise',
+  "Vous choisissez vos dates et votre capacité",
+  "Demandes détaillées à consulter avant d'accepter",
+  "Gratuit pour les voyageurs, aucune surprise",
 ]
 
 export function HomePageContent() {
@@ -149,13 +150,15 @@ export function HomePageContent() {
 
         <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 pt-16 sm:px-8 sm:py-24 lg:px-24 lg:py-28 xl:px-[6.25rem]">
           <div className="max-w-xl space-y-6 text-left animate-fade-in-up">
-            <h1 className="font-display text-3xl font-light leading-tight tracking-tight text-white sm:text-4xl lg:text-6xl">
-              Transformez chaque voyage en solution d'envoi sécurisée.
+            <span className="inline-block rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white/85 backdrop-blur-sm">
+              Disponible aujourd'hui entre la France et le Bénin
+            </span>
+            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+              Faites voyager vos colis avec des personnes qui font le même trajet.
             </h1>
 
             <p className="max-w-xl text-sm leading-6 text-white/82 sm:text-base sm:leading-7">
-              Trouvez un voyageur vérifié, déclarez votre colis et gardez des
-              preuves à la remise comme à la livraison.
+              Des profils vérifiés, un accord clair et des preuves photo à chaque étape, de la remise à la livraison.
             </p>
 
             <LandingCta
@@ -287,15 +290,14 @@ export function HomePageContent() {
         <div className="container-wide space-y-12">
           <div className="max-w-2xl space-y-4 animate-fade-in-up">
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-              Ce qui rend l'échange plus sûr.
+              Pourquoi choisir Sendbox?
             </h2>
             <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-              Avant d'accepter, chacun voit l'essentiel : le profil, le contenu
-              déclaré et les informations du trajet.
+              Chaque mise en relation repose sur des informations concrètes, pas sur la confiance aveugle.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, i) => {
               const Icon = feature.icon
               return (
@@ -334,11 +336,10 @@ export function HomePageContent() {
         <div className="container-wide space-y-12">
           <div className="space-y-4 animate-fade-in-up">
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-              Un envoi clair, étape par étape.
+              Comment ça marche?
             </h2>
             <p className="max-w-2xl text-sm leading-6 sm:text-base sm:leading-7 text-muted-foreground">
-              Vous gardez la main à chaque étape. Sendbox cadre la mise en
-              relation et conserve les preuves utiles.
+              Cinq étapes, pas une de plus. Vous gardez la main à chaque moment.
             </p>
           </div>
 
@@ -389,27 +390,26 @@ export function HomePageContent() {
           <div className="space-y-10">
             <div className="max-w-2xl space-y-4 animate-fade-in-up">
               <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-                Une plateforme, deux rôles.
+                Pour qui est fait Sendbox?
               </h2>
               <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-                Expéditeur ou voyageur, le cadre est le même : chacun dispose
-                des informations utiles avant de confirmer.
+                Deux rôles, une même exigence : savoir exactement à qui on a affaire.
               </p>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-2">
               <AudienceSection
-                eyebrow="Pour les expéditeurs"
-                title="Envoyer sans confier son colis au hasard."
-                description="Parcourez les trajets vérifiés, déclarez votre contenu en amont et convenez du transport directement avec le voyageur."
+                eyebrow="Vous envoyez un colis"
+                title="Confiez vos affaires à quelqu'un de concret, pas à une boîte noire."
+                description="Trouvez un voyageur vérifié sur votre route, déclarez votre contenu en amont et convenez du tarif directement avec lui."
                 benefits={senderBenefits}
                 cta="Trouver un voyageur"
                 href="/recherche"
               />
               <AudienceSection
-                eyebrow="Pour les voyageurs"
-                title="Voyager avec une demande claire dès le départ."
-                description="Publiez vos disponibilités, consultez ce qu'on vous demande d'emporter et acceptez seulement ce qui vous convient."
+                eyebrow="Vous voyagez"
+                title="Rentabilisez votre trajet avec des demandes que vous choisissez."
+                description="Publiez vos disponibilités, consultez ce qu'on vous demande d'emporter et acceptez uniquement ce qui vous convient."
                 benefits={travelerBenefits}
                 cta="Publier un trajet"
                 href="/dashboard/annonces/new"
