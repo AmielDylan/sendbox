@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 
 const perks = [
-  'Ce montant couvre uniquement les frais Sendbox.',
-  'Le transport est convenu et réglé directement entre les parties.',
-  'Le montant Sendbox est visible avant paiement.',
+  "Frais facturés uniquement à l'expéditeur, après accord des deux parties.",
+  "Le tarif du transport est défini librement entre vous deux.",
+  "Aucun frais caché. Aucun abonnement. Gratuit pour les voyageurs.",
 ]
 
 export function PricingSection() {
@@ -21,11 +21,10 @@ export function PricingSection() {
       <div className="container-wide">
         <div className="mb-10 max-w-2xl space-y-4 animate-fade-in-up">
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-            Un prix simple pour confirmer la mise en relation.
+            Simple et transparent.
           </h2>
           <p className="text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-            Sendbox facture uniquement les frais de mise en relation entre
-            expéditeur et voyageur.
+            Un seul frais de mise en relation. Le reste se règle directement entre vous.
           </p>
         </div>
 
