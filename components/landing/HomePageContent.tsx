@@ -373,19 +373,14 @@ export function HomePageContent() {
       <section className="py-20 sm:py-24">
         <div className="container-wide">
           <div className="relative grid gap-8 overflow-hidden rounded-2xl bg-neutral-950 p-8 text-white animate-fade-in-up sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
-            {/*
-              Image de fond : déposer l'image dans /public/images/landing/cta-bg.jpg
-              puis décommenter les deux éléments ci-dessous.
-
-              <Image
-                src="/images/landing/cta-bg.jpg"
-                alt=""
-                fill
-                className="object-cover opacity-25 mix-blend-luminosity"
-                sizes="100vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-br from-neutral-950/85 via-neutral-950/60 to-neutral-950/40" />
-            */}
+            <Image
+              src="/images/landing/cta-bg.jpg"
+              alt=""
+              fill
+              className="object-cover opacity-25 mix-blend-luminosity"
+              sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-neutral-950/85 via-neutral-950/60 to-neutral-950/40" />
 
             <div
               aria-hidden="true"
