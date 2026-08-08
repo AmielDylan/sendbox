@@ -29,6 +29,8 @@ export interface DottedMapProps<M extends Marker = Marker>
   pulse?: boolean
   /** Facteur d'amplitude du pulse par rapport au rayon du marqueur (défaut 2.8) */
   pulseScale?: number
+  /** Opacité de départ des anneaux du pulse (défaut 1) */
+  pulseOpacity?: number
 
   renderMarkerOverlay?: (args: {
     marker: MapMarker<M>
@@ -50,6 +52,7 @@ export function DottedMap<M extends Marker = Marker>({
   stagger = true,
   pulse = false,
   pulseScale = 2.8,
+  pulseOpacity = 1,
   renderMarkerOverlay,
   className,
   style,
@@ -130,7 +133,7 @@ export function DottedMap<M extends Marker = Marker>({
                   r={r}
                   fill="none"
                   stroke={markerColor}
-                  strokeOpacity={1}
+                  strokeOpacity={pulseOpacity}
                   strokeWidth={0.35}
                 >
                   <animate
@@ -141,7 +144,7 @@ export function DottedMap<M extends Marker = Marker>({
                   />
                   <animate
                     attributeName="opacity"
-                    values="1;0"
+                    values={`${pulseOpacity};0`}
                     dur="1.4s"
                     repeatCount="indefinite"
                   />
@@ -152,7 +155,7 @@ export function DottedMap<M extends Marker = Marker>({
                   r={r}
                   fill="none"
                   stroke={markerColor}
-                  strokeOpacity={0.9}
+                  strokeOpacity={pulseOpacity * 0.9}
                   strokeWidth={0.3}
                 >
                   <animate
@@ -164,7 +167,7 @@ export function DottedMap<M extends Marker = Marker>({
                   />
                   <animate
                     attributeName="opacity"
-                    values="0.9;0"
+                    values={`${pulseOpacity * 0.9};0`}
                     dur="1.4s"
                     begin="0.7s"
                     repeatCount="indefinite"
