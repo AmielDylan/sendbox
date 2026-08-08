@@ -175,8 +175,7 @@ export function PublicFooter() {
         {/* Bottom bar */}
         <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
           <p className="text-sm text-muted-foreground text-center md:text-left">
-            © {currentYear} Sendbox. Tous droits réservés. Fait avec ❤️ pour
-            connecter l'Europe et l'Afrique.
+            © {currentYear} Sendbox. Tous droits réservés.
           </p>
 
           {/* Social links */}
