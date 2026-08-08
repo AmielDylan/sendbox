@@ -27,6 +27,8 @@ export interface DottedMapProps<M extends Marker = Marker>
   dotRadius?: number
   stagger?: boolean
   pulse?: boolean
+  /** Facteur d'amplitude du pulse par rapport au rayon du marqueur (défaut 2.8) */
+  pulseScale?: number
 
   renderMarkerOverlay?: (args: {
     marker: MapMarker<M>
@@ -47,6 +49,7 @@ export function DottedMap<M extends Marker = Marker>({
   dotRadius = 0.2,
   stagger = true,
   pulse = false,
+  pulseScale = 2.8,
   renderMarkerOverlay,
   className,
   style,
@@ -113,7 +116,7 @@ export function DottedMap<M extends Marker = Marker>({
         const shouldPulse = pulse
           ? marker.pulse !== false
           : marker.pulse === true
-        const pulseTo = r * 2.8
+        const pulseTo = r * pulseScale
 
         return (
           <g key={`${marker.x}-${marker.y}-${index}`}>
