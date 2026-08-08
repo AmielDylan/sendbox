@@ -219,7 +219,7 @@ export function HomePageContent() {
                 }`}
                 style={{ animationDelay: `${index * 80}ms` }}
               >
-                <span className="font-display text-4xl font-bold leading-none text-primary/18 select-none">
+                <span className="font-display text-4xl font-bold leading-none text-primary select-none">
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <div className="space-y-2">
