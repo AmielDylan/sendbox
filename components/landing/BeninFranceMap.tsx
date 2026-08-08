@@ -26,7 +26,7 @@ const markers: RouteMarker[] = [
 
 export function BeninFranceMap() {
   return (
-    <div className="relative h-[480px] w-full overflow-hidden rounded-xl border bg-background">
+    <div className="relative h-[480px] w-full overflow-hidden bg-background">
       <DottedMap<RouteMarker>
         markers={markers}
         pulse
