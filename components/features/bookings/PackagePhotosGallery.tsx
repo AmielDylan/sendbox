@@ -23,7 +23,7 @@ export function PackagePhotosGallery({
 
   if (!photos || photos.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center rounded-md border border-dashed">
+      <div className="flex h-40 items-center justify-center rounded-md border border-dashed border-muted-foreground/30">
         <p className="text-sm text-muted-foreground">Aucune photo du colis</p>
       </div>
     )

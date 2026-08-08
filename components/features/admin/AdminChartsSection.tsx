@@ -59,7 +59,7 @@ export function AdminChartsSection({
               >
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  className="stroke-border"
+                  className="stroke-muted-foreground/20"
                 />
                 <XAxis
                   dataKey="label"
@@ -131,7 +131,7 @@ export function AdminChartsSection({
                 </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  className="stroke-border"
+                  className="stroke-muted-foreground/20"
                 />
                 <XAxis
                   dataKey="label"

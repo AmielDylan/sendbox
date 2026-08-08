@@ -4,10 +4,11 @@ type RouteMarker = Marker & {
   flagSrc: string
 }
 
-const DOT_RADIUS = 0.45
+const DOT_RADIUS = 0.6
 // Rayon du badge drapeau, affiché par-dessus le marqueur (renderMarkerOverlay).
 // Sert aussi de taille de marqueur pour que le pulse parte bien du bord du drapeau.
-const FLAG_RADIUS = 1.5
+// Divisé par le zoom (scale-125) appliqué à la carte pour garder une taille rendue stable.
+const FLAG_RADIUS = 1.2
 
 const markers: RouteMarker[] = [
   {
@@ -26,27 +27,43 @@ const markers: RouteMarker[] = [
 
 export function BeninFranceMap() {
   return (
-    <div className="relative h-[480px] w-full overflow-hidden bg-background">
+    <div className="relative mt-6 aspect-[2/1] w-full max-h-[560px] overflow-hidden bg-background [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_75%)] sm:mt-10">
       <DottedMap<RouteMarker>
         markers={markers}
         pulse
         pulseScale={2}
+        markerFill={false}
         dotRadius={DOT_RADIUS}
-        markerColor="#FF6900"
+        markerColor="var(--primary)"
         dotColor="currentColor"
-        className="text-muted-foreground/30"
+        className="scale-125 text-muted-foreground/30"
         renderMarkerOverlay={({ marker, index, x, y }) => (
           <g>
-            <clipPath id={`flag-clip-${index}`}>
-              <circle cx={x} cy={y} r={FLAG_RADIUS} />
-            </clipPath>
+            <radialGradient id={`flag-fade-${index}`}>
+              <stop offset="80%" stopColor="white" stopOpacity="1" />
+              <stop offset="100%" stopColor="white" stopOpacity="0" />
+            </radialGradient>
+            <mask id={`flag-mask-${index}`}>
+              <circle
+                cx={x}
+                cy={y}
+                r={FLAG_RADIUS}
+                fill={`url(#flag-fade-${index})`}
+              />
+            </mask>
+            <circle
+              cx={x}
+              cy={y}
+              r={FLAG_RADIUS}
+              className="fill-muted-foreground/30"
+            />
             <image
               href={marker.flagSrc}
               x={x - FLAG_RADIUS}
               y={y - FLAG_RADIUS}
               width={FLAG_RADIUS * 2}
               height={FLAG_RADIUS * 2}
-              clipPath={`url(#flag-clip-${index})`}
+              mask={`url(#flag-mask-${index})`}
               preserveAspectRatio="xMidYMid slice"
             />
           </g>

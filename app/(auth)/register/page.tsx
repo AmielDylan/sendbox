@@ -82,7 +82,7 @@ function RegisterForm() {
   if (!authCheckComplete) {
     return (
       <div className="w-full">
-        <Card className="border shadow-sm rounded-2xl">
+        <Card className="shadow-sm rounded-2xl">
           <CardHeader className="space-y-4 py-10 text-center">
             <div className="flex justify-center">
               <Image
@@ -128,7 +128,7 @@ function RegisterForm() {
 
   return (
     <div className="w-full">
-      <Card className="border shadow-sm rounded-2xl overflow-hidden">
+      <Card className="shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="space-y-3 pb-4 text-center">
           <div className="flex justify-center pt-2">
             <Image

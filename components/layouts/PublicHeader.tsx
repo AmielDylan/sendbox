@@ -139,10 +139,10 @@ export function PublicHeader() {
   return (
     <header
       className={cn(
-        'top-0 z-50 w-full border-b transition-all duration-300',
+        'top-0 z-50 w-full transition-all duration-300',
         isHome ? 'fixed' : 'sticky',
         overHero
-          ? 'border-white/[0.15] bg-black/[0.24] text-white shadow-none backdrop-blur-sm supports-[backdrop-filter]:bg-black/[0.18]'
+          ? 'border-b border-white/[0.15] bg-black/[0.24] text-white shadow-none backdrop-blur-sm supports-[backdrop-filter]:bg-black/[0.18]'
           : solidHeaderClasses
       )}
     >
@@ -394,7 +394,7 @@ export function PublicHeader() {
                     )
                   })}
                 </nav>
-                <div className="border-t pt-4 flex flex-col gap-2">
+                <div className="pt-4 flex flex-col gap-2">
                   <ClientOnly
                     fallback={
                       <Button variant="outline" className="w-full" disabled>
