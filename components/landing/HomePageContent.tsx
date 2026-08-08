@@ -3,7 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { IconCheck, IconMapPin } from '@tabler/icons-react'
+import { IconCheck } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   Accordion,
@@ -11,6 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { BeninFranceMap } from '@/components/landing/BeninFranceMap'
 import { LandingCta } from '@/components/landing/LandingCta'
 import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 import { PricingSection } from '@/components/landing/PricingSection'
@@ -164,18 +165,8 @@ export function HomePageContent() {
               D'autres destinations arrivent bientôt.
             </p>
           </div>
-          <div className="relative mx-auto w-full max-w-4xl overflow-hidden rounded-2xl">
-            <Image
-              src="/images/landing/world-map.png"
-              alt="Carte des destinations Sendbox - France et Bénin"
-              width={1200}
-              height={680}
-              className="w-full object-cover"
-            />
-          </div>
-          <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground/55">
-            <IconMapPin className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>Pays en préparation</span>
+          <div className="relative mx-auto w-full max-w-4xl">
+            <BeninFranceMap />
           </div>
         </div>
       </section>
