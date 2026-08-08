@@ -155,7 +155,7 @@ export function HomePageContent() {
       </section>
 
       {/* Pays couverts */}
-      <section className="relative overflow-hidden bg-background py-12 sm:py-16">
+      <section className="relative overflow-hidden bg-background py-16 sm:py-24">
         <div className="container-wide">
           <div className="mb-14 space-y-3 text-center sm:mb-20">
             <h3 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
@@ -172,7 +172,7 @@ export function HomePageContent() {
       </section>
 
       {/* Pourquoi Sendbox */}
-      <section className="relative py-14 sm:py-20 bg-background">
+      <section className="relative py-16 sm:py-24 bg-background">
         <div className="container-wide space-y-12">
           <div className="max-w-2xl space-y-4 animate-fade-in-up">
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
@@ -200,7 +200,7 @@ export function HomePageContent() {
       </section>
 
       {/* Comment ca marche */}
-      <section className="py-14 sm:py-20">
+      <section className="py-16 sm:py-24">
         <div className="container-wide space-y-10">
           <div className="space-y-4 animate-fade-in-up">
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
@@ -240,7 +240,7 @@ export function HomePageContent() {
       </section>
 
       {/* Pour qui */}
-      <section className="bg-muted/30 py-14 sm:py-20">
+      <section className="bg-muted/30 py-16 sm:py-24">
         <div className="container-wide">
           <div className="space-y-10">
             <div className="max-w-2xl space-y-4 animate-fade-in-up">
@@ -276,7 +276,7 @@ export function HomePageContent() {
       <LatestAnnouncementsCarousel />
 
       {/* FAQ */}
-      <section className="py-14 sm:py-20">
+      <section className="py-16 sm:py-24">
         <div className="container-wide">
           <div className="grid gap-12 lg:grid-cols-[1fr_2fr] lg:gap-20">
             <div className="space-y-4 animate-fade-in-up">
@@ -308,7 +308,7 @@ export function HomePageContent() {
       </section>
 
       {/* CTA final */}
-      <section className="py-14 sm:py-20">
+      <section className="py-16 sm:py-24">
         <div className="container-wide">
           <div className="relative grid gap-8 overflow-hidden rounded-2xl bg-neutral-950 p-8 text-white animate-fade-in-up sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
             <Image
