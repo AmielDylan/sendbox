@@ -31,7 +31,7 @@ const stats = [
 
 export function TrustStatsBlock() {
   return (
-    <section className="bg-background/80 py-12 sm:py-14">
+    <section className="bg-background/80 py-14 sm:py-16">
       <div className="container-wide">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
           <div className="space-y-3">

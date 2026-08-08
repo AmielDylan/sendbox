@@ -18,7 +18,7 @@ export function PricingSection() {
   const ctaLabel = user ? 'Publier un trajet' : 'Créer mon compte'
 
   return (
-    <section className="py-14 sm:py-16">
+    <section className="py-16 sm:py-20">
       <div className="container-wide">
         <div className="mb-10 max-w-2xl space-y-4 animate-fade-in-up">
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">

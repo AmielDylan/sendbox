@@ -128,7 +128,7 @@ export function LatestAnnouncementsCarousel() {
   }, [items.length])
 
   return (
-    <section className="py-14 sm:py-16 relative">
+    <section className="py-16 sm:py-20 relative">
       <div className="container-wide space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="space-y-2">
