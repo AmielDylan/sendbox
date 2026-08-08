@@ -24,6 +24,8 @@ export interface DottedMapProps<M extends Marker = Marker>
   markers?: M[]
   dotColor?: string
   markerColor?: string
+  /** Affiche le disque plein du marqueur (défaut true). À désactiver si renderMarkerOverlay dessine déjà le visuel du marqueur. */
+  markerFill?: boolean
   dotRadius?: number
   stagger?: boolean
   pulse?: boolean
@@ -48,6 +50,7 @@ export function DottedMap<M extends Marker = Marker>({
   markers = [],
   dotColor = 'currentColor',
   markerColor = '#FF6900',
+  markerFill = true,
   dotRadius = 0.2,
   stagger = true,
   pulse = false,
@@ -123,7 +126,9 @@ export function DottedMap<M extends Marker = Marker>({
 
         return (
           <g key={`${marker.x}-${marker.y}-${index}`}>
-            <circle cx={x} cy={y} r={r} fill={markerColor} />
+            {markerFill ? (
+              <circle cx={x} cy={y} r={r} fill={markerColor} />
+            ) : null}
 
             {shouldPulse ? (
               <g pointerEvents="none">

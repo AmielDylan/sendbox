@@ -20,7 +20,7 @@
     --color-accent-foreground: 0 0% 20%;
 
     /* Neutrals - Cool grays */
-    --color-background: 0 0% 100%;
+    --color-background: 240 8% 98%;
     --color-foreground: 0 0% 14%;
 
     --color-card: 0 0% 100%;
@@ -29,7 +29,7 @@
     --color-muted: 240 5% 96%;
     --color-muted-foreground: 240 4% 60%;
 
-    --color-border: 240 6% 88%;
+    --color-border: 240 6% 93%;
     --color-input: 240 6% 88%;
     --color-ring: 185 60% 50%;
 
@@ -239,13 +239,13 @@ span {
 /* === Component Patterns - Minimal pour Lyra === */
 .card-elevated {
   background: hsl(var(--color-card));
-  border: 1px solid hsl(var(--color-border));
   border-radius: var(--radius-sm);
-  transition: border-color var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast);
 }
 
 .card-elevated:hover {
-  border-color: hsl(var(--color-border) / 0.8);
+  box-shadow: var(--shadow-md);
 }
 
 /* btn-primary removed - use Button component instead for consistency */

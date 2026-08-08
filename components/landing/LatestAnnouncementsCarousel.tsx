@@ -128,7 +128,7 @@ export function LatestAnnouncementsCarousel() {
   }, [items.length])
 
   return (
-    <section className="py-16 sm:py-20 relative">
+    <section className="py-14 sm:py-16 relative">
       <div className="container-wide space-y-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="space-y-2">
@@ -146,7 +146,7 @@ export function LatestAnnouncementsCarousel() {
         </div>
 
         {!loading && items.length === 0 && (
-          <div className="flex min-h-[13rem] flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-background px-5 py-8 text-center">
+          <div className="flex min-h-[13rem] flex-col items-center justify-center rounded-lg border border-dashed border-muted-foreground/30 bg-background px-5 py-8 text-center">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
               <IconMapPin className="h-5 w-5" />
             </div>

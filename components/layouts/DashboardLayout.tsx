@@ -198,7 +198,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-background px-4 md:hidden">
+      <header className="sticky top-0 z-50 flex h-16 items-center gap-4 bg-card px-4 shadow-sm md:hidden">
         <ClientOnly>
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
@@ -225,14 +225,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 md:border-r">
+        <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 bg-card shadow-[2px_0_8px_-4px_rgb(0_0_0_/_0.08)]">
           <SidebarContent pathname={pathname} items={visibleNavItems} />
         </aside>
 
         {/* Main Content */}
         <main className="min-w-0 flex-1 md:ml-64">
           {/* Desktop Header */}
-          <header className="sticky top-0 z-40 hidden h-16 items-center gap-4 border-b bg-background px-6 md:flex">
+          <header className="sticky top-0 z-40 hidden h-16 items-center gap-4 bg-card px-6 shadow-sm md:flex">
             <div className="flex flex-1 items-center gap-4" />
             <HeaderActions />
           </header>
@@ -264,7 +264,7 @@ function SidebarContent({
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center px-6">
         <LogoLink className="h-6" onClick={onNavigate} />
       </div>
 
@@ -314,7 +314,7 @@ function SidebarContent({
           </div>
         ))}
       </nav>
-      <div className="space-y-3 border-t p-4">
+      <div className="space-y-3 p-4">
         {FEATURES.BETA_MODE && (
           <Badge
             variant="outline"

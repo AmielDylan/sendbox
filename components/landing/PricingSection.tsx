@@ -18,7 +18,7 @@ export function PricingSection() {
   const ctaLabel = user ? 'Publier un trajet' : 'Créer mon compte'
 
   return (
-    <section className="py-16 sm:py-24">
+    <section className="py-14 sm:py-16">
       <div className="container-wide">
         <div className="mb-10 max-w-2xl space-y-4 animate-fade-in-up">
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
@@ -29,7 +29,7 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="grid gap-6 rounded-lg border border-border/80 bg-background p-6 lg:grid-cols-[0.7fr_1.2fr_auto] lg:items-center lg:p-8">
+        <div className="grid gap-6 rounded-lg bg-card p-6 lg:grid-cols-[0.7fr_1.2fr_auto] lg:items-center lg:p-8">
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
               Frais de mise en relation

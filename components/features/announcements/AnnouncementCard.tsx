@@ -65,7 +65,7 @@ export function AnnouncementCard({
   if (disabled) {
     return (
       <div className="block h-full cursor-not-allowed" aria-disabled="true">
-        <Card className="h-full flex flex-col justify-between rounded-xl border border-border/60 shadow-none opacity-60 grayscale transition-all duration-300 group relative overflow-hidden">
+        <Card className="h-full flex flex-col justify-between rounded-xl opacity-60 grayscale transition-all duration-300 group relative overflow-hidden">
           {/* Hover Highlight Line */}
           <div className="absolute top-0 left-0 w-1 h-full bg-primary/10" />
 
@@ -206,7 +206,7 @@ export function AnnouncementCard({
       className="block h-full cursor-pointer"
     >
       <Card
-        className={`h-full flex flex-col justify-between rounded-xl border shadow-none hover:bg-muted/30 transition-all duration-300 group relative overflow-hidden ${isSendbox ? 'border-primary/40 hover:border-primary/70' : 'border-border/60 hover:border-primary/40'}`}
+        className={`h-full flex flex-col justify-between rounded-xl hover:bg-muted/30 hover:shadow-md transition-all duration-300 group relative overflow-hidden ${isSendbox ? 'ring-1 ring-primary/40 hover:ring-primary/70' : ''}`}
       >
         {/* Hover Highlight Line */}
         <div
