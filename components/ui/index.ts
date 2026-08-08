@@ -84,6 +84,7 @@ export {
   SheetDescription,
 } from './sheet'
 export { Separator } from './separator'
+export { DottedMap, type Marker as DottedMapMarker } from './dotted-map'
 
 // Composants custom Sendbox
 export { LoadingSpinner } from './loading-spinner'

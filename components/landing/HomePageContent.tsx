@@ -3,7 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { IconCheck, IconMapPin } from '@tabler/icons-react'
+import { IconCheck } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   Accordion,
@@ -11,6 +11,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { BeninFranceMap } from '@/components/landing/BeninFranceMap'
 import { LandingCta } from '@/components/landing/LandingCta'
 import { LatestAnnouncementsCarousel } from '@/components/landing/LatestAnnouncementsCarousel'
 import { PricingSection } from '@/components/landing/PricingSection'
@@ -154,9 +155,9 @@ export function HomePageContent() {
       </section>
 
       {/* Pays couverts */}
-      <section className="relative overflow-hidden border-b bg-background py-16 sm:py-24">
+      <section className="relative overflow-hidden bg-background py-12 sm:py-16">
         <div className="container-wide">
-          <div className="mb-10 space-y-3 text-center">
+          <div className="mb-14 space-y-3 text-center sm:mb-20">
             <h3 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
               Sendbox couvre actuellement la France et le Bénin
             </h3>
@@ -164,24 +165,14 @@ export function HomePageContent() {
               D'autres destinations arrivent bientôt.
             </p>
           </div>
-          <div className="relative mx-auto w-full max-w-4xl overflow-hidden rounded-2xl">
-            <Image
-              src="/images/landing/world-map.png"
-              alt="Carte des destinations Sendbox - France et Bénin"
-              width={1200}
-              height={680}
-              className="w-full object-cover"
-            />
-          </div>
-          <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground/55">
-            <IconMapPin className="h-3.5 w-3.5" aria-hidden="true" />
-            <span>Pays en préparation</span>
+          <div className="relative mx-auto w-full">
+            <BeninFranceMap />
           </div>
         </div>
       </section>
 
       {/* Pourquoi Sendbox */}
-      <section className="relative py-20 sm:py-28 bg-background border-b">
+      <section className="relative py-14 sm:py-20 bg-background">
         <div className="container-wide space-y-12">
           <div className="max-w-2xl space-y-4 animate-fade-in-up">
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
@@ -195,7 +186,7 @@ export function HomePageContent() {
             {features.map((feature, i) => (
               <div
                 key={feature.title}
-                className="flex flex-col gap-3 rounded-xl border border-border/70 bg-muted/20 p-6 transition-colors hover:border-primary/25 hover:bg-primary/[0.03] animate-fade-in-up"
+                className="flex flex-col gap-3 rounded-xl bg-card p-6 transition-shadow hover:shadow-md animate-fade-in-up"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
                 <h3 className="font-semibold text-base">{feature.title}</h3>
@@ -209,8 +200,8 @@ export function HomePageContent() {
       </section>
 
       {/* Comment ca marche */}
-      <section className="py-24 sm:py-32">
-        <div className="container-wide space-y-12">
+      <section className="py-14 sm:py-20">
+        <div className="container-wide space-y-10">
           <div className="space-y-4 animate-fade-in-up">
             <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Comment ça marche ?
@@ -219,14 +210,16 @@ export function HomePageContent() {
               Un parcours simple et vérifiable pour envoyer vos colis d'une ville à une autre.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-6">
             {steps.map((step, index) => (
               <div
                 key={step.title}
-                className="flex flex-col gap-5 rounded-xl border border-border/70 bg-background p-6 transition-colors hover:border-primary/20 hover:shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.08)] animate-fade-in-up"
+                className={`flex flex-col gap-4 rounded-xl bg-card p-6 transition-shadow hover:shadow-md animate-fade-in-up sm:col-span-2 ${
+                  index >= 3 ? 'sm:col-span-3' : ''
+                }`}
                 style={{ animationDelay: `${index * 80}ms` }}
               >
-                <span className="font-display text-5xl font-bold leading-none text-primary/18 select-none">
+                <span className="font-display text-4xl font-bold leading-none text-primary/18 select-none">
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <div className="space-y-2">
@@ -247,7 +240,7 @@ export function HomePageContent() {
       </section>
 
       {/* Pour qui */}
-      <section className="bg-muted/30 py-16 sm:py-24">
+      <section className="bg-muted/30 py-14 sm:py-20">
         <div className="container-wide">
           <div className="space-y-10">
             <div className="max-w-2xl space-y-4 animate-fade-in-up">
@@ -283,7 +276,7 @@ export function HomePageContent() {
       <LatestAnnouncementsCarousel />
 
       {/* FAQ */}
-      <section className="py-24 sm:py-32">
+      <section className="py-14 sm:py-20">
         <div className="container-wide">
           <div className="grid gap-12 lg:grid-cols-[1fr_2fr] lg:gap-20">
             <div className="space-y-4 animate-fade-in-up">
@@ -299,7 +292,7 @@ export function HomePageContent() {
                 <AccordionItem
                   key={i}
                   value={`faq-${i}`}
-                  className="border-b border-border/70 px-0 transition-colors data-[state=open]:border-primary/30"
+                  className="px-0"
                 >
                   <AccordionTrigger className="py-5 text-left text-sm font-semibold leading-snug hover:no-underline sm:text-base">
                     {faq.question}
@@ -315,17 +308,17 @@ export function HomePageContent() {
       </section>
 
       {/* CTA final */}
-      <section className="py-20 sm:py-24">
+      <section className="py-14 sm:py-20">
         <div className="container-wide">
           <div className="relative grid gap-8 overflow-hidden rounded-2xl bg-neutral-950 p-8 text-white animate-fade-in-up sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
             <Image
               src="/images/landing/cta-bg.jpg"
               alt=""
               fill
-              className="object-cover opacity-[0.18]"
+              className="object-cover opacity-60"
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-neutral-950/85 via-neutral-950/60 to-neutral-950/40" />
+            <div className="absolute inset-0 bg-gradient-to-br from-neutral-950/55 via-neutral-950/35 to-neutral-950/15" />
             <div
               aria-hidden="true"
               className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl"
@@ -359,9 +352,6 @@ export function HomePageContent() {
                 <Link href="/recherche">Explorer les trajets</Link>
               </Button>
             </div>
-            <p className="relative text-xs text-white/40 lg:col-start-2 lg:text-right">
-              Sendbox. La plateforme de covalisage qui connecte les voyageurs et les expéditeurs.
-            </p>
           </div>
         </div>
       </section>
@@ -386,10 +376,8 @@ function AudienceSection({
 }) {
   return (
     <div
-      className={`flex min-h-[20rem] flex-col justify-between rounded-xl border p-6 animate-fade-in-up sm:p-7 ${
-        dark
-          ? 'border-primary bg-primary text-primary-foreground'
-          : 'border-border/70 bg-background'
+      className={`flex min-h-[20rem] flex-col justify-between rounded-xl p-6 animate-fade-in-up sm:p-7 ${
+        dark ? 'bg-primary text-primary-foreground' : 'bg-card'
       }`}
     >
       <div className="space-y-5">

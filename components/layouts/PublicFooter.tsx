@@ -12,14 +12,13 @@ import {
   IconMail,
   IconMapPin,
 } from '@tabler/icons-react'
-import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 
 export function PublicFooter() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t bg-gradient-to-b from-background to-muted/20 relative">
+    <footer className="bg-gradient-to-b from-background to-muted/20 relative">
       {/* Top gradient accent */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
@@ -171,7 +170,7 @@ export function PublicFooter() {
           </div>
         </div>
 
-        <Separator className="my-12" />
+        <div className="my-12" />
 
         {/* Bottom bar */}
         <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">

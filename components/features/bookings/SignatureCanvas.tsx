@@ -88,7 +88,7 @@ export const SignatureCanvas = forwardRef<
       <Card>
         <CardContent className="pt-6">
           {/* Always render the signature area on a "paper" background for dark mode readability */}
-          <div className="border-2 border-dashed rounded-lg bg-white">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg bg-white">
             <SignatureCanvasLib
               ref={signaturePad}
               backgroundColor="#ffffff"
