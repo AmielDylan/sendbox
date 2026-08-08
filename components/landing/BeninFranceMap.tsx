@@ -8,26 +8,26 @@ type RouteMarker = Marker & {
 const DOT_RADIUS = 0.45
 // Rayon du badge drapeau, affiché par-dessus le marqueur (renderMarkerOverlay).
 // Sert aussi de taille de marqueur pour que le pulse parte bien du bord du drapeau.
-const FLAG_RADIUS = 2
+const FLAG_RADIUS = 1.5
 
-const PILL_HEIGHT = 3.4
-const PILL_GAP = 1.2
-const PILL_PADDING_X = 1.6
-const PILL_CHAR_WIDTH = 1.5
+const PILL_HEIGHT = 2.6
+const PILL_GAP = 1
+const PILL_PADDING_X = 1.3
+const PILL_CHAR_WIDTH = 1.3
 
 const markers: RouteMarker[] = [
   {
     lat: 6.3703,
     lng: 2.3912,
     size: FLAG_RADIUS,
-    label: 'Cotonou',
+    label: 'Bénin',
     flagSrc: '/flags/bj.svg',
   },
   {
     lat: 48.8566,
     lng: 2.3522,
     size: FLAG_RADIUS,
-    label: 'Paris',
+    label: 'France',
     flagSrc: '/flags/fr.svg',
   },
 ]
@@ -38,9 +38,10 @@ export function BeninFranceMap() {
       <DottedMap<RouteMarker>
         markers={markers}
         pulse
-        pulseScale={2}
+        pulseScale={1.6}
+        pulseOpacity={0.45}
         dotRadius={DOT_RADIUS}
-        markerColor="#FF6900"
+        markerColor="#FDBA74"
         dotColor="currentColor"
         className="text-muted-foreground/30"
         renderMarkerOverlay={({ marker, index, x, y }) => {
@@ -76,7 +77,7 @@ export function BeninFranceMap() {
                 y={y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                fontSize={1.9}
+                fontSize={1.5}
                 className="fill-foreground font-medium select-none"
               >
                 {marker.label}
